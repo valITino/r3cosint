@@ -1,0 +1,158 @@
+# Überträgt das Nachweisverzeichnis nach Repo B (Projektauftrag 6.6).
+#
+# Warum als GitHub-Arbeitsablauf und nicht durch Claude Code: Claude Code Web
+# kann nicht in ein zweites Repository schreiben, die Sandbox erreicht nur das
+# verbundene. Claude Code schreibt deshalb den Arbeitsablauf, ausgeführt wird er
+# von GitHub. Das ist keine Notlösung, sondern die saubere Trennung — die
+# Automatik läuft ausserhalb der Sandbox, mit eigenen Rechten, und ist im Verlauf
+# beider Repositories nachvollziehbar (6.6).
+#
+# Vorgaben aus 6.6, die hier umgesetzt sind:
+#   - Auslöser ist ein Versionsschild, nicht jeder Commit. Sonst entsteht
+#     Rauschen statt Nachweis.
+#   - Es wird ausschliesslich in das Verzeichnis nachweise/ geschrieben. Alles
+#     ausserhalb gehört dem Auftraggeber und wird nie überschrieben.
+#   - Übertragen wird das Nachweisverzeichnis, nicht der Inhalt der Artefakte.
+#     Repo B bleibt frei von Kopien.
+#   - Der Zugang läuft über ein fein begrenztes Zugriffstoken mit Schreibrecht
+#     nur auf Repo B. Das Geheimnis liegt in den Repository-Secrets, nie im Code.
+#   - Jeder Lauf erzeugt einen Commit mit dem Versionsschild im Betreff.
+
+name: Nachweise nach Repo B übertragen
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      schild:
+        description: "Versionsschild, das übertragen werden soll (z. B. v0.3.0)"
+        required: true
+        type: string
+      abzug:
+        description: "Zusätzlich einen eingefrorenen Abzug der verwiesenen Dateien erzeugen"
+        required: false
+        default: false
+        type: boolean
+
+# Der Arbeitsablauf liest nur aus Repo A. Geschrieben wird in Repo B, und zwar
+# ausschliesslich über das gesondert hinterlegte Token.
+permissions:
+  contents: read
+
+concurrency:
+  group: nachweise-uebertragen
+  cancel-in-progress: false
+
+env:
+  ZIEL_REPO: valITino/r3coscrum
+  ZIEL_VERZEICHNIS: nachweise
+
+jobs:
+  uebertragen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repo A auschecken
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # vollständige Historie: die festen Verweise brauchen die Prüfsummen
+
+      - name: Versionsschild bestimmen
+        id: schild
+        run: |
+          if [ -n "${{ inputs.schild }}" ]; then
+            echo "wert=${{ inputs.schild }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "wert=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Nachweisverzeichnis neu erzeugen
+        run: |
+          bash scripts/nachweise-erzeugen.sh docs/NACHWEISE.md
+
+      - name: Erzeugtes Verzeichnis prüfen
+        run: |
+          # Ein Verweis auf einen Zweig ist kein Nachweis (6.6). Findet sich einer,
+          # bricht der Lauf ab, statt einen wertlosen Nachweis zu übertragen.
+          if grep -Eq 'blob/(main|master|HEAD)/' docs/NACHWEISE.md; then
+            echo "::error::Zweigverweis in docs/NACHWEISE.md gefunden. Nach 6.6 ist das kein Nachweis."
+            grep -nE 'blob/(main|master|HEAD)/' docs/NACHWEISE.md
+            exit 1
+          fi
+          # Jeder Verweis trägt eine vollständige 40-stellige Prüfsumme.
+          if grep -Eq 'blob/[0-9a-f]{1,39}/' docs/NACHWEISE.md; then
+            echo "::error::Unvollständige Commit-Prüfsumme in docs/NACHWEISE.md."
+            exit 1
+          fi
+          anzahl=$(grep -cE '^\| .+ \| `.+` \|' docs/NACHWEISE.md || true)
+          echo "Artefakte im Verzeichnis: $anzahl"
+          if [ "$anzahl" -lt 1 ]; then
+            echo "::error::Das Nachweisverzeichnis enthält keine Artefakte."
+            exit 1
+          fi
+
+      - name: Repo B auschecken
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.ZIEL_REPO }}
+          token: ${{ secrets.NACHWEISE_TOKEN }}
+          path: repo-b
+          fetch-depth: 0
+
+      - name: Nachweisverzeichnis nach Repo B schreiben
+        run: |
+          set -euo pipefail
+          # Ausschliesslich in nachweise/. Alles ausserhalb gehört dem
+          # Auftraggeber und wird nie angefasst (6.6).
+          mkdir -p "repo-b/${ZIEL_VERZEICHNIS}"
+          cp docs/NACHWEISE.md "repo-b/${ZIEL_VERZEICHNIS}/NACHWEISE.md"
+          {
+            echo "<!-- Erzeugt aus ${GITHUB_REPOSITORY} durch den Arbeitsablauf"
+            echo "     nachweise-uebertragen.yml. Nicht von Hand ändern:"
+            echo "     Änderungen gehen beim nächsten Lauf verloren."
+            echo "     Versionsschild: ${{ steps.schild.outputs.wert }}"
+            echo "     Quell-Commit:   ${GITHUB_SHA} -->"
+          } > "repo-b/${ZIEL_VERZEICHNIS}/HINWEIS.md"
+
+      - name: Eingefrorenen Abzug erzeugen
+        if: ${{ inputs.abzug == true }}
+        run: |
+          set -euo pipefail
+          # Der einzige zulässige Fall, in dem Inhalte doppelt vorliegen (6.6).
+          # Jede Datei trägt Datum und Commit-Prüfsumme im Kopf.
+          abzug="repo-b/${ZIEL_VERZEICHNIS}/abzug"
+          mkdir -p "$abzug"
+          datum=$(date -u +%Y-%m-%d)
+          while IFS= read -r pfad; do
+            [ -f "$pfad" ] || continue
+            ziel="$abzug/$(echo "$pfad" | tr '/' '_')"
+            pruefsumme=$(git log -1 --format=%H -- "$pfad")
+            {
+              echo "<!-- Eingefrorener Abzug aus ${GITHUB_REPOSITORY}"
+              echo "     Pfad:        $pfad"
+              echo "     Prüfsumme:   $pruefsumme"
+              echo "     Abzugsdatum: $datum"
+              echo "     Schild:      ${{ steps.schild.outputs.wert }} -->"
+              echo
+              cat "$pfad"
+            } > "$ziel"
+          done < <(grep -oE '`[^`]+\.(md|json|sh)`' docs/NACHWEISE.md | tr -d '`' | sort -u)
+
+      - name: Commit in Repo B erzeugen
+        working-directory: repo-b
+        run: |
+          set -euo pipefail
+          git config user.name "r3cosint-nachweise[bot]"
+          git config user.email "noreply@users.noreply.github.com"
+          git add "${ZIEL_VERZEICHNIS}"
+          if git diff --cached --quiet; then
+            echo "Keine Änderung am Nachweisverzeichnis. Kein Commit."
+            exit 0
+          fi
+          # Das Versionsschild steht im Betreff, damit später erkennbar ist,
+          # welcher Stand von Repo A welchen Stand von Repo B erzeugt hat (6.6).
+          git commit -m "nachweise: Stand ${{ steps.schild.outputs.wert }} aus r3cosint" \
+                     -m "Quell-Commit: ${GITHUB_SHA}" \
+                     -m "Erzeugt durch nachweise-uebertragen.yml. Nur ${ZIEL_VERZEICHNIS}/ berührt."
+          git push
