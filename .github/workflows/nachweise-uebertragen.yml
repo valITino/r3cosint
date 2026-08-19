@@ -75,14 +75,18 @@ jobs:
         run: |
           # Ein Verweis auf einen Zweig ist kein Nachweis (6.6). Findet sich einer,
           # bricht der Lauf ab, statt einen wertlosen Nachweis zu übertragen.
-          if grep -Eq 'blob/(main|master|HEAD)/' docs/NACHWEISE.md; then
+          # Geprüft werden ausschliesslich echte Verweisziele, nicht der Fliesstext:
+          # der erklärende Absatz nennt die unzulässige Form absichtlich.
+          ziele=$(grep -oE '\]\(https://github\.com/[^)]+\)' docs/NACHWEISE.md || true)
+          if printf '%s' "$ziele" | grep -Eq '/blob/(main|master|HEAD)/'; then
             echo "::error::Zweigverweis in docs/NACHWEISE.md gefunden. Nach 6.6 ist das kein Nachweis."
-            grep -nE 'blob/(main|master|HEAD)/' docs/NACHWEISE.md
+            printf '%s\n' "$ziele" | grep -E '/blob/(main|master|HEAD)/'
             exit 1
           fi
-          # Jeder Verweis trägt eine vollständige 40-stellige Prüfsumme.
-          if grep -Eq 'blob/[0-9a-f]{1,39}/' docs/NACHWEISE.md; then
-            echo "::error::Unvollständige Commit-Prüfsumme in docs/NACHWEISE.md."
+          # Jedes Verweisziel trägt eine vollständige 40-stellige Prüfsumme.
+          if printf '%s' "$ziele" | grep -Eqv '/blob/[0-9a-f]{40}/'; then
+            echo "::error::Verweisziel ohne vollständige 40-stellige Commit-Prüfsumme."
+            printf '%s\n' "$ziele" | grep -Ev '/blob/[0-9a-f]{40}/'
             exit 1
           fi
           anzahl=$(grep -cE '^\| .+ \| `.+` \|' docs/NACHWEISE.md || true)

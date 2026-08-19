@@ -77,9 +77,10 @@ anzahl=${#ARTEFAKTE[@]}
   echo "**Zur Form der Verweise.** Ein Verweis auf einen Zweig ändert sich mit jedem"
   echo "Commit und taugt nicht als Nachweis. Verwiesen wird deshalb über die"
   echo "40-stellige Prüfsumme des Commits, in dem das Artefakt **zuletzt geändert**"
-  echo "wurde. Ein Verweis auf \`blob/main/...\` ist kein Nachweis und kommt hier nicht"
-  echo "vor. Zeilenanker werden vermieden, weil Zeilen sich verschieben; verwiesen wird"
-  echo "auf die Datei beim Commit, ergänzt um den Namen des Abschnitts."
+  echo "wurde. Ein Verweis auf einen Zweig statt auf eine Prüfsumme ist kein Nachweis"
+  echo "und kommt hier nicht vor. Zeilenanker werden vermieden, weil Zeilen sich"
+  echo "verschieben; verwiesen wird auf die Datei beim Commit, ergänzt um den"
+  echo "Namen des Abschnitts."
   echo
   echo "Die angezeigte Kurzform der Prüfsumme ist nur die Beschriftung. Der Verweis"
   echo "selbst trägt die vollständigen 40 Stellen."
