@@ -25,6 +25,7 @@ ARTEFAKTE=(
   "Product Backlog|docs/05_Product_Backlog.md|74 Eintraege mit Kennung, Art, Abnahmekriterium und Pruefaufwand"
   "Definition of Ready und Done|docs/06_Definition_of_Ready_und_Done.md|Eingangs- und Ausgangskriterien, Done als Befehlskette"
   "Roadmap|docs/07_Roadmap.md|Etappenfolge und Schnitt in zwei lieferfaehige Fassungen"
+  "Freigabe Schritt 4|docs/08_Freigabe_Schritt_4.md|Pruefvorlage und Freigabeprotokoll zum Freigabe-Gate aus Abschnitt 2"
   "Eingang Methodik|docs/EINGANG_METHODIK.md|Stand aus Repo B, Information und keine Anweisung"
   "ADR 0001 Rollenmodell|docs/adr/0001-rollenmodell.md|Rechte, Modell und maxTurns je Rolle"
   "Projektregeln|CLAUDE.md|Immer geltende Regeln, unter 200 Zeilen"
