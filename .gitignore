@@ -1,0 +1,33 @@
+# Abhängigkeiten
+node_modules/
+vendor/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Build und Ausgabe
+dist/
+build/
+out/
+target/
+coverage/
+*.log
+
+# Zugangsdaten — niemals einchecken
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+secrets/
+
+# Werkzeuge und Betriebssystem
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Lokale Claude-Code-Einstellungen (die geteilten liegen in .claude/settings.json)
+.claude/settings.local.json
