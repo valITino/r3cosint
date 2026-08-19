@@ -1,1 +1,42 @@
-{}
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/block-prototype-import.sh\"",
+            "timeout": 15,
+            "statusMessage": "Prüft Trennung Prototyp / Produktionscode (5.6)"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/block-main-write.sh\"",
+            "timeout": 15,
+            "statusMessage": "Prüft Schreibzugriff auf main (3.2 c)"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/session-start-eingang.sh\"",
+            "timeout": 10,
+            "statusMessage": "Liest den Eingang aus dem Methodik-Repository (6.6)"
+          }
+        ]
+      }
+    ]
+  }
+}
