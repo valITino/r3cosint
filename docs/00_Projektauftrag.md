@@ -235,16 +235,18 @@ Diese Formulierung ist in der Sache nicht haltbar und muss ersetzt werden. Eine 
 
 Der Auftraggeber hat eine Priorisierung mit dem kantonalen Recht zuoberst verlangt. Die Recherche ergibt eine Abstufung, die den Kern seiner Vorgabe bestätigt, aber eine wichtige Aufteilung sichtbar macht.
 
-| Prio | Erlass | Gilt für |
+| Rang | Erlass | Gilt für |
 |---|---|---|
-| **1a** | **StPO** (Bund) | Daten **innerhalb eines hängigen Strafverfahrens**. Das kantonale Datenschutzgesetz ist hier ausdrücklich **nicht** anwendbar; es gilt das Verfahrensrecht |
-| **1b** | **PolG/BE**, BSG 551.1, vom 10.02.2019 | Polizeiliche Datenbearbeitung **ausserhalb** eines hängigen Verfahrens: Prävention, Gefahrenabwehr, Vorermittlung. Art. 2 Abs. 2 PolG behält für die Strafverfolgung die besonderen Bestimmungen vor |
-| **2** | **KDSG**, BSG 152.04, mit Datenschutzverordnung und Direktionsverordnung über Informationssicherheit und Datenschutz | Allgemeiner kantonaler Rahmen, subsidiär. Grundsätze: Verhältnismässigkeit, Zweckbindung, gesetzliche Grundlage, Informations- und Auskunftspflicht, Folgenabschätzung bei hohem Risiko, Meldepflicht bei Datenschutzverletzungen |
-| **3** | **Einführungsverordnung zur EU-Datenschutzrichtlinie 2016/680** | Schengen-relevante Bearbeitung |
-| **4** | **Archivierungsgesetz und -verordnung** des Kantons Bern | Nach dem Ende des Betriebszwecks: Archivierung oder Vernichtung |
+| **R1** | **StPO** (Bund) | Daten **innerhalb eines hängigen Strafverfahrens**. Das kantonale Datenschutzgesetz ist hier ausdrücklich **nicht** anwendbar; es gilt das Verfahrensrecht |
+| **R2** | **PolG/BE**, BSG 551.1, vom 10.02.2019 | Polizeiliche Datenbearbeitung **ausserhalb** eines hängigen Verfahrens: Prävention, Gefahrenabwehr, Vorermittlung. Art. 2 Abs. 2 PolG behält für die Strafverfolgung die besonderen Bestimmungen vor |
+| **R3** | **KDSG**, BSG 152.04, mit Datenschutzverordnung und Direktionsverordnung über Informationssicherheit und Datenschutz | Allgemeiner kantonaler Rahmen, subsidiär. Grundsätze: Verhältnismässigkeit, Zweckbindung, gesetzliche Grundlage, Informations- und Auskunftspflicht, Folgenabschätzung bei hohem Risiko, Meldepflicht bei Datenschutzverletzungen |
+| **R4** | **Einführungsverordnung zur EU-Datenschutzrichtlinie 2016/680** | Schengen-relevante Bearbeitung |
+| **R5** | **Archivierungsgesetz und -verordnung** des Kantons Bern | Nach dem Ende des Betriebszwecks: Archivierung oder Vernichtung |
 | — | revDSG des Bundes | Für kantonale Organe grundsätzlich **nicht** direkt anwendbar. Nicht als Grundlage heranziehen |
 
-**Warum die Aufteilung bei Prio 1 wichtig ist.** R3cOSINT wird überwiegend in laufenden Strafverfahren eingesetzt — dort greift die StPO, nicht das KDSG. Für Recherchen ohne konkreten Tatverdacht gilt dagegen das PolG. Da beide Fälle im selben System vorkommen, muss ein Fall bei der Eröffnung sein Regime tragen. Ohne dieses Feld lässt sich später nicht sagen, welche Löschregel für ihn gilt.
+**Warum die Aufteilung an der Spitze wichtig ist.** R3cOSINT wird überwiegend in laufenden Strafverfahren eingesetzt — dort greift die StPO (R1), nicht das KDSG. Für Recherchen ohne konkreten Tatverdacht gilt dagegen das PolG. Da beide Fälle im selben System vorkommen, muss ein Fall bei der Eröffnung sein Regime tragen. Ohne dieses Feld lässt sich später nicht sagen, welche Löschregel für ihn gilt.
+
+**Zur Bezeichnung:** Die Ränge heissen R1 bis R5 und nicht 1a, 1b, 2. Die Kürzel 1a, 1b und 2 sind in diesem Dokument für die Klassifizierungsstufen nach 5.8 reserviert. Eine Doppelbelegung würde sich in Backlog-Einträgen und Code als Verwechslung fortsetzen.
 
 **Hinweis zur Aktualität:** Die Totalrevision des KDSG wurde am 3. Dezember 2025 vom Grossen Rat in zweiter Lesung verabschiedet. Der Stand des Inkrafttretens ist von der GRC-Rolle zu prüfen; die Artikelnummern der geltenden Fassung sind vor Verwendung zu verifizieren.
 
@@ -294,6 +296,20 @@ Die Löschsperre ist die Sicherung gegen genau das Szenario, das der Auftraggebe
 
 **Wichtige Einordnung:** Das sind **betriebliche Voreinstellungen**, keine rechtliche Festlegung. Die Verjährung regelt die Verfolgbarkeit, nicht die Datenaufbewahrung; sie dient hier als nachvollziehbarer Massstab, weil es keinen näherliegenden gibt. Die Kantonspolizei Bern bestätigt oder korrigiert die Werte im Bearbeitungsreglement. Sie sind im System frei konfigurierbar und nirgends fest verdrahtet.
 
+**3b. Verhältnis zu den Aufbewahrungsklassen der Demo [ENTSCHIEDEN].** Die Demo führt eine Klasse A und B, das Konzeptdokument nennt bei der Falleröffnung eine Aufbewahrungsklasse. Der Auftraggeber hat die Auflösung delegiert. Entschieden:
+
+**Es gibt genau ein Feld, nicht zwei.** Bei der Falleröffnung wählt die ermittelnde Person die **Fallkategorie** aus der Tabelle oben. Die Prüffrist wird daraus **abgeleitet** und nicht separat erfasst. Die Klassen A und B entfallen als Eingabefeld.
+
+Drei Gründe:
+
+- Zwei Klassifizierungen für dieselbe Sache laufen auseinander. Sobald A und B neben den Fallkategorien stehen, gibt es Fälle, bei denen beide etwas anderes sagen — und dann ist unklar, welche gilt.
+- Die Fallkategorie kennt die ermittelnde Person ohnehin. Sie weiss, ob ein Vergehen oder ein Verbrechen vorliegt. Eine Frist in Jahren muss sie nicht kennen, und sie soll bei der Falleröffnung nicht über Art. 97 StGB nachdenken.
+- Die Frist ist damit an eine fachliche Tatsache gebunden statt an eine Verwaltungsentscheidung. Ändert sich später die rechtliche Würdigung, ändert sich die Frist automatisch mit — und das ist protokolliert.
+
+**Falls eine kurze Kennzeichnung in Listen gewünscht ist**, etwa für die Fallübersicht, wird sie aus der Kategorie **abgeleitet und angezeigt**, nie eingegeben. Ein abgeleitetes Etikett kann nicht widersprechen.
+
+**Die Archivierungsfrage bleibt davon getrennt.** Ob ein Fall archivwürdig ist, wird nicht bei der Eröffnung entschieden, sondern am Prüftermin — dort, wo der Inhalt bekannt ist. Das entspricht dem Archivierungsgesetz, das die Dauer nach Bedeutung und Informationsgehalt bemisst.
+
 **4. Was technisch zu bauen ist.**
 
 - Aufbewahrungsfrist als Konfiguration je Fallkategorie, nicht als Konstante im Code.
@@ -315,7 +331,7 @@ Lösung: **Ein eigener Verschlüsselungsschlüssel je Fall.** Die Falldaten werd
 
 **6. Was die Kantonspolizei Bern noch setzen muss:** die Bestätigung oder Korrektur der Werte aus Punkt 3 sowie die Zuordnung der Fallkategorien. Beides blockiert die Umsetzung nicht — die Mechanik wird mit den Startwerten gebaut und später umkonfiguriert.
 
-**3. Ein aktueller Punkt für die GRC-Rolle.** Das Bundesgericht hat im August 2026 Bestimmungen des Berner Polizeigesetzes zu Bodycams und automatisierter Fahrzeugfahndung aufgehoben und verlangt, dass die Löschung von **Nichttreffern** ausdrücklich im Gesetz verankert wird. Das berührt R3cOSINT an einer Stelle, an der es einen scheinbaren Widerspruch gibt: Das Konzeptdokument verlangt, dass **Negativbefunde zwingend im Protokoll erscheinen** (5.3), weil sie entlastend sein können.
+**7. Ein aktueller Punkt für die GRC-Rolle.** Das Bundesgericht hat im August 2026 Bestimmungen des Berner Polizeigesetzes zu Bodycams und automatisierter Fahrzeugfahndung aufgehoben und verlangt, dass die Löschung von **Nichttreffern** ausdrücklich im Gesetz verankert wird. Das berührt R3cOSINT an einer Stelle, an der es einen scheinbaren Widerspruch gibt: Das Konzeptdokument verlangt, dass **Negativbefunde zwingend im Protokoll erscheinen** (5.3), weil sie entlastend sein können.
 
 Die beiden Anforderungen widersprechen sich bei näherem Hinsehen nicht — es geht um verschiedene Sachverhalte: dort massenhaft erhobene Daten unbeteiligter Personen, hier eine dokumentierte Abfrage innerhalb eines konkreten Falls. Die GRC-Rolle soll diese Abgrenzung aber **ausdrücklich schriftlich festhalten**, weil die Frage im Verfahren mit hoher Wahrscheinlichkeit gestellt wird und eine vorbereitete Antwort besser ist als eine improvisierte.
 
@@ -355,7 +371,7 @@ Quelle: Konzeptdokument "KI-gestützte OSINT-Ermittlungsplattform", Version 1.0 
 
 **Darstellung, zwei bewusst getrennte Wege.** Mermaid beschreibt den Graphen als Text und ist damit versionierbar und zeilenweise vergleichbar; ab etwa 50 Knoten wird er unübersichtlich, deshalb erzeugt das System gefilterte Ausschnitte statt eines Gesamtbildes. draw.io für grosse Graphen und Druckqualität, von Hand nachbearbeitbar für Einvernahme oder Anklageschrift. draw.io liest Mermaid direkt ein, beide Wege sind durchgängig.
 
-**Datenhaltung:** PostgreSQL mit pgvector.
+**Datenhaltung:** PostgreSQL. Die Erweiterung `pgvector` nennt das Konzeptdokument für den Vektorindex der Gesichtserkennung; da dieses Modul gestrichen ist (5.18), wird sie **nicht automatisch übernommen**, sondern nur aufgenommen, wenn ein anderer Zweck sie rechtfertigt. Entscheid im Architekturentscheid.
 
 **Maltego wird nicht ersetzt und nicht automatisiert.** Das Konzeptdokument hat geprüft, ob sich Maltego Desktop fernsteuern lässt, um die dort lizenzierten Transforms zu nutzen. Ergebnis: kein dokumentierter, unterstützter Weg ohne Umgehung von Lizenzmechanismen. Darauf wird bewusst verzichtet; stattdessen direkter Zugriff auf die Anbieterschnittstellen, wo ohnehin Verträge bestehen. **Diese Entscheidung ist zu respektieren, nicht zu hinterfragen.** Maltego bleibt das manuelle Analysewerkzeug daneben.
 
@@ -427,10 +443,17 @@ Durchgängiger Weg vom Klonen des Repositories über ein weitestgehend automatis
 Die Aufgabe lautet damit nicht mehr "Prototyp bauen", sondern:
 
 1. **Bestandsaufnahme.** Die vorhandene Demo gegen den Umfang unten prüfen und die Lücken benennen.
-2. **Ergänzen.** Nicht abgedeckt sind erkennbar: Anmeldung und Setup, Fallübersicht mit Aufgaben und Kommentaren im Sinne von 5.8, API-Schlüsselverwaltung, Diagnosebereich, Malware- und Reverse-Engineering-Bereich.
+2. **Ergänzen.** Nicht abgedeckt sind erkennbar: Anmeldung und Setup, Fallübersicht mit Aufgaben und Kommentaren im Sinne von 5.8, **Bearbeitung im Graphen** (die Demo kann anzeigen und auswählen, aber keine Knoten und Kanten anlegen oder ändern), API-Schlüsselverwaltung, Diagnosebereich, Malware- und Reverse-Engineering-Bereich.
 3. **Freigeben.** Erst dann beginnt die Frontend-Implementierung.
 
 Die bestehende Demo wird ergänzt, nicht ersetzt. Sie enthält bereits abgestimmte Gestaltungsentscheidungen, die nicht ohne Anlass verworfen werden.
+
+**Was aus der Demo verbindlich ist — und was nicht.** Verbindlich sind Bildschirmfluss, Aufteilung der Ansichten, Benennungen und Interaktionsmuster. **Nicht verbindlich sind Einstellungen und Werte, die einem späteren Abschnitt dieses Auftrags widersprechen.** Zwei bekannte Fälle:
+
+- Die Demo bietet in den Einstellungen einen Umschalter zwischen lokalem Modell und Cloud. Das widerspricht 5.16, wonach der Betriebsmodus beim Start aus der Umgebungskonfiguration kommt und gerade nicht zur Laufzeit umgeschaltet wird, und 5.15, wonach die Produktionsumgebung konstruktiv keine Cloud-Zugangsdaten enthält. **Der Umschalter wird nicht übernommen.**
+- Die Demo verwendet Aufbewahrungsklassen A und B. Diese entfallen als Eingabefeld; erfasst wird die Fallkategorie nach 4.4, die Frist wird daraus abgeleitet. Begründung in 4.4, Punkt 3b.
+
+Im Zweifel gilt dieser Auftrag, nicht die Demo.
 
 Begründung, warum diese Reihenfolge und nicht umgekehrt: Fehler in Bedienführung und Informationsarchitektur sind im Prototyp in Minuten korrigiert und im fertigen Frontend in Tagen. Genau dort liegt der Hebel des menschlichen Anteils aus der 80/20-Aufteilung. Ein Prototyp ist zudem im Requirements Engineering eine anerkannte Technik, um Anforderungen zu ermitteln und zu validieren: Am laufenden Bild fällt auf, was in einer Anforderungsliste unsichtbar bleibt.
 
@@ -479,7 +502,19 @@ Begründung, warum diese Reihenfolge und nicht umgekehrt: Fehler in Bedienführu
 
 ### 5.7 Authentifizierung [GEKLÄRT]
 
-**Anmeldewege:** Google, Apple, E-Mail sowie SSO der Kantonspolizei Bern.
+**Anmeldewege [GEKLÄRT]:** Google, Apple, E-Mail sowie SSO der Kantonspolizei Bern. **Alle vier gelten in beiden Umgebungen**, auch in Produktion.
+
+**Auflösung des scheinbaren Widerspruchs zu 5.4.** Die Verfahrensgarantien verlangen "Kein Rückkanal" und eine Positivliste für Verbindungen nach aussen. Eine Anmeldung über Google oder Apple erzeugt Verkehr zu einem Dritten und sieht auf den ersten Blick wie ein Verstoss aus. Sie ist keiner, sofern drei Bedingungen eingehalten werden:
+
+1. **Begriffsklärung: Anmeldung ist kein Rückkanal.** Die Garantie richtet sich gegen unaufgeforderten Abfluss — Nutzungsstatistik, Fehlerberichte, Aktualisierungsabfragen. Eine Anmeldung ist ein vom Benutzer ausgelöster, zweckgebundener Vorgang mit bekanntem Inhalt. Diese Unterscheidung gehört ausdrücklich in die Umsetzung, sonst liest eine spätere Prüfung die beiden Regeln als Widerspruch.
+2. **Die Identitätsanbieter stehen auf der Positivliste.** Ihre Endpunkte werden dort namentlich eingetragen, wie jede andere zulässige Gegenstelle. Was nicht eingetragen ist, bleibt gesperrt.
+3. **Jede Anmeldung wird protokolliert**, mit Zeitpunkt, Anbieter und Konto. Der Anbieter erfährt, dass sich jemand angemeldet hat, nie einen Fallinhalt — über den Anmeldeweg fliessen keine Ermittlungsdaten.
+
+**Trennung von Anmeldung und Berechtigung — die entscheidende Regel.** Der Identitätsanbieter beantwortet ausschliesslich, **wer** jemand ist. Er beantwortet nie, **was** jemand darf. Rollen (5.8), Klassifizierungsberechtigungen und die Zugehörigkeit zur Organisationseinheit kommen ausschliesslich aus der internen Benutzerverwaltung.
+
+Praktische Folge: Wer sich mit einem neuen Google-Konto anmeldet und intern nicht zugewiesen ist, erhält **keinen Zugriff auf irgendetwas** — er ist angemeldet und sieht eine leere Anwendung. Damit kann kein externer Anbieter durch eine geänderte Angabe Berechtigungen im System bewirken.
+
+**Auflage für die Produktionsumgebung.** Konten, die über Google, Apple oder E-Mail angemeldet werden, müssen einen registrierten Passkey besitzen. Bei diesen Wegen hängt die Sicherheit sonst allein am fremden Konto. Beim SSO der Kantonspolizei Bern gilt weiterhin deren MFA-Richtlinie.
 
 **Protokollwahl für den KapoBE-SSO [KORRIGIERT].** Der Auftraggeber nennt Microsoft Entra ID und vermutet SAML. Entra ID unterstützt SAML 2.0 und OpenID Connect gleichermassen. Microsoft empfiehlt für Neuentwicklungen ausdrücklich OpenID Connect; SAML ist die Wahl für Bestandsanwendungen oder wenn ein Kunde es vorschreibt.
 
@@ -540,6 +575,10 @@ Bewusst getrennt: Der Administrator ist eine technische Rolle. Er erhält **kein
 | **Klassifizierung 1b (Ermittlungen)** | Nur Benutzer mit Berechtigung 1b und im ZUB Team und Einheiten eingetragene Benutzer können die Entität suchen, finden und anzeigen |
 | **Klassifizierung 2 (Geheim)** | Nur Benutzer mit Berechtigung 2 und im ZUB Team und Einheiten eingetragene Benutzer können die Entität suchen, finden und anzeigen |
 | **verborgen** | Markierung für den Austausch zwischen Rialto und ELS. **Keine Klassifizierungsfunktion** — wirkt nicht auf Zugriffsrechte |
+
+**Verhältnis von 1b zu 2 [GEKLÄRT]:** Funktional verhalten sich beide gleich — gleiche Wirkung auf Suche, Anzeige, Export und Protokollierung. Der Unterschied liegt allein in der erforderlichen Berechtigungsstufe.
+
+Daraus folgt eine Umsetzungsvorgabe: Die Stufen werden **nicht einzeln im Code behandelt**. Hinterlegt wird eine Zuordnung von Stufe auf Sichtbarkeitsregel und erforderliche Berechtigung. Es gibt genau zwei Sichtbarkeitsregeln — "Entität auffindbar, definierte Inhalte verdeckt" für 1a und "Entität nicht auffindbar" für 1b und 2. Kommt später eine Stufe dazu, ist das eine Konfigurationszeile und keine Codeänderung.
 
 **Der Unterschied zwischen 1a und den höheren Stufen ist umsetzungsrelevant und wird leicht übersehen.** Bei 1a bleibt die Entität auffindbar, nur bestimmte Inhalte sind verdeckt. Ab 1b ist die Entität selbst nicht auffindbar. Das bedeutet: **Die Einschränkung greift im Suchindex, nicht in der Oberfläche.** Eine mit 1b klassifizierte Entität darf in Trefferlisten, Autovervollständigung, Graphnachbarschaften, Exporten und Statistiken gar nicht erst erscheinen. Ein nachträgliches Ausblenden in der Anzeige wäre eine Scheinlösung, weil die Existenz der Entität aus Trefferzahlen und Graphkanten ableitbar bliebe.
 
@@ -752,7 +791,9 @@ Sobald Produktion läuft, gilt für Fehlersuche dort der normale Weg: Der Diagno
 
 ### 5.17 Quellenverzeichnis und Anbindungsregeln [aus dem Konzeptdokument]
 
-Das Konzeptdokument führt in Anhang A **39 Werkzeuge in neun Gruppen** auf. Abzüglich VirusTotal (gestrichen, siehe unten) und der Werkzeuge des entfallenen Gesichtserkennungsmoduls (5.18) verbleiben rund 32 anzubindende Quellen: Bedrohungsinformationen, Netz- und Infrastrukturanalyse, Schwachstellen, Kryptowährungen, Personen und Identität, Sanktionen und Register, Darknet und Leaks, Geo und Verkehr, Beweissicherung und Darstellung. 28 davon kostenlos, 4 durch bestehende Verträge oder einmalig abgedeckt, 3 mit geringen laufenden Kosten, 4 mit offener Beschaffung.
+Das Konzeptdokument nennt zwei Zählungen, die auseinanderzuhalten sind: **rund 33 Quellen** auf dem Deckblatt und **39 Werkzeuge in neun Gruppen** in Anhang A. Der Unterschied erklärt sich daraus, dass Anhang A auch Werkzeuge ohne Quellencharakter aufführt, etwa Mermaid, draw.io, exiftool und Hunchly. Massgeblich ist Anhang A mit der dortigen Kostenaufteilung: 28 kostenlos, 4 durch bestehende Verträge oder einmalig abgedeckt, 3 mit geringen laufenden Kosten, 4 mit offener Beschaffung.
+
+**Abzüge aus diesem Projekt:** VirusTotal entfällt (siehe unten), ebenso die Werkzeuge des gestrichenen Gesichtserkennungsmoduls (5.18). Die genaue Restzahl ergibt sich erst aus der Durchsicht des Anhangs im Backlog und wird dort festgehalten. **In diesem Dokument wird keine abgeleitete Gesamtzahl geführt**, weil jede solche Zahl bei der nächsten Streichung wieder falsch wäre.
 
 Dieses Verzeichnis ist die verbindliche Quellenliste. Es wird nicht erweitert und nicht gekürzt, ausser der Auftraggeber weist es an. Ausnahme: die Social-Media-Erweiterung in 5.11, die im Konzept fehlt und vom Auftraggeber ausdrücklich nachgefordert wurde.
 
@@ -761,6 +802,8 @@ Dieses Verzeichnis ist die verbindliche Quellenliste. Es wird nicht erweitert un
 **Drei Anbindungsregeln mit Vorrang vor Bequemlichkeit:**
 
 - **VirusTotal — [GESTRICHEN].** Der Auftraggeber verzichtet vollständig. Die kostenlose Schnittstelle ist laut Nutzungsbedingungen für reine Abfrageabläufe ohne Beitrag neuer Dateien und für dienstliche Zwecke nicht zugelassen, und eine kostenpflichtige Vereinbarung wird nicht geschlossen. **VirusTotal wird nicht angebunden, auch nicht deaktiviert vorbereitet.** Kein Modul, keine Konfigurationsoption, kein Platzhalter. Das Konzeptdokument hält selbst fest, dass abuse.ch und das eigene MISP einen erheblichen Teil abdecken — der Verzicht ist damit fachlich vertretbar.
+
+**Zur bestehenden Demo:** Der Werkzeugkatalog der Demo führt VirusTotal als gesperrten Eintrag mit Begründung. Das bleibt dort unangetastet, wird aber **nicht in die Anwendung überführt**. Dieselbe Regelung gilt für die Ansicht Gesichtsvergleich (5.18): Was die Demo zeigt, ist Dokumentation eines Zwischenstands, keine Umfangszusage.
 - **urlscan.io.** Scans sind dort standardmässig öffentlich einsehbar. "Nicht öffentlich" ist fest als Grundeinstellung hinterlegt; eine öffentliche Abfrage erfordert eine ausdrückliche Übersteuerung im Einzelfall.
 - **Schlüsselweitergabe [GEKLÄRT].** Die Zugänge beschafft der Auftraggeber für das Team; ein Teil ist bereits über die Kantonspolizei Bern vorhanden. Die Prüfung der Vertragsbedingungen ist damit für die Entwicklung kein Thema mehr und wird beim Übergang in die offizielle Beschaffung erneut aufgenommen. Die Architektur bleibt unverändert: Anbieterschlüssel liegen ausschliesslich serverseitig, die Ermittelnden melden sich persönlich am Server an. Damit bleibt jede Abfrage einer Person zurechenbar, obwohl nach aussen ein gemeinsamer Schlüssel verwendet wird.
 
@@ -930,7 +973,7 @@ Nach IREB gilt: nicht validierte Anforderungen sind wertlos, und Validierung beg
 
 Eingesetzte Techniken:
 
-- **Reviewtechniken** — Walkthrough der Backlog-Einträge vor dem Sprint, Inspektion der Anforderungen aus Sicht Recht (GRC-Rolle) und Testbarkeit (Test Manager).
+- **Reviewtechniken** — Walkthrough der Backlog-Einträge vor dem Sprint, Inspektion der Anforderungen aus Sicht Recht (GRC-Rolle) und Testbarkeit (Static Software Tester).
 - **Explorationstechniken** — der interaktive Prototyp aus 5.6 ist im Sinne von IREB genau das: ein exploratives Arbeitsprodukt zur Validierung von Anforderungen am laufenden Bild. Das ist der methodische Grund, warum er vor dem Frontend steht, nicht nur ein praktischer.
 
 Fehlerfindung und Korrektur bleiben getrennt: Im Review wird gesammelt, nicht diskutiert und nicht gelöst. Korrekturen entstehen danach als eigene Einträge.
@@ -1003,6 +1046,9 @@ Quellen: IREB CPRE Foundation Level, Lehrplan v3.3.0, und Glinz-Glossar; Scrum G
 | C | SSO-Protokoll | Moderne Variante bestätigt, also OIDC | 5.7 |
 | D | Klassifizierungsschema | Schema der KapoBE übernommen: nicht klassifiziert, 1a, 1b, 2, verborgen | 5.8 |
 | 16 | Open WebUI oder eigene Anwendung | Open WebUI war ein erster Entwurf und entfällt; R3cOSINT ist eigenständig | 9.1, 5.1 |
+| N | Anmeldewege Google, Apple, E-Mail | Gelten in beiden Umgebungen, auch in Produktion | 5.7 |
+| O | Aufbewahrungsklassen A und B | Entfallen; erfasst wird die Fallkategorie, die Frist wird abgeleitet | 4.4 |
+| P | Klassifizierung 2 gegenüber 1b | Funktional gleich, nur andere Berechtigungsstufe | 5.8 |
 | E | Abgrenzung Social Media | Vollständig, wird nicht erneut aufgerollt | 5.11 |
 | F | Rechtsregime | Prioritätsordnung mit StPO und PolG/BE zuoberst, KDSG subsidiär | 4.4 |
 | G | Gesichtserkennung | Vollständig gestrichen | 5.18 |
@@ -1019,6 +1065,7 @@ Von den ursprünglich elf Punkten sind zehn erledigt. **Kein offener Punkt block
 | C-Rest | Anbindungsdaten des Entra-ID-Mandanten (Liste in 5.7) | Nur den Wechsel vom lokalen OIDC-Provider auf den echten Mandanten. Nicht die Entwicklung | KapoBE Informatik |
 | H-Rest | Bestätigung oder Korrektur der Fristen-Startwerte aus 4.4 | Nichts. Gebaut wird mit den Startwerten, spätere Änderung ist Konfiguration | KapoBE, Bearbeitungsreglement |
 | L | Inkrafttreten der KDSG-Totalrevision und Artikelnummern der geltenden Fassung | Konformitätsanalyse (4.4) | GRC-Rolle |
+Die Punkte N, O und P sind beantwortet und in 7.1 nachgeführt.
 | M | Bestätigung der Umfangsauflösung aus 9.1 | Bereits erteilt; hier nur als erledigt vermerkt | — |
 
 **Erledigt und aus der Liste entfernt:** Projektdokument (A), Kapazität (B), SSO-Protokoll (C), Klassifizierungsschema und dessen Semantik (D), Abgrenzung Social Media (E), Datenschutzregime (F), Datenschutz-Folgenabschätzung für Biometrie (G — entfällt mit dem Modul), Aufbewahrungsgrundlage (H), VirusTotal (I — Verzicht), Erkennungsverfahren und Galerienverzeichnis (J — entfallen), Schlüsselweitergabe (K — Beschaffung durch den Auftraggeber).
@@ -1064,6 +1111,10 @@ R3cOSINT ist kein Studienprojekt, das zufällig einen Praxisbezug hat, sondern e
 | Planung nur nach Scrum | Requirements Engineering nach IREB CPRE FL vorgeschaltet und integriert | Ein Product Backlog ist eine Dokumentationsstruktur, kein Requirements Engineering. Ohne RE gibt es eine Reihenfolge, aber keine geprüften Anforderungen |
 | Stakeholderliste, Glossar, Kontextmodell fehlten | Als Arbeitsprodukte ergänzt | IREB-Arbeitsprodukte für einen partizipativen RE-Prozess; das Glossar ist hier besonders wichtig, weil Begriffe rechtliche Bedeutung tragen |
 | Keine Definition of Ready | Ergänzt, abgeleitet aus den IREB-Qualitätskriterien | Ein Eintrag ohne testbares Abnahmekriterium erzeugt sauberen Code für das falsche Problem |
+| Anmeldewege nur in Test vermutet | Gelten in beiden Umgebungen. Scheinwiderspruch zu "Kein Rückkanal" ausdrücklich aufgelöst, Trennung von Anmeldung und Berechtigung festgeschrieben, Passkey-Pflicht in Produktion | Entscheid des Auftraggebers. Ohne die Auflösung liest eine spätere Prüfung 5.4 und 5.7 als Widerspruch |
+| Aufbewahrungsklassen A und B neben Fallkategorien | Auf ein Feld reduziert; die Frist wird aus der Fallkategorie abgeleitet | Zwei Klassifizierungen für dieselbe Sache laufen auseinander |
+| Klassifizierungsstufen einzeln im Code | Zuordnung Stufe auf Sichtbarkeitsregel und Berechtigung, nur zwei Regeln | 1b und 2 verhalten sich gleich; eine spätere Stufe soll eine Konfigurationszeile sein |
+| Neun Befunde aus der Verständnisprüfung | Behoben: Nummerierung 4.4, Rolle Test Manager, Quellen-Arithmetik, pgvector, Löschkonflikt in 9.2, Kollision 1a/1b, VirusTotal in der Demo, Verbindlichkeit der Demo, Graph-Bearbeitung in der Lückenliste | Session 0 in Claude Code hat sie gemeldet. Fünf davon waren Artefakte früherer Überarbeitungen dieses Dokuments |
 | Datenmodell und OSINT-Tools waren offen | Aus dem Konzeptdokument übernommen: FollowTheMoney, STIX 2.1, W3C PROV, 39 Werkzeuge | Konzept liegt nun vor |
 | CASE/UCO als Exportformat | Zurückgenommen zugunsten von STIX 2.1 und FollowTheMoney | Das Konzept hat besser begründet gewählt: nativ zu MISP und OpenSanctions |
 | Platzhalter-Klassifizierung | Durch das echte KapoBE-Schema ersetzt | Vom Auftraggeber geliefert |
@@ -1133,6 +1184,7 @@ Diese Aufteilung ist ein Vorschlag des Product Owners an den Auftraggeber, keine
 | Gesichtserkennung | fehlte | eigenes Kapitel | **Vom Auftraggeber gestrichen.** Kapitel 10 des Konzepts bleibt als Grundlage erhalten, falls es zurückkommt (5.18) |
 | VirusTotal | nicht behandelt | Modul deaktiviert ausliefern | **Vom Auftraggeber gestrichen.** Gar nicht erst anbinden (5.17) |
 | Maltego automatisieren | nicht behandelt | geprüft und bewusst verworfen | **Konzept übernommen.** Nicht erneut prüfen (5.1) |
+| Automatische Löschung | "Nichts wird automatisch gelöscht", Fristen lösen eine Aufgabe aus | Entscheid 8: Fristen bestimmen, wann Daten automatisch gelöscht werden | **Auftrag setzt sich durch.** Automatisches Löschen ohne menschlichen Entscheid ist bei laufenden Verfahren zu riskant; die Pflicht, nicht mehr benötigte Daten zu vernichten, wird über den erzwungenen Prüftermin erfüllt (4.4) |
 
 ### 9.3 Wo dieses Dokument über das Konzept hinausgeht
 
