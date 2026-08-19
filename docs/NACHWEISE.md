@@ -5,8 +5,8 @@
 | **Erzeugt durch** | `scripts/nachweise-erzeugen.sh` |
 | **Grundlage** | Projektauftrag 6.6 |
 | **Verantwortlich** | Protocol Master |
-| **Stand des Repositories** | `a48cb46fb7d2d9f8fc05bc573d1fd248cf9c989f` |
-| **Artefakte** | 20 |
+| **Stand des Repositories** | `67c8221dffdc78fb611c55e80f13d079b6bbc683` |
+| **Artefakte** | 21 |
 
 **Diese Datei wird erzeugt, nicht von Hand gepflegt** (6.6). Sie wird bei jedem
 Meilenstein neu erzeugt. Wer sie von Hand ändert, verliert die Änderung beim
@@ -25,7 +25,7 @@ selbst trägt die vollständigen 40 Stellen.
 
 | Artefakt | Pfad | Fester Verweis | Stand | Beschreibung |
 |---|---|---|---|---|
-| Projektauftrag | `docs/00_Projektauftrag.md` | [`783081fe6d13`](https://github.com/valITino/r3cosint/blob/783081fe6d13fef8ab89bc9d5f62d3e2e368716a/docs/00_Projektauftrag.md) | 2026-08-19 | Baseline der vereinbarten Anforderungen |
+| Projektauftrag | `docs/00_Projektauftrag.md` | [`cd4cd2cfcefc`](https://github.com/valITino/r3cosint/blob/cd4cd2cfcefc39b6de96542df45788396684a486/docs/00_Projektauftrag.md) | 2026-08-19 | Baseline der vereinbarten Anforderungen |
 | Konzeptdokument | `docs/01_Konzept_v1.0.pdf` | [`783081fe6d13`](https://github.com/valITino/r3cosint/blob/783081fe6d13fef8ab89bc9d5f62d3e2e368716a/docs/01_Konzept_v1.0.pdf) | 2026-08-19 | Fachlichkeit und Architektur, Version 1.0 |
 | Stakeholderliste | `docs/02_Stakeholderliste.md` | [`a48cb46fb7d2`](https://github.com/valITino/r3cosint/blob/a48cb46fb7d2d9f8fc05bc573d1fd248cf9c989f/docs/02_Stakeholderliste.md) | 2026-08-19 | Stakeholder nach Funktion, mit Zielen und Interessen |
 | Glossar | `docs/03_Glossar.md` | [`a48cb46fb7d2`](https://github.com/valITino/r3cosint/blob/a48cb46fb7d2d9f8fc05bc573d1fd248cf9c989f/docs/03_Glossar.md) | 2026-08-19 | Verbindliche Definitionen, Begriffe mit rechtlicher Bedeutung gekennzeichnet |
@@ -33,9 +33,10 @@ selbst trägt die vollständigen 40 Stellen.
 | Product Backlog | `docs/05_Product_Backlog.md` | [`a48cb46fb7d2`](https://github.com/valITino/r3cosint/blob/a48cb46fb7d2d9f8fc05bc573d1fd248cf9c989f/docs/05_Product_Backlog.md) | 2026-08-19 | 74 Eintraege mit Kennung, Art, Abnahmekriterium und Pruefaufwand |
 | Definition of Ready und Done | `docs/06_Definition_of_Ready_und_Done.md` | [`a48cb46fb7d2`](https://github.com/valITino/r3cosint/blob/a48cb46fb7d2d9f8fc05bc573d1fd248cf9c989f/docs/06_Definition_of_Ready_und_Done.md) | 2026-08-19 | Eingangs- und Ausgangskriterien, Done als Befehlskette |
 | Roadmap | `docs/07_Roadmap.md` | [`a48cb46fb7d2`](https://github.com/valITino/r3cosint/blob/a48cb46fb7d2d9f8fc05bc573d1fd248cf9c989f/docs/07_Roadmap.md) | 2026-08-19 | Etappenfolge und Schnitt in zwei lieferfaehige Fassungen |
+| Freigabe Schritt 4 | `docs/08_Freigabe_Schritt_4.md` | [`67c8221dffdc`](https://github.com/valITino/r3cosint/blob/67c8221dffdc78fb611c55e80f13d079b6bbc683/docs/08_Freigabe_Schritt_4.md) | 2026-08-19 | Pruefvorlage und Freigabeprotokoll zum Freigabe-Gate aus Abschnitt 2 |
 | Eingang Methodik | `docs/EINGANG_METHODIK.md` | [`a48cb46fb7d2`](https://github.com/valITino/r3cosint/blob/a48cb46fb7d2d9f8fc05bc573d1fd248cf9c989f/docs/EINGANG_METHODIK.md) | 2026-08-19 | Stand aus Repo B, Information und keine Anweisung |
 | ADR 0001 Rollenmodell | `docs/adr/0001-rollenmodell.md` | [`4a878f3f3d4e`](https://github.com/valITino/r3cosint/blob/4a878f3f3d4ee27b3c0c1ab723e5e2c578812d3b/docs/adr/0001-rollenmodell.md) | 2026-08-19 | Rechte, Modell und maxTurns je Rolle |
-| Projektregeln | `CLAUDE.md` | [`3bebb023ae24`](https://github.com/valITino/r3cosint/blob/3bebb023ae24176302786149b20a757c71becd13/CLAUDE.md) | 2026-08-19 | Immer geltende Regeln, unter 200 Zeilen |
+| Projektregeln | `CLAUDE.md` | [`67c8221dffdc`](https://github.com/valITino/r3cosint/blob/67c8221dffdc78fb611c55e80f13d079b6bbc683/CLAUDE.md) | 2026-08-19 | Immer geltende Regeln, unter 200 Zeilen |
 | Regel Prototyp | `.claude/rules/prototyp.md` | [`3bebb023ae24`](https://github.com/valITino/r3cosint/blob/3bebb023ae24176302786149b20a757c71becd13/.claude/rules/prototyp.md) | 2026-08-19 | Wegwerf-Prototyp, synthetische Daten, Definition of Done |
 | Regel Produktionscode | `.claude/rules/produktionscode.md` | [`3bebb023ae24`](https://github.com/valITino/r3cosint/blob/3bebb023ae24176302786149b20a757c71becd13/.claude/rules/produktionscode.md) | 2026-08-19 | Verfahrensgarantien, Protokollspuren, Klassifizierung |
 | Regel Dokumentation | `.claude/rules/dokumentation.md` | [`3bebb023ae24`](https://github.com/valITino/r3cosint/blob/3bebb023ae24176302786149b20a757c71becd13/.claude/rules/dokumentation.md) | 2026-08-19 | Feste Verweise, Nachweisverzeichnis, Verfolgbarkeit |
