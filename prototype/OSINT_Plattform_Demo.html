@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>OSINT-Ermittlungsplattform — Interaktive Demo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#0F1B2D;--slate:#33475B;--muted:#6B7C93;--line:#DDE4EC;--soft:#F4F7FA;
+--paper:#fff;--teal:#1D5C7A;--tealL:#E3EEF3;--amber:#B0761B;--amberL:#FBF0DC;
+--red:#9E3527;--redL:#FAE8E5;--green:#2C6E52;--greenL:#E4F0EA}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+background:var(--soft);color:var(--ink);font-size:13px;line-height:1.5;overflow:hidden}
+.app{display:grid;grid-template-columns:208px 1fr;grid-template-rows:52px 40px 1fr;
+height:100vh;grid-template-areas:"brand top" "nav step" "nav main"}
+.brand{grid-area:brand;background:var(--ink);color:#fff;display:flex;align-items:center;padding:0 15px;gap:9px}
+.brand .dot{width:8px;height:8px;border-radius:50%;background:#4FD1A5}
+.brand b{font-size:11.5px;font-weight:600}
+.top{grid-area:top;background:var(--paper);border-bottom:1px solid var(--line);
+display:flex;align-items:center;padding:0 15px;gap:12px}
+.chip{display:flex;align-items:center;gap:9px;background:var(--tealL);border:1px solid var(--teal);
+border-radius:5px;padding:4px 10px;cursor:pointer}
+.chip:hover{background:#d5e6ee}
+.chip .k{font-size:8.5px;letter-spacing:1px;color:var(--teal);font-weight:700}
+.chip .v{font-size:11.5px;font-weight:700}
+.chip .sep{width:1px;height:16px;background:#b9d2de}
+.chip .m{font-size:10px;color:var(--slate);line-height:1.3}
+.sp{flex:1}
+.egr{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--slate);
+background:var(--soft);padding:4px 10px;border-radius:12px;cursor:pointer}
+.egr .d{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.meter{min-width:112px}
+.meter .l{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-bottom:3px}
+.meter .b{height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+.meter .f{height:100%;background:var(--teal);transition:.6s;width:12%}
+.meter.w .f{background:var(--amber)}
+.who{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--slate)}
+.av{width:25px;height:25px;border-radius:50%;background:var(--ink);color:#fff;
+display:grid;place-items:center;font-size:9.5px;font-weight:700}
+.step{grid-area:step;background:var(--paper);border-bottom:1px solid var(--line);
+display:flex;align-items:center;padding:0 15px;overflow-x:auto}
+.st{display:flex;align-items:center;gap:6px;padding:0 12px 0 0;font-size:10.5px;color:var(--muted);white-space:nowrap}
+.st .n{width:17px;height:17px;border-radius:50%;background:var(--line);color:var(--muted);
+display:grid;place-items:center;font-size:9px;font-weight:700;flex-shrink:0}
+.st.dn .n{background:var(--green);color:#fff}.st.dn{color:var(--slate)}
+.st.cu .n{background:var(--amber);color:#fff;box-shadow:0 0 0 3px var(--amberL)}
+.st.cu{color:var(--amber);font-weight:700}
+.st .ar{color:var(--line);margin-left:5px}
+.rnd{margin-left:auto;display:flex;gap:4px;align-items:center;font-size:10px;color:var(--muted)}
+.rb{padding:2.5px 9px;border-radius:11px;border:1px solid var(--line);cursor:pointer;font-size:10px}
+.rb:hover{border-color:var(--teal)}
+.rb.on{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:700}
+.rb.dis{opacity:.35;cursor:not-allowed}
+.nav{grid-area:nav;background:var(--paper);border-right:1px solid var(--line);
+padding:10px 0;display:flex;flex-direction:column;overflow-y:auto}
+.nav .g{font-size:8px;letter-spacing:1.2px;color:var(--muted);padding:11px 15px 4px;font-weight:700}
+.nav a{display:flex;align-items:center;gap:9px;padding:6.5px 15px;color:var(--slate);
+font-size:12px;cursor:pointer;border-left:2.5px solid transparent}
+.nav a:hover{background:var(--soft)}
+.nav a.on{background:var(--tealL);color:var(--teal);font-weight:700;border-left-color:var(--teal)}
+.nav a .c{margin-left:auto;background:var(--line);color:var(--slate);border-radius:9px;
+padding:1px 6px;font-size:9px;font-weight:700}
+.nav a .c.lk{background:var(--redL);color:var(--red)}
+.nav .ft{margin-top:auto;padding:11px 15px;border-top:1px solid var(--line);
+font-size:9.5px;color:var(--muted);line-height:1.5;cursor:pointer}
+.nav .ft:hover{background:var(--soft)}
+.main{grid-area:main;display:grid;grid-template-columns:1fr 368px;overflow:hidden}
+.work{overflow-y:auto;padding:14px 16px}
+.jr{background:#0C1626;color:#D8E2ED;display:flex;flex-direction:column;overflow:hidden}
+.hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:11px;gap:10px}
+.hd h2{font-size:15px}
+.hd .s{font-size:10.5px;color:var(--muted);margin-top:2px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:13px;margin-bottom:12px}
+.card>.t{font-size:8.5px;letter-spacing:1.1px;color:var(--muted);font-weight:700;margin-bottom:9px}
+.ask{display:flex;gap:8px}
+.ask textarea{flex:1;border:1px solid var(--line);border-radius:5px;padding:8px 10px;
+font-family:inherit;font-size:12px;resize:none;height:52px;color:var(--ink)}
+.ask textarea:focus{outline:none;border-color:var(--teal)}
+.btn{background:var(--teal);color:#fff;border:none;border-radius:5px;padding:7px 15px;
+font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.btn:hover{filter:brightness(1.12)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn.g{background:var(--green)}.btn.r{background:var(--red)}
+.btn.o{background:var(--paper);color:var(--slate);border:1px solid var(--line)}
+.btn.o:hover{background:var(--soft);filter:none}
+.btn.sm{padding:5px 11px;font-size:11px}
+.hints{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap}
+.hint{background:var(--soft);border:1px solid var(--line);border-radius:11px;
+padding:3.5px 9px;font-size:10.5px;color:var(--slate);cursor:pointer}
+.hint:hover{border-color:var(--teal);color:var(--teal)}
+.appr{border:1.5px solid var(--amber);background:var(--amberL);border-radius:7px;padding:13px;margin-bottom:12px}
+.appr .h{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.badge{background:var(--amber);color:#fff;font-size:8.5px;font-weight:700;padding:2.5px 7px;
+border-radius:3px;letter-spacing:.6px}
+.appr .h b{font-size:12.5px;color:#7A5210}
+.plan{background:var(--paper);border-radius:5px;padding:9px;margin-bottom:9px}
+.pr{display:flex;align-items:center;gap:9px;padding:5px 0;font-size:11.5px;border-bottom:1px solid var(--soft)}
+.pr:last-child{border:none}
+.pr .n{width:16px;height:16px;border-radius:50%;background:var(--tealL);color:var(--teal);
+display:grid;place-items:center;font-size:8.5px;font-weight:700;flex-shrink:0}
+.pr input{width:14px;height:14px;accent-color:var(--teal);cursor:pointer}
+.pr code{font-family:ui-monospace,Menlo,monospace;font-size:10.5px}
+.pr .tg{margin-left:auto;font-size:9px;padding:2px 6px;border-radius:3px;font-weight:700;white-space:nowrap}
+.free{background:var(--greenL);color:var(--green)}
+.cost{background:var(--amberL);color:var(--amber);border:1px solid #e5cb96}
+.extv{background:var(--redL);color:var(--red)}
+.sum{display:flex;gap:15px;font-size:11px;color:#7A5210;margin-bottom:10px;flex-wrap:wrap}
+.sum b{color:#5C3D0C}
+.acts{display:flex;gap:7px;flex-wrap:wrap}
+.gw{background:var(--paper);border:1px solid var(--line);border-radius:7px;overflow:hidden;margin-bottom:12px}
+.gb{display:flex;align-items:center;padding:8px 11px;border-bottom:1px solid var(--line);gap:9px}
+.gb .t{font-size:8.5px;letter-spacing:1.1px;color:var(--muted);font-weight:700}
+.gb input.srch{margin-left:auto;border:1px solid var(--line);border-radius:5px;padding:4px 9px;
+font-size:11px;font-family:inherit;width:130px}
+.gb input.srch:focus{outline:none;border-color:var(--teal)}
+.tb{display:flex;gap:4px;background:var(--soft);padding:2.5px;border-radius:6px}
+.gt{font-size:11px;padding:4px 11px;border-radius:4px;color:var(--slate);cursor:pointer}
+.gt.on{background:var(--paper);color:var(--teal);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.07)}
+.lg{display:flex;gap:12px;padding:7px 11px;border-top:1px solid var(--line);
+font-size:10px;color:var(--muted);flex-wrap:wrap}
+.lg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px}
+.nd{cursor:pointer}.nd:hover rect{stroke-width:2.4}
+table.et{width:100%;border-collapse:collapse;font-size:11.5px}
+table.et th{text-align:left;padding:7px 9px;background:var(--soft);color:var(--slate);
+font-size:9px;letter-spacing:.5px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap}
+table.et th:hover{color:var(--teal)}
+table.et th .sa{color:var(--teal);margin-left:3px}
+table.et td{padding:6px 9px;border-bottom:1px solid var(--soft);vertical-align:top}
+table.et tr{cursor:pointer}
+table.et tr:hover td{background:var(--soft)}
+table.et tr.sel td{background:var(--tealL)}
+.pill{font-size:9px;padding:1.5px 6px;border-radius:3px;font-weight:700;white-space:nowrap}
+.p-src{background:var(--tealL);color:var(--teal)}.p-own{background:var(--greenL);color:var(--green)}
+.p-bad{background:var(--redL);color:var(--red)}.p-inf{background:var(--soft);color:var(--muted);border:1px dashed var(--muted)}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--muted)}
+.tl{padding:12px 14px}
+.tlr{display:grid;grid-template-columns:52px 20px 1fr;gap:9px;padding-bottom:12px}
+.tlr .tm{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--muted);padding-top:2px}
+.tlr .ax{position:relative;display:flex;justify-content:center}
+.tlr .ax::before{content:'';position:absolute;top:14px;bottom:-12px;width:1.5px;background:var(--line)}
+.tlr:last-child .ax::before{display:none}
+.tlr .dt{width:11px;height:11px;border-radius:50%;background:var(--paper);
+border:2.5px solid var(--teal);margin-top:3px;z-index:1}
+.tlr.rd .dt{border-color:var(--ink);background:var(--ink);width:13px;height:13px}
+.tlr.ng .dt{border-color:var(--muted)}.tlr.if .dt{border-color:var(--red);border-style:dashed}
+.tlr .bd{font-size:11.5px}.tlr .bd b{display:block;margin-bottom:1px}
+.tlr .bd .sub{font-size:10.5px;color:var(--muted)}
+.prov{background:var(--paper);border:1px solid var(--teal);border-radius:7px;overflow:hidden;margin-bottom:12px}
+.prov .ph{background:var(--tealL);padding:9px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #b9d2de}
+.prov .ph .t{font-size:8.5px;letter-spacing:1.1px;color:var(--teal);font-weight:700}
+.prov .ph .x{margin-left:auto;cursor:pointer;color:var(--teal);font-size:15px;line-height:1}
+.prov .pb{padding:12px}
+.prov .en{font-size:14px;font-weight:700}
+.prov .et2{font-size:10.5px;color:var(--muted);margin-bottom:10px}
+.kv{display:grid;grid-template-columns:86px 1fr;gap:5px 10px;font-size:11.5px}
+.kv .k{color:var(--muted)}
+.note{margin-top:10px;padding:8px 10px;border-radius:5px;font-size:11px}
+.n-ok{background:var(--greenL);color:var(--green)}.n-bad{background:var(--redL);color:var(--red)}
+.empty{padding:20px 14px;text-align:center;color:var(--muted);font-size:11.5px}
+.sug{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.sg{background:var(--tealL);border:1px solid #b9d2de;border-radius:11px;padding:4px 10px;
+font-size:10.5px;color:var(--teal);cursor:pointer;font-weight:700}
+.sg:hover{background:#d0e4ec}
+.jhd{padding:11px 13px;border-bottom:1px solid #1c2b42}
+.jhd .r1{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.jhd .t{font-size:8.5px;letter-spacing:1.2px;color:#7FA8BF;font-weight:700}
+.jhd .lv{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:9.5px;color:#4FD1A5}
+.jhd .p{width:6px;height:6px;border-radius:50%;background:#4FD1A5;animation:pl 1.4s infinite}
+@keyframes pl{0%,100%{opacity:1}50%{opacity:.2}}
+.jfil{display:flex;gap:4px;flex-wrap:wrap}
+.jf1{font-size:9.5px;padding:3px 8px;border-radius:10px;border:1px solid #22344d;color:#7FA8BF;cursor:pointer}
+.jf1:hover{border-color:#3a5a72}
+.jf1.on{background:#17414F;color:#8FD3F4;border-color:#2a5f75;font-weight:700}
+.jb{padding:7px 0 14px;flex:1;overflow-y:auto}
+.je{display:grid;grid-template-columns:44px 70px 1fr;gap:7px;padding:5px 13px;
+font-size:10px;align-items:start;border-left:2px solid transparent;cursor:pointer}
+.je:hover{background:#111E31}
+.je.sel{background:#17303F;border-left-color:#4FD1A5}
+.je .ts{color:#5F7794;font-family:ui-monospace,Menlo,monospace;font-size:9px;padding-top:1px}
+.je .kd{font-size:8px;font-weight:700;padding:2px 0;text-align:center;border-radius:3px}
+.je .tx{color:#C8D6E5;line-height:1.45;word-break:break-word}
+.je .tx code{font-family:ui-monospace,Menlo,monospace;color:#8FD3F4;font-size:9.5px}
+.je .hs{display:block;color:#3F5670;font-size:8px;margin-top:2px;font-family:ui-monospace,Menlo,monospace}
+.k-CASE{background:#1F3350;color:#9DBBDA}.k-AUFTRAG{background:#243B44;color:#8FD3F4}
+.k-PLAN{background:#4A3617;color:#E8B75C}.k-FREIGABE{background:#1C3D2E;color:#6FD3A3}
+.k-ABFRAGE{background:#17414F;color:#6EC5E0}.k-QUELLE{background:#153A2C;color:#5CC79A}
+.k-NEGATIV{background:#2A3240;color:#8FA3BC}.k-SCHLUSS{background:#4A2019;color:#F09484}
+.k-ABBRUCH{background:#3A2436;color:#D89BC4}.k-BEKANNT{background:#4A2019;color:#F09484}
+.k-VERWEIGERT{background:#4A2019;color:#F09484}
+.je.neg{border-left-color:#5F7794}.je.inf{border-left-color:#C05542}
+.jf{padding:9px 13px;border-top:1px solid #1c2b42;font-size:9px;color:#5F7794;
+display:flex;justify-content:space-between;background:#0A1320}
+.jf b{color:#8FD3F4}
+.hide{display:none}
+.ov{position:fixed;inset:0;background:rgba(15,27,45,.55);display:flex;align-items:center;
+justify-content:center;z-index:80;padding:24px}
+.mo{background:var(--paper);border-radius:9px;max-width:640px;width:100%;max-height:86vh;
+display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.mo .mh{padding:13px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px}
+.mo .mh b{font-size:14px}.mo .mh .x{margin-left:auto;cursor:pointer;color:var(--muted);font-size:17px}
+.mo .mb{padding:16px;overflow-y:auto;font-size:12px;line-height:1.65}
+.mo .mf{padding:11px 16px;border-top:1px solid var(--line);display:flex;gap:7px;justify-content:flex-end}
+.rp h4{font-size:12.5px;margin:13px 0 5px}
+.rp h4:first-child{margin-top:0}
+.rp .q{background:var(--soft);border-left:2.5px solid var(--teal);padding:7px 10px;
+font-size:11px;margin:5px 0}
+.rp .warn{background:var(--redL);border-left:2.5px solid var(--red);padding:7px 10px;
+font-size:11px;color:var(--red);margin:5px 0}
+.vf{display:flex;align-items:center;gap:9px;padding:7px 0;font-size:11.5px;border-bottom:1px solid var(--soft)}
+.vf .ok{color:var(--green);font-weight:700}
+.tip{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:var(--ink);
+color:#fff;padding:8px 15px;border-radius:20px;font-size:11.5px;box-shadow:0 4px 14px rgba(0,0,0,.22);
+z-index:99;transition:.35s;max-width:80%;text-align:center}
+.tip.out{opacity:0;transform:translate(-50%,12px)}
+.tgl{width:34px;height:19px;border-radius:10px;background:var(--line);position:relative;cursor:pointer;flex-shrink:0}
+.tgl.on{background:var(--green)}
+.tgl::after{content:'';position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;
+background:#fff;transition:.2s}
+.tgl.on::after{left:17px}
+.row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--soft)}
+.row:last-child{border:none}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:#c3cedb;border-radius:5px}
+.jr ::-webkit-scrollbar-thumb{background:#22344d}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="brand"><div class="dot"></div><b>OSINT-Ermittlungsplattform</b></div>
+ <div class="top">
+  <div class="chip" onclick="nv('hist')"><div><div class="k">FALL</div><div class="v" id="cid">—</div></div>
+   <div class="sep"></div><div class="m" id="cmeta">—</div></div>
+  <div class="sp"></div>
+  <div class="egr" onclick="mEgress()"><span class="d" id="egd"></span><span id="egt">0 Bekanntgaben</span></div>
+  <div class="meter" id="mt"><div class="l"><span>Kontingent</span><b id="qt">0 / 25</b></div>
+   <div class="b"><div class="f" id="qf"></div></div></div>
+  <div class="who"><div class="av">MB</div><span>M. Bühler</span></div>
+ </div>
+ <div class="step" id="stp"></div>
+ <div class="nav">
+  <div class="g">ERMITTLUNG</div>
+  <a id="n-inv" onclick="nv('inv')">◈ Aktueller Fall</a>
+  <a id="n-hist" onclick="nv('hist')">≡ Verlauf<span class="c">18</span></a>
+  <div class="g">NACHWEIS</div>
+  <a id="n-exp" onclick="nv('exp')">↧ Export in die Akte</a>
+  <div class="g">MODULE</div>
+  <a id="n-tools" onclick="nv('tools')">⚙ Werkzeuge<span class="c" id="tc">39</span></a>
+  <a id="n-face" onclick="nv('face')">◉ Gesichtsvergleich<span class="c lk">aus</span></a>
+  <div class="ft" onclick="nv('set')">Sprachmodell<br><b id="llm" style="color:var(--green)">lokal betrieben</b><br>
+   <span style="font-size:9px">Einstellungen öffnen</span></div>
+ </div>
+ <div class="main">
+  <div class="work" id="wk"></div>
+  <div class="jr">
+   <div class="jhd">
+    <div class="r1"><span class="t">ARBEITSSPUR — LIVE</span>
+     <span class="lv" id="lv"><span class="p"></span>bereit</span></div>
+    <div class="jfil" id="jfil"></div>
+   </div>
+   <div class="jb" id="jb"></div>
+   <div class="jf"><span>Einträge <b id="cn">0</b></span>
+    <span onclick="verify()" style="cursor:pointer">Kette <b style="color:#4FD1A5">unversehrt</b> ⟳</span></div>
+  </div>
+ </div>
+</div>
+<div id="mod"></div>
+<div class="tip out" id="tip"></div>
+
+<script>
+/* ============ SZENARIEN ============ */
+const SC={
+p:{id:'KRIPO-2026-0417',ti:'Phishing gegen Treuhandfirma',law:'Art. 309 StPO',ret:'B',
+ seed:'phishing-domain.tld',
+ hints:['Infrastruktur hinter Domain','Registrant prüfen','Eigenen Bestand abgleichen','Bericht erstellen'],
+ task:'Prüfe die gefundene IP gegen Reputationsdienste und gegen unseren eigenen Bestand.',
+ plan:[['misp.search("185.203.x.x")','eigener Bestand','free',0,0],
+  ['abuseipdb.check("185.203.x.x")','kostenlos · 1 von 1000','free',0,1],
+  ['urlhaus.lookup("185.203.x.x")','kostenlos','free',0,1]],
+ E:[{id:'e1',lb:'phishing-domain.tld',ty:'Domain',tool:'Strafanzeige',qy:'aus Asservat übernommen',
+   t:'08:14:20',cf:'Asservat',kind:'seed',jr:'j1',hs:null,x:280,y:40,w:170,r:1},
+  {id:'e2',lb:'185.203.x.x',ty:'IPv4-Adresse',tool:'Shodan',qy:'shodan.host("phishing-domain.tld")',
+   t:'08:16:44',cf:'Quellenaussage',kind:'src',jr:'j4',hs:'a3f1…9c2e',x:150,y:104,w:150,r:1},
+  {id:'e3',lb:'4 Subdomains',ty:'DNS-Namen',tool:'crt.sh',qy:'crt.sh("phishing-domain.tld")',
+   t:'08:17:15',cf:'Quellenaussage',kind:'src',jr:'j6',hs:'d9e0…2f3c',x:410,y:104,w:150,r:1},
+  {id:'e4',lb:'14 Meldungen',ty:'Reputation',tool:'AbuseIPDB',qy:'abuseipdb.check("185.203.x.x")',
+   t:'08:22:31',cf:'Quellenaussage',kind:'bad',jr:'r5',hs:'c4d8…77b1',x:90,y:182,w:150,r:2},
+  {id:'e5',lb:'2 Treffer im MISP',ty:'Fallbezug',tool:'MISP',qy:'misp.search("185.203.x.x")',
+   t:'08:22:24',cf:'eigener Bestand',kind:'own',jr:'r3',hs:'b7c2…41ad',x:252,y:182,w:150,r:2},
+  {id:'e6',lb:'Namensähnlichkeit',ty:'Hypothese',tool:'Sprachmodell',qy:'Schlussfolgerung — keine Quelle',
+   t:'08:22:52',cf:'UNBELEGT',kind:'inf',jr:'r7',hs:null,x:445,y:182,w:158,r:2}],
+ L:[['e1','e2'],['e1','e3'],['e2','e4'],['e2','e5'],['e3','e6']],
+ J1:[['j1','08:14:02','CASE','eröffnet <code>KRIPO-2026-0417</code> · M. Bühler · Art. 309 StPO',null,'','e1'],
+  ['j2','08:15:31','AUFTRAG','«Infrastruktur hinter phishing-domain.tld»',null,'',''],
+  ['j3','08:15:52','FREIGABE','4 Abfragen durch M. Bühler bestätigt',null,'',''],
+  ['j4','08:16:44','ABFRAGE','<code>shodan.host()</code> → 3 Dienste, 1 Zertifikat','a3f1…9c2e','','e2'],
+  ['j5','08:16:45','QUELLE','3 Entitäten übernommen, Herkunft gesetzt',null,'','e2'],
+  ['j6','08:17:15','ABFRAGE','<code>crt.sh()</code> → 4 Subdomains','d9e0…2f3c','','e3']],
+ J2:[['r1','08:22:08','PLAN','3 Abfragen vorgeschlagen · 0 Kontingenteinheiten',null,'',''],
+  ['r2','08:22:19','FREIGABE','durch M. Bühler bestätigt — nichts nach aussen sichtbar',null,'',''],
+  ['r3','08:22:24','ABFRAGE','<code>misp.search()</code> → 2 Treffer aus Fall 2026-0311','b7c2…41ad','','e5'],
+  ['r4','08:22:25','QUELLE','2 Entitäten · Verknüpfung zu laufendem Verfahren',null,'','e5'],
+  ['r5','08:22:31','ABFRAGE','<code>abuseipdb.check()</code> → 14 Meldungen','c4d8…77b1','','e4'],
+  ['r6','08:22:38','NEGATIV','<code>urlhaus.lookup()</code> → kein Treffer','e1a5…8b60','neg',''],
+  ['r7','08:22:52','SCHLUSS','Modell: Zertifikat-CN ähnelt Domain aus 2026-0311 — <b>UNBELEGT</b>',null,'inf','e6']],
+ sug:['Registrant über DomainTools prüfen','Subdomains einzeln auflösen','Bericht erstellen']},
+
+r:{id:'KRIPO-2026-0402',ti:'Ransomware gegen Gemeindeverwaltung',law:'Art. 309 StPO',ret:'A',
+ seed:'Erpresserschreiben',
+ hints:['Wallet sanktioniert?','Gruppe zuordnen','Weitere Geschädigte','Bericht erstellen'],
+ task:'Prüfe die Wallet-Adresse gegen Sanktionslisten und ordne die Tätergruppe zu.',
+ plan:[['chainalysis.sanctions("bc1q…")','kostenlos · Sanktionsliste','free',0,0],
+  ['ransomlook.group("X")','offene Quelle','free',0,1],
+  ['misp.search("bc1q…")','eigener Bestand','free',0,0],
+  ['blockchair.tx("bc1q…")','kostenlos · nach aussen sichtbar','extv',0,1]],
+ E:[{id:'f1',lb:'Erpresserschreiben',ty:'Asservat',tool:'Anzeige',qy:'Asservat A-2026-0402-01',
+   t:'09:02:11',cf:'Asservat',kind:'seed',jr:'k1',hs:'11ab…40cd',x:280,y:40,w:170,r:1},
+  {id:'f2',lb:'bc1q…8f2a',ty:'Wallet',tool:'Textauswertung',qy:'aus Asservat extrahiert',
+   t:'09:03:40',cf:'Asservat',kind:'src',jr:'k2',hs:'22bc…51de',x:150,y:104,w:150,r:1},
+  {id:'f3',lb:'Gruppe «X»',ty:'Tätergruppe',tool:'RansomLook',qy:'ransomlook.group("X")',
+   t:'09:05:02',cf:'Quellenaussage',kind:'src',jr:'k3',hs:'33cd…62ef',x:410,y:104,w:150,r:1},
+  {id:'f4',lb:'sanktioniert',ty:'Listentreffer',tool:'Chainalysis',qy:'chainalysis.sanctions("bc1q…")',
+   t:'09:07:18',cf:'Quellenaussage',kind:'bad',jr:'m2',hs:'44de…73fa',x:90,y:182,w:150,r:2},
+  {id:'f5',lb:'3 weitere Opfer CH',ty:'Fallbezug',tool:'MISP',qy:'misp.search("bc1q…")',
+   t:'09:08:44',cf:'eigener Bestand',kind:'own',jr:'m4',hs:'55ef…84ab',x:252,y:182,w:150,r:2},
+  {id:'f6',lb:'7 Transaktionen',ty:'Geldfluss',tool:'Blockchair',qy:'blockchair.tx("bc1q…")',
+   t:'09:09:55',cf:'Quellenaussage',kind:'src',jr:'m6',hs:'66fa…95bc',x:445,y:182,w:158,r:2}],
+ L:[['f1','f2'],['f1','f3'],['f2','f4'],['f2','f5'],['f2','f6']],
+ J1:[['k1','09:02:11','CASE','eröffnet <code>KRIPO-2026-0402</code> · S. Marti · Art. 309 StPO','11ab…40cd','','f1'],
+  ['k2','09:03:40','QUELLE','Wallet aus Asservat extrahiert','22bc…51de','','f2'],
+  ['k3','09:05:02','ABFRAGE','<code>ransomlook.group()</code> → bekannte Gruppe','33cd…62ef','','f3']],
+ J2:[['m1','09:06:50','PLAN','4 Abfragen · 1 davon nach aussen sichtbar',null,'',''],
+  ['m2','09:07:18','ABFRAGE','<code>chainalysis.sanctions()</code> → <b>TREFFER</b>','44de…73fa','','f4'],
+  ['m3','09:07:20','SCHLUSS','Meldepflicht ausgelöst — rechtliche Lage geändert',null,'inf',''],
+  ['m4','09:08:44','ABFRAGE','<code>misp.search()</code> → 3 weitere Geschädigte CH','55ef…84ab','','f5'],
+  ['m5','09:09:12','NEGATIV','<code>opensanctions.search()</code> → keine Person zuordenbar','77bc…06de','neg',''],
+  ['m6','09:09:55','BEKANNT','<code>blockchair.tx()</code> — Abfrage nach aussen','66fa…95bc','inf','f6']],
+ sug:['Rechtshilfeersuchen vorbereiten','Sammelverfahren prüfen','Bericht erstellen']}};
+
+/* ============ STATE ============ */
+let S={sc:'p',view:'inv',rv:'g',rnd:2,sel:null,filt:'all',J:[],done2:false,
+ quota:3,egress:0,sort:null,sdir:1,q:'',srch:'',llm:'local',face:false,single:false,checked:[]};
+const C=()=>SC[S.sc];
+const vis=()=>C().E.filter(e=>e.r==1||S.done2);
+const CL={seed:['#0F1B2D','#fff','#0F1B2D'],src:['#E3EEF3','#0F1B2D','#1D5C7A'],
+ own:['#E4F0EA','#0F1B2D','#2C6E52'],bad:['#FAE8E5','#0F1B2D','#9E3527'],
+ inf:['#fff','#6B7C93','#6B7C93']};
+const TOOLS=[['Bedrohungsinformationen',[['MISP','eigener Bestand, Fallabgleich','on','aktiv'],
+ ['MalwareBazaar','Proben nach Prüfsumme','on','aktiv'],['URLhaus','Schadsoftware-URLs','on','aktiv'],
+ ['ThreatFox','Indikatoren laufender Kampagnen','on','aktiv'],
+ ['VirusTotal','Datei- und URL-Analyse','lk','gesperrt — Vereinbarung fehlt']]],
+ ['Infrastruktur',[['Shodan','offene Dienste, Zertifikate','on','aktiv'],
+ ['crt.sh','Zertifikatsprotokoll','on','aktiv'],['urlscan.io','Webseitenanalyse','wn','nicht öffentlich erzwungen'],
+ ['DomainTools','Registrant, Historie','on','aktiv'],['GreyNoise','Scan-Rauschen einordnen','on','aktiv'],
+ ['AbuseIPDB','Missbrauchsmeldungen','on','aktiv']]],
+ ['Kryptowährungen',[['Chainalysis Sanctions','Sanktionsabgleich','on','aktiv'],
+ ['Blockchair','Transaktionen','wn','nach aussen sichtbar'],['Blockstream','Bitcoin-Daten','on','aktiv']]],
+ ['Personen',[['HIBP','Datenabflüsse','on','aktiv'],['Sherlock / Maigret','Benutzernamen','on','aktiv'],
+ ['holehe','Konten zu E-Mail','on','aktiv'],['Epieos','Rückwärtssuche','lk','gesperrt — Beschaffung offen']]],
+ ['Sanktionen und Register',[['OpenSanctions','Sanktionen, PEP','on','selbst betrieben'],
+ ['Zefix','Handelsregister CH','on','aktiv'],['GLEIF','Rechtsträgerkennungen','on','aktiv']]],
+ ['Darknet',[['RansomLook','Gruppen, Opferlisten','on','aktiv'],
+ ['Ransomware.live','Leak-Seiten','on','aktiv']]],
+ ['Biometrie',[['Gesichtsvergleich','Galerien nach Ermächtigung','lk','deaktiviert — Lizenz offen']]]];
+
+/* ============ HELPERS ============ */
+const $=i=>document.getElementById(i);
+let tt;function toast(m){const e=$('tip');e.textContent=m;e.classList.remove('out');
+ clearTimeout(tt);tt=setTimeout(()=>e.classList.add('out'),3600)}
+function log(k,tx,hs,cls,ent){S.J.push(['x'+Date.now()+Math.random(),now(),k,tx,hs||null,cls||'',ent||'']);jrend()}
+function now(){const d=new Date();return d.toTimeString().slice(0,8)}
+function esc(s){return s.replace(/[<>]/g,c=>({'<':'&lt;','>':'&gt;'}[c]))}
+
+/* ============ STEPPER ============ */
+const STEPS=['Fall eröffnet','Auftrag','Plan & Freigabe','Ausführung','Bewertung','Bericht'];
+let curStep=3;
+function stpR(){let h='';STEPS.forEach((s,i)=>{const n=i+1;
+ const c=n<curStep?'dn':n==curStep?'cu':'';
+ h+=`<div class="st ${c}"><span class="n">${n<curStep?'✓':n}</span>${s}${n<6?'<span class="ar">›</span>':''}</div>`});
+ h+=`<div class="rnd"><span>Runde</span>
+  <span class="rb ${S.rnd==1?'on':''}" onclick="setR(1)">1</span>
+  <span class="rb ${S.rnd==2?'on':''}" onclick="setR(2)">2</span>
+  <span class="rb dis">3</span></div>`;
+ $('stp').innerHTML=h}
+function setR(n){if(n==2&&!S.done2){toast('Runde 2 beginnt mit der Freigabe des Plans');return}
+ S.rnd=n;S.sel=null;stpR();render();toast('Runde '+n+' — frühere Runden bleiben im Protokoll')}
+
+/* ============ VIEWS ============ */
+function drawG(){const es=vis().filter(e=>S.rnd==2||e.r==1),ids=es.map(e=>e.id);
+ let s=`<svg viewBox="0 0 560 ${S.done2&&S.rnd==2?250:170}" style="width:100%;display:block;padding:12px 0">`;
+ C().L.forEach(([a,b])=>{if(!ids.includes(a)||!ids.includes(b))return;
+  const A=C().E.find(x=>x.id==a),B=C().E.find(x=>x.id==b);
+  s+=`<line x1="${A.x}" y1="${A.y+34}" x2="${B.x}" y2="${B.y}" stroke="#33475B" stroke-width="1.2"
+   ${B.kind=='inf'?'stroke-dasharray="3,3"':''}/>`});
+ es.forEach(e=>{const[bg,fg,st]=CL[e.kind];
+  s+=`<g class="nd" onclick="pick('${e.id}')">
+  <rect x="${e.x-e.w/2}" y="${e.y}" width="${e.w}" height="34" rx="4" fill="${bg}" stroke="${st}"
+   stroke-width="${S.sel==e.id?2.6:1.2}" ${e.kind=='inf'?'stroke-dasharray="3,3"':''}/>
+  <text x="${e.x}" y="${e.y+15}" font-size="10.5" fill="${fg}" text-anchor="middle"
+   font-weight="${e.kind=='seed'?'bold':'normal'}">${e.lb}</text>
+  <text x="${e.x}" y="${e.y+27}" font-size="8.5" fill="${e.kind=='seed'?'#AEBECD':st}"
+   text-anchor="middle">${e.tool}</text></g>`});
+ return s+'</svg>'}
+function drawT(){let es=vis().filter(e=>S.rnd==2||e.r==1);
+ if(S.srch){const q=S.srch.toLowerCase();
+  es=es.filter(e=>(e.lb+e.ty+e.tool+e.cf).toLowerCase().includes(q))}
+ if(S.sort){const k=S.sort;es=[...es].sort((a,b)=>(a[k]>b[k]?1:-1)*S.sdir)}
+ const cols=[['lb','Entität'],['ty','Typ'],['tool','Quelle'],['t','Erhoben'],['cf','Einstufung'],['hs','Prüfsumme']];
+ let s='<table class="et"><tr>';
+ cols.forEach(([k,l])=>s+=`<th onclick="srt('${k}')">${l}${S.sort==k?`<span class="sa">${S.sdir>0?'▲':'▼'}</span>`:''}</th>`);
+ s+='</tr>';
+ if(!es.length)s+='<tr><td colspan="6" class="empty">Keine Entität passt zur Suche.</td></tr>';
+ es.forEach(e=>{const p={seed:'p-src',src:'p-src',own:'p-own',bad:'p-bad',inf:'p-inf'}[e.kind];
+  s+=`<tr class="${S.sel==e.id?'sel':''}" onclick="pick('${e.id}')"><td><b>${e.lb}</b></td>
+  <td>${e.ty}</td><td>${e.tool}</td><td class="mono">${e.t}</td>
+  <td><span class="pill ${p}">${e.cf}</span></td><td class="mono">${e.hs||'—'}</td></tr>`});
+ return s+'</table>'}
+function drawZ(){const c=C(),rows=[];
+ rows.push(['—','rd','Runde 1 — Erhebung','Auftrag: '+c.seed,'']);
+ c.J1.filter(j=>['ABFRAGE','QUELLE','NEGATIV'].includes(j[2])).forEach(j=>
+  rows.push([j[1].slice(0,5),'',j[2]=='ABFRAGE'?'Abfrage':'Übernahme',j[3].replace(/<[^>]+>/g,''),j[6]]));
+ if(S.done2&&S.rnd==2){rows.push(['—','rd','Runde 2 — Vertiefung','nach Freigabe','']);
+  c.J2.filter(j=>['ABFRAGE','NEGATIV','SCHLUSS','BEKANNT'].includes(j[2])).forEach(j=>
+   rows.push([j[1].slice(0,5),j[5]||'',{ABFRAGE:'Abfrage',NEGATIV:'Negativbefund',
+    SCHLUSS:'Modellschluss',BEKANNT:'Bekanntgabe nach aussen'}[j[2]],
+    j[3].replace(/<[^>]+>/g,''),j[6]]))}
+ let s='<div class="tl">';
+ rows.forEach(r=>s+=`<div class="tlr ${r[1]}" ${r[4]?`onclick="pick('${r[4]}')" style="cursor:pointer"`:''}>
+  <div class="tm">${r[0]}</div><div class="ax"><div class="dt"></div></div>
+  <div class="bd"><b>${r[2]}</b><span class="sub">${r[3]}</span></div></div>`);
+ return s+'</div>'}
+function srt(k){if(S.sort==k)S.sdir*=-1;else{S.sort=k;S.sdir=1}render()}
+
+/* ============ RENDER ============ */
+function render(){
+ const c=C();$('cid').textContent=c.id;
+ $('cmeta').innerHTML=c.law+'<br>Aufbewahrung '+c.ret;
+ $('qt').textContent=S.quota+' / 25';
+ $('qf').style.width=(S.quota/25*100)+'%';
+ $('mt').classList.toggle('w',S.quota>15);
+ $('egt').textContent=S.egress+(S.egress==1?' Bekanntgabe':' Bekanntgaben');
+ $('egd').style.background=S.egress?'var(--amber)':'var(--green)';
+ $('llm').textContent=S.llm=='local'?'lokal betrieben':'Cloud-Anbieter';
+ $('llm').style.color=S.llm=='local'?'var(--green)':'var(--red)';
+ ['inv','hist','exp','tools','face','set'].forEach(k=>{const n=$('n-'+k);
+  if(n)n.classList.toggle('on',S.view==k)});
+ $('wk').innerHTML=({inv:vInv,hist:vHist,exp:vExp,tools:vTools,face:vFace,set:vSet}[S.view])();
+ stpR()}
+
+function vInv(){const c=C();
+ return `<div class="hd"><div><h2>${c.ti}</h2><div class="s">
+  ${vis().filter(e=>S.rnd==2||e.r==1).length} Entitäten · ${S.done2?7:4} Abfragen ·
+  ${S.done2?1:0} Negativbefunde · Runde ${S.rnd}</div></div>
+  <button class="btn o sm" onclick="rst()">Demo neu starten</button></div>
+
+ <div class="card"><div class="t">AUFTRAG</div><div class="ask">
+  <textarea id="q" oninput="S.q=this.value">${S.q||c.task}</textarea>
+  <button class="btn" onclick="pl()">Planen</button></div>
+  <div class="hints">${c.hints.map(h=>`<span class="hint" onclick="sq(this)">${h}</span>`).join('')}</div></div>
+
+ <div id="apc"></div>
+
+ <div class="gw"><div class="gb"><span class="t">ERMITTLUNGSSPUR</span>
+  ${S.rv=='t'?`<input class="srch" placeholder="Entität suchen…" value="${S.srch}" oninput="S.srch=this.value;render()">`:'<span class="sp"></span>'}
+  <div class="tb">${['g','Graph','t','Tabelle','z','Zeitachse'].reduce((a,_,i,ar)=>
+   i%2?a+`<span class="gt ${S.rv==ar[i-1]?'on':''}" onclick="S.rv='${ar[i-1]}';render()">${ar[i]}</span>`:a,'')}</div></div>
+  <div id="vc">${S.rv=='g'?drawG():S.rv=='t'?drawT():drawZ()}</div>
+  ${S.rv=='g'?`<div class="lg">
+   <span><i style="background:#E3EEF3;border:1px solid #1D5C7A"></i>abgefragte Quelle</span>
+   <span><i style="background:#FAE8E5;border:1px solid #9E3527"></i>belastend</span>
+   <span><i style="background:#E4F0EA;border:1px solid #2C6E52"></i>eigener Bestand</span>
+   <span><i style="background:#fff;border:1px dashed #6B7C93"></i>Modellhinweis</span>
+   <span style="margin-left:auto;color:var(--teal)">Knoten anklicken</span></div>`:''}</div>
+
+ ${prov()}
+
+ ${S.done2?`<div class="card"><div class="t">VORGESCHLAGENE NÄCHSTE SCHRITTE</div>
+  <div style="font-size:11.5px;color:var(--muted);margin-bottom:2px">
+  Vorschläge des Systems. Keiner wird ohne Freigabe ausgeführt.</div>
+  <div class="sug">${c.sug.map(s=>`<span class="sg" onclick="takeSug(this)">${s}</span>`).join('')}</div></div>`:''}`}
+
+function prov(){if(!S.sel)return `<div class="card"><div class="t">HERKUNFTSNACHWEIS</div>
+  <div class="empty">Entität auswählen — im Graph, in der Tabelle oder über einen Protokolleintrag rechts.</div></div>`;
+ const e=C().E.find(x=>x.id==S.sel),bad=e.kind=='inf';
+ return `<div class="prov"><div class="ph"><span class="t">HERKUNFTSNACHWEIS</span>
+  <span class="x" onclick="pick(null)">✕</span></div><div class="pb">
+  <div class="en">${e.lb}</div><div class="et2">${e.ty}</div>
+  <div class="kv">
+   <span class="k">Werkzeug</span><span>${e.tool}</span>
+   <span class="k">Abfrage</span><span class="mono" style="color:var(--ink)">${e.qy}</span>
+   <span class="k">Erhoben</span><span>${e.t} · M. Bühler</span>
+   <span class="k">Fall</span><span>${C().id} · ${C().law}</span>
+   <span class="k">Einstufung</span><span>${e.cf}</span>
+   <span class="k">Prüfsumme</span><span class="mono" style="color:var(--teal)">${e.hs||'— kein Quellenbezug'}</span></div>
+  <div class="note ${bad?'n-bad':'n-ok'}">${bad
+   ?'<b>Schlussfolgerung des Modells.</b> Stammt aus keiner Quelle. Darf im Bericht nicht als Tatsache erscheinen.'
+   :'<b>Quellenaussage.</b> Rückführbar auf Werkzeug, Abfrage und Zeitpunkt. Protokolleintrag rechts markiert.'}</div>
+  <div style="margin-top:10px;display:flex;gap:7px">
+   <button class="btn o sm" onclick="mEntity()">Vollständiger Nachweis</button>
+   <button class="btn o sm" onclick="toast('In Runde 3 übernommen — Freigabe erforderlich')">Weiterverfolgen</button>
+  </div></div></div>`}
+
+function vHist(){const rows=[['p','laufend','var(--green)','heute 08:14','M. Bühler','6 Entitäten · 11 Abfragen · 1 Negativbefund'],
+ ['r','laufend','var(--amber)','vor 4 Tagen','S. Marti','23 Entitäten · Sanktionstreffer · 3 weitere Geschädigte']];
+ return `<div class="hd"><div><h2>Verlauf</h2><div class="s">18 Fälle · nur eigene und freigegebene sichtbar</div></div></div>
+ <div class="card"><div class="t">LAUFEND — ZUM ÖFFNEN ANKLICKEN</div>
+ ${rows.map(([k,st,cl,d,o,m])=>`<div class="row" style="cursor:pointer" onclick="loadCase('${k}')">
+  <span style="width:7px;height:7px;border-radius:50%;background:${cl}"></span>
+  <div><b style="font-size:12.5px">${SC[k].id} · ${SC[k].ti}</b>
+   <div style="font-size:10.5px;color:var(--muted)">${m}</div></div>
+  <div style="margin-left:auto;text-align:right;font-size:10px;color:var(--muted)">${d}<br>${o}</div>
+  ${S.sc==k?'<span class="pill p-src">geöffnet</span>':''}</div>`).join('')}</div>
+ <div class="card"><div class="t">ABGESCHLOSSEN</div>
+  <div class="row"><span style="width:7px;height:7px;border-radius:50%;background:var(--muted)"></span>
+   <div><b style="font-size:12.5px">KRIPO-2026-0311 · Betrug Onlineshop</b>
+   <div style="font-size:10.5px;color:var(--muted)">14 Entitäten · beide Spuren in der Akte · Kette geprüft</div></div>
+   <div style="margin-left:auto;font-size:10px;color:var(--muted)">12.07.2026</div></div></div>`}
+
+function vExp(){return `<div class="hd"><div><h2>Export in die Akte</h2>
+ <div class="s">Beide Spuren getrennt, über dieselbe Prüfkette verbunden</div></div></div>
+ <div class="card"><div class="t">SPUR 1 — ERMITTLUNGSSPUR</div>
+  <div style="font-size:11.5px;line-height:1.85">Berichtsentwurf mit Herkunftsangabe je Aussage ·
+  <b>${vis().length} Entitäten</b><br>Beziehungsgraph als PDF und .drawio<br>Entitätstabelle als CSV</div>
+  <div style="margin-top:11px;display:flex;gap:7px">
+   <button class="btn sm" onclick="mReport()">Bericht erzeugen</button>
+   <button class="btn o sm" onclick="toast('Graph als .drawio exportiert — manuell nachbearbeitbar')">Graph exportieren</button>
+   <button class="btn o sm" onclick="toast('Entitätstabelle als CSV exportiert')">CSV</button></div></div>
+ <div class="card"><div class="t">SPUR 2 — ARBEITSSPUR</div>
+  <div style="font-size:11.5px;line-height:1.85"><b>${S.J.length} Einträge</b> ·
+  ${S.J.filter(j=>j[2]=='ABFRAGE').length} Abfragen ·
+  ${S.J.filter(j=>j[2]=='NEGATIV').length} Negativbefunde ·
+  ${S.J.filter(j=>j[2]=='SCHLUSS').length} Modellschlüsse<br>
+  Verkettete Prüfsummen, maschinell verifizierbar<br>Für Verteidigung, Gericht und Aufsicht</div>
+  <div style="margin-top:11px;display:flex;gap:7px">
+   <button class="btn sm" onclick="mJournal()">Arbeitsspur ansehen</button>
+   <button class="btn o sm" onclick="verify()">Kette prüfen</button></div></div>
+ <div class="card" style="border-color:var(--amber);background:var(--amberL)">
+  <div class="t" style="color:var(--amber)">FALL ABSCHLIESSEN</div>
+  <div style="font-size:11.5px;color:#7A5210">Beim Abschluss werden beide Spuren festgeschrieben.
+  Die Aufbewahrungsfrist der Klasse ${C().ret} beginnt zu laufen.</div>
+  <div style="margin-top:11px"><button class="btn r sm" onclick="mClose()">Fall abschliessen</button></div></div>`}
+
+function vTools(){let h=`<div class="hd"><div><h2>Werkzeuge</h2>
+ <div class="s">39 im Katalog · gesperrte Quellen bleiben sichtbar, mit Grund</div></div>
+ <input class="srch" style="border:1px solid var(--line);border-radius:5px;padding:6px 10px;font-size:11.5px;font-family:inherit"
+  placeholder="Katalog durchsuchen…" value="${S.srch}" oninput="S.srch=this.value;render()"></div>`;
+ const q=S.srch.toLowerCase();
+ TOOLS.forEach(([g,items])=>{const f=items.filter(i=>!q||(i[0]+i[1]).toLowerCase().includes(q));
+  if(!f.length)return;
+  h+=`<div class="card"><div class="t">${g.toUpperCase()}</div>`;
+  f.forEach(([n,z,st,lbl])=>{const cl={on:'var(--green)',wn:'var(--amber)',lk:'var(--red)'}[st];
+   h+=`<div class="row"><div style="flex:1"><b style="font-size:12px">${n}</b>
+    <div style="font-size:10.5px;color:var(--muted)">${z}</div></div>
+    <span style="font-size:10.5px;color:${cl};text-align:right;max-width:150px">${lbl}</span>
+    <div class="tgl ${st=='lk'?'':'on'}" onclick="tgl('${n}','${st}')"></div></div>`});
+  h+='</div>'});
+ return h}
+
+function vFace(){return `<div class="hd"><div><h2>Gesichtsvergleich</h2>
+ <div class="s">Modul deaktiviert · getrennt gebaut · nur mit Ermächtigung</div></div></div>
+ <div class="card" style="border-color:var(--red);background:var(--redL)">
+  <div class="t" style="color:var(--red)">MODUL GESPERRT</div>
+  <div style="font-size:11.5px;color:var(--red);line-height:1.7">
+  <b>Grund:</b> Das Erkennungsverfahren ist noch nicht lizenziert. Die verbreiteten quelloffenen
+  Modelle sind auf nicht-kommerzielle Forschung beschränkt und für den Wirkbetrieb nicht zulässig.<br>
+  <b>Nötig:</b> Beschaffung eines kommerziell lizenzierten, am NIST-Programm geprüften Verfahrens.</div>
+  <div style="margin-top:11px"><button class="btn r sm" onclick="toast('Sperre bleibt — Lizenz und Galerienverzeichnis fehlen')">Trotzdem aktivieren</button></div></div>
+ <div class="card"><div class="t">GALERIENVERZEICHNIS — VORGESEHEN</div>
+  <table class="et"><tr><th>Galerie</th><th>Rechtsgrundlage</th><th>Zugriff</th><th>Verfahren</th><th>Schwelle</th><th>Umfang</th></tr>
+  <tr><td><b>Eigene Datenbank</b></td><td>kant. Polizeirecht</td><td>lokal</td><td>A v2.1</td><td>0.68</td><td>42 000</td></tr>
+  <tr><td><b>Partner A</b></td><td>Vereinbarung 2025-14</td><td>lokale Kopie</td><td>A v2.1</td><td>0.71</td><td>310 000</td></tr>
+  <tr><td><b>Partner B</b></td><td>Vereinbarung 2024-03</td><td style="color:var(--red)">Abfrage nach aussen</td><td>B v4.0</td><td>eigene</td><td>2 100 000</td></tr>
+  </table></div>
+ <div class="card" style="border-color:var(--amber);background:var(--amberL)">
+  <div class="t" style="color:var(--amber)">GRUNDREGEL</div>
+  <div style="font-size:11.5px;color:#7A5210">Ergebnisse verschiedener Galerien werden <b>nie</b> zu einer
+  Rangliste zusammengeführt. Verschiedene Verfahren erzeugen verschiedene Vektorräume — ein Wert von
+  0.82 bedeutet in jeder Galerie etwas anderes. Jede Galerie liefert einen eigenen Ergebnisblock mit
+  eigener Schwelle, eigener Fehlerrate und eigener Grösse.</div></div>`}
+
+function vSet(){return `<div class="hd"><div><h2>Einstellungen</h2>
+ <div class="s">Wirkt sich unmittelbar auf den Datenfluss aus</div></div></div>
+ <div class="card"><div class="t">SPRACHMODELL</div>
+  <div class="row"><div style="flex:1"><b style="font-size:12px">Lokal betrieben</b>
+   <div style="font-size:10.5px;color:var(--muted)">Falldaten verlassen das Haus nie. Etwas geringere Modellqualität.</div></div>
+   <div class="tgl ${S.llm=='local'?'on':''}" onclick="setLLM('local')"></div></div>
+  <div class="row"><div style="flex:1"><b style="font-size:12px">Cloud-Anbieter</b>
+   <div style="font-size:10.5px;color:var(--red)">Inhalte werden an einen Anbieter im Ausland übermittelt.</div></div>
+   <div class="tgl ${S.llm=='cloud'?'on':''}" onclick="setLLM('cloud')"></div></div></div>
+ <div class="card"><div class="t">ABFRAGEN NACH AUSSEN</div>
+  <div class="row"><div style="flex:1"><b style="font-size:12px">Vorschau erzwingen</b>
+   <div style="font-size:10.5px;color:var(--muted)">Keine Abfrage ohne bestätigte Vorschau. Nicht abschaltbar.</div></div>
+   <div class="tgl on" onclick="toast('Diese Sperre lässt sich nicht abschalten')"></div></div>
+  <div class="row"><div style="flex:1"><b style="font-size:12px">urlscan nicht öffentlich</b>
+   <div style="font-size:10.5px;color:var(--muted)">Verhindert, dass Abfragen die Zielperson warnen.</div></div>
+   <div class="tgl on" onclick="toast('Empfohlen — Änderung nur durch Gruppenleitung')"></div></div>
+  <div class="row"><div style="flex:1"><b style="font-size:12px">Offline-Betrieb</b>
+   <div style="font-size:10.5px;color:var(--muted)">Nur eigener Bestand. Darstellung bleibt nutzbar.</div></div>
+   <div class="tgl" onclick="toast('Offline-Betrieb aktiviert — nur MISP und Datenbestand')"></div></div></div>`}
+
+/* ============ APPROVAL ============ */
+function pl(){const c=C();S.checked=c.plan.map(()=>true);
+ curStep=3;renderAppr();stpR();
+ toast('Vorschau — nichts wird ausgeführt, bevor du freigibst')}
+function renderAppr(){const c=C(),ext=c.plan.filter((p,i)=>p[2]=='extv'&&S.checked[i]).length;
+ const cnt=S.checked.filter(Boolean).length;
+ $('apc').innerHTML=`<div class="appr"><div class="h"><span class="badge">FREIGABE ERFORDERLICH</span>
+  <b>${cnt} von ${c.plan.length} Abfragen ausgewählt</b></div>
+  <div class="plan">${c.plan.map((p,i)=>`<div class="pr">
+   ${S.single?`<input type="checkbox" ${S.checked[i]?'checked':''} onchange="S.checked[${i}]=this.checked;renderAppr()">`
+    :`<div class="n">${i+1}</div>`}
+   <code>${p[0]}</code><span class="tg ${p[2]}">${p[1]}</span></div>`).join('')}</div>
+  <div class="sum"><span>Kontingent: <b>${cnt} Einheiten</b></span>
+   <span>Nach aussen sichtbar: <b style="${ext?'color:var(--red)':''}">${ext?ext+' Abfrage':'nein'}</b></span>
+   <span>Geschätzt: <b>~${cnt*3} s</b></span><span>Tiefe: <b>1 Sprung</b></span></div>
+  ${ext?`<div style="background:var(--redL);border-left:2.5px solid var(--red);padding:7px 10px;
+   font-size:11px;color:var(--red);margin-bottom:10px"><b>Achtung:</b> ${ext} Abfrage ist für Dritte
+   sichtbar und kann die Zielperson warnen.</div>`:''}
+  <div class="acts"><button class="btn g" onclick="run()" ${cnt?'':'disabled'}>Freigeben und ausführen</button>
+   <button class="btn o" onclick="abortPlan()">Abbrechen</button>
+   <button class="btn o" onclick="S.single=!S.single;renderAppr()">${S.single?'Alles freigeben':'Einzeln freigeben'}</button>
+   <button class="btn o" onclick="mDry()">Trockenlauf ansehen</button></div></div>`}
+function abortPlan(){$('apc').innerHTML='';log('ABBRUCH','Plan durch M. Bühler abgebrochen — keine Abfrage ausgeführt');
+ toast('Abbruch protokolliert — auch das gehört in die Arbeitsspur')}
+
+/* ============ RUN ============ */
+function run(){const c=C(),cnt=S.checked.filter(Boolean).length;
+ $('apc').innerHTML='';curStep=4;stpR();
+ $('lv').innerHTML='<span class="p"></span>arbeitet…';
+ let i=0;const t=setInterval(()=>{
+  if(i>=c.J2.length){clearInterval(t);$('lv').innerHTML='<span class="p"></span>fertig';
+   S.done2=true;S.rnd=2;S.quota+=cnt;curStep=5;render();
+   toast('Fertig. Knoten oder Protokollzeile anklicken — beide Spuren sind verbunden.');return}
+  const e=c.J2[i];S.J.push(e);
+  if(e[2]=='BEKANNT'){S.egress++;render()}
+  jrend();$('jb').scrollTop=9e5;i++},760)}
+
+/* ============ JOURNAL ============ */
+const FILTS=[['all','alle'],['ABFRAGE','Abfragen'],['NEGATIV','Negativbefunde'],
+ ['SCHLUSS','Modellschlüsse'],['FREIGABE','Freigaben'],['BEKANNT','Bekanntgaben']];
+function jrend(){$('jfil').innerHTML=FILTS.map(([k,l])=>
+  `<span class="jf1 ${S.filt==k?'on':''}" onclick="S.filt='${k}';jrend()">${l}</span>`).join('');
+ const jb=$('jb');jb.innerHTML='';
+ const f=S.J.filter(e=>S.filt=='all'||e[2]==S.filt);
+ if(!f.length)jb.innerHTML=`<div style="padding:18px 14px;text-align:center;color:#5F7794;font-size:11px">
+  Kein Eintrag dieser Art in diesem Fall.</div>`;
+ f.forEach(e=>{const d=document.createElement('div');d.className='je '+(e[5]||'')+(S.sel&&e[6]==S.sel?' sel':'');
+  d.setAttribute('data-j',e[0]);
+  d.onclick=()=>e[6]?pick(e[6]):toast('Dieser Eintrag hat keine Entität erzeugt');
+  d.innerHTML=`<span class="ts">${e[1]}</span><span class="kd k-${e[2]}">${e[2]}</span>
+   <span class="tx">${e[3]}${e[4]?`<span class="hs">⛓ ${e[4]}</span>`:''}</span>`;
+  jb.appendChild(d)});
+ $('cn').textContent=S.J.length}
+
+/* ============ INTERACTION ============ */
+function pick(id){S.sel=(S.sel==id)?null:id;render();jrend();
+ if(S.sel){const e=C().E.find(x=>x.id==S.sel);
+  const n=document.querySelector(`[data-j="${e.jr}"]`);
+  if(n)n.scrollIntoView({block:'center',behavior:'smooth'});
+  toast('Herkunftsnachweis unten · Protokolleintrag rechts markiert')}}
+function sq(el){S.q=el.textContent;render()}
+function takeSug(el){S.q=el.textContent;render();
+ toast('Als Auftrag übernommen — «Planen» klicken')}
+function tgl(n,st){if(st=='lk'){toast(n+' bleibt gesperrt — Voraussetzung nicht erfüllt');return}
+ toast(n+' umgeschaltet — Änderung wird protokolliert');
+ log('FREIGABE','Werkzeug '+n+' durch M. Bühler umgeschaltet')}
+function setLLM(m){S.llm=m;render();
+ toast(m=='local'?'Lokal — Falldaten verlassen das Haus nicht'
+  :'Achtung: Inhalte gehen an einen Anbieter im Ausland')}
+function nv(v){S.view=v;S.srch='';render()}
+function loadCase(k){S.sc=k;S.J=[...SC[k].J1];S.done2=false;S.rnd=1;S.sel=null;S.quota=k=='p'?3:5;
+ S.egress=0;S.q='';S.view='inv';curStep=3;render();jrend();
+ toast('Fall '+SC[k].id+' geöffnet — eigene Spuren, eigenes Kontingent')}
+function rst(){loadCase(S.sc);toast('Demo zurückgesetzt')}
+
+/* ============ MODALS ============ */
+function mo(t,b,f){$('mod').innerHTML=`<div class="ov" onclick="if(event.target==this)cm()">
+ <div class="mo"><div class="mh"><b>${t}</b><span class="x" onclick="cm()">✕</span></div>
+ <div class="mb">${b}</div><div class="mf">${f||'<button class="btn o" onclick="cm()">Schliessen</button>'}</div></div></div>`}
+function cm(){$('mod').innerHTML=''}
+function mDry(){const c=C();mo('Trockenlauf — was gesendet würde',
+ `<p style="margin-bottom:10px">Diese Abfragen würden exakt so hinausgehen. Nichts wird ausgeführt.</p>
+ ${c.plan.map((p,i)=>S.checked[i]?`<div class="q"><b>${i+1}.</b> <span class="mono">${esc(p[0])}</span><br>
+  <span style="color:var(--muted)">${p[1]}</span></div>`:'').join('')}
+ <div class="warn"><b>Hinweis:</b> Abfragen nach aussen sind für den Betreiber des Dienstes sichtbar
+ und können bei einer verdeckten Ermittlung auffallen.</div>`)}
+function mEntity(){const e=C().E.find(x=>x.id==S.sel);
+ mo('Vollständiger Herkunftsnachweis',`<div class="rp">
+ <h4>${e.lb}</h4><div class="kv" style="font-size:12px">
+ <span class="k">Typ</span><span>${e.ty}</span>
+ <span class="k">Werkzeug</span><span>${e.tool}</span>
+ <span class="k">Abfrage</span><span class="mono" style="color:var(--ink)">${esc(e.qy)}</span>
+ <span class="k">Zeitpunkt</span><span>${e.t} UTC</span>
+ <span class="k">Ermittler</span><span>M. Bühler</span>
+ <span class="k">Fall</span><span>${C().id}</span>
+ <span class="k">Rechtsgrundlage</span><span>${C().law}</span>
+ <span class="k">Aufbewahrung</span><span>Klasse ${C().ret}</span>
+ <span class="k">Einstufung</span><span>${e.cf}</span>
+ <span class="k">Prüfsumme</span><span class="mono" style="color:var(--teal)">${e.hs||'—'}</span>
+ <span class="k">Protokoll</span><span class="mono">${e.jr}</span></div>
+ ${e.kind=='inf'?'<div class="warn"><b>Schlussfolgerung des Modells.</b> Keine Quelle. Im Bericht als Hypothese zu kennzeichnen.</div>'
+  :'<div class="q"><b>Quellenaussage.</b> Der Eintrag ist Teil der verketteten Arbeitsspur und maschinell überprüfbar.</div>'}
+ </div>`)}
+function mReport(){const c=C(),es=vis();
+ mo('Berichtsentwurf — Vorschau',`<div class="rp">
+ <h4>${c.ti}</h4>
+ <div style="color:var(--muted);font-size:11px">${c.id} · ${c.law} · erstellt ${now()} · M. Bühler</div>
+ <h4>Feststellungen</h4>
+ ${es.filter(e=>e.kind!='inf').map(e=>`<div class="q"><b>${e.lb}</b> (${e.ty})<br>
+  Erhoben am ${e.t} über ${e.tool}. Abfrage: <span class="mono">${esc(e.qy)}</span>.
+  Prüfsumme ${e.hs||'—'}.</div>`).join('')}
+ <h4>Nicht belegte Hinweise</h4>
+ ${es.filter(e=>e.kind=='inf').map(e=>`<div class="warn"><b>${e.lb}</b> — Schlussfolgerung des
+  Sprachmodells, keine Quelle. Kein Beweismittel.</div>`).join('')||'<p style="font-size:11px;color:var(--muted)">Keine.</p>'}
+ <h4>Geprüft ohne Ergebnis</h4>
+ ${S.J.filter(j=>j[2]=='NEGATIV').map(j=>`<div class="q" style="border-left-color:var(--muted)">
+  ${j[3].replace(/<[^>]+>/g,'')} — ${j[1]}</div>`).join('')||'<p style="font-size:11px;color:var(--muted)">Keine.</p>'}
+ <h4>Nachweis</h4>
+ <p style="font-size:11px">Arbeitsspur mit ${S.J.length} Einträgen, verkettet und verifizierbar.
+ Beigelegt als eigenständiges Dokument.</p></div>`,
+ `<button class="btn o" onclick="cm()">Schliessen</button>
+  <button class="btn" onclick="cm();toast('Bericht als PDF in die Akte gelegt')">In die Akte legen</button>`)}
+function mJournal(){mo('Arbeitsspur — vollständig',`<div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;line-height:1.8">
+ ${S.J.map(j=>`<div style="display:flex;gap:9px;padding:3px 0;border-bottom:1px solid var(--soft)">
+  <span style="color:var(--muted);width:56px">${j[1]}</span>
+  <span style="width:78px;font-weight:700;color:${j[2]=='NEGATIV'?'var(--muted)':j[2]=='SCHLUSS'?'var(--red)':'var(--teal)'}">${j[2]}</span>
+  <span style="flex:1">${j[3].replace(/<code>/g,'').replace(/<\/code>/g,'')}
+  ${j[4]?`<br><span style="color:var(--muted);font-size:9.5px">⛓ ${j[4]}</span>`:''}</span></div>`).join('')}</div>`,
+ `<button class="btn o" onclick="cm()">Schliessen</button>
+  <button class="btn" onclick="cm();toast('Arbeitsspur exportiert')">Exportieren</button>`)}
+function mEgress(){mo('Bekanntgaben nach aussen',
+ `<p style="margin-bottom:10px">Jede Abfrage an eine externe Quelle teilt einem Dritten mit, wofür wir uns
+ interessieren. Diese Liste ist Teil der Arbeitsspur.</p>
+ ${S.egress?S.J.filter(j=>j[2]=='BEKANNT').map(j=>`<div class="warn">${j[1]} — ${j[3].replace(/<[^>]+>/g,'')}</div>`).join('')
+  :'<div class="q">Bisher keine Bekanntgabe. Alle Abfragen liefen gegen den eigenen Bestand oder offene Quellen ohne Rückschluss.</div>'}`)}
+function mClose(){mo('Fall abschliessen',
+ `<p>Beim Abschluss werden beide Spuren festgeschrieben und die Aufbewahrungsfrist der Klasse
+ <b>${C().ret}</b> beginnt zu laufen. Danach sind keine Abfragen mehr möglich.</p>
+ <div class="warn" style="margin-top:10px"><b>Nicht umkehrbar.</b> Eine Wiederaufnahme erfordert
+ einen neuen Eintrag mit Begründung.</div>`,
+ `<button class="btn o" onclick="cm()">Abbrechen</button>
+  <button class="btn r" onclick="cm();log('CASE','Fall abgeschlossen — Aufbewahrung Klasse '+C().ret);toast('Fall abgeschlossen, Spuren festgeschrieben')">Abschliessen</button>`)}
+function verify(){let i=0;const tot=S.J.length;
+ mo('Kettenprüfung läuft','<div id="vfb"></div>');
+ const t=setInterval(()=>{if(i>=tot){clearInterval(t);
+   $('vfb').innerHTML+=`<div style="margin-top:12px;background:var(--greenL);border-left:2.5px solid var(--green);
+    padding:9px 11px;color:var(--green);font-size:11.5px"><b>Kette unversehrt.</b>
+    ${tot} von ${tot} Einträgen verifiziert. Keine Lücke, keine nachträgliche Änderung.</div>`;return}
+  const j=S.J[i];
+  $('vfb').innerHTML+=`<div class="vf"><span class="mono" style="width:56px">${j[1]}</span>
+   <span style="flex:1">${j[2]}</span><span class="ok">✓</span></div>`;i++},110)}
+
+/* ============ INIT ============ */
+loadCase('p');
+setTimeout(()=>toast('«Planen» klicken, dann freigeben — danach Knoten und Protokoll anklicken.'),800);
+</script>
+</body>
+</html>
