@@ -1,70 +1,183 @@
-# ADR 0001 — Rollenmodell als Subagents
+# ADR 0001 — Rollenmodell R3cOSINT
 
-- **Status:** angenommen
-- **Datum:** 2026-08-19
-- **Grundlage:** Projektauftrag `docs/00_Projektauftrag.md`, Abschnitt 4 (Rollenmodell), mit Bezügen zu 3.2 (Mechanismen), 3.4 (Iterationspflicht) und 6 (Requirements Engineering / Scrum)
-- **Betrifft:** `.claude/agents/*.md`
+| | |
+|---|---|
+| **Titel** | Rollenmodell: 21 Rollen als Subagents unter `.claude/agents/` |
+| **Status** | angenommen |
+| **Datum** | 2026-08-19 |
+| **Grundlage** | Projektauftrag Abschnitt 4 (4.1 Umsetzungsform, 4.2 Rollen aus dem Originalauftrag, 4.3 ergänzende Rollen, 4.4 rechtliche Rollen), ergänzend 3.2 und 3.4 |
+| **Lieferschritt** | Schritt 1 nach Abschnitt 2 (Rollenmodell aufbauen) |
 
-## Kontext
+**Betroffene Dateien.** 21 Rollendateien unter `.claude/agents/`:
 
-Der Auftrag verlangt ein Rollenmodell für die Entwicklung. Nach 3.2 gehören Rollen in `.claude/agents/` (Subagents mit eigenem Kontextfenster, eigener Tool-Liste, eigenem Modell), nicht in Skills. Jede Rolle wird als eine Datei je Rolle angelegt, mit den Pflichtfeldern `name` und `description` sowie `tools`, `model` und `maxTurns`.
+`backend-engineer.md`, `datenschutzexperte.md`, `devops-engineer.md`, `digital-forensics-spezialist.md`, `docker-kubernetes-experte.md`, `dynamic-software-tester.md`, `frontend-engineer.md`, `full-stack-engineer.md`, `it-supporter.md`, `legal-reviewer.md`, `pentester.md`, `product-owner.md`, `protocol-master.md`, `requirements-engineer.md`, `scrum-master.md`, `secdevops-engineer.md`, `security-specialist-grc.md`, `software-architect.md`, `static-software-tester.md`, `ux-ui-designer.md`, `vulnerability-manager.md`
 
-Dieser ADR hält fest, welche Rolle welche Rechte hat und warum. Er umfasst die Rollen aus 4.2 (Originalauftrag) und 4.3 (Ergänzungen). Der Release Manager (4.3, [OFFEN]) bleibt vorerst beim DevOps Engineer; eine eigene Rolle entsteht nur, wenn der Auftraggeber Freigabeprozesse formalisiert.
+sowie dieses Dokument, `docs/adr/0001-rollenmodell.md`.
 
-## Entscheidung
+---
 
-### Leitprinzipien
+## 1. Kontext
 
-1. **Minimale Rechte.** Die Tool-Liste jeder Rolle richtet sich nach der Spalte „Schreibrechte" in 4.2 bzw. — für 4.3-Rollen — nach der engsten Rechteform, die den Auftrag erfüllt.
-2. **`description` beschreibt den Auslösefall, nicht die Rolle** (4.1). Das `description`-Feld entscheidet über die Delegation und nennt deshalb die auslösende Situation.
-3. **Verifikation auf anderem Modell als die Umsetzung** (3.4, Rollentrennung in der Schleife). Die umsetzenden Rollen laufen auf `sonnet`, die unabhängig prüfenden und die juristisch/architektonisch abwägenden Rollen auf `opus`. So ist die zweite Meinung nicht die Wiederholung der ersten.
-4. **`maxTurns` je Rolle** (3.4, Endlosschleifen-Schutz), abgestuft nach Umfang der typischen Arbeitseinheit.
+Der Originalauftrag beschreibt `CLAUDE.md` als "Orchestrator zwischen den SKILL.md (Skills bzw. Agenten)". Abschnitt 3.2 des Projektauftrags hält fest, dass diese Formulierung drei Mechanismen vermischt, die Claude Code getrennt behandelt: `CLAUDE.md`, Skills unter `.claude/skills/<name>/SKILL.md` und Subagents unter `.claude/agents/<name>.md`.
 
-### Grenze der Durchsetzbarkeit auf Tool-Ebene
+Konsequenz (a) aus 3.2 ist die massgebende Festlegung:
 
-Die Frontmatter-Rechte kennen nur „darf `Edit`/`Write` aufrufen" oder nicht. Eine Einschränkung wie „nur `docs/`", „nur Testcode", „nur Register" oder „nur Planungsartefakte" lässt sich damit **nicht** verdrahten. Diese engeren Grenzen sind im Systemprompt jeder Rolle festgehalten und werden verbindlich erst über die Gates aus 3.4 (`PreToolUse`- bzw. `Stop`/`TaskCompleted`-Hooks in der versionierten `.claude/settings.json`) erzwungen. Die Hooks sind Gegenstand einer späteren Arbeitseinheit; dieser ADR legt die Rechte fest, nicht ihre Hook-Durchsetzung.
+> Rollen gehören in `.claude/agents/`, nicht in Skills. Ein Subagent besitzt ein eigenes Kontextfenster, eine eigene Tool-Liste (`tools`, `disallowedTools`), ein eigenes Modell und einen eigenen Berechtigungsmodus (`permissionMode`). Genau das braucht ein Rollenmodell. Ein Skill kann das nicht, er ändert nur das Verhalten des Hauptagenten.
 
-Konkret bedeutet das: Rollen mit der Rechteform „nein" (kein Schreibrecht) erhalten **kein** `Edit`/`Write`; Rollen mit einer eingeschränkten Schreibform („nur Dokumentation", „nur Testcode", „nur Register", „nur Planungsartefakte", „nur `docs/`") erhalten `Edit`/`Write` mit der Einschränkung als Instruktion.
+Ein Skill wird nur bei Bedarf anhand seines `description`-Felds geladen und bringt weder eigenes Kontextfenster noch eigene Tool-Liste noch eigenes Modell mit. Damit liesse sich weder abbilden, dass der Pentester lesen und analysieren, aber nicht schreiben darf, noch dass Umsetzung und Prüfung auf verschiedenen Modellen laufen (3.4). Skills bleiben nach 3.2 (b) für Standards und Prozeduren reserviert.
 
-### Rechte je Rolle
+Abschnitt 4.1 legt die Form fest: YAML-Frontmatter plus Systemprompt im Body, `name` und `description` als Pflichtfelder, dazu je Rolle eine Tool-Liste nach dem Prinzip der minimalen Rechte, ein zugeordneter Standard und eine definierte Ausgabeform.
 
-Legende Schreibrechte: **Code** = Produktionscode; **Test** = nur Testcode; **Doku** = nur Dokumentation; **Register/Plan/Backlog** = nur das genannte Artefakt; **nein** = keine.
+---
 
-| Rolle | Quelle | Modell | maxTurns | Tools | Schreibrechte (4.2/4.3) | Begründung der Rechte |
-|---|---|---|---|---|---|---|
-| Full-Stack Engineer | 4.2 | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash | Code (ja) | Baut über alle Schichten; braucht Schreiben und Ausführen. |
-| Backend Engineer | 4.2 | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash | Code (ja) | Serverlogik, Datenmodell, Schnittstellen. |
-| Frontend Engineer | 4.2 | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash | Code (ja) | UI-Umsetzung; kein Frontend-Code vor Prototyp-Freigabe (5.6). |
-| DevOps Engineer | 4.2 (+ Release Manager) | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash | Code (ja) | Pipeline, Deployment, Nachweis-Workflow; übernimmt Release-Aufgaben. |
-| SecDevOps Engineer | 4.2 | sonnet | 30 | Read, Grep, Glob, Edit, Write, Bash | Code (ja) | Härtet Pipeline und Lieferkette. |
-| Docker-/Kubernetes-Experte | 4.2 | sonnet | 30 | Read, Grep, Glob, Edit, Write, Bash | Code (ja) | Container, Orchestrierung, Härtung, Analyse-Isolation. |
-| Static Software Tester | 4.2 | opus | 30 | Read, Grep, Glob, Bash | nein | Analyse ohne Ausführung; kein `Edit`/`Write`. Bash nur für Linter/Typprüfer. Anderes Modell als Umsetzung (3.4). |
-| Dynamic Software Tester | 4.2 | opus | 30 | Read, Grep, Glob, Edit, Write, Bash | Test | Schreibt nur Testcode; verifiziert die laufende Anwendung. Anderes Modell als Umsetzung (3.4). |
-| Scrum Master | 4.2 | sonnet | 25 | Read, Grep, Glob, Edit, Write | Plan | Nur Planungsartefakte; kein Code, keine Priorisierung. |
-| Pentester | 4.2 | opus | 25 | Read, Grep, Glob, Bash | nein | Findet Schwachstellen, kein `Edit`/`Write` (ausdrückliche Aufgabenvorgabe). Trennung Finder/Bewerter. |
-| Vulnerability Manager | 4.2 | sonnet | 25 | Read, Grep, Glob, Edit, Write | Register | Bewertet und verfolgt; schreibt nur das Register. |
-| Security Specialist GRC | 4.2 | opus | 30 | Read, Grep, Glob, Edit, Write, WebSearch, WebFetch | Doku | Konformitätsanalyse mit Fundstellen; Recherche braucht Web-Tools. |
-| Legal Reviewer | 4.2 | opus | 25 | Read, Grep, Glob, Edit, Write, WebSearch, WebFetch | Doku | Juristische Gegenprüfung; keine Schreibrechte auf Code (ausdrückliche Aufgabenvorgabe). |
-| Datenschutzexperte | 4.2 | opus | 25 | Read, Grep, Glob, Edit, Write, WebSearch, WebFetch | Doku | Löschkonzept, Bearbeitungsverzeichnis; nur Dokumentation. |
-| Protocol Master | 4.2 | sonnet | 25 | Read, Grep, Glob, Edit, Write | nur `docs/` | ADRs, Changelog, Nachweisverzeichnis; Schreiben auf `docs/` beschränkt. |
-| Product Owner | 4.3 | sonnet | 25 | Read, Grep, Glob, Edit, Write | Backlog | Ordnet das Backlog; kein Code. Getrennt vom Requirements Engineer (6.1). |
-| Requirements Engineer | 4.3 | opus | 30 | Read, Grep, Glob, Edit, Write, WebSearch, WebFetch | Doku (RE-Arbeitsprodukte) | Erhebt testbare Anforderungen nach IREB; kein Code. |
-| Software Architect | 4.3 | opus | 30 | Read, Grep, Glob, Edit, Write | Doku (ADR/Kontextmodell) | Entscheidet und dokumentiert; implementiert nicht selbst. |
-| UX/UI Designer | 4.3 | sonnet | 30 | Read, Grep, Glob, Edit, Write | Prototyp (`prototype/`) | Entwirft und ergänzt den Wegwerf-Prototyp; kein Produktionscode. |
-| Digital-Forensics-/Chain-of-Custody-Spezialist | 4.3 | opus | 30 | Read, Grep, Glob, Edit, Write, Bash | Doku (Spez./Prüfung) | Spezifiziert und verifiziert Herkunft und Verkettung; Bash für Prüfsummenkontrolle. |
-| IT Supporter | 4.3 | sonnet | 30 | Read, Grep, Glob, Edit, Write, Bash | Code (Diagnose/Support) | Behebt Laufzeit- und Setup-Probleme; arbeitet gegen Protokolle ohne Fallinhalte. |
+## 2. Entscheidung
 
-### Modellzuordnung — Zusammenfassung
+Alle 21 Rollen aus 4.2 und 4.3 werden als Subagents unter `.claude/agents/` angelegt, je Rolle eine Datei. Es gelten vier Leitprinzipien.
 
-- **`sonnet` (Umsetzung, Prozess, mechanisch):** Full-Stack, Backend, Frontend, DevOps, SecDevOps, Docker/Kubernetes, Scrum Master, Product Owner, Vulnerability Manager, Protocol Master, UX/UI Designer, IT Supporter.
-- **`opus` (unabhängige Verifikation, juristische/architektonische Abwägung):** Static Tester, Dynamic Tester, Pentester, GRC, Legal Reviewer, Datenschutzexperte, Requirements Engineer, Software Architect, Digital-Forensics-Spezialist.
+### 2.1 Minimale Rechte (4.1)
 
-Die Trennung stellt sicher, dass jede modellbasierte Prüfung auf einem anderen Modell läuft als die geprüfte Umsetzung (3.4).
+Die Tool-Liste jeder Rolle ist eine Positivliste und enthält genau die Werkzeuge, die der Auftrag der Rolle erfordert. Lesen und Suchen (`Read`, `Grep`, `Glob`) hat jede Rolle. `Edit` und `Write` fehlen dort vollständig, wo 4.2 die Schreibrechte mit "nein" führt — beim Static Software Tester und beim Pentester. `Bash` erhalten nur Rollen, die Befehle ausführen müssen; wo `Bash` ausschliesslich lesenden Prüfläufen dient, ist das im Body ausdrücklich festgehalten. `WebSearch` und `WebFetch` sind auf die beiden Rollen begrenzt, deren Auftrag die Prüfung externer Rechtsquellen einschliesst (Security Specialist GRC, Legal Reviewer).
 
-## Konsequenzen
+### 2.2 `description` als Auslösefall (4.1)
 
-- Die Rechte sind bewusst eng. Wer für eine Aufgabe zwei Rechteformen braucht (etwa Systembetrieb und Fallzugriff, vgl. 5.8), erhält beide Rollen zugewiesen; das ist im Protokoll sichtbar.
-- Die instruktionsbasierten Einschränkungen („nur `docs/`", „nur Testcode" usw.) sind noch nicht hart durchgesetzt. Ihre Durchsetzung über Hooks in `.claude/settings.json` ist eine Folgearbeit (3.4) und wird in einem eigenen ADR festgehalten.
-- Kein Zugriff einer Rolle auf die Produktionsumgebung; Entwicklung und Prüfung laufen gegen Test/Schulung mit synthetischen Daten (5.15, 5.16).
-- `description`-Felder sind auf die Delegationsauslösung optimiert und sollten mit gleicher Sorgfalt gepflegt werden wie die Rechte, da sie über den Einsatz der Rolle entscheiden.
-- Der Release Manager ist nicht als eigene Rolle angelegt. Wird er später abgetrennt, ist dieser ADR fortzuschreiben.
+Das `description`-Feld entscheidet über die Delegation und beschreibt deshalb den Auslösefall, nicht die Rolle. Keine der 21 Beschreibungen ist eine Berufsbezeichnung; jede nennt eine Tätigkeit und die Bedingung, unter der sie greift. Neunzehn tun das über "sobald", "wenn" oder "bevor" — Beispiel Static Software Tester: "Prüft geänderten Code ohne Ausführung durch Review, Linting und Typprüfung, bevor eine Backlog-Aufgabe als erledigt gilt." Zwei Beschreibungen tragen die Bedingung im Objekt statt im Nebensatz: Der Full-Stack Engineer wird über den Zuschnitt der Aufgabe ausgelöst ("eine Backlog-Aufgabe ..., die Datenmodell, Serverlogik und Oberfläche zugleich berührt"), der IT Supporter über das auslösende Ereignis ("einen gemeldeten Laufzeitfehler").
+
+### 2.3 Modelltrennung zwischen Umsetzung und Prüfung (3.4)
+
+3.4 verlangt: Die Rolle, die implementiert, prüft nicht ihre eigene Arbeit; wo ein modellbasierter Prüfschritt eingesetzt wird, läuft er auf einem anderen Modell als die Umsetzung, sonst ist die zweite Meinung nur eine Wiederholung der ersten. Umgesetzt ist das über das `model`-Feld:
+
+- Umsetzende und koordinierende Rollen laufen auf `sonnet`.
+- Prüfende Rollen und Rollen mit Belegpflicht laufen auf `opus`: Static Software Tester, Dynamic Software Tester, Pentester, Software Architect, Requirements Engineer, Datenschutzexperte, Digital-Forensics-Spezialist, Security Specialist GRC.
+- Wo Erstellung und Gegenprüfung ein Paar bilden, sind die Modelle bewusst verschieden. Der Security Specialist GRC erstellt die Konformitätsanalyse auf `opus`, der Legal Reviewer prüft sie auf `sonnet` gegen. Nicht die Modellstufe ist das Kriterium, sondern die Verschiedenheit.
+- Die Kehrseite ist in der Rollendatei des Static Software Testers festgehalten: Weil Static und Dynamic Software Tester beide auf `opus` laufen, ist der Testcode des Dynamic Software Testers ausdrücklich nicht Prüfgegenstand des Static Software Testers — eine Prüfung auf demselben Modell wäre keine zweite Meinung.
+
+Verwendet sind ausschliesslich die Aliase `sonnet` und `opus`; keine Rolle nennt eine feste Modell-ID, damit das Rollenmodell einen Modellwechsel überdauert.
+
+### 2.4 `maxTurns` als Endlosschleifen-Schutz (3.4)
+
+3.4, Ebene 4, verlangt verbindlich: "Turn-Begrenzung je Rolle: Im Frontmatter jedes Subagenten wird `maxTurns` gesetzt, damit eine delegierte Rolle nicht unbegrenzt weiterläuft." Jede der 21 Rollen trägt `maxTurns`. Die Staffelung folgt dem Arbeitsumfang der Rolle: 40 für die vier Rollen, die durchgängige Inkremente umsetzen, 30 für Rollen mit mehrschrittiger Analyse- oder Prüfarbeit, 25 für Rollen mit eng umrissenem Arbeitsprodukt. `maxTurns` ergänzt die Eskalationsregel aus 3.4 (Abbruch nach dreimaligem Scheitern am gleichen Kriterium), es ersetzt sie nicht.
+
+---
+
+## 3. Rollentabelle — Stand der 21 Dateien
+
+Spalte "Quelle" verweist auf den Abschnitt des Projektauftrags, aus dem die Rolle stammt. Spalte "Schreibrechte laut 4.2" gibt für die Rollen aus 4.2 den Wert der dortigen Tabellenspalte wieder; Tabelle 4.3 führt keine Schreibrechte-Spalte, was in der Spalte entsprechend vermerkt ist.
+
+| Rolle | Quelle | Datei | model | maxTurns | tools | Schreibrechte laut 4.2 | Begründung der Rechte |
+|---|---|---|---|---|---|---|---|
+| Full-Stack Engineer | 4.2 | `full-stack-engineer.md` | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash | ja | Setzt Features über alle Schichten um; braucht Schreibzugriff auf Code und Tests sowie `Bash` für die Definition-of-Done-Befehlskette (3.4). |
+| Backend Engineer | 4.2 | `backend-engineer.md` | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash | ja | Serverlogik, Datenmodell, Schnittstellen und Migrationsskripte; `Bash` für Build, Linter, Typprüfung, Testsuite. |
+| Frontend Engineer | 4.2 | `frontend-engineer.md` | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash | ja | Oberflächenumsetzung mit Tests; `Bash` für Build und die automatisierte WCAG-2.2-AA-Prüfung. |
+| DevOps Engineer | 4.2 | `devops-engineer.md` | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash | ja | Pipeline-, Arbeitsablauf- und Changelog-Dateien im Repository; `Bash` für Bau- und Sicherungsläufe gegen Test/Schulung. |
+| SecDevOps Engineer | 4.2 | `secdevops-engineer.md` | sonnet | 30 | Read, Grep, Glob, Edit, Write, Bash | ja | Pipeline- und Hook-Konfiguration, SBOM, Secret-Scanning; `Bash`, weil die Wirkung über den Rückgabewert belegt wird (3.4). |
+| Docker- und Kubernetes/Portainer-Experte | 4.2 | `docker-kubernetes-experte.md` | sonnet | 30 | Read, Grep, Glob, Edit, Write, Bash | ja | Containerdefinitionen und Manifeste je Umgebung; `Bash` für Härtungs- und Offline-Nachweise. |
+| Static Software Tester | 4.2 | `static-software-tester.md` | opus | 30 | Read, Grep, Glob, Bash | nein | Kein `Edit`, kein `Write` — die Rolle meldet Befunde und behebt sie nicht. `Bash` ausschliesslich für lesende Prüfläufe (Linter, Typprüfung, statische Analyse). |
+| Dynamic Software Tester | 4.2 | `dynamic-software-tester.md` | opus | 30 | Read, Grep, Glob, Edit, Write, Bash | nur Testcode | `Edit` und `Write` werden gebraucht, weil Testcode zu schreiben ist; die Begrenzung auf Testverzeichnisse und Testdaten steht als Instruktion im Body (siehe Abschnitt 4). `Bash` für die Testläufe. |
+| Scrum Master | 4.2 | `scrum-master.md` | sonnet | 25 | Read, Grep, Glob, Edit, Write | nur Planungsartefakte | Schreibt Sprint-Planungsartefakt, Ereignisplan, Hindernisliste, Retrospektivprotokoll und Übergabedatei; kein `Bash`, weil die Rolle keine Befehle ausführt. |
+| Pentester | 4.2 | `pentester.md` | opus | 25 | Read, Grep, Glob, Bash | nein | Kein `Edit`, kein `Write`. `Bash` dient ausschliesslich dem Ausführen von Prüfungen gegen die laufende Anwendung in Test/Schulung, nicht dem Ändern von Dateien. |
+| Vulnerability Manager | 4.2 | `vulnerability-manager.md` | sonnet | 25 | Read, Grep, Glob, Edit, Write | nur Register | `Edit` und `Write` ausschliesslich für Schwachstellenregister und Statusübersichten; kein `Bash`, weil die Rolle bewertet und nicht sucht. |
+| Security Specialist GRC | 4.2 | `security-specialist-grc.md` | opus | 30 | Read, Grep, Glob, Edit, Write, WebSearch, WebFetch | nur Dokumentation | Schreibt die Konformitätsanalyse; `WebSearch` und `WebFetch`, weil jede Aussage mit verifizierter Fundstelle zu führen ist (4.4). Kein `Bash`. |
+| Legal Reviewer | 4.2 | `legal-reviewer.md` | sonnet | 25 | Read, Grep, Glob, Edit, Write, WebSearch, WebFetch | nur Dokumentation | Schreibt ausschliesslich den eigenen Prüfbericht; `WebSearch` und `WebFetch` zur Verifikation der angegebenen Fundstellen. Kein `Bash`. |
+| Datenschutzexperte | 4.2 | `datenschutzexperte.md` | opus | 25 | Read, Grep, Glob, Edit, Write | nur Dokumentation | Schreibt Bearbeitungsverzeichnis und Löschkonzept; die technische Umsetzung des Löschwegs liegt bei Backend und DevOps, deshalb kein `Bash`. |
+| Protocol Master | 4.2 | `protocol-master.md` | sonnet | 25 | Read, Grep, Glob, Edit, Write | ja, nur `docs/` | Führt Dokumentation, Changelog und Nachweisverzeichnis. Kein `Bash`: die Rolle ändert nichts am Git-Zustand, die Commit-Prüfsummen für die festen Verweise nach 6.6 werden ihr zugeliefert. |
+| Product Owner | 4.3 | `product-owner.md` | sonnet | 25 | Read, Grep, Glob, Edit, Write | 4.3 ohne Schreibrechte-Spalte; laut Datei nur das Product Backlog samt Ordnung und Schätzung (6.3) | `Edit` und `Write` für das verantwortete Arbeitsprodukt; kein `Bash`, weil die Rolle ordnet und priorisiert, statt auszuführen. |
+| Requirements Engineer | 4.3 | `requirements-engineer.md` | opus | 30 | Read, Grep, Glob, Edit, Write | 4.3 ohne Schreibrechte-Spalte; laut Datei ausschliesslich die Arbeitsprodukte aus 6.3 | Stakeholderliste, Glossar und Anforderungen sind Textartefakte; kein `Bash`, keine externe Recherche (6.8). |
+| Software Architect | 4.3 | `software-architect.md` | opus | 30 | Read, Grep, Glob, Edit, Write | 4.3 ohne Schreibrechte-Spalte; laut Datei Architecture Decision Records und Kontextmodell, keine Fachlogik | Legt die ADR-Dateien unter `docs/adr/` selbst an (4.3); kein `Bash`, weil die Umsetzung bei den Engineer-Rollen liegt. |
+| UX/UI Designer | 4.3 | `ux-ui-designer.md` | sonnet | 30 | Read, Grep, Glob, Edit, Write | 4.3 ohne Schreibrechte-Spalte; laut Datei ausschliesslich im getrennten Prototyp-Verzeichnis | Der Prototyp aus 5.6 wird geschrieben und ergänzt; den maschinell prüfbaren Teil seiner Definition of Done führt der Dynamic Software Tester aus, deshalb kein `Bash`. |
+| Digital-Forensics- und Chain-of-Custody-Spezialist | 4.3 | `digital-forensics-spezialist.md` | opus | 30 | Read, Grep, Glob, Edit, Write, Bash | 4.3 ohne Schreibrechte-Spalte; laut Datei ausschliesslich Dokumentation zu Beweiskette und Herkunftsnachweis | `Bash` ausschliesslich für Prüfläufe ohne Zustandsänderung, insbesondere die Prüfsummenkontrolle an der Protokollkette (5.3). |
+| IT Supporter | 4.3 | `it-supporter.md` | sonnet | 30 | Read, Grep, Glob, Edit, Write, Bash | 4.3 ohne Schreibrechte-Spalte; laut Datei nur die zur Fehlerbehebung nötigen Dateien | Behebt gemeldete Laufzeitfehler direkt (5.12), braucht dafür Schreibzugriff und `Bash`, um die Prüfkette der betroffenen Aufgabe auf Rückgabewert 0 zu bringen. |
+
+Anmerkung zum Legal Reviewer: 3.2 (a) hält beispielhaft fest, der Legal Reviewer brauche gar keine Schreibrechte; die normative Spalte in Tabelle 4.2 führt dagegen "nur Dokumentation". Die Rollendatei folgt 4.2 und hält den Widerspruch fest, weil 3.2 (a) den Mechanismus erläutert und keine Rechtezuweisung trifft. Die Auflösung ist dem Auftraggeber vorzulegen.
+
+Anmerkung zum IT Supporter: Die Tabellen 4.2 und 4.3 weisen dieser Rolle als einziger keine Arbeitsgrundlage und keinen zugeordneten Standard zu. Die Rollendatei erfindet keinen, sondern setzt die einschlägigen Abschnitte des Projektauftrags an deren Stelle und legt die Festlegung eines Standards dem Auftraggeber vor (4.1).
+
+---
+
+## 4. Grenze der Durchsetzbarkeit
+
+Das Frontmatter eines Subagenten kann Schreibrechte **nicht** auf ein Verzeichnis begrenzen. `tools` und `disallowedTools` sind Listen von Tool-Namen beziehungsweise MCP-Mustern; ein Eintrag mit Pfadangabe ist für das Subagent-Frontmatter nicht dokumentiert. Was sich über `tools` durchsetzen lässt, ist ausschliesslich die Ja/Nein-Frage, ob eine Rolle überhaupt schreiben darf. Genau das ist beim Static Software Tester und beim Pentester umgesetzt: Ohne `Edit` und `Write` kann die Rolle nichts ändern.
+
+Alle abgestuften Rechteformen aus 4.2 und 4.3 liegen unterhalb dieser Auflösung:
+
+| Rechteform | Rollen | Zustand |
+|---|---|---|
+| nur Testcode | Dynamic Software Tester | Instruktion im Systemprompt |
+| nur Planungsartefakte | Scrum Master | Instruktion im Systemprompt |
+| nur Register | Vulnerability Manager | Instruktion im Systemprompt |
+| nur Dokumentation | Security Specialist GRC, Legal Reviewer, Datenschutzexperte | Instruktion im Systemprompt |
+| ja, nur `docs/` | Protocol Master | Instruktion im Systemprompt |
+| Arbeitsprodukt-Begrenzung nach 4.3 | Product Owner, Requirements Engineer, Software Architect, UX/UI Designer, Digital-Forensics-Spezialist, IT Supporter | Instruktion im Systemprompt |
+
+Jede dieser Rollen trägt in ihrem Abschnitt "Grenzen und Rechte" den ausdrücklichen Vermerk, dass die Einschränkung nicht durch das `tools`-Feld erzwungen wird, sondern als Instruktion gilt. Das ist bewusst so festgehalten, damit die Lücke nicht später für eine Durchsetzung gehalten wird.
+
+**Wie die Begrenzung hart wird.** Nach 3.4 wirkt ein Gate nur, wenn es versioniert im Repository liegt; Cloud-Sitzungen von Claude Code on the web lesen die lokale `~/.claude/settings.json` nicht. Die harte Durchsetzung gehört deshalb in die versionierte `.claude/settings.json` des Repositories, und zwar über die Hook-Ebenen aus 3.4:
+
+- `PreToolUse` blockiert einen Schreibzugriff ausserhalb des zulässigen Bereichs, bevor er stattfindet.
+- `Stop` (für Subagenten sinngemäss `SubagentStop`) verhindert das vorzeitige Beenden.
+- `TaskCompleted` verhindert, dass eine Aufgabe als abgeschlossen markiert wird, solange die Prüfkette rot ist.
+
+Für alle drei gilt der in 3.4 als häufigster Fehler benannte Punkt: **Nur Rückgabewert 2 blockiert.** Ein Gate mit `exit 1` ist wirkungslos, ohne dass das auffällt. Ebenso verbindlich sind der Reentranz-Schutz über `stop_hook_active` und die harte Obergrenze über `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`.
+
+**Diese Hooks existieren noch nicht.** `.claude/settings.json` im Repository ist gegenwärtig leer (`{}`). Es besteht damit heute keine technische Verzeichnisbeschränkung für irgendeine Rolle. Das Anlegen der Hooks ist eine Folgearbeit und gehört nach der Reihenfolge aus Abschnitt 2 in die Lieferschritte 2 und 3, nicht in Schritt 1. Bis dahin ist die Rechtestaffelung eine Verhaltensvorgabe, kein Mechanismus.
+
+---
+
+## 5. Bewusst nicht gesetzte Felder
+
+### 5.1 Kein `skills:`-Feld
+
+3.2 (b) sieht vor, dass Skills pro Rolle über das `skills`-Frontmatter-Feld vorgeladen werden. Keine der 21 Dateien setzt es, weil unter `.claude/skills/` noch keine Skill existiert. Ein Verweis auf eine nicht vorhandene Skill wäre eine Behauptung ohne Gegenstand. Die Reihenfolge aus Abschnitt 2 ist bindend: Schritt 1 legt die Rollen an; Skills als wiederverwendbare Prozeduren und Checklisten entstehen mit den späteren Schritten. Sobald eine Skill vorliegt, wird das Feld je betroffener Rolle nachgetragen und dieser ADR fortgeschrieben.
+
+### 5.2 Einordnung von `maxTurns`
+
+`maxTurns` ist ein offiziell dokumentiertes Frontmatter-Feld und steht in der Referenztabelle der Subagent-Dokumentation. Dokumentiert ist dort allerdings nur die Bedeutung "Obergrenze der agentischen Turns, nach der der Subagent stoppt". Nicht dokumentiert sind: was ein agentischer Turn genau zählt, welches Verhalten das Erreichen der Grenze auslöst und welcher Wert ohne das Feld gilt.
+
+Daraus folgt eine ehrliche Trennung: Dass `maxTurns` gesetzt wird, ist eine Vorgabe aus 3.4. Dass die Werte 25, 30 und 40 lauten, ist eine Projektfestlegung nach Arbeitsumfang und aus der Dokumentation nicht ableitbar. Die Werte sind Startwerte und werden korrigiert, sobald Rollen erkennbar zu früh abbrechen oder zu lange laufen.
+
+### 5.3 Positivliste statt `disallowedTools`
+
+`disallowedTools` ist ebenfalls ein dokumentiertes Feld und liesse sich mit `tools` kombinieren. Verwendet wird trotzdem durchgängig die Positivliste, aus drei Gründen:
+
+1. **4.1 verlangt minimale Rechte.** Wird `tools` weggelassen und nur eine Denylist gesetzt, erbt der Subagent alle übrigen Werkzeuge. Das ist das Gegenteil einer minimalen Rechtevergabe: Erlaubt ist dann alles, woran beim Schreiben der Denylist niemand gedacht hat.
+2. **Eine Denylist veraltet still.** Kommt ein Werkzeug hinzu, landet es automatisch in jeder Rolle mit Denylist, ohne dass eine Datei geändert wurde. Eine Positivliste bleibt bei dem, was zum Zeitpunkt der Prüfung entschieden wurde.
+3. **Nachweisbarkeit.** Für ein Projekt mit Nachweispflicht ist die Positivliste die belegbare Form: Was in der Datei steht, ist die vollständige Rechtemenge der Rolle. Die Begründung je Werkzeug steht in der Tabelle in Abschnitt 3 und im Body der jeweiligen Rolle.
+
+### 5.4 Weitere Felder
+
+Nicht gesetzt sind ferner `permissionMode`, `hooks`, `memory`, `background`, `isolation`, `color` und `mcpServers`. Für keines dieser Felder trifft der Projektauftrag eine Vorgabe; sie werden deshalb nicht auf Vorrat belegt. Die rollenspezifische Verankerung von Hooks über das `hooks`-Feld bleibt als Option für die Folgearbeit aus Abschnitt 4 offen.
+
+---
+
+## 6. Release Manager
+
+4.3 führt den Release Manager als [OFFEN]: "Kann beim DevOps Engineer bleiben. Eigene Rolle nur, wenn Freigabeprozesse formalisiert werden müssen. Entscheidung durch Auftraggeber."
+
+**Entscheid für diesen Stand:** Es wird keine eigene Rollendatei `release-manager.md` angelegt. Die Release-Aufgaben bleiben beim DevOps Engineer und sind dort ausdrücklich verankert: `CHANGELOG.md` nach Keep a Changelog, Versionsschilder nach Semantic Versioning (4.2) sowie der durch das Versionsschild ausgelöste GitHub-Arbeitsablauf für die Nachweisübertragung (6.6). Die Rollendatei `devops-engineer.md` hält den offenen Punkt und seine Herkunft im Abschnitt "Auftrag" fest, damit er nicht verlorengeht.
+
+Die Entscheidung darüber liegt beim Auftraggeber und ist mit dieser Festlegung nicht vorweggenommen. Entscheidet er auf Abtrennung, sind drei Dinge zu tun: eine eigene Rollendatei anlegen, die Release-Aufgaben aus `devops-engineer.md` herauslösen, und diesen ADR fortschreiben — Rollentabelle in Abschnitt 3 und dieser Abschnitt.
+
+---
+
+## 7. Konsequenzen
+
+**7.1 Jede abgestufte Rolle wird doppelt geführt.** Rechte liegen in zwei Formen vor: hart im `tools`-Feld, wo die Auflösung dafür reicht, und weich als Instruktion im Systemprompt, wo sie es nicht reicht. Beide Formen müssen übereinstimmen und beide müssen bei einer Änderung nachgezogen werden. Wird einer Rolle ein Werkzeug hinzugefügt, ohne den Body anzupassen, entsteht eine Rolle, deren Datei zwei verschiedene Aussagen über ihre Rechte macht. Bis die Hooks aus Abschnitt 4 existieren, ist die weiche Form für dreizehn der einundzwanzig Rollen die einzige.
+
+**7.2 Keine Rolle erhält Zugang zur Produktionsumgebung.** Nach 5.16 findet Entwicklung ausschliesslich gegen Test/Schulung statt, und der Entwicklungskontext bekommt technisch keinen Zugang zur Produktion — nicht als Regel, sondern über getrennte Zugangsdaten. Nach 5.15 laufen über den Harness zu keinem Zeitpunkt echte Fall- oder Personendaten. Beides ist in den betroffenen Rollendateien als Grenze festgehalten. Praktische Folge: Punkt 3 der Bereitschaftsliste (Sicherung und nachgewiesene Wiederherstellung der Produktionsdatenbank) kann der DevOps Engineer vorbereiten und in Test/Schulung proben, aber nicht selbst gegen Produktion erbringen; Punkt 7 kann ohnehin nur der Auftraggeber abhaken.
+
+**7.3 Die `description`-Felder sind Pflegegegenstand.** Sie entscheiden über die Delegation. Verschiebt sich der Zuschnitt einer Rolle, ohne dass die Beschreibung nachgezogen wird, wird entweder falsch delegiert oder gar nicht. Beschreibungen sind deshalb bei jeder Rollenänderung mitzuprüfen, insbesondere dort, wo zwei Rollen aneinandergrenzen: Static gegen Dynamic Software Tester, Pentester gegen Vulnerability Manager, Requirements Engineer gegen Product Owner, UX/UI Designer gegen Frontend Engineer, Security Specialist GRC gegen Legal Reviewer gegen Datenschutzexperte.
+
+**7.4 Die Gates aus 3.4 sind ausstehende Folgearbeit.** Ohne `PreToolUse`-, `Stop`- beziehungsweise `SubagentStop`- und `TaskCompleted`-Hooks in der versionierten `.claude/settings.json` bleibt die Rechtestaffelung eine Verhaltensvorgabe. Diese Arbeit gehört in die Lieferschritte 2 und 3 nach Abschnitt 2 und ist vor dem Freigabe-Gate in Schritt 4 zu erbringen.
+
+**7.5 Der ADR bildet einen Stand ab.** Er beschreibt die 21 Dateien, wie sie am 2026-08-19 vorliegen. Änderungen an Modell, `maxTurns`, Tool-Liste oder Rechteform einer Rolle sind hier nachzuführen; das Nachführen in Changelog und Nachweisverzeichnis liegt beim Protocol Master (4.2, 6.6).
+
+---
+
+## 8. Offene Punkte, die dieser ADR nicht entscheidet
+
+| Punkt | Fundstelle | Zuständig |
+|---|---|---|
+| Release Manager als eigene Rolle | 4.3 [OFFEN] | Auftraggeber |
+| Schreibrechte des Legal Reviewers: 3.2 (a) "gar keine" gegen 4.2 "nur Dokumentation" | 3.2, 4.2 | Auftraggeber |
+| Zugeordneter Standard für den IT Supporter | 4.1, 4.2, 4.3 | Auftraggeber |
+| Hooks in der versionierten `.claude/settings.json` | 3.4, Abschnitt 2 Lieferschritte 2 und 3 | Folgearbeit |
+| `skills:`-Feld je Rolle, sobald Skills existieren | 3.2 (b), Abschnitt 2 | Folgearbeit |
