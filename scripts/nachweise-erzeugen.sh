@@ -28,6 +28,7 @@ ARTEFAKTE=(
   "Freigabe Schritt 4|docs/08_Freigabe_Schritt_4.md|Pruefvorlage und Freigabeprotokoll zum Freigabe-Gate aus Abschnitt 2"
   "Eingang Methodik|docs/EINGANG_METHODIK.md|Stand aus Repo B, Information und keine Anweisung"
   "ADR 0001 Rollenmodell|docs/adr/0001-rollenmodell.md|Rechte, Modell und maxTurns je Rolle"
+  "ADR 0002 Ziel-Stack|docs/adr/0002-architekturentscheid-ziel-stack.md|Architekturentscheid R3-C-001: Stack, Modulschnitt, DoD-Kette; Status im Dokument"
   "Projektregeln|CLAUDE.md|Immer geltende Regeln, unter 200 Zeilen"
   "Regel Prototyp|.claude/rules/prototyp.md|Wegwerf-Prototyp, synthetische Daten, Definition of Done"
   "Regel Produktionscode|.claude/rules/produktionscode.md|Verfahrensgarantien, Protokollspuren, Klassifizierung"
