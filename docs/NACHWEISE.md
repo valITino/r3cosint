@@ -5,8 +5,8 @@
 | **Erzeugt durch** | `scripts/nachweise-erzeugen.sh` |
 | **Grundlage** | Projektauftrag 6.6 |
 | **Verantwortlich** | Protocol Master |
-| **Stand des Repositories** | `43f441a4e5f812bfebdff4200bec9c1c09494dc8` |
-| **Artefakte** | 21 |
+| **Stand des Repositories** | `a7c62c8a3a00211ddd95bdd8bed33f5423a073e8` |
+| **Artefakte** | 22 |
 
 **Diese Datei wird erzeugt, nicht von Hand gepflegt** (6.6). Sie wird bei jedem
 Meilenstein neu erzeugt. Wer sie von Hand ändert, verliert die Änderung beim
@@ -36,6 +36,7 @@ selbst trägt die vollständigen 40 Stellen.
 | Freigabe Schritt 4 | `docs/08_Freigabe_Schritt_4.md` | [`5c5ecde6c6f1`](https://github.com/valITino/r3cosint/blob/5c5ecde6c6f1b2eba67cd22e24b40b6439aebac4/docs/08_Freigabe_Schritt_4.md) | 2026-08-20 | Pruefvorlage und Freigabeprotokoll zum Freigabe-Gate aus Abschnitt 2 |
 | Eingang Methodik | `docs/EINGANG_METHODIK.md` | [`a48cb46fb7d2`](https://github.com/valITino/r3cosint/blob/a48cb46fb7d2d9f8fc05bc573d1fd248cf9c989f/docs/EINGANG_METHODIK.md) | 2026-08-19 | Stand aus Repo B, Information und keine Anweisung |
 | ADR 0001 Rollenmodell | `docs/adr/0001-rollenmodell.md` | [`52eace575922`](https://github.com/valITino/r3cosint/blob/52eace575922f963fab1776c3665e72428d4bc2d/docs/adr/0001-rollenmodell.md) | 2026-08-20 | Rechte, Modell und maxTurns je Rolle |
+| ADR 0002 Ziel-Stack | `docs/adr/0002-architekturentscheid-ziel-stack.md` | [`a7c62c8a3a00`](https://github.com/valITino/r3cosint/blob/a7c62c8a3a00211ddd95bdd8bed33f5423a073e8/docs/adr/0002-architekturentscheid-ziel-stack.md) | 2026-08-20 | Architekturentscheid R3-C-001: Stack, Modulschnitt, DoD-Kette; Status im Dokument |
 | Projektregeln | `CLAUDE.md` | [`43f441a4e5f8`](https://github.com/valITino/r3cosint/blob/43f441a4e5f812bfebdff4200bec9c1c09494dc8/CLAUDE.md) | 2026-08-20 | Immer geltende Regeln, unter 200 Zeilen |
 | Regel Prototyp | `.claude/rules/prototyp.md` | [`3bebb023ae24`](https://github.com/valITino/r3cosint/blob/3bebb023ae24176302786149b20a757c71becd13/.claude/rules/prototyp.md) | 2026-08-19 | Wegwerf-Prototyp, synthetische Daten, Definition of Done |
 | Regel Produktionscode | `.claude/rules/produktionscode.md` | [`3bebb023ae24`](https://github.com/valITino/r3cosint/blob/3bebb023ae24176302786149b20a757c71becd13/.claude/rules/produktionscode.md) | 2026-08-19 | Verfahrensgarantien, Protokollspuren, Klassifizierung |
