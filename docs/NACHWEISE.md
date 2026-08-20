@@ -5,7 +5,7 @@
 | **Erzeugt durch** | `scripts/nachweise-erzeugen.sh` |
 | **Grundlage** | Projektauftrag 6.6 |
 | **Verantwortlich** | Protocol Master |
-| **Stand des Repositories** | `52eace575922f963fab1776c3665e72428d4bc2d` |
+| **Stand des Repositories** | `43f441a4e5f812bfebdff4200bec9c1c09494dc8` |
 | **Artefakte** | 21 |
 
 **Diese Datei wird erzeugt, nicht von Hand gepflegt** (6.6). Sie wird bei jedem
@@ -33,10 +33,10 @@ selbst trägt die vollständigen 40 Stellen.
 | Product Backlog | `docs/05_Product_Backlog.md` | [`52eace575922`](https://github.com/valITino/r3cosint/blob/52eace575922f963fab1776c3665e72428d4bc2d/docs/05_Product_Backlog.md) | 2026-08-20 | Eintraege mit Kennung, Art, Abnahmekriterium und Pruefaufwand; Summen im Dokument |
 | Definition of Ready und Done | `docs/06_Definition_of_Ready_und_Done.md` | [`a48cb46fb7d2`](https://github.com/valITino/r3cosint/blob/a48cb46fb7d2d9f8fc05bc573d1fd248cf9c989f/docs/06_Definition_of_Ready_und_Done.md) | 2026-08-19 | Eingangs- und Ausgangskriterien, Done als Befehlskette |
 | Roadmap | `docs/07_Roadmap.md` | [`52eace575922`](https://github.com/valITino/r3cosint/blob/52eace575922f963fab1776c3665e72428d4bc2d/docs/07_Roadmap.md) | 2026-08-20 | Etappenfolge und Schnitt in zwei lieferfaehige Fassungen |
-| Freigabe Schritt 4 | `docs/08_Freigabe_Schritt_4.md` | [`52eace575922`](https://github.com/valITino/r3cosint/blob/52eace575922f963fab1776c3665e72428d4bc2d/docs/08_Freigabe_Schritt_4.md) | 2026-08-20 | Pruefvorlage und Freigabeprotokoll zum Freigabe-Gate aus Abschnitt 2 |
+| Freigabe Schritt 4 | `docs/08_Freigabe_Schritt_4.md` | [`5c5ecde6c6f1`](https://github.com/valITino/r3cosint/blob/5c5ecde6c6f1b2eba67cd22e24b40b6439aebac4/docs/08_Freigabe_Schritt_4.md) | 2026-08-20 | Pruefvorlage und Freigabeprotokoll zum Freigabe-Gate aus Abschnitt 2 |
 | Eingang Methodik | `docs/EINGANG_METHODIK.md` | [`a48cb46fb7d2`](https://github.com/valITino/r3cosint/blob/a48cb46fb7d2d9f8fc05bc573d1fd248cf9c989f/docs/EINGANG_METHODIK.md) | 2026-08-19 | Stand aus Repo B, Information und keine Anweisung |
 | ADR 0001 Rollenmodell | `docs/adr/0001-rollenmodell.md` | [`52eace575922`](https://github.com/valITino/r3cosint/blob/52eace575922f963fab1776c3665e72428d4bc2d/docs/adr/0001-rollenmodell.md) | 2026-08-20 | Rechte, Modell und maxTurns je Rolle |
-| Projektregeln | `CLAUDE.md` | [`52eace575922`](https://github.com/valITino/r3cosint/blob/52eace575922f963fab1776c3665e72428d4bc2d/CLAUDE.md) | 2026-08-20 | Immer geltende Regeln, unter 200 Zeilen |
+| Projektregeln | `CLAUDE.md` | [`43f441a4e5f8`](https://github.com/valITino/r3cosint/blob/43f441a4e5f812bfebdff4200bec9c1c09494dc8/CLAUDE.md) | 2026-08-20 | Immer geltende Regeln, unter 200 Zeilen |
 | Regel Prototyp | `.claude/rules/prototyp.md` | [`3bebb023ae24`](https://github.com/valITino/r3cosint/blob/3bebb023ae24176302786149b20a757c71becd13/.claude/rules/prototyp.md) | 2026-08-19 | Wegwerf-Prototyp, synthetische Daten, Definition of Done |
 | Regel Produktionscode | `.claude/rules/produktionscode.md` | [`3bebb023ae24`](https://github.com/valITino/r3cosint/blob/3bebb023ae24176302786149b20a757c71becd13/.claude/rules/produktionscode.md) | 2026-08-19 | Verfahrensgarantien, Protokollspuren, Klassifizierung |
 | Regel Dokumentation | `.claude/rules/dokumentation.md` | [`3bebb023ae24`](https://github.com/valITino/r3cosint/blob/3bebb023ae24176302786149b20a757c71becd13/.claude/rules/dokumentation.md) | 2026-08-19 | Feste Verweise, Nachweisverzeichnis, Verfolgbarkeit |
