@@ -5,7 +5,7 @@
 | **Arbeitsprodukt nach** | Projektauftrag Abschnitt 2, Schritt 4 |
 | **Entscheidet** | Auftraggeber (S-01); Prüfung gemeinsam mit dem Studienkollegen (S-02) |
 | **Vorbereitet** | 2026-08-19, Lieferschritt-4-Vorbereitung durch Claude Code |
-| **Status** | **offen — Freigabe nicht erteilt** |
+| **Status** | **freigegeben am 2026-08-20** — Erklärung in Abschnitt 6 |
 
 ## 1. Was dieses Gate ist
 
@@ -25,7 +25,9 @@ Drei Festlegungen zur Form:
    Ein mündliches oder im Chat erteiltes Ja genügt der Form aus Abschnitt 2
    nicht und wäre nicht nachweisbar (6.6).
 2. **Claude Code füllt Abschnitt 6 nicht aus.** Die Entscheidung liegt beim
-   Auftraggeber; dieses Dokument bereitet sie nur vor.
+   Auftraggeber; dieses Dokument bereitet sie nur vor. Auf ausdrückliche
+   Anweisung des Auftraggebers überträgt die Session den gefällten Entscheid
+   in Abschnitt 6 (zweiter Formweg); so geschehen am 2026-08-20.
 3. **Geprüft wird der benannte Stand.** Prüfgegenstand ist der unter Abschnitt 2
    genannte Commit. Was danach committet wurde, ist nicht Gegenstand dieser
    Freigabe.
@@ -270,12 +272,12 @@ bei der Informatik KapoBE und blockiert nur den Mandantenwechsel.
 
 ## 6. Freigabeerklärung
 
-*Auszufüllen durch den Auftraggeber (S-01). Claude Code füllt diesen Abschnitt
-nicht aus.*
+*Ausgefüllt am 2026-08-20 im Auftrag des Auftraggebers über den zweiten
+Formweg (Anweisung an die Session, siehe Protokollvermerk unten).*
 
 ### Entscheid (E-01)
 
-- [ ] **Freigegeben.** Die Umsetzung gemäss freigegebenem Plan darf beginnen.
+- [x] **Freigegeben.** Die Umsetzung gemäss freigegebenem Plan darf beginnen.
 - [ ] **Freigegeben mit Auflagen.** Die Umsetzung darf beginnen; die Auflagen
       unten werden als Einträge eingeordnet und abgearbeitet.
 - [ ] **Zurückgewiesen.** Nachbesserung gemäss Auflagen, danach erneute Vorlage.
@@ -284,15 +286,14 @@ nicht aus.*
 
 | Nr. | Auflage | Frist oder Bedingung |
 |---|---|---|
-| A-1 | | |
-| A-2 | | |
+| — | Keine Auflagen. | — |
 
 ### Entscheide am Gate
 
 | Punkt | Entscheid |
 |---|---|
-| E-02 — Terminierung der Hooks (R3-Q-001, R3-Q-005; ADR 0001 fortgeschrieben) bestätigen oder widerrufen | |
-| E-03 — Schnitt der Fassungen | |
+| E-02 — Terminierung der Hooks (R3-Q-001, R3-Q-005; ADR 0001 fortgeschrieben) bestätigen oder widerrufen | **Bestätigt** am 2026-08-20 mit der pauschalen Freigabe; die Terminierung in Etappe 0 gilt, ADR 0001 bleibt wie fortgeschrieben |
+| E-03 — Schnitt der Fassungen | **Bestätigt** am 2026-08-20 mit der pauschalen Freigabe; Änderungen gehen später den regulären Weg über den Product Owner (DoR B4) |
 
 ### Erklärung
 
@@ -302,8 +303,16 @@ nicht aus.*
 
 | | |
 |---|---|
-| **Auftraggeber (S-01)** | *Name, Datum* |
-| **Mitgeprüft, Studienkollege (S-02)** | *Name, Datum* |
+| **Auftraggeber (S-01)** | Freigabe erteilt am 2026-08-20, Wortlaut «Ja, wir geben es frei. Go.»; Name nach offenem Entscheid E-11 nicht im Repository geführt |
+| **Mitgeprüft, Studienkollege (S-02)** | Mitprüfung und Zustimmung im «wir» derselben Erklärung vom 2026-08-20; Name nach E-11 nicht im Repository geführt |
+
+**Protokollvermerk zur Form:** Die Freigabe wurde am 2026-08-20 in der
+Claude-Code-Session im Wortlaut «Ja, wir geben es frei. Go.» erteilt — der
+zweite der beiden unter «Formweg» beschriebenen Wege. Diese Erklärung wurde
+daraufhin im Auftrag übertragen und committet; Urheber und Zeitpunkt belegt
+die Commit-Historie des Arbeitszweigs. Die Namen bleiben gemäss offenem
+Entscheid E-11 ausserhalb des öffentlichen Repositories; die Zuordnung folgt
+der Stakeholderliste (S-01, S-02).
 
 ### Formweg
 
