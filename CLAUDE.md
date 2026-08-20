@@ -20,10 +20,12 @@ vorherige freigegeben ist.
 | 1 Rollenmodell (`.claude/agents/`) | erledigt |
 | 2 CLAUDE.md, Rules, Hooks | erledigt |
 | 3 Requirements Engineering und Planung | erledigt |
-| 4 **Freigabe-Gate durch den Auftraggeber** | vorbereitet (`docs/08_Freigabe_Schritt_4.md`), Freigabe offen |
-| 5 Umsetzung | gesperrt bis Schritt 4 |
+| 4 **Freigabe-Gate durch den Auftraggeber** | erledigt — Freigabe 2026-08-20, Commit `5c5ecde6c6f1b2eba67cd22e24b40b6439aebac4` (`docs/08_Freigabe_Schritt_4.md`) |
+| 5 Umsetzung | freigegeben — Etappe 0 läuft, erste Einheit R3-C-001 |
 
-- **Vor Schritt 4 wird kein Produktionscode geschrieben.**
+- **Das Freigabe-Gate Schritt 4 ist erteilt** (2026-08-20). Produktionscode ist
+  seither zulässig; Fachlogik erst nach freigegebenem Architekturentscheid
+  R3-C-001 (3.1).
 - **Vor der schriftlichen Prototyp-Freigabe entsteht kein Frontend-Produktionscode**
   (5.6). Wird Zeit frei, wird sie nicht dafür verwendet.
 
