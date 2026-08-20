@@ -4,7 +4,7 @@
 |---|---|
 | **Arbeitsprodukt nach** | Projektauftrag 6.5, 6.8, 3.4 |
 | **Verantwortlich** | Scrum Master (Prozess), Requirements Engineer (Ready), Static und Dynamic Software Tester (Done) |
-| **Stand** | 2026-08-19, Erstfassung |
+| **Stand** | 2026-08-20, nachgeführt (DoD-Befehle: ADR 0002, Abschnitt 6) |
 
 Beide sind zu unterscheiden: **Ready gilt für den Eingang in den Sprint, Done
 für den Ausgang** (6.8).
@@ -70,8 +70,13 @@ Aufgabe ist erledigt" ist kein Nachweis, sondern eine Behauptung.
 ## Die Befehlskette
 
 Eine Aufgabe gilt als erledigt, wenn **jeder** Schritt mit Rückgabewert 0 endet.
-Die Kette ist die verbindliche Form; die konkreten Befehle werden mit dem
-Architekturentscheid (R3-C-001) eingesetzt, weil sie vom Ziel-Stack abhängen.
+Die Kette ist die verbindliche Form; die konkreten Befehle je Schritt sind mit
+dem Architekturentscheid eingesetzt: **ADR 0002, Abschnitt 6**, mit `make dod`
+als einem Einstieg für die Gates aus R3-Q-001. Sie stehen dort genau einmal —
+diese Tabelle nennt die Kriterien, der ADR die Befehle. Die technische
+Bestätigung durch den DevOps Engineer und die abschliessende Bestätigung durch
+den Auftraggeber — samt der Schwellenwerte aus E-07 und E-08 — erfolgen mit
+R3-Q-001; dort werden auch die Befunde des ADR zu D10 und D12 behandelt.
 
 | Nr. | Schritt | Kriterium |
 |---|---|---|
@@ -155,4 +160,4 @@ für den Prototyp.
 |---|---|---|
 | 1 | Bestätigung der Abdeckungsschwelle in D6 | Auftraggeber |
 | 2 | Schwellenwert für Linter-Warnungen (D3) und für Abhängigkeitsschwachstellen (D8) | Auftraggeber mit SecDevOps |
-| 3 | Die konkreten Befehle je Kettenschritt — abhängig vom Ziel-Stack aus R3-C-001 | Software Architect mit DevOps |
+| 3 | Konkrete Befehle je Kettenschritt: eingesetzt am 2026-08-20 mit ADR 0002, Abschnitt 6 (Einstieg `make dod`); offen bleibt die technische Bestätigung samt der Befunde zu D10 und D12 | DevOps Engineer und Auftraggeber, mit R3-Q-001 |

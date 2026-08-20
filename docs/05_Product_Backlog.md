@@ -5,7 +5,7 @@
 | **Arbeitsprodukt nach** | Projektauftrag 6.3, 6.4 |
 | **Verantwortlich** | Product Owner (Ordnung und Priorität), Requirements Engineer (Formulierung und Prüfbarkeit) |
 | **Lebensdauer** | sich weiterentwickelnd |
-| **Stand** | 2026-08-19, Erstfassung |
+| **Stand** | 2026-08-20, nachgeführt (V-01 und V-04 aus `docs/08_Freigabe_Schritt_4.md`; O-1-Vermerk aus ADR 0002) |
 
 ## Wie dieser Backlog zu lesen ist
 
@@ -45,6 +45,7 @@ Diese Einträge gehen jeder Etappe voraus oder laufen quer.
 - **Formulierung:** Vor der ersten Zeile Fachlogik liegen Architekturentscheid und Grundgerüst als Architecture Decision Record vor und sind freigegeben. Der ADR umfasst Ziel-Stack, Rahmenwerk und Komponentenbibliothek der Oberfläche, Modulschnitt und Datenzugriff.
 - **Abnahme:** Test `R3-C-001_adr_vorhanden` — unter `docs/adr/` existiert ein ADR mit Status "angenommen", der Ziel-Stack, Rahmenwerk, Komponentenbibliothek, Modulgrenzen und Begründung je Entscheid nennt; die schriftliche Freigabe des Auftraggebers ist im ADR vermerkt. Solange dieser Test rot ist, schlägt jeder Test aus Etappe 1 fehl.
 - **Achtung:** Die Wahl der Oberflächentechnik ist seit dem Wegfall von Open WebUI eine Architekturentscheidung mit Auswirkung auf den grössten Einzelposten der Roadmap (5.6). Sie wird nicht nebenbei getroffen. Die bestehende Demo ist Gestaltungsgrundlage.
+- **Achtung:** Erfüllt durch ADR 0002 (angenommen, Freigabe des Auftraggebers am 2026-08-20). Entscheid O-1 bestätigt: Die Komponentenbibliothek ist der Art nach entschieden, die konkrete Wahl folgt nach der Prototyp-Freigabe R3-F-050 als eigener ADR (ADR 0002, Abschnitte 3.8 und 8).
 
 ### R3-C-002 — Umbenennung AISINT auf R3cOSINT, Fundstellenliste zuerst
 - **Art:** Randbedingung · **Kano:** gesetzt · **Prüfaufwand:** 2 h · **Quelle:** 1.2 · **Etappe:** 0
@@ -56,7 +57,20 @@ Diese Einträge gehen jeder Etappe voraus oder laufen quer.
 - **Art:** Qualitätsanforderung · **Kano:** Basisfaktor · **Prüfaufwand:** 4 h · **Quelle:** 3.4 · **Etappe:** 0
 - **Formulierung:** Die Definition of Done wird als `Stop`-, `SubagentStop`- und `TaskCompleted`-Hook in der versionierten `.claude/settings.json` erzwungen, mit Reentranz-Schutz über `stop_hook_active` und Eskalation nach dreimaligem Scheitern am gleichen Kriterium.
 - **Abnahme:** Test `R3-Q-001_gate_blockiert` — bei rotem Prüflauf endet der Hook mit Rückgabewert 2 und die Aufgabe lässt sich nicht abschliessen; bei grünem Prüflauf endet er mit 0; bei gesetztem `stop_hook_active` endet er mit 0, auch wenn der Prüflauf rot ist.
-- **Abhängigkeit:** Setzt R3-C-020 (Definition of Done) voraus. Vorher gäbe es kein Kriterium, das die Gates prüfen könnten.
+- **Abhängigkeit:** Setzt die Definition of Done (`docs/06_Definition_of_Ready_und_Done.md`) und R3-C-001 voraus, weil die konkreten Befehle je Kettenschritt vom Ziel-Stack abhängen. Vorher gäbe es kein Kriterium, das die Gates prüfen könnten.
+- **Achtung:** Bis zum 2026-08-20 nannte die Abhängigkeit einen Eintrag R3-C-020, den es nie gab — korrigiert nach Befund V-01 (`docs/08_Freigabe_Schritt_4.md`).
+
+### R3-Q-005 — Rollen-Schreibgrenzen als PreToolUse-Gate
+- **Art:** Qualitätsanforderung · **Kano:** Basisfaktor · **Prüfaufwand:** 3 h · **Quelle:** 3.4, 4.1 · **Etappe:** 0
+- **Formulierung:** Die in ADR 0001 Abschnitt 4 als Instruktion geführten Schreibgrenzen der Rollen (Verzeichnis- und Arbeitsprodukt-Begrenzung) werden hart durchgesetzt: Ein Schreibzugriff einer Rolle ausserhalb ihres zulässigen Bereichs wird vor der Ausführung mit Rückgabewert 2 blockiert. Die Durchsetzung liegt versioniert im Repository — in `.claude/settings.json` oder im `hooks`-Feld der betroffenen Rollendateien (3.2).
+- **Abnahme:** Test `R3-Q-005_schreibgrenze_blockiert` — ein Schreibversuch des Protocol Masters ausserhalb von `docs/`, des Vulnerability Managers ausserhalb des Registers und des Dynamic Software Testers ausserhalb von Testverzeichnissen wird blockiert; ein zulässiger Schreibzugriff derselben Rollen läuft durch; fehlt `jq`, blockiert das Gate mit Meldung, statt durchzulassen.
+- **Achtung:** Unabhängig vom Ziel-Stack umsetzbar. Kann die schreibende Rolle in einem zentralen Hook nicht zuverlässig festgestellt werden, wird die Grenze je Rolle über das `hooks`-Feld im Frontmatter verankert (ADR 0001, 5.4) und ADR 0001 fortgeschrieben. *(Ergänzt am 2026-08-20, Befund V-04 in `docs/08_Freigabe_Schritt_4.md`.)*
+
+### R3-C-007 — Skills je Rolle nachgeführt
+- **Art:** Randbedingung · **Kano:** gesetzt · **Prüfaufwand:** 1 h · **Quelle:** 3.2 · **Etappe:** 0
+- **Formulierung:** Sobald unter `.claude/skills/` eine Skill vorliegt, wird sie über das `skills:`-Feld der Rollendateien vorgeladen, deren Auftrag sie betrifft, und ADR 0001 wird fortgeschrieben (dort Abschnitt 5.1). Der Eintrag läuft quer und wird mit der ersten Skill fällig.
+- **Abnahme:** Test `R3-C-007_skills_konsistent` — jede Skill unter `.claude/skills/` wird von mindestens einer Rolle im `skills:`-Feld vorgeladen oder trägt eine dokumentierte Begründung, warum nicht; kein `skills:`-Feld verweist auf eine nicht vorhandene Skill.
+- **Achtung:** Ergänzt am 2026-08-20 nach Befund V-04 (`docs/08_Freigabe_Schritt_4.md`).
 
 ### R3-C-003 — Zwei vollständig getrennte Umgebungen
 - **Art:** Randbedingung · **Kano:** gesetzt · **Prüfaufwand:** 5 h · **Quelle:** 5.16 · **Etappe:** 0
@@ -494,16 +508,16 @@ Owners an den Auftraggeber, keine Festlegung; geschnitten wird gemeinsam.
 
 | Etappe | Einträge | Prüfaufwand |
 |---|---|---|
-| 0 — Vorlauf | 6 | 23 h |
+| 0 — Vorlauf | 8 | 27 h |
 | 1 — Fundament | 23 | 113 h |
 | 2 — Freie Quellen | 11 | 37 h |
 | 3 — Prototyp, Oberfläche, Anmeldung | 13 | 59 h |
 | 4 — Darstellung und Export | 6 | 26 h |
 | 5 — Lizenzierte Quellen | 4 | 8 h |
 | 6 — Härtung und Abnahme | 6 | 30 h |
-| **Erste Fassung, Summe** | **69** | **296 h** |
+| **Erste Fassung, Summe** | **71** | **300 h** |
 | Zweite Fassung | 5 | 23 h |
-| **Gesamt** | **74** | **319 h** |
+| **Gesamt** | **76** | **323 h** |
 
 Diese Summe ist die Grundlage der Roadmap in `07_Roadmap.md`. Vor dieser
 Schätzung wurde keine Kalenderzahl geschrieben.

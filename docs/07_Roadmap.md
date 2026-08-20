@@ -4,7 +4,7 @@
 |---|---|
 | **Arbeitsprodukt nach** | Projektauftrag 6.8, 9.1 |
 | **Verantwortlich** | Product Owner, Scrum Master |
-| **Stand** | 2026-08-19, Erstfassung |
+| **Stand** | 2026-08-20, nachgeführt (V-04 aus `docs/08_Freigabe_Schritt_4.md`) |
 
 ## Grundlage der Zahlen
 
@@ -13,9 +13,9 @@ Schätzung in `05_Product_Backlog.md` wurde keine Kalenderzahl geschrieben (6.8)
 
 | Grösse | Wert | Quelle |
 |---|---|---|
-| Prüfaufwand erste Fassung | 296 h | Backlog, 69 Einträge |
+| Prüfaufwand erste Fassung | 300 h | Backlog, 71 Einträge |
 | Prüfaufwand zweite Fassung | 23 h | Backlog, 5 Einträge |
-| Prüfaufwand gesamt | 319 h | Backlog, 74 Einträge |
+| Prüfaufwand gesamt | 323 h | Backlog, 76 Einträge |
 | Sprintlänge | 2 Wochen | 6.8, festgelegt |
 | Kapazität je Person | 7 bis 10 h pro Woche | 6.8, geklärt |
 | Kapazität Team je Sprint | **28 bis 40 h** | 6.8 |
@@ -29,14 +29,14 @@ gefährlichste Form von Fortschritt.
 
 ## Abgeleitete Sprintzahl
 
-296 h ÷ 40 h = **8 Sprints** im günstigen Fall.
-296 h ÷ 28 h = **11 Sprints** im ungünstigen Fall.
+300 h ÷ 40 h = **8 Sprints** im günstigen Fall.
+300 h ÷ 28 h = **11 Sprints** im ungünstigen Fall.
 
 | | Erste Fassung | Gesamt |
 |---|---|---|
-| Sprints bei 40 h | 8 | 8 |
+| Sprints bei 40 h | 8 | 9 |
 | Sprints bei 28 h | 11 | 12 |
-| Wochen bei 40 h | 16 | 16 |
+| Wochen bei 40 h | 16 | 18 |
 | Wochen bei 28 h | 22 | 24 |
 
 **Was diese Zahlen nicht sind.** Kein Termin und keine Zusage. Sie sind eine
@@ -65,7 +65,7 @@ entfällt (5.18).
 
 | # | Etappe | Prüfaufwand | Sprints bei 34 h | Voraussetzung |
 |---|---|---|---|---|
-| 0 | Vorlauf: Architekturentscheid, Umbenennung, Umgebungstrennung | 23 h | ~1 | Freigabe-Gate Schritt 4 |
+| 0 | Vorlauf: Architekturentscheid, Umbenennung, Umgebungstrennung, Entwicklungs-Gates | 27 h | ~1 | Freigabe-Gate Schritt 4 |
 | 1 | Fundament: Server, Protokoll, Datenbestand | 113 h | ~3 bis 4 | Etappe 0 |
 | 2 | Freie Quellen ohne Beschaffung | 37 h | ~1 | Etappe 1 |
 | 3 | Prototyp, Oberfläche, Anmeldestack | 59 h | ~2 | Prototyp-Freigabe für alles ab R3-F-051 |
@@ -109,7 +109,9 @@ gemeinsam in Schritt 3.
 
 ### Erste Fassung — der Kernnutzen
 
-Enthält die Basisfaktoren, ohne die das System unbrauchbar ist (6.4).
+Enthält die Basisfaktoren, ohne die das System unbrauchbar ist (6.4). Die
+Tabelle ist eine thematische Auswahl der Kernbereiche; die Summenzeile zählt
+alle Einträge der ersten Fassung, einschliesslich Etappe 0.
 
 | Bereich | Einträge |
 |---|---|
@@ -121,7 +123,7 @@ Enthält die Basisfaktoren, ohne die das System unbrauchbar ist (6.4).
 | Darstellung über Mermaid und draw.io | R3-F-070, R3-F-071 |
 | Aufbewahrung, Löschwege, Offline-Betrieb | R3-F-020, R3-F-021 |
 | Härtung und Abnahme | R3-C-010 bis R3-C-014 |
-| **Summe** | **69 Einträge, 296 h Prüfaufwand** |
+| **Summe** | **71 Einträge, 300 h Prüfaufwand** |
 
 ### Zweite Fassung — später
 

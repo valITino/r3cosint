@@ -19,11 +19,13 @@ vorherige freigegeben ist.
 |---|---|
 | 1 Rollenmodell (`.claude/agents/`) | erledigt |
 | 2 CLAUDE.md, Rules, Hooks | erledigt |
-| 3 Requirements Engineering und Planung | offen |
-| 4 **Freigabe-Gate durch den Auftraggeber** | offen |
-| 5 Umsetzung | gesperrt bis Schritt 4 |
+| 3 Requirements Engineering und Planung | erledigt |
+| 4 **Freigabe-Gate durch den Auftraggeber** | erledigt — Freigabe 2026-08-20, Commit `5c5ecde6c6f1b2eba67cd22e24b40b6439aebac4` (`docs/08_Freigabe_Schritt_4.md`) |
+| 5 Umsetzung | läuft — R3-C-001 abgenommen (ADR 0002, 2026-08-20); nächste Einheit: Grundgerüst |
 
-- **Vor Schritt 4 wird kein Produktionscode geschrieben.**
+- **Freigabe-Gate Schritt 4 erteilt, Architekturentscheid angenommen**
+  (beides 2026-08-20). Gebaut wird entlang ADR 0002; Abweichungen davon nur
+  als Fortschreibung des ADR, nicht stillschweigend.
 - **Vor der schriftlichen Prototyp-Freigabe entsteht kein Frontend-Produktionscode**
   (5.6). Wird Zeit frei, wird sie nicht dafür verwendet.
 
@@ -127,14 +129,20 @@ Beide setzen `jq` voraus. Fehlt es, blockieren sie mit einer Meldung, statt
 stillschweigend durchzulassen.
 
 **Noch nicht vorhanden:** die Gates für die Definition-of-Done-Befehlskette
-(`Stop`, `SubagentStop`, `TaskCompleted`). Sie entstehen erst, wenn die
-Definition of Done in Schritt 3 festgelegt ist — vorher gäbe es kein Kriterium,
-das sie prüfen könnten (3.4).
+(`Stop`, `SubagentStop`, `TaskCompleted`) und die harte Durchsetzung der
+Rollen-Schreibgrenzen. Der Backlog terminiert beides in Etappe 0: R3-Q-001
+braucht die konkreten Befehle der Kette und damit den Ziel-Stack aus R3-C-001,
+R3-Q-005 ist stackunabhängig. Diese Terminierung ist auf Weisung vom
+2026-08-20 in ADR 0001 fortgeschrieben und bleibt am Freigabe-Gate als
+Entscheid E-02 überprüfbar (`docs/08_Freigabe_Schritt_4.md`). Bis die Gates
+stehen, prüft das menschliche Review die Befehlskette.
 
 ## Wo steht was
 
 | Thema | Ort |
 |---|---|
+| Definition of Ready und Done | `docs/06_Definition_of_Ready_und_Done.md` |
+| Ziel-Stack, Modulschnitt, DoD-Befehle | `docs/adr/0002-architekturentscheid-ziel-stack.md` |
 | Prototyp und synthetische Daten | `.claude/rules/prototyp.md` |
 | Verfahrensgarantien, Protokoll, Klassifizierung | `.claude/rules/produktionscode.md` |
 | ADR, Nachweise, Verfolgbarkeit, Glossar | `.claude/rules/dokumentation.md` |

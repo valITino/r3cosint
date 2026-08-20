@@ -5,6 +5,7 @@
 | **Titel** | Rollenmodell: 21 Rollen als Subagents unter `.claude/agents/` |
 | **Status** | angenommen |
 | **Datum** | 2026-08-19 |
+| **Fortgeschrieben** | 2026-08-20 — Abschnitte 4, 7.4 und 8: Stand der `settings.json`; Terminierung der Hooks (R3-Q-001 aus Schritt 3, R3-Q-005 ergänzt am 2026-08-20); Auflösung der Befunde V-02 und V-04 (`docs/08_Freigabe_Schritt_4.md`) |
 | **Grundlage** | Projektauftrag Abschnitt 4 (4.1 Umsetzungsform, 4.2 Rollen aus dem Originalauftrag, 4.3 ergänzende Rollen, 4.4 rechtliche Rollen), ergänzend 3.2 und 3.4 |
 | **Lieferschritt** | Schritt 1 nach Abschnitt 2 (Rollenmodell aufbauen) |
 
@@ -118,7 +119,7 @@ Jede dieser Rollen trägt in ihrem Abschnitt "Grenzen und Rechte" den ausdrückl
 
 Für alle drei gilt der in 3.4 als häufigster Fehler benannte Punkt: **Nur Rückgabewert 2 blockiert.** Ein Gate mit `exit 1` ist wirkungslos, ohne dass das auffällt. Ebenso verbindlich sind der Reentranz-Schutz über `stop_hook_active` und die harte Obergrenze über `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`.
 
-**Diese Hooks existieren noch nicht.** `.claude/settings.json` im Repository ist gegenwärtig leer (`{}`). Es besteht damit heute keine technische Verzeichnisbeschränkung für irgendeine Rolle. Das Anlegen der Hooks ist eine Folgearbeit und gehört nach der Reihenfolge aus Abschnitt 2 in die Lieferschritte 2 und 3, nicht in Schritt 1. Bis dahin ist die Rechtestaffelung eine Verhaltensvorgabe, kein Mechanismus.
+**Diese Hooks existieren noch nicht.** *Fortgeschrieben am 2026-08-20:* Die ursprüngliche Fassung dieses Absatzes beschrieb `.claude/settings.json` als leer (`{}`) und ordnete das Anlegen der Hooks den Lieferschritten 2 und 3 zu. Inzwischen enthält die Datei die beiden `PreToolUse`-Gates aus Schritt 2 (Prototyp-Trennung, main-Schutz) und einen `SessionStart`-Hook; die hier gemeinten Hooks — Verzeichnisbeschränkung je Rolle und Prüfketten-Gates — fehlen weiterhin, und es besteht damit heute keine technische Verzeichnisbeschränkung für irgendeine Rolle. Terminiert ist diese Folgearbeit in Etappe 0: seit Schritt 3 als R3-Q-001 (`Stop`, `SubagentStop`, `TaskCompleted`), seit dem 2026-08-20 — mit der Auflösung von Befund V-04 — auch als R3-Q-005 (`PreToolUse`, Rollen-Schreibgrenzen); Einzelheiten in Konsequenz 7.4. Bis dahin bleibt die Rechtestaffelung eine Verhaltensvorgabe, kein Mechanismus.
 
 ---
 
@@ -166,7 +167,7 @@ Die Entscheidung darüber liegt beim Auftraggeber und ist mit dieser Festlegung 
 
 **7.3 Die `description`-Felder sind Pflegegegenstand.** Sie entscheiden über die Delegation. Verschiebt sich der Zuschnitt einer Rolle, ohne dass die Beschreibung nachgezogen wird, wird entweder falsch delegiert oder gar nicht. Beschreibungen sind deshalb bei jeder Rollenänderung mitzuprüfen, insbesondere dort, wo zwei Rollen aneinandergrenzen: Static gegen Dynamic Software Tester, Pentester gegen Vulnerability Manager, Requirements Engineer gegen Product Owner, UX/UI Designer gegen Frontend Engineer, Security Specialist GRC gegen Legal Reviewer gegen Datenschutzexperte.
 
-**7.4 Die Gates aus 3.4 sind ausstehende Folgearbeit.** Ohne `PreToolUse`-, `Stop`- beziehungsweise `SubagentStop`- und `TaskCompleted`-Hooks in der versionierten `.claude/settings.json` bleibt die Rechtestaffelung eine Verhaltensvorgabe. Diese Arbeit gehört in die Lieferschritte 2 und 3 nach Abschnitt 2 und ist vor dem Freigabe-Gate in Schritt 4 zu erbringen.
+**7.4 Die Gates aus 3.4 sind ausstehende Folgearbeit.** Ohne `PreToolUse`-, `Stop`- beziehungsweise `SubagentStop`- und `TaskCompleted`-Hooks in der versionierten `.claude/settings.json` bleibt die Rechtestaffelung eine Verhaltensvorgabe. *Fortgeschrieben am 2026-08-20:* Die ursprüngliche Fassung verlangte diese Arbeit vor dem Freigabe-Gate in Schritt 4. Schritt 3 hat sie konkretisiert und anders terminiert: Die Definition-of-Done-Gates entstehen als R3-Q-001 in Etappe 0 — die Befehle der DoD-Kette hängen vom Ziel-Stack aus R3-C-001 ab (`docs/06_Definition_of_Ready_und_Done.md`, «Die Befehlskette», «Durchsetzung» und «Offene Punkte» Nr. 3). Die harte Durchsetzung der Rollen-Schreibgrenzen blieb in Schritt 3 ohne Backlog-Eintrag (Befund V-04) und kam am 2026-08-20 als R3-Q-005 hinzu, ebenfalls in Etappe 0. Auf Weisung des Auftraggebers vom 2026-08-20 ist Befund V-02 in dieser Richtung aufgelöst und der ADR fortgeschrieben (`docs/08_Freigabe_Schritt_4.md`); die Bestätigung durch den Auftraggeber steht als Entscheid E-02 am Freigabe-Gate aus.
 
 **7.5 Der ADR bildet einen Stand ab.** Er beschreibt die 21 Dateien, wie sie am 2026-08-19 vorliegen. Änderungen an Modell, `maxTurns`, Tool-Liste oder Rechteform einer Rolle sind hier nachzuführen; das Nachführen in Changelog und Nachweisverzeichnis liegt beim Protocol Master (4.2, 6.6).
 
@@ -179,5 +180,5 @@ Die Entscheidung darüber liegt beim Auftraggeber und ist mit dieser Festlegung 
 | Release Manager als eigene Rolle | 4.3 [OFFEN] | Auftraggeber |
 | Schreibrechte des Legal Reviewers: 3.2 (a) "gar keine" gegen 4.2 "nur Dokumentation" | 3.2, 4.2 | Auftraggeber |
 | Zugeordneter Standard für den IT Supporter | 4.1, 4.2, 4.3 | Auftraggeber |
-| Hooks in der versionierten `.claude/settings.json` | 3.4, Abschnitt 2 Lieferschritte 2 und 3 | Folgearbeit |
-| `skills:`-Feld je Rolle, sobald Skills existieren | 3.2 (b), Abschnitt 2 | Folgearbeit |
+| Hooks in der versionierten `.claude/settings.json` | 3.4; terminiert als R3-Q-001 und R3-Q-005 in Etappe 0 (Fortschreibung 2026-08-20) | Folgearbeit im Backlog |
+| `skills:`-Feld je Rolle, sobald Skills existieren | 3.2 (b); terminiert als R3-C-007 (Fortschreibung 2026-08-20) | Folgearbeit im Backlog |
