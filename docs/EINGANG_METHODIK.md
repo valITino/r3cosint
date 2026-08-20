@@ -50,3 +50,40 @@ Arbeitsablauf in Repo B fortgeschrieben.*
 - **Wirkung auf Repo A:** keine, bis der reguläre Weg oben beschritten ist
 
 -->
+
+## 2026-08-20 — Änderung an Methodik und Sprints
+
+**Was sich geändert hat:**
+
+- Neu: `methodik/arbeitsprodukte.md`
+- Neu: `methodik/entscheide.md`
+- Neu: `methodik/re-prozess.md`
+- Neu: `methodik/scrum-aufbau.md`
+- Neu: `sprints/.gitkeep`
+
+**Warum:**
+
+> 97891e9 — chore: Grundgeruest Methodik-Repository
+> Co-Authored-By: Claude <noreply@anthropic.com>
+> Claude-Session: https://claude.ai/code/session_01M9wGvPfXAXFsLd7kNSBAQC
+>
+> 3b22f49 — docs: Methodik-Dokumente aus dem Projektauftrag abgeleitet
+> re-prozess.md: Konfiguration des RE-Prozesses nach IREB (drei Facetten,
+> partizipativer Prozess mit praeskriptivem Teilbereich, Begruendung).
+> arbeitsprodukte.md: gefuehrte RE-Arbeitsprodukte mit Zweck,
+> Verantwortung, Lebensdauer und Verweisen ins Produkt-Repository.
+> scrum-aufbau.md: Sprintlaenge, Ereignisse mit Timeboxes,
+> Verantwortlichkeiten, Ready gegenueber Done, Sprintumfang nach
+> Prueffkapazitaet.
+> entscheide.md: methodische Entscheide mit Begruendung aus dem
+> Aenderungsprotokoll, Abschnitt 8.
+>
+> Verweise auf das Produkt-Repository als PERMALINK-Platzhalter, die die
+> Automatik spaeter mit vollstaendiger Commit-Pruefsumme fuellt. Nicht im
+> Projektauftrag Belegtes ist als offen markiert.
+>
+> Co-Authored-By: Claude <noreply@anthropic.com>
+> Claude-Session: https://claude.ai/code/session_01M9wGvPfXAXFsLd7kNSBAQC
+>
+
+**Nachweis:** https://github.com/valITino/r3coscrum/commit/baa83daa0bb309b5deb1041965856b1dbc16522b
