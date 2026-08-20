@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Titel** | Ziel-Stack, Modulschnitt, Datenzugriff und Grundgerüst für R3cOSINT |
-| **Status** | **vorgeschlagen — zur Freigabe durch den Auftraggeber (R3-C-001)** |
+| **Status** | **angenommen** — Freigabe des Auftraggebers am 2026-08-20, Abschnitt 10 |
 | **Datum** | 2026-08-20 |
 | **Kennung** | R3-C-001 |
 | **Grundlage** | Projektauftrag 3.1, 3.4, 5.1 bis 5.18, 9.1; `docs/05_Product_Backlog.md` (Etappen 0 und 1); `docs/06_Definition_of_Ready_und_Done.md`; `docs/04_Kontextmodell.md`; `docs/adr/0001-rollenmodell.md` |
@@ -584,10 +584,15 @@ R3-C-001 gilt erst als abgenommen, wenn hier die schriftliche Freigabe des Auftr
 | | |
 |---|---|
 | **Vorgelegt am** | 2026-08-20 |
-| **Entscheid des Auftraggebers** | *offen — freigegeben / freigegeben mit Auflagen / zurückgewiesen* |
-| **Auflagen** | *offen* |
-| **Entscheid zu O-1 (Trennung Rahmenwerk und Komponentenbibliothek)** | *offen — bestätigt / Backlog anzupassen* |
-| **Datum der Freigabe** | *offen* |
-| **Auftraggeber (S-01)** | *offen; Name nach offenem Entscheid E-11 nicht im Repository geführt* |
+| **Entscheid des Auftraggebers** | **freigegeben**, ohne Auflagen |
+| **Auflagen** | keine |
+| **Entscheid zu O-1 (Trennung Rahmenwerk und Komponentenbibliothek)** | **bestätigt** — Rahmenwerk jetzt entschieden, die konkrete Komponentenbibliothek folgt nach dem Prototyp-Review als eigener ADR (O-2) |
+| **Datum der Freigabe** | 2026-08-20 |
+| **Auftraggeber (S-01)** | Freigabe erteilt in der Claude-Code-Session, Wortlaut «Freigegeben, O-1 bestätigt»; Name nach offenem Entscheid E-11 nicht im Repository geführt |
+
+**Protokollvermerk zur Form:** Die Freigabe wurde am 2026-08-20 über den
+zweiten Formweg erteilt (Anweisung an die Session) und von der Session in
+diesen Vermerk übertragen; Urheber und Zeitpunkt belegt die Commit-Historie
+des Arbeitszweigs.
 
 Formweg wie beim Freigabe-Gate Schritt 4: entweder direkte Bearbeitung dieser Datei über einen Pull Request oder Anweisung an die nächste Sitzung mit dem exakten Wortlaut des Entscheids. Massgeblich ist der committete Stand; Urheber und Zeitpunkt belegt die Commit-Historie.
