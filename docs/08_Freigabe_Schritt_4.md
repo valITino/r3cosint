@@ -75,8 +75,9 @@ Auflagen in Abschnitt 6 oder als Einträge beim Product Owner.
 - [ ] `maxTurns` ist in jeder Rollendatei gesetzt (3.4, Ebene 4).
 - [ ] Die Grenze ist ausgewiesen, nicht beschönigt: Verzeichnisbegrenzungen sind
       Instruktion, kein Mechanismus; hart würden sie erst über einen
-      `PreToolUse`-Hook (ADR 0001, Abschnitte 4 und 7.1). Ein Backlog-Eintrag
-      dafür fehlt — siehe V-04.
+      `PreToolUse`-Hook (ADR 0001, Abschnitte 4 und 7.1). Im Prüfgegenstand
+      fehlte ein Backlog-Eintrag dafür; seit dem 2026-08-20 ist er als
+      R3-Q-005 ergänzt (siehe V-04).
 
 ### Schritt 2 — CLAUDE.md, Rules, Hooks (Abschnitt 3)
 
@@ -106,10 +107,11 @@ Auflagen in Abschnitt 6 oder als Einträge beim Product Owner.
       verdeckte Ermittlung; Synonyme gekennzeichnet, Homonyme vermieden (6.3).
 - [ ] Kontextmodell: Systemgrenze, Kontextgrenze, externe Akteure und
       Schnittstellen; offene Punkte benannt statt entschieden (6.3).
-- [ ] Product Backlog: 74 Einträge; je Eintrag dauerhafte Kennung,
-      Anforderungsart nach 6.4, Kano-Einordnung, geschätzter **Prüfaufwand**,
-      Rückverweis auf den Projektauftrag und ein als Test formuliertes
-      Abnahmekriterium mit der Kennung im Testnamen (6.4, 6.5, 6.6).
+- [ ] Product Backlog: 74 Einträge im Prüfgegenstand, 76 seit der Auflösung
+      von V-04; je Eintrag dauerhafte Kennung, Anforderungsart nach 6.4,
+      Kano-Einordnung, geschätzter **Prüfaufwand**, Rückverweis auf den
+      Projektauftrag und ein als Test formuliertes Abnahmekriterium mit der
+      Kennung im Testnamen (6.4, 6.5, 6.6).
 - [ ] Stichprobe über mindestens fünf Backlog-Einträge gegen den zitierten
       Abschnitt des Projektauftrags: Formulierung deckt die Quelle, nichts
       dazuerfunden.
@@ -136,9 +138,15 @@ Auflagen in Abschnitt 6 oder als Einträge beim Product Owner.
 Bei der Vorbereitung dieses Gates wurden die Artefakte quergelesen; die
 Vorbereitung selbst wurde vom Static Software Tester gegengeprüft, auf einem
 anderen Modell als die Umsetzung (3.4). Zählungen sind konsistent und
-nachgerechnet (Backlog-Summentabelle, Roadmap und Einträge: 69 + 5 = 74;
-Prüfaufwand 296 h + 23 h = 319 h). Vier Befunde bleiben offen und gehören in
-den Freigabeentscheid; einer wurde in dieser Vorbereitung behoben.
+nachgerechnet (Backlog-Summentabelle, Roadmap und Einträge im Prüfgegenstand:
+69 + 5 = 74; Prüfaufwand 296 h + 23 h = 319 h; nach der Auflösung von V-04
+neu 71 + 5 = 76 Einträge und 300 h + 23 h = 323 h).
+
+**Stand der Befunde:** Alle fünf sind aufgelöst — V-03 in der Vorbereitung
+selbst; V-01, V-02, V-04 und V-05 am 2026-08-20 auf ausdrückliche Weisung des
+Auftraggebers («Löse noch diese Issues mit deinem Wissen und Intelligenz»).
+Die Auflösungen liegen nach dem Prüfgegenstand, stehen je Befund dabei und
+bleiben am Gate über E-01 und E-02 überprüfbar.
 
 ### V-01 — R3-Q-001 verweist auf einen Eintrag, den es nicht gibt
 
@@ -153,6 +161,9 @@ aus R3-C-001. Der hängende Verweis verletzt die DoR-Kriterien R10 und B5.
 *«Setzt die Definition of Done (`docs/06_Definition_of_Ready_und_Done.md`) und
 R3-C-001 voraus, weil die konkreten Befehle je Kettenschritt vom Ziel-Stack
 abhängen.»* Die Korrektur ordnet der Product Owner ein (DoR B4).
+
+**Gelöst am 2026-08-20** auf Weisung des Auftraggebers: Die Abhängigkeit in
+R3-Q-001 ist wie vorgeschlagen umformuliert, mit Korrekturvermerk im Eintrag.
 
 ### V-02 — Zeitpunkt der DoD-Hooks: ADR 0001 widerspricht der Planung aus Schritt 3
 
@@ -175,17 +186,24 @@ E-02) und ADR 0001 als Auflage fortschreiben. Die Gegenposition — Hooks vor
 der Freigabe — bleibt wählbar; dann verschiebt sich das Gate, bis das Gerüst
 steht.
 
+**Gelöst am 2026-08-20** auf Weisung des Auftraggebers: Terminierung als
+R3-Q-001 in Etappe 0 übernommen, ergänzt um R3-Q-005 für die
+Rollen-Schreibgrenzen (siehe V-04); ADR 0001 ist in den Abschnitten 4, 7.4
+und 8 fortgeschrieben. Die Bestätigung durch den Auftraggeber steht als
+Entscheid E-02 am Gate aus und ist widerrufbar.
+
 ### V-03 — Statustabelle in CLAUDE.md war veraltet *(behoben)*
 
 Die Tabelle der Lieferreihenfolge führte Schritt 3 noch als «offen», obwohl
 Pull Request #3 gemergt ist. Mit dieser Vorbereitung nachgeführt: Schritt 3
 «erledigt», Schritt 4 «vorbereitet» mit Verweis auf dieses Dokument; zugleich
-nennt der Absatz zu den fehlenden DoD-Gates jetzt den Stand aus Schritt 3
-(R3-Q-001), ausdrücklich unter Vorbehalt des Entscheids E-02. Kein Entscheid
-nötig; der Hinweis dient der Transparenz, weil CLAUDE.md zum Prüfgegenstand
-von Schritt 2 gehört. Beide Nachführungen liegen nach dem Stand aus
-Abschnitt 2 und sind nicht Gegenstand dieser Freigabe; sie sind über die
-Commit-Historie des Arbeitszweigs nachvollziehbar.
+nennt der Absatz zu den fehlenden DoD-Gates den Stand aus Schritt 3
+(R3-Q-001), unter Vorbehalt des Entscheids E-02 — am 2026-08-20 um R3-Q-005
+erweitert, siehe V-02 und V-04. Kein Entscheid nötig; der Hinweis dient der
+Transparenz, weil CLAUDE.md zum Prüfgegenstand von Schritt 2 gehört. Beide
+Nachführungen liegen nach dem Stand aus Abschnitt 2 und sind nicht
+Gegenstand dieser Freigabe; sie sind über die Commit-Historie des
+Arbeitszweigs nachvollziehbar.
 
 ### V-04 — Zwei Folgearbeiten aus ADR 0001 haben keinen Backlog-Eintrag
 
@@ -201,15 +219,24 @@ ADR 0001 7.1 offengelegte Instruktionszustand nach dem Gate unverfolgt.
 Backlog-Einträge geben — oder bewusst beim Instruktionszustand bleiben und
 das in ADR 0001 fortschreiben.
 
+**Gelöst am 2026-08-20** auf Weisung des Auftraggebers: R3-Q-005
+(Rollen-Schreibgrenzen als PreToolUse-Gate, unabhängig vom Ziel-Stack
+umsetzbar) und R3-C-007 (Skills je Rolle nachgeführt) sind als
+Backlog-Einträge in Etappe 0 ergänzt. Die Summen in Backlog und Roadmap sind
+nachgezogen: neu 76 Einträge und 323 h; beim Gesamtumfang mit 40 Prüfstunden
+je Sprint neu 9 statt 8 Sprints. ADR 0001 Abschnitt 8 verweist auf die
+Einträge.
+
 ### V-05 — Commit-Betreffe der Schritte 1 bis 3 ohne Anforderungskennung
 
 Die Commit-Betreffe des Prüfgegenstands folgen Conventional Commits, tragen
 aber keine Anforderungskennung (6.6). Das ist erklärbar: die Kennungen
 entstanden erst mit dem Backlog in Schritt 3.
 
-**Vorschlag:** Kein rückwirkender Handlungsbedarf. Ab der ersten
-Umsetzungseinheit ist die Kennung im Commit-Betreff und im Testnamen Pflicht
-und wird im Review jeder Einheit mitgeprüft.
+**Gelöst durch Festlegung am 2026-08-20:** Kein rückwirkender
+Handlungsbedarf. Ab der ersten Umsetzungseinheit ist die Kennung im
+Commit-Betreff und im Testnamen Pflicht und wird im Review jeder Einheit
+mitgeprüft.
 
 ## 5. Entscheidungspunkte
 
@@ -218,7 +245,7 @@ und wird im Review jeder Einheit mitgeprüft.
 | Nr. | Entscheid | Fundstelle | Was daran hängt |
 |---|---|---|---|
 | E-01 | Freigabe der Schritte 1 bis 3: ja, mit Auflagen, oder Zurückweisung | Abschnitt 2 | alles — ohne E-01 beginnt keine Umsetzung |
-| E-02 | DoD-Hooks als R3-Q-001 in Etappe 0 bestätigen, oder vor der Freigabe verlangen | V-02; ADR 0001 7.4; DoD «Durchsetzung» | die Auflösung von V-02 und der Startzeitpunkt von Etappe 0 |
+| E-02 | Die auf Weisung getroffene Terminierung der Hooks (R3-Q-001 und R3-Q-005 in Etappe 0, ADR 0001 fortgeschrieben) bestätigen — oder widerrufen und die Hooks vor der Freigabe verlangen | V-02; ADR 0001 7.4; DoD «Durchsetzung» | der Startzeitpunkt von Etappe 0 |
 | E-03 | Schnitt in erste und zweite lieferfähige Fassung bestätigen oder ändern | Backlog «Offene Punkte» 3; Roadmap; 9.1 | Roadmap und erste Fassung bauen darauf; der Schnitt gehört nach 9.1 zu Schritt 3, den dieses Gate abschliesst |
 
 **Nicht blockierend** — mit Termin, damit nichts verlorengeht:
@@ -264,7 +291,7 @@ nicht aus.*
 
 | Punkt | Entscheid |
 |---|---|
-| E-02 — Zeitpunkt der DoD-Hooks | |
+| E-02 — Terminierung der Hooks (R3-Q-001, R3-Q-005; ADR 0001 fortgeschrieben) bestätigen oder widerrufen | |
 | E-03 — Schnitt der Fassungen | |
 
 ### Erklärung
@@ -294,7 +321,8 @@ Urheber und Zeitpunkt. Erst mit diesem Commit gilt Schritt 4 als erledigt.
 2. Erste Arbeitseinheit ist **R3-C-001** (Architekturentscheid und Ziel-Stack):
    er blockiert Etappe 1 und alles danach und wird dem Auftraggeber zur
    Freigabe vorgelegt. Danach folgen die übrigen Einträge der Etappe 0
-   (R3-C-002 bis R3-C-005, R3-Q-001 nach Entscheid E-02).
+   (R3-C-002 bis R3-C-005, R3-Q-005 und R3-C-007; R3-Q-001 setzt den
+   Ziel-Stack aus R3-C-001 voraus und steht unter dem Vorbehalt von E-02).
 3. Für jede weitere Session gilt dasselbe Muster:
 
    ```

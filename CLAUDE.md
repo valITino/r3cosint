@@ -127,17 +127,19 @@ Beide setzen `jq` voraus. Fehlt es, blockieren sie mit einer Meldung, statt
 stillschweigend durchzulassen.
 
 **Noch nicht vorhanden:** die Gates für die Definition-of-Done-Befehlskette
-(`Stop`, `SubagentStop`, `TaskCompleted`). Die Definition of Done liegt seit
-Schritt 3 vor (`docs/06_Definition_of_Ready_und_Done.md`); der Backlog
-terminiert die Gates als R3-Q-001 in Etappe 0, weil die konkreten Befehle der
-Kette vom Ziel-Stack aus R3-C-001 abhängen. Ob es dabei bleibt, entscheidet der
-Auftraggeber am Freigabe-Gate (Entscheid E-02 in `docs/08_Freigabe_Schritt_4.md`).
-Bis die Gates stehen, prüft das menschliche Review die Befehlskette.
+(`Stop`, `SubagentStop`, `TaskCompleted`) und die harte Durchsetzung der
+Rollen-Schreibgrenzen. Der Backlog terminiert beides in Etappe 0: R3-Q-001
+braucht die konkreten Befehle der Kette und damit den Ziel-Stack aus R3-C-001,
+R3-Q-005 ist stackunabhängig. Diese Terminierung ist auf Weisung vom
+2026-08-20 in ADR 0001 fortgeschrieben und bleibt am Freigabe-Gate als
+Entscheid E-02 überprüfbar (`docs/08_Freigabe_Schritt_4.md`). Bis die Gates
+stehen, prüft das menschliche Review die Befehlskette.
 
 ## Wo steht was
 
 | Thema | Ort |
 |---|---|
+| Definition of Ready und Done | `docs/06_Definition_of_Ready_und_Done.md` |
 | Prototyp und synthetische Daten | `.claude/rules/prototyp.md` |
 | Verfahrensgarantien, Protokoll, Klassifizierung | `.claude/rules/produktionscode.md` |
 | ADR, Nachweise, Verfolgbarkeit, Glossar | `.claude/rules/dokumentation.md` |

@@ -22,7 +22,7 @@ ARTEFAKTE=(
   "Stakeholderliste|docs/02_Stakeholderliste.md|Stakeholder nach Funktion, mit Zielen und Interessen"
   "Glossar|docs/03_Glossar.md|Verbindliche Definitionen, Begriffe mit rechtlicher Bedeutung gekennzeichnet"
   "Kontextmodell|docs/04_Kontextmodell.md|Systemgrenze, Kontextgrenze, externe Akteure und Schnittstellen"
-  "Product Backlog|docs/05_Product_Backlog.md|74 Eintraege mit Kennung, Art, Abnahmekriterium und Pruefaufwand"
+  "Product Backlog|docs/05_Product_Backlog.md|Eintraege mit Kennung, Art, Abnahmekriterium und Pruefaufwand; Summen im Dokument"
   "Definition of Ready und Done|docs/06_Definition_of_Ready_und_Done.md|Eingangs- und Ausgangskriterien, Done als Befehlskette"
   "Roadmap|docs/07_Roadmap.md|Etappenfolge und Schnitt in zwei lieferfaehige Fassungen"
   "Freigabe Schritt 4|docs/08_Freigabe_Schritt_4.md|Pruefvorlage und Freigabeprotokoll zum Freigabe-Gate aus Abschnitt 2"
