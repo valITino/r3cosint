@@ -5,7 +5,7 @@
 | **Arbeitsprodukt nach** | Projektauftrag 6.3 |
 | **Verantwortlich** | Software Architect |
 | **Lebensdauer** | sich weiterentwickelnd |
-| **Stand** | 2026-08-19, Erstfassung |
+| **Stand** | 2026-08-20, nachgeführt nach ADR 0002 (R3-C-001) |
 
 Dieses Modell zieht zwei Grenzen: die **Systemgrenze** (was gebaut wird) und die
 **Kontextgrenze** (was für die Anforderungen relevant ist, aber nicht gebaut
@@ -13,7 +13,10 @@ wird). Alles ausserhalb der Kontextgrenze ist irrelevant und wird nicht
 betrachtet.
 
 Die Architektur der drei Ebenen ist gesetzt und wird hier nicht neu entworfen,
-sondern verortet (5.1).
+sondern verortet (5.1). Ziel-Stack, Modulschnitt und Container-Layout sind mit
+`docs/adr/0002-architekturentscheid-ziel-stack.md` entschieden; dieses Modell
+führt den entschiedenen Stand an den betroffenen Stellen nach und wiederholt ihn
+nicht.
 
 ---
 
@@ -61,7 +64,8 @@ flowchart TB
 
 Die Linien von `MCP` nach `EXT` und `SOCIAL` überschreiten die
 Vertrauensgrenze. Jede von ihnen ist eine **Bekanntgabe** und protokollpflichtig
-(5.17).
+(5.17). Sie führen technisch ausnahmslos über genau einen Ausgangs-Vermittler;
+einen zweiten Weg nach aussen gibt es nicht (ADR 0002, A11).
 
 ---
 
@@ -84,6 +88,13 @@ Vertrauensgrenze. Jede von ihnen ist eine **Bekanntgabe** und protokollpflichtig
 | Zwei getrennte Umgebungen Test/Schulung und Produktion | quer | 5.16 |
 | Diagnosebereich, API-Schlüsselverwaltung, Malware-Bereich | 0 | 5.12, 5.13, 5.14 |
 
+Zwei dieser Bestandteile sind seit ADR 0002 konkretisiert: Der Suchindex liegt
+**innerhalb von PostgreSQL**, ein eigener Suchdienst wird nicht betrieben, damit
+Klassifizierung und Löschweg nur einen Auffindungsweg absichern müssen
+(ADR 0002, A3). Die beiden Umgebungen sind zwei getrennte Compose-Stapel mit
+eigenem Netz, eigenen Datenträgern und eigenem Satz Zugangsdaten; es existiert
+kein Modul und kein Skript, das Daten zwischen ihnen überträgt (ADR 0002, A11).
+
 ---
 
 ## 3. Kontextgrenze — externe Akteure und Schnittstellen
@@ -102,10 +113,10 @@ Vertrauensgrenze. Jede von ihnen ist eine **Bekanntgabe** und protokollpflichtig
 | System | Schnittstelle | Richtung | Bemerkung |
 |---|---|---|---|
 | MISP | MCP, bestehende Anbindung | ein | Eigener Bestand, wird bei jedem Indikator automatisch mitgeprüft. Wird übernommen, nicht nachgebaut (5.17) |
-| OpenSanctions / yente | MCP, selbst betrieben | ein | Selbst betrieben, damit Namen der Zielpersonen nicht an Dritte gehen |
+| OpenSanctions / yente | MCP, selbst betrieben | ein | Selbst betrieben, damit Namen der Zielpersonen nicht an Dritte gehen. Bringt einen eigenen Index über die Sanktionsdaten mit — ein eigenständiges System an der Kontextgrenze, kein Index über Falldaten; es gehen keine Falldaten dorthin (ADR 0002, A3) |
 | Sprachmodell | OpenAI-kompatible Schnittstelle | ein/aus | In Produktion ausschliesslich lokal. Modell ist Konfiguration, keine Abhängigkeit im Code (5.15) |
 | Decompiler Explorer | MCP gegen lokale Instanz | ein/aus | Selbst gehostet, nicht `dogbolt.org`. Analyse isoliert, ohne Netzzugang aus dem Container (5.14) |
-| TheHive, Cortex | bestehende Anbindungen | offen | Im Konzept als vorhandene Bausteine genannt; Einbindungstiefe noch nicht festgelegt |
+| TheHive, Cortex | bestehende Anbindungen | offen | Im Konzept als vorhandene Bausteine genannt; Einbindungstiefe weiterhin nicht festgelegt. Neu terminiert als offener Punkt O-4 des ADR: zuerst ein Backlog-Eintrag mit Abnahmekriterium durch den Product Owner, danach ein eigener ADR, vor Etappe 2 (ADR 0002, O-4) |
 | Entra ID beziehungsweise lokaler OIDC-Provider | OIDC / OAuth 2.0 | ein | Gebaut wird gegen einen lokalen Provider; der Wechsel ist Konfiguration (5.7) |
 
 ### 3.3 Systeme ausserhalb — jede Verbindung ist eine Bekanntgabe
@@ -158,7 +169,9 @@ an der Systemgrenze. Daraus folgen drei Festlegungen:
    werden dem Sprachmodell gekennzeichnet als Daten übergeben; Anweisungen darin
    können keine Werkzeuge auslösen (5.4).
 2. **Alles, was hinausgeht, ist eine Bekanntgabe** und wird protokolliert. Nur
-   Gegenstellen der Positivliste sind erreichbar (5.4, 5.17).
+   Gegenstellen der Positivliste sind erreichbar (5.4, 5.17). Verankert ist das
+   als Netztopologie: Genau ein Container (`ausgang`) hat einen Weg nach aussen,
+   setzt die Positivliste durch und protokolliert jeden Versuch (ADR 0002, A11).
 3. **Das System muss vollständig offline betreibbar sein.** Datenbestand und
    Darstellung funktionieren dann weiter. Das ist eine Anforderung, kein
    Nebeneffekt (5.17).
@@ -169,7 +182,7 @@ an der Systemgrenze. Daraus folgen drei Festlegungen:
 
 | Nr. | Punkt | Blockiert | Wer entscheidet |
 |---|---|---|---|
-| 1 | Tech-Stack, Rahmenwerk und Komponentenbibliothek der Oberfläche | Etappe 3 | Software Architect als ADR, Freigabe Auftraggeber (5.6, 9.1) |
-| 2 | Einbindungstiefe von TheHive und Cortex | Etappe 2 | Software Architect |
-| 3 | Ob `pgvector` gebraucht wird, nachdem die Gesichtserkennung entfällt | Etappe 1 | Software Architect (5.18) |
+| 1 | Konkrete Komponentenbibliothek der Oberfläche. Tech-Stack und Rahmenwerk sind mit ADR 0002 entschieden: Python mit ASGI-Rahmenwerk im Backend (A1), TypeScript mit React und Vite als Einzelseitenanwendung (A8). Offen bleibt allein die Komponentenbibliothek samt Designsystem | Frontend-Produktionscode, Etappe 3 | Software Architect mit UX/UI-Designer, Freigabe Auftraggeber; eigener ADR nach der Prototyp-Freigabe R3-F-050 (ADR 0002, O-2; 5.6, 9.1) |
+| 2 | Einbindungstiefe von TheHive und Cortex | Etappe 2 | Zuerst Backlog-Eintrag mit Abnahmekriterium durch den Product Owner, danach Software Architect als eigener ADR (ADR 0002, O-4) |
+| 3 | Ob `pgvector` gebraucht wird, nachdem die Gesichtserkennung entfällt | — entschieden | **Entschieden mit ADR 0002 (A4): nicht Bestandteil des Aufbaus** — keine Erweiterung, keine Spalte, keine Migration, kein Platzhalter. Die Bedingungen für eine spätere Aufnahme stehen im ADR (5.18) |
 | 4 | Anbindungsdaten des Entra-ID-Mandanten | nur den Wechsel auf den echten Mandanten | KapoBE Informatik (7.2, C-Rest) |

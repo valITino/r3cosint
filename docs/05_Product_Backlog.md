@@ -5,7 +5,7 @@
 | **Arbeitsprodukt nach** | Projektauftrag 6.3, 6.4 |
 | **Verantwortlich** | Product Owner (Ordnung und Priorität), Requirements Engineer (Formulierung und Prüfbarkeit) |
 | **Lebensdauer** | sich weiterentwickelnd |
-| **Stand** | 2026-08-20, nachgeführt (V-01, V-04 aus `docs/08_Freigabe_Schritt_4.md`) |
+| **Stand** | 2026-08-20, nachgeführt (V-01 und V-04 aus `docs/08_Freigabe_Schritt_4.md`; O-1-Vermerk aus ADR 0002) |
 
 ## Wie dieser Backlog zu lesen ist
 
@@ -45,6 +45,7 @@ Diese Einträge gehen jeder Etappe voraus oder laufen quer.
 - **Formulierung:** Vor der ersten Zeile Fachlogik liegen Architekturentscheid und Grundgerüst als Architecture Decision Record vor und sind freigegeben. Der ADR umfasst Ziel-Stack, Rahmenwerk und Komponentenbibliothek der Oberfläche, Modulschnitt und Datenzugriff.
 - **Abnahme:** Test `R3-C-001_adr_vorhanden` — unter `docs/adr/` existiert ein ADR mit Status "angenommen", der Ziel-Stack, Rahmenwerk, Komponentenbibliothek, Modulgrenzen und Begründung je Entscheid nennt; die schriftliche Freigabe des Auftraggebers ist im ADR vermerkt. Solange dieser Test rot ist, schlägt jeder Test aus Etappe 1 fehl.
 - **Achtung:** Die Wahl der Oberflächentechnik ist seit dem Wegfall von Open WebUI eine Architekturentscheidung mit Auswirkung auf den grössten Einzelposten der Roadmap (5.6). Sie wird nicht nebenbei getroffen. Die bestehende Demo ist Gestaltungsgrundlage.
+- **Achtung:** Erfüllt durch ADR 0002 (angenommen, Freigabe des Auftraggebers am 2026-08-20). Entscheid O-1 bestätigt: Die Komponentenbibliothek ist der Art nach entschieden, die konkrete Wahl folgt nach der Prototyp-Freigabe R3-F-050 als eigener ADR (ADR 0002, Abschnitte 3.8 und 8).
 
 ### R3-C-002 — Umbenennung AISINT auf R3cOSINT, Fundstellenliste zuerst
 - **Art:** Randbedingung · **Kano:** gesetzt · **Prüfaufwand:** 2 h · **Quelle:** 1.2 · **Etappe:** 0

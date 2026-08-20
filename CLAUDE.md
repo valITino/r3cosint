@@ -21,11 +21,11 @@ vorherige freigegeben ist.
 | 2 CLAUDE.md, Rules, Hooks | erledigt |
 | 3 Requirements Engineering und Planung | erledigt |
 | 4 **Freigabe-Gate durch den Auftraggeber** | erledigt — Freigabe 2026-08-20, Commit `5c5ecde6c6f1b2eba67cd22e24b40b6439aebac4` (`docs/08_Freigabe_Schritt_4.md`) |
-| 5 Umsetzung | freigegeben — Etappe 0 läuft, erste Einheit R3-C-001 |
+| 5 Umsetzung | läuft — R3-C-001 abgenommen (ADR 0002, 2026-08-20); nächste Einheit: Grundgerüst |
 
-- **Das Freigabe-Gate Schritt 4 ist erteilt** (2026-08-20). Produktionscode ist
-  seither zulässig; Fachlogik erst nach freigegebenem Architekturentscheid
-  R3-C-001 (3.1).
+- **Freigabe-Gate Schritt 4 erteilt, Architekturentscheid angenommen**
+  (beides 2026-08-20). Gebaut wird entlang ADR 0002; Abweichungen davon nur
+  als Fortschreibung des ADR, nicht stillschweigend.
 - **Vor der schriftlichen Prototyp-Freigabe entsteht kein Frontend-Produktionscode**
   (5.6). Wird Zeit frei, wird sie nicht dafür verwendet.
 
@@ -142,6 +142,7 @@ stehen, prüft das menschliche Review die Befehlskette.
 | Thema | Ort |
 |---|---|
 | Definition of Ready und Done | `docs/06_Definition_of_Ready_und_Done.md` |
+| Ziel-Stack, Modulschnitt, DoD-Befehle | `docs/adr/0002-architekturentscheid-ziel-stack.md` |
 | Prototyp und synthetische Daten | `.claude/rules/prototyp.md` |
 | Verfahrensgarantien, Protokoll, Klassifizierung | `.claude/rules/produktionscode.md` |
 | ADR, Nachweise, Verfolgbarkeit, Glossar | `.claude/rules/dokumentation.md` |
