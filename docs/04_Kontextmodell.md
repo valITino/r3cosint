@@ -116,7 +116,7 @@ kein Modul und kein Skript, das Daten zwischen ihnen überträgt (ADR 0002, A11)
 | OpenSanctions / yente | MCP, selbst betrieben | ein | Selbst betrieben, damit Namen der Zielpersonen nicht an Dritte gehen. Bringt einen eigenen Index über die Sanktionsdaten mit — ein eigenständiges System an der Kontextgrenze, kein Index über Falldaten; es gehen keine Falldaten dorthin (ADR 0002, A3) |
 | Sprachmodell | OpenAI-kompatible Schnittstelle | ein/aus | In Produktion ausschliesslich lokal. Modell ist Konfiguration, keine Abhängigkeit im Code (5.15) |
 | Decompiler Explorer | MCP gegen lokale Instanz | ein/aus | Selbst gehostet, nicht `dogbolt.org`. Analyse isoliert, ohne Netzzugang aus dem Container (5.14) |
-| TheHive, Cortex | bestehende Anbindungen | offen | Im Konzept als vorhandene Bausteine genannt; Einbindungstiefe weiterhin nicht festgelegt. Neu terminiert als offener Punkt O-4 des ADR: zuerst ein Backlog-Eintrag mit Abnahmekriterium durch den Product Owner, danach ein eigener ADR, vor Etappe 2 (ADR 0002, O-4) |
+| TheHive, Cortex | keine — gestrichen | — | **Gestrichen mit der Neufassung von Projektauftrag 5.17 (2026-08-21):** keine Anbindung. Die frühere Nennung als zu übernehmende Bausteine war eine Fehlübertragung aus dem Konzept. TheHive ist als Fallverwaltung funktionsgleich zum eigenen Kern (5.8) und würde die Protokollkette (5.3) über zwei Systeme verteilen; bei Cortex gingen Abfragen nach aussen an Positivliste, Kontingent und Protokollierung (5.4) vorbei. Der offene Punkt O-4 (ADR 0002) entfällt ersatzlos |
 | Entra ID beziehungsweise lokaler OIDC-Provider | OIDC / OAuth 2.0 | ein | Gebaut wird gegen einen lokalen Provider; der Wechsel ist Konfiguration (5.7) |
 
 ### 3.3 Systeme ausserhalb — jede Verbindung ist eine Bekanntgabe
@@ -183,6 +183,6 @@ an der Systemgrenze. Daraus folgen drei Festlegungen:
 | Nr. | Punkt | Blockiert | Wer entscheidet |
 |---|---|---|---|
 | 1 | Konkrete Komponentenbibliothek der Oberfläche. Tech-Stack und Rahmenwerk sind mit ADR 0002 entschieden: Python mit ASGI-Rahmenwerk im Backend (A1), TypeScript mit React und Vite als Einzelseitenanwendung (A8). Offen bleibt allein die Komponentenbibliothek samt Designsystem | Frontend-Produktionscode, Etappe 3 | Software Architect mit UX/UI-Designer, Freigabe Auftraggeber; eigener ADR nach der Prototyp-Freigabe R3-F-050 (ADR 0002, O-2; 5.6, 9.1) |
-| 2 | Einbindungstiefe von TheHive und Cortex | Etappe 2 | Zuerst Backlog-Eintrag mit Abnahmekriterium durch den Product Owner, danach Software Architect als eigener ADR (ADR 0002, O-4) |
+| 2 | Einbindungstiefe von TheHive und Cortex | — entfallen | **Entfallen am 2026-08-21:** TheHive und Cortex sind mit der Neufassung von Projektauftrag 5.17 gestrichen; der geplante Backlog-Eintrag (ADR 0002, O-4) entfällt ersatzlos. Begründung im Änderungsprotokoll des Projektauftrags, Abschnitt 8 |
 | 3 | Ob `pgvector` gebraucht wird, nachdem die Gesichtserkennung entfällt | — entschieden | **Entschieden mit ADR 0002 (A4): nicht Bestandteil des Aufbaus** — keine Erweiterung, keine Spalte, keine Migration, kein Platzhalter. Die Bedingungen für eine spätere Aufnahme stehen im ADR (5.18) |
 | 4 | Anbindungsdaten des Entra-ID-Mandanten | nur den Wechsel auf den echten Mandanten | KapoBE Informatik (7.2, C-Rest) |

@@ -797,7 +797,18 @@ Das Konzeptdokument nennt zwei Zählungen, die auseinanderzuhalten sind: **rund 
 
 Dieses Verzeichnis ist die verbindliche Quellenliste. Es wird nicht erweitert und nicht gekürzt, ausser der Auftraggeber weist es an. Ausnahme: die Social-Media-Erweiterung in 5.11, die im Konzept fehlt und vom Auftraggeber ausdrücklich nachgefordert wurde.
 
-**Bestehende Bausteine werden übernommen, nicht nachgebaut.** Für MISP (vom MISP-Projekt selbst), TheHive, Cortex, OpenSanctions sowie für Mermaid und draw.io existieren gepflegte Anbindungen. Diese werden verwendet. Eigenbau nur dort, wo nichts Brauchbares vorliegt.
+**Bestehende Bausteine werden übernommen, nicht nachgebaut.** Für **MISP** (vom MISP-Projekt selbst), **OpenSanctions** sowie für die Darstellung in **Mermaid** und **draw.io** existieren gepflegte Anbindungen. Diese werden verwendet. Eigenbau nur dort, wo nichts Brauchbares vorliegt.
+
+**TheHive und Cortex — [GESTRICHEN].** Eine frühere Fassung dieses Auftrags führte beide als zu übernehmende Anbindungen. Das war eine Fehlübertragung: Das Konzeptdokument nennt sie in einem Nebensatz als Beispiele für vorhandene Anbindungen, sie stehen **nicht im Werkzeugverzeichnis in Anhang A** und waren damit nie eine geforderte Quelle. Aus einem Beispiel wurde eine Anweisung.
+
+Sie werden auch nicht nachträglich aufgenommen, aus zwei fachlichen Gründen:
+
+- **TheHive ist eine Fallverwaltungsplattform** und damit funktionsgleich zu dem, was R3cOSINT selbst aufbaut (5.8): Fälle, Aufgaben, Kommentare, Zuweisung, Historie, Klassifizierung. Beides parallel zu betreiben hiesse, dass ein Fall an zwei Orten lebt und die Protokollkette aus 5.3 über zwei Systeme zerfällt. Damit wäre die Nachvollziehbarkeit beschädigt, die der Kern des Produkts ist.
+- **Cortex** würde Integrationsarbeit sparen, weil es viele fertige Analyzer mitbringt. Die Abfragen nach aussen gingen dann aber von Cortex aus statt vom eigenen MCP-Server. Positivliste, Kontingentgrenzen und die Protokollierung jeder Bekanntgabe (5.4) lägen damit ausserhalb des eigenen Zugriffs. Für ein System, dessen Wert im Nachweis liegt, wer wann was abgefragt hat, ist das der falsche Tausch.
+
+**Zur Lizenzlage, der Vollständigkeit halber:** TheHive ist seit Version 5 nicht mehr quelloffen; die Community-Lizenz erlaubt laut ihren Bedingungen nur Erprobung, Schulung und Ausbildung, nicht den operativen Einsatz, und beschränkt auf zwei Schreibbenutzer. Cortex ist weiterhin unter AGPL frei verfügbar. Die Streichung erfolgt jedoch aus den fachlichen Gründen oben, nicht wegen der Lizenz — Cortex wäre lizenzrechtlich nutzbar.
+
+**Folge für den Backlog:** Der Eintrag O-4 entfällt ersatzlos. Es braucht dafür keine fachliche Angabe des Auftraggebers mehr.
 
 **Drei Anbindungsregeln mit Vorrang vor Bequemlichkeit:**
 
@@ -1114,6 +1125,7 @@ R3cOSINT ist kein Studienprojekt, das zufällig einen Praxisbezug hat, sondern e
 | Anmeldewege nur in Test vermutet | Gelten in beiden Umgebungen. Scheinwiderspruch zu "Kein Rückkanal" ausdrücklich aufgelöst, Trennung von Anmeldung und Berechtigung festgeschrieben, Passkey-Pflicht in Produktion | Entscheid des Auftraggebers. Ohne die Auflösung liest eine spätere Prüfung 5.4 und 5.7 als Widerspruch |
 | Aufbewahrungsklassen A und B neben Fallkategorien | Auf ein Feld reduziert; die Frist wird aus der Fallkategorie abgeleitet | Zwei Klassifizierungen für dieselbe Sache laufen auseinander |
 | Klassifizierungsstufen einzeln im Code | Zuordnung Stufe auf Sichtbarkeitsregel und Berechtigung, nur zwei Regeln | 1b und 2 verhalten sich gleich; eine spätere Stufe soll eine Konfigurationszeile sein |
+| TheHive und Cortex als zu übernehmende Anbindungen | Gestrichen, Backlog-Eintrag O-4 entfällt | Fehlübertragung: Im Konzept ein Beispiel, nicht Anhang A. TheHive überschneidet sich mit der eigenen Fallverwaltung, Cortex verlagert die Kontrolle über Abfragen nach aussen |
 | Neun Befunde aus der Verständnisprüfung | Behoben: Nummerierung 4.4, Rolle Test Manager, Quellen-Arithmetik, pgvector, Löschkonflikt in 9.2, Kollision 1a/1b, VirusTotal in der Demo, Verbindlichkeit der Demo, Graph-Bearbeitung in der Lückenliste | Session 0 in Claude Code hat sie gemeldet. Fünf davon waren Artefakte früherer Überarbeitungen dieses Dokuments |
 | Datenmodell und OSINT-Tools waren offen | Aus dem Konzeptdokument übernommen: FollowTheMoney, STIX 2.1, W3C PROV, 39 Werkzeuge | Konzept liegt nun vor |
 | CASE/UCO als Exportformat | Zurückgenommen zugunsten von STIX 2.1 und FollowTheMoney | Das Konzept hat besser begründet gewählt: nativ zu MISP und OpenSanctions |
