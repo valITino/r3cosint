@@ -148,6 +148,7 @@ stehen, prüft das menschliche Review die Befehlskette.
 | ADR, Nachweise, Verfolgbarkeit, Glossar | `.claude/rules/dokumentation.md` |
 | Rechtsregime, Aufbewahrung, Belegpflicht | `.claude/rules/recht-und-datenschutz.md` |
 | Rollendateien, Hooks, Mechanismen | `.claude/rules/claude-konfiguration.md` |
+| Versionsschilder, Meilensteine, Nachweisfluss | `.claude/rules/versionierung-und-nachweisfluss.md` |
 | Rechte je Rolle | `docs/adr/0001-rollenmodell.md` |
 
 ## Sprache

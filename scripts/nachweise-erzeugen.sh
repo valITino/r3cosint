@@ -97,9 +97,10 @@ anzahl=${#ARTEFAKTE[@]}
   echo
   echo "Der Arbeitsablauf \`.github/workflows/nachweise-uebertragen.yml\` überträgt"
   echo "**dieses Verzeichnis**, nicht den Inhalt der Artefakte, in das Verzeichnis"
-  echo "\`nachweise/\` von \`github.com/valITino/r3coscrum\`. Ausgelöst wird er durch ein"
-  echo "Versionsschild, nicht durch jeden Commit — sonst entsteht Rauschen statt"
-  echo "Nachweis (6.6). Repo B bleibt frei von Kopien."
+  echo "\`nachweise/\` von \`github.com/valITino/r3coscrum\`. Ausgelöst wird er durch"
+  echo "einen Push nach \`main\` mit Änderungen unter \`docs/\` oder \`.claude/\`, durch"
+  echo "ein Versionsschild oder von Hand; bei identischem Stand in Repo B endet der"
+  echo "Lauf ohne Schreibvorgang (6.6). Repo B bleibt frei von Kopien."
 } > "$ziel"
 
 if [ $fehler -ne 0 ]; then

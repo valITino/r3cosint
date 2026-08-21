@@ -797,7 +797,18 @@ Das Konzeptdokument nennt zwei Zählungen, die auseinanderzuhalten sind: **rund 
 
 Dieses Verzeichnis ist die verbindliche Quellenliste. Es wird nicht erweitert und nicht gekürzt, ausser der Auftraggeber weist es an. Ausnahme: die Social-Media-Erweiterung in 5.11, die im Konzept fehlt und vom Auftraggeber ausdrücklich nachgefordert wurde.
 
-**Bestehende Bausteine werden übernommen, nicht nachgebaut.** Für MISP (vom MISP-Projekt selbst), TheHive, Cortex, OpenSanctions sowie für Mermaid und draw.io existieren gepflegte Anbindungen. Diese werden verwendet. Eigenbau nur dort, wo nichts Brauchbares vorliegt.
+**Bestehende Bausteine werden übernommen, nicht nachgebaut.** Für **MISP** (vom MISP-Projekt selbst), **OpenSanctions** sowie für die Darstellung in **Mermaid** und **draw.io** existieren gepflegte Anbindungen. Diese werden verwendet. Eigenbau nur dort, wo nichts Brauchbares vorliegt.
+
+**TheHive und Cortex — [GESTRICHEN].** Eine frühere Fassung dieses Auftrags führte beide als zu übernehmende Anbindungen. Das war eine Fehlübertragung: Das Konzeptdokument nennt sie in einem Nebensatz als Beispiele für vorhandene Anbindungen, sie stehen **nicht im Werkzeugverzeichnis in Anhang A** und waren damit nie eine geforderte Quelle. Aus einem Beispiel wurde eine Anweisung.
+
+Sie werden auch nicht nachträglich aufgenommen, aus zwei fachlichen Gründen:
+
+- **TheHive ist eine Fallverwaltungsplattform** und damit funktionsgleich zu dem, was R3cOSINT selbst aufbaut (5.8): Fälle, Aufgaben, Kommentare, Zuweisung, Historie, Klassifizierung. Beides parallel zu betreiben hiesse, dass ein Fall an zwei Orten lebt und die Protokollkette aus 5.3 über zwei Systeme zerfällt. Damit wäre die Nachvollziehbarkeit beschädigt, die der Kern des Produkts ist.
+- **Cortex** würde Integrationsarbeit sparen, weil es viele fertige Analyzer mitbringt. Die Abfragen nach aussen gingen dann aber von Cortex aus statt vom eigenen MCP-Server. Positivliste, Kontingentgrenzen und die Protokollierung jeder Bekanntgabe (5.4) lägen damit ausserhalb des eigenen Zugriffs. Für ein System, dessen Wert im Nachweis liegt, wer wann was abgefragt hat, ist das der falsche Tausch.
+
+**Zur Lizenzlage, der Vollständigkeit halber:** TheHive ist seit Version 5 nicht mehr quelloffen; die Community-Lizenz erlaubt laut ihren Bedingungen nur Erprobung, Schulung und Ausbildung, nicht den operativen Einsatz, und beschränkt auf zwei Schreibbenutzer. Cortex ist weiterhin unter AGPL frei verfügbar. Die Streichung erfolgt jedoch aus den fachlichen Gründen oben, nicht wegen der Lizenz — Cortex wäre lizenzrechtlich nutzbar.
+
+**Folge für den Backlog:** Der Eintrag O-4 entfällt ersatzlos. Es braucht dafür keine fachliche Angabe des Auftraggebers mehr.
 
 **Drei Anbindungsregeln mit Vorrang vor Bequemlichkeit:**
 
@@ -932,7 +943,8 @@ Ein Verweis auf `blob/main/...` ist **kein** Nachweis und wird nicht verwendet. 
 
 Vorgaben für diesen Arbeitsablauf:
 
-- Auslöser: ein Versionsschild in Repo A, nicht jeder Commit. Sonst entsteht Rauschen statt Nachweis.
+- Auslöser *(nachgeführt 2026-08-21)*: ein Push nach `main` mit Änderungen unter `docs/` oder `.claude/`, ein Versionsschild in Repo A oder ein manueller Start. Rauschen verhindert nicht mehr der seltene Auslöser, sondern die **Idempotenz**: Der Lauf vergleicht das erzeugte Nachweisverzeichnis mit dem Stand in Repo B und endet bei identischem Inhalt ohne Schreibvorgang; geschrieben wird nur bei echter Änderung. Läufe serialisieren sich über eine Concurrency-Gruppe, damit zwei schnell aufeinanderfolgende Merges sich nicht überholen.
+- Versionsschilder *(nachgeführt 2026-08-21)*: Ein Versionsschild samt GitHub-Release entsteht automatisch, wenn ein Pull Request mit dem Label `meilenstein` nach `main` gemergt wird; die Version wird nach Semantic Versioning aus den Conventional-Commit-Betreffzeilen seit dem letzten Versionsschild abgeleitet (`BREAKING CHANGE` → major, `feat` → minor, `fix`/`docs`/`chore` → patch). **Claude Code taggt selbst nie:** Der Meilensteinentscheid liegt über das Label beim Auftraggeber, ein Versionsschild zeigt auf einen Stand von `main`, und Schreibhandlungen auf `main` sind für Claude Code gesperrt (3.2 c). Einzelheiten: `.claude/rules/versionierung-und-nachweisfluss.md`.
 - Er schreibt **ausschliesslich** in das Verzeichnis `nachweise/` in Repo B. Alles ausserhalb gehört dem Auftraggeber und wird nie überschrieben. Damit bleiben eigene Anpassungen in Repo B gefahrlos möglich.
 - Übertragen wird das Nachweisverzeichnis, nicht der Inhalt der Artefakte. Repo B bleibt frei von Kopien.
 - Zugang über ein Bereitstellungsschlüsselpaar oder ein fein begrenztes Zugriffstoken mit Schreibrecht nur auf Repo B. Das Geheimnis liegt in den Repository-Secrets, nie im Code.
@@ -957,7 +969,7 @@ Der Grund ist derselbe wie bei der Verfahrensgarantie zur Behandlung fremder Inh
 
 | Richtung | Auslöser | Mechanismus | Wirkung |
 |---|---|---|---|
-| A → B | Versionsschild in Repo A | Arbeitsablauf schreibt nach `nachweise/` | Nachweise bleiben aktuell |
+| A → B | Push nach `main` (docs/, .claude/), Versionsschild oder manueller Start | Arbeitsablauf schreibt nach `nachweise/`, idempotent: identischer Stand erzeugt keinen Commit | Nachweise bleiben aktuell |
 | B → A | Änderung in Repo B | Arbeitsablauf eröffnet Pull Request auf `docs/EINGANG_METHODIK.md` | Claude Code kennt den Stand, folgt ihm aber nicht ungeprüft |
 | B → A, verbindlich | Entscheid des Auftraggebers | Backlog-Eintrag, CLAUDE.md oder `.claude/rules/` | Wird Vorgabe |
 
@@ -1114,6 +1126,8 @@ R3cOSINT ist kein Studienprojekt, das zufällig einen Praxisbezug hat, sondern e
 | Anmeldewege nur in Test vermutet | Gelten in beiden Umgebungen. Scheinwiderspruch zu "Kein Rückkanal" ausdrücklich aufgelöst, Trennung von Anmeldung und Berechtigung festgeschrieben, Passkey-Pflicht in Produktion | Entscheid des Auftraggebers. Ohne die Auflösung liest eine spätere Prüfung 5.4 und 5.7 als Widerspruch |
 | Aufbewahrungsklassen A und B neben Fallkategorien | Auf ein Feld reduziert; die Frist wird aus der Fallkategorie abgeleitet | Zwei Klassifizierungen für dieselbe Sache laufen auseinander |
 | Klassifizierungsstufen einzeln im Code | Zuordnung Stufe auf Sichtbarkeitsregel und Berechtigung, nur zwei Regeln | 1b und 2 verhalten sich gleich; eine spätere Stufe soll eine Konfigurationszeile sein |
+| TheHive und Cortex als zu übernehmende Anbindungen | Gestrichen, Backlog-Eintrag O-4 entfällt | Fehlübertragung: Im Konzept ein Beispiel, nicht Anhang A. TheHive überschneidet sich mit der eigenen Fallverwaltung, Cortex verlagert die Kontrolle über Abfragen nach aussen |
+| Nachweisfluss nur über Versionsschild ausgelöst | 6.6 nachgeführt: zusätzlich Push nach `main` (docs/, .claude/ — deckungsgleich mit der Artefaktliste des Erzeugers, bei deren Erweiterung mitzuziehen) mit Idempotenzprüfung; Versionsschild und Release automatisch bei Merge eines Pull Requests mit Label `meilenstein`; Claude Code taggt selbst nie | Ohne Push-Auslöser veraltet das Nachweisverzeichnis zwischen den Meilensteinen; die Idempotenzprüfung übernimmt den Schutz vor Rauschen, den vorher der seltene Auslöser leistete |
 | Neun Befunde aus der Verständnisprüfung | Behoben: Nummerierung 4.4, Rolle Test Manager, Quellen-Arithmetik, pgvector, Löschkonflikt in 9.2, Kollision 1a/1b, VirusTotal in der Demo, Verbindlichkeit der Demo, Graph-Bearbeitung in der Lückenliste | Session 0 in Claude Code hat sie gemeldet. Fünf davon waren Artefakte früherer Überarbeitungen dieses Dokuments |
 | Datenmodell und OSINT-Tools waren offen | Aus dem Konzeptdokument übernommen: FollowTheMoney, STIX 2.1, W3C PROV, 39 Werkzeuge | Konzept liegt nun vor |
 | CASE/UCO als Exportformat | Zurückgenommen zugunsten von STIX 2.1 und FollowTheMoney | Das Konzept hat besser begründet gewählt: nativ zu MISP und OpenSanctions |
