@@ -9,9 +9,10 @@
 #
 # Vorgaben aus 6.6, die hier umgesetzt sind:
 #   - Auslöser sind ein Versionsschild, ein Push nach main mit Änderungen an
-#     docs/ oder .claude/ sowie der manuelle Start. Rauschen verhindert nicht
-#     mehr der seltene Auslöser, sondern die Idempotenzprüfung: bei identischem
-#     Stand in Repo B endet der Lauf ohne Schreibvorgang.
+#     den Pfaden der Artefaktliste sowie der manuelle Start. Rauschen
+#     verhindert nicht mehr der seltene Auslöser, sondern die
+#     Idempotenzprüfung: bei identischem Stand in Repo B endet der Lauf ohne
+#     Schreibvorgang.
 #   - Es wird ausschliesslich in das Verzeichnis nachweise/ geschrieben. Alles
 #     ausserhalb gehört dem Auftraggeber und wird nie überschrieben.
 #   - Übertragen wird das Nachweisverzeichnis, nicht der Inhalt der Artefakte.
@@ -27,7 +28,9 @@ name: Nachweise nach Repo B übertragen
 # Zu den Filtern: branches, tags und paths stehen bewusst im selben
 # push-Block. GitHub wertet paths bei Tag-Pushes nicht aus — ein
 # Versionsschild löst also immer aus, ein Push nach main nur bei
-# Änderungen unter docs/ oder .claude/.
+# Änderungen an den Pfaden der Artefaktliste des Nachweis-Erzeugers.
+# Wächst die Artefaktliste, wächst dieser Filter mit
+# (.claude/rules/versionierung-und-nachweisfluss.md).
 on:
   push:
     branches:
@@ -37,6 +40,8 @@ on:
     paths:
       - "docs/**"
       - ".claude/**"
+      - "prototype/**"
+      - "CLAUDE.md"
   workflow_dispatch:
     inputs:
       schild:
@@ -194,7 +199,12 @@ jobs:
         run: |
           set -euo pipefail
           git config user.name "r3cosint-nachweise[bot]"
-          git config user.email "noreply@users.noreply.github.com"
+          # Die Adresse gehoert dem Konto github-actions[bot]. Die naheliegende
+          # Form noreply@users.noreply.github.com waere falsch: GitHub laese
+          # daraus den Benutzernamen "noreply" und verlinkte den Commit auf das
+          # Profil einer unbeteiligten dritten Person
+          # (.claude/rules/versionierung-und-nachweisfluss.md).
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "${ZIEL_VERZEICHNIS}"
           if git diff --cached --quiet; then
             echo "Keine Änderung am Nachweisverzeichnis. Kein Commit."

@@ -21,11 +21,11 @@
 #
 # Bewusste Folge des GITHUB_TOKEN: Ein von diesem Arbeitsablauf erzeugtes
 # Versionsschild löst keine weiteren Arbeitsabläufe aus (GitHub verhindert
-# Kettenauslösung durch das eigene Token). Heute kein Verlust, weil die
-# Artefaktliste des Nachweis-Erzeugers nur docs/ und .claude/ führt und der
-# Push des Merges den Nachweisfluss deshalb bereits ausgelöst hat — wächst
-# die Artefaktliste über diese Pfade hinaus, muss der paths-Filter dort
-# mitwachsen (.claude/rules/versionierung-und-nachweisfluss.md).
+# Kettenauslösung durch das eigene Token). Heute kein Verlust, weil der
+# paths-Filter des Push-Auslösers dort alle Pfade der Artefaktliste des
+# Nachweis-Erzeugers abdeckt und der Push des Merges den Nachweisfluss
+# deshalb bereits ausgelöst hat — wächst die Artefaktliste, muss der
+# paths-Filter mitwachsen (.claude/rules/versionierung-und-nachweisfluss.md).
 
 name: Meilenstein-Tag und Release
 
@@ -120,7 +120,12 @@ jobs:
         run: |
           set -euo pipefail
           git config user.name "r3cosint-meilenstein[bot]"
-          git config user.email "noreply@users.noreply.github.com"
+          # Die Adresse gehoert dem Konto github-actions[bot]. Die naheliegende
+          # Form noreply@users.noreply.github.com waere falsch: GitHub laese
+          # daraus den Benutzernamen "noreply" und verlinkte das Versionsschild
+          # auf das Profil einer unbeteiligten dritten Person
+          # (.claude/rules/versionierung-und-nachweisfluss.md).
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # Das Versionsschild zeigt auf den Merge-Commit des
           # Meilenstein-Pull-Requests, nicht auf einen späteren Stand.
           git tag -a "${{ steps.version.outputs.wert }}" \
