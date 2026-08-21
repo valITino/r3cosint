@@ -87,3 +87,27 @@ Arbeitsablauf in Repo B fortgeschrieben.*
 >
 
 **Nachweis:** https://github.com/valITino/r3coscrum/commit/baa83daa0bb309b5deb1041965856b1dbc16522b
+
+## 2026-08-21 — Änderung an der Methodik
+
+**Was sich geändert hat:**
+
+- Geändert: `methodik/arbeitsprodukte.md`
+- Geändert: `methodik/entscheide.md`
+- Geändert: `methodik/re-prozess.md`
+- Geändert: `methodik/scrum-aufbau.md`
+
+**Warum:**
+
+> b2fa8e7 — methodik: Platzhalter durch feste Verweise aufgeloest
+> 71 Platzhalter, 69 aufgeloest mit dem Verweis aus nachweise/NACHWEISE.md
+> (Stand 4c64300e9ec00fd1068964e14c2666c631d00dfa): Projektauftrag bei
+> Commit 3f939cea7749d9fbe1df9a7bbc90ff94efe95cb6, Abschnittsname als
+> Linktext. 2 bleiben offen, weil das Nachweisverzeichnis keinen Eintrag
+> zu prototype/OSINT_Plattform_Demo.html fuehrt; nichts konstruiert.
+>
+> Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+> Claude-Session: https://claude.ai/code/session_019kpqfSMsFSuCS7DFFt1cw7
+>
+
+**Nachweis:** https://github.com/valITino/r3coscrum/commit/995b4cb6c9fce416978294594f2a9012c4039065
