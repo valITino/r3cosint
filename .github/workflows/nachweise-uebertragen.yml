@@ -8,22 +8,35 @@
 # beider Repositories nachvollziehbar (6.6).
 #
 # Vorgaben aus 6.6, die hier umgesetzt sind:
-#   - Auslöser ist ein Versionsschild, nicht jeder Commit. Sonst entsteht
-#     Rauschen statt Nachweis.
+#   - Auslöser sind ein Versionsschild, ein Push nach main mit Änderungen an
+#     docs/ oder .claude/ sowie der manuelle Start. Rauschen verhindert nicht
+#     mehr der seltene Auslöser, sondern die Idempotenzprüfung: bei identischem
+#     Stand in Repo B endet der Lauf ohne Schreibvorgang.
 #   - Es wird ausschliesslich in das Verzeichnis nachweise/ geschrieben. Alles
 #     ausserhalb gehört dem Auftraggeber und wird nie überschrieben.
 #   - Übertragen wird das Nachweisverzeichnis, nicht der Inhalt der Artefakte.
 #     Repo B bleibt frei von Kopien.
 #   - Der Zugang läuft über ein fein begrenztes Zugriffstoken mit Schreibrecht
 #     nur auf Repo B. Das Geheimnis liegt in den Repository-Secrets, nie im Code.
-#   - Jeder Lauf erzeugt einen Commit mit dem Versionsschild im Betreff.
+#   - Jeder Lauf, der schreibt, erzeugt einen Commit mit dem Bezug im
+#     Betreff — dem Versionsschild oder, beim Push-Auslöser, der Prüfsumme
+#     des Push-Commits. Ein Lauf ohne Änderung erzeugt keinen Commit.
 
 name: Nachweise nach Repo B übertragen
 
+# Zu den Filtern: branches, tags und paths stehen bewusst im selben
+# push-Block. GitHub wertet paths bei Tag-Pushes nicht aus — ein
+# Versionsschild löst also immer aus, ein Push nach main nur bei
+# Änderungen unter docs/ oder .claude/.
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*"
+    paths:
+      - "docs/**"
+      - ".claude/**"
   workflow_dispatch:
     inputs:
       schild:
@@ -41,6 +54,9 @@ on:
 permissions:
   contents: read
 
+# Eine Concurrency-Gruppe serialisiert die Läufe: zwei schnell
+# aufeinanderfolgende Merges überholen sich nicht; es läuft höchstens ein
+# Lauf, ein weiterer wartet (GitHub behält den jeweils neuesten wartenden).
 concurrency:
   group: nachweise-uebertragen
   cancel-in-progress: false
@@ -58,13 +74,19 @@ jobs:
         with:
           fetch-depth: 0 # vollständige Historie: die festen Verweise brauchen die Prüfsummen
 
-      - name: Versionsschild bestimmen
+      - name: Bezug bestimmen
         id: schild
+        # Der Bezug benennt, welcher Stand von Repo A übertragen wird:
+        # beim manuellen Start das eingegebene Versionsschild, beim Tag-Push
+        # das Versionsschild selbst, beim Push nach main — wo es kein
+        # Versionsschild gibt — die Prüfsumme des Push-Commits.
         run: |
           if [ -n "${{ inputs.schild }}" ]; then
             echo "wert=${{ inputs.schild }}" >> "$GITHUB_OUTPUT"
-          else
+          elif [ "${GITHUB_REF_TYPE}" = "tag" ]; then
             echo "wert=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "wert=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Nachweisverzeichnis neu erzeugen
@@ -104,7 +126,30 @@ jobs:
           path: repo-b
           fetch-depth: 0
 
+      - name: Idempotenzprüfung gegen den Stand in Repo B
+        id: vergleich
+        # Bei identischem Inhalt endet der Lauf ohne Schreibvorgang — das
+        # verhindert Rauschen in Repo B, obwohl jeder Merge nach main den
+        # Lauf auslösen darf. Ein angeforderter Abzug erzwingt den Lauf,
+        # weil er unabhängig vom Verzeichnisinhalt eine Kopie erzeugen soll.
+        run: |
+          set -euo pipefail
+          if [ -f "repo-b/${ZIEL_VERZEICHNIS}/NACHWEISE.md" ] \
+             && cmp -s docs/NACHWEISE.md "repo-b/${ZIEL_VERZEICHNIS}/NACHWEISE.md"; then
+            if [ "${{ inputs.abzug }}" = "true" ]; then
+              echo "Nachweisverzeichnis identisch, aber Abzug angefordert: Lauf wird fortgesetzt."
+              echo "schreiben=ja" >> "$GITHUB_OUTPUT"
+            else
+              echo "Nachweisverzeichnis in Repo B ist inhaltlich identisch. Kein Schreibvorgang."
+              echo "schreiben=nein" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "Nachweisverzeichnis weicht ab oder fehlt in Repo B. Es wird übertragen."
+            echo "schreiben=ja" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Nachweisverzeichnis nach Repo B schreiben
+        if: ${{ steps.vergleich.outputs.schreiben == 'ja' }}
         run: |
           set -euo pipefail
           # Ausschliesslich in nachweise/. Alles ausserhalb gehört dem
@@ -115,12 +160,12 @@ jobs:
             echo "<!-- Erzeugt aus ${GITHUB_REPOSITORY} durch den Arbeitsablauf"
             echo "     nachweise-uebertragen.yml. Nicht von Hand ändern:"
             echo "     Änderungen gehen beim nächsten Lauf verloren."
-            echo "     Versionsschild: ${{ steps.schild.outputs.wert }}"
+            echo "     Bezug (Versionsschild oder Commit): ${{ steps.schild.outputs.wert }}"
             echo "     Quell-Commit:   ${GITHUB_SHA} -->"
           } > "repo-b/${ZIEL_VERZEICHNIS}/HINWEIS.md"
 
       - name: Eingefrorenen Abzug erzeugen
-        if: ${{ inputs.abzug == true }}
+        if: ${{ inputs.abzug == true && steps.vergleich.outputs.schreiben == 'ja' }}
         run: |
           set -euo pipefail
           # Der einzige zulässige Fall, in dem Inhalte doppelt vorliegen (6.6).
@@ -137,13 +182,14 @@ jobs:
               echo "     Pfad:        $pfad"
               echo "     Prüfsumme:   $pruefsumme"
               echo "     Abzugsdatum: $datum"
-              echo "     Schild:      ${{ steps.schild.outputs.wert }} -->"
+              echo "     Bezug:       ${{ steps.schild.outputs.wert }} -->"
               echo
               cat "$pfad"
             } > "$ziel"
           done < <(grep -oE '`[^`]+\.(md|json|sh)`' docs/NACHWEISE.md | tr -d '`' | sort -u)
 
       - name: Commit in Repo B erzeugen
+        if: ${{ steps.vergleich.outputs.schreiben == 'ja' }}
         working-directory: repo-b
         run: |
           set -euo pipefail

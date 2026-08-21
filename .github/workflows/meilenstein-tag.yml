@@ -1,0 +1,144 @@
+# Erzeugt bei einem Meilenstein automatisch Versionsschild und Release
+# (Projektauftrag 6.6).
+#
+# Was ein Meilenstein ist, entscheidet der Auftraggeber — durch das Label
+# "meilenstein" am Pull Request. Der Arbeitsablauf feuert erst nach dem
+# Merge; ein gelabelter, aber nicht gemergter Pull Request erzeugt nichts.
+#
+# Claude Code taggt selbst nie: Ein Versionsschild ist ein
+# Meilensteinentscheid des Auftraggebers und zeigt auf einen Stand von
+# main; Schreibhandlungen auf main sind für Claude Code gesperrt (3.2 c).
+# Die Automatik läuft ausserhalb der Sandbox, mit eigenen Rechten, und ist
+# im Verlauf des Repositories nachvollziehbar (6.6). Einzelheiten:
+# .claude/rules/versionierung-und-nachweisfluss.md.
+#
+# Versionsableitung nach Semantic Versioning aus den Conventional-Commit-
+# Betreffzeilen seit dem letzten Versionsschild:
+#   - BREAKING CHANGE im Betreff oder "!" nach dem Typ  -> major
+#   - feat                                              -> minor
+#   - fix, docs, chore und alles Übrige                 -> patch
+# Existiert noch kein Versionsschild, beginnt die Zählung bei v0.1.0.
+#
+# Bewusste Folge des GITHUB_TOKEN: Ein von diesem Arbeitsablauf erzeugtes
+# Versionsschild löst keine weiteren Arbeitsabläufe aus (GitHub verhindert
+# Kettenauslösung durch das eigene Token). Heute kein Verlust, weil die
+# Artefaktliste des Nachweis-Erzeugers nur docs/ und .claude/ führt und der
+# Push des Merges den Nachweisfluss deshalb bereits ausgelöst hat — wächst
+# die Artefaktliste über diese Pfade hinaus, muss der paths-Filter dort
+# mitwachsen (.claude/rules/versionierung-und-nachweisfluss.md).
+
+name: Meilenstein-Tag und Release
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+# Schreibrecht nur auf Inhalte des eigenen Repositories: Versionsschild
+# und Release. Kein Zugriff auf Repo B, keine weiteren Rechte.
+permissions:
+  contents: write
+
+# Serialisiert die Läufe, damit zwei schnell aufeinanderfolgende
+# Meilenstein-Merges sich nicht überholen und keine Version doppelt
+# vergeben wird.
+concurrency:
+  group: meilenstein-tag
+  cancel-in-progress: false
+
+jobs:
+  taggen:
+    if: >-
+      github.event.pull_request.merged == true &&
+      contains(github.event.pull_request.labels.*.name, 'meilenstein')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0 # vollständige Historie samt Versionsschildern für die Ableitung
+
+      - name: Version ableiten
+        id: version
+        run: |
+          set -euo pipefail
+          # for-each-ref statt "git tag | head": eine frühzeitig
+          # geschlossene Pipe würde unter pipefail den Schritt abbrechen.
+          letztes=$(git for-each-ref --sort=-v:refname --count=1 \
+            --format='%(refname:short)' 'refs/tags/v*')
+
+          if [ -n "$letztes" ]; then
+            bereich="${letztes}..HEAD"
+            IFS='.' read -r major minor patch <<<"${letztes#v}"
+          else
+            bereich="HEAD"
+            major=0; minor=0; patch=0
+          fi
+
+          betreffs=$(git log --format=%s "$bereich")
+          if [ -z "$betreffs" ]; then
+            echo "Keine Commits seit ${letztes:-Beginn}. Kein Versionsschild."
+            echo "erzeugen=nein" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          stufe=patch
+          if printf '%s\n' "$betreffs" | grep -Eq '^[a-z]+(\([^)]*\))?!:|BREAKING CHANGE'; then
+            stufe=major
+          elif printf '%s\n' "$betreffs" | grep -Eq '^feat(\([^)]*\))?!?:'; then
+            stufe=minor
+          fi
+
+          case "$stufe" in
+            major) major=$((major + 1)); minor=0; patch=0 ;;
+            minor) minor=$((minor + 1)); patch=0 ;;
+            patch)
+              if [ -z "$letztes" ]; then
+                # Erste Version überhaupt: v0.1.0 als Startpunkt statt v0.0.1.
+                minor=1; patch=0
+              else
+                patch=$((patch + 1))
+              fi
+              ;;
+          esac
+
+          version="v${major}.${minor}.${patch}"
+          echo "Abgeleitet: ${version} (Stufe ${stufe}, seit ${letztes:-Beginn})"
+          echo "erzeugen=ja" >> "$GITHUB_OUTPUT"
+          echo "wert=${version}" >> "$GITHUB_OUTPUT"
+          {
+            echo "betreffs<<ENDE_BETREFFS"
+            printf '%s\n' "$betreffs"
+            echo "ENDE_BETREFFS"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Versionsschild erzeugen und pushen
+        if: ${{ steps.version.outputs.erzeugen == 'ja' }}
+        run: |
+          set -euo pipefail
+          git config user.name "r3cosint-meilenstein[bot]"
+          git config user.email "noreply@users.noreply.github.com"
+          # Das Versionsschild zeigt auf den Merge-Commit des
+          # Meilenstein-Pull-Requests, nicht auf einen späteren Stand.
+          git tag -a "${{ steps.version.outputs.wert }}" \
+            -m "Meilenstein: Pull Request #${{ github.event.pull_request.number }}" \
+            "${{ github.event.pull_request.merge_commit_sha }}"
+          git push origin "${{ steps.version.outputs.wert }}"
+
+      - name: Release erzeugen
+        if: ${{ steps.version.outputs.erzeugen == 'ja' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BETREFFS: ${{ steps.version.outputs.betreffs }}
+        run: |
+          set -euo pipefail
+          # Beschreibung: die Commit-Betreffzeilen seit dem letzten
+          # Versionsschild, eine je Zeile.
+          printf '%s\n' "$BETREFFS" | sed 's/^/- /' > /tmp/release-notizen.md
+          gh release create "${{ steps.version.outputs.wert }}" \
+            --title "${{ steps.version.outputs.wert }}" \
+            --notes-file /tmp/release-notizen.md \
+            --verify-tag
