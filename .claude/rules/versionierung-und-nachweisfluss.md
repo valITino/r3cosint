@@ -37,6 +37,24 @@ Grundlage: Projektauftrag 6.6, 3.2 c. Umgesetzt in
   im Verlauf des Repositories nachvollziehbar (6.6). Claude Code schreibt
   die Arbeitsabläufe; ausgeführt werden sie von GitHub.
 
+## Commit-Identität der Automatik
+
+- Jeder Commit und jedes Versionsschild, das die Arbeitsabläufe erzeugen —
+  auch der Commit in Repo B — trägt als `user.email` die Adresse
+  `41898282+github-actions[bot]@users.noreply.github.com`. Sie gehört dem
+  GitHub-Konto `github-actions[bot]`; GitHub ordnet Commits über die
+  E-Mail-Adresse einem Konto zu.
+- `noreply@users.noreply.github.com` wird **nie** verwendet: GitHub liest
+  aus dieser Adresse den Benutzernamen `noreply` und verlinkt jeden so
+  erzeugten Commit auf das Profil einer unbeteiligten dritten Person.
+- Der `user.name` bleibt der sprechende Name des jeweiligen
+  Arbeitsablaufs (`r3cosint-nachweise[bot]`, `r3cosint-meilenstein[bot]`).
+  Er ist reine Anzeige; die Zuordnung zum Konto läuft allein über die
+  E-Mail-Adresse.
+- Die Historie wird nicht umgeschrieben. Commits, die vor dieser Regel mit
+  der alten Adresse entstanden sind, bleiben stehen; die Regel gilt für
+  jeden neuen Commit.
+
 ## Wann der Nachweisfluss läuft
 
 `nachweise-uebertragen.yml` läuft bei:
