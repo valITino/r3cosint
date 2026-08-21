@@ -59,18 +59,18 @@ Grundlage: Projektauftrag 6.6, 3.2 c. Umgesetzt in
 
 `nachweise-uebertragen.yml` läuft bei:
 
-1. **Push nach `main`** mit Änderungen unter `docs/**` oder `.claude/**` —
-   der Regelfall nach jedem Merge. Bezug ist die Prüfsumme des
-   Push-Commits.
+1. **Push nach `main`** mit Änderungen an den Pfaden der Artefaktliste —
+   `docs/**`, `.claude/**`, `prototype/**` oder `CLAUDE.md` — der
+   Regelfall nach jedem Merge. Bezug ist die Prüfsumme des Push-Commits.
 2. **Versionsschild `v*`** — Bezug ist das Versionsschild. Von
    `meilenstein-tag.yml` erzeugte Versionsschilder lösen diesen Weg
    **nicht** aus (GitHub verhindert Kettenauslösung durch das eigene
-   Token). Verloren geht dadurch heute nichts, weil die Artefaktliste des
-   Erzeugers ausschliesslich Dateien unter `docs/` und `.claude/` führt und
-   der Push des Merges den Lauf deshalb bereits ausgelöst hat. **Achtung:**
-   Wird die Artefaktliste um Pfade ausserhalb dieser Filter erweitert, muss
-   der `paths`-Filter des Push-Auslösers mitwachsen, sonst entsteht hier
-   eine Lücke.
+   Token). Verloren geht dadurch heute nichts, weil der `paths`-Filter des
+   Push-Auslösers alle Pfade der Artefaktliste abdeckt und der Push des
+   Merges den Lauf deshalb bereits ausgelöst hat. **Achtung:** Wird die
+   Artefaktliste um Pfade ausserhalb dieses Filters erweitert, muss der
+   `paths`-Filter des Push-Auslösers mitwachsen, sonst entsteht hier eine
+   Lücke.
 3. **Manueller Start** mit eingegebenem Versionsschild, wahlweise mit
    eingefrorenem Abzug für die Abgabe.
 

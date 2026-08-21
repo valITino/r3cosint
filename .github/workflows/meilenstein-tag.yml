@@ -21,11 +21,11 @@
 #
 # Bewusste Folge des GITHUB_TOKEN: Ein von diesem Arbeitsablauf erzeugtes
 # Versionsschild löst keine weiteren Arbeitsabläufe aus (GitHub verhindert
-# Kettenauslösung durch das eigene Token). Heute kein Verlust, weil die
-# Artefaktliste des Nachweis-Erzeugers nur docs/ und .claude/ führt und der
-# Push des Merges den Nachweisfluss deshalb bereits ausgelöst hat — wächst
-# die Artefaktliste über diese Pfade hinaus, muss der paths-Filter dort
-# mitwachsen (.claude/rules/versionierung-und-nachweisfluss.md).
+# Kettenauslösung durch das eigene Token). Heute kein Verlust, weil der
+# paths-Filter des Push-Auslösers dort alle Pfade der Artefaktliste des
+# Nachweis-Erzeugers abdeckt und der Push des Merges den Nachweisfluss
+# deshalb bereits ausgelöst hat — wächst die Artefaktliste, muss der
+# paths-Filter mitwachsen (.claude/rules/versionierung-und-nachweisfluss.md).
 
 name: Meilenstein-Tag und Release
 
