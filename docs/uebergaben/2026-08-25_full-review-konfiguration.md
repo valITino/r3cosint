@@ -146,6 +146,42 @@ Hook feuerte dafür also nie. Beides ist jetzt vorsorglich geschlossen: die
 jq-Extraktion liest `edits[].new_string` (ohne `old_string`), MultiEdit steht in
 beiden Matchern.
 
+## Dritte Prüfrunde: der `cd`-Bypass und die Grenze der Textprüfung
+
+Der bestätigende Prüflauf fiel erneut **nicht bestanden** aus — mit einem
+kritischen Befund und drei kleineren. Alle behoben (Commit `5a4609c…`), rund 55
+Gate-Proben grün.
+
+| # | Befund | Behebung |
+|---|---|---|
+| N1 (kritisch) | `cd <main-checkout> && git commit` / `&& sed -i` umging das Gate — nur `git -C` löste den Kontext auf | geschützter Zielkontext aus `cd`, `pushd`, `git -C`, `env -C`; git-Verb- und Schreibprüfung hängen daran |
+| — Falsch-Positiv | `git worktree add -b <neu> <p> main` (neuer Zweig ab main) wurde blockiert | nur direktes Auschecken von main gesperrt |
+| N2 | Zeilenkommentare (`//`) umgingen die Prototyp-Normalisierung | vor den Blockkommentaren entfernt |
+| N3 | verschachtelte Blockkommentare nur teilweise entfernt | Ersetzung läuft bis zum Fixpunkt |
+| N4 | Kommentar behauptete fälschlich, MultiEdit sei nicht im Matcher | richtiggestellt; jq zusätzlich gegen fehlgeformtes `edits` gehärtet |
+
+**Was diese dritte Runde grundsätzlich zeigt — und was daraus im Code steht.**
+Jede Runde fand einen weiteren Bash-Idiom, mit dem sich `main` erreichen liess:
+erst `git -C`, dann `cd &&`. Das ist kein Zufall, sondern die Natur einer
+Textprüfung von Shell-Befehlen: sie ist gegen einen entschlossenen Umgeher nie
+vollständig (die nächsten Kandidaten wären eine Subshell `(cd x; …)` oder
+`bash -c "…"`). Der Kopfkommentar beider Gates sagt das jetzt ausdrücklich und
+zieht die Konsequenz: **die Gates fangen die gebräuchlichen Idiome früh und
+laut ab; die harte Zusicherung gegen Schreiben auf `main` liefert das
+serverseitige GitHub-Ruleset, nicht dieses Gate.** Ich habe die gebräuchlichen
+Idiome (`cd`, `pushd`, `git -C`, `env -C`) geschlossen und die verbleibende
+Grenze benannt, statt eine vierte, fünfte Runde auf immer exotischere Formen zu
+führen — das wäre der Wettlauf, den eine Textprüfung strukturell nicht gewinnt.
+
+**Zur Eskalationsregel (3.4).** Die Gate-Prüfung ist zweimal am selben Kriterium
+gescheitert (Runde-2-Befunde, dann N1). Die Regel greift bei dreimaligem
+Scheitern. Ich lege den Stand deshalb hier vor: die dritte Runde ist behoben und
+erneut zur Prüfung gegeben; sollte sie wieder Bash-Idiom-Umgehungen finden, ist
+das genau das oben benannte strukturelle Limit — dann ist die richtige Antwort
+nicht eine vierte Härtungsrunde, sondern der Verlass auf das serverseitige
+Ruleset (die dokumentierte harte Linie), und die Sache gehört dem Auftraggeber
+vorgelegt.
+
 ## Verifikation
 
 - Konsolidierter Prüfsatz: 25 Punkte, ohne Beanstandung (Syntax aller Skripte,
