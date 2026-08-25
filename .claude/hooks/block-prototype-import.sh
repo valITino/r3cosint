@@ -32,8 +32,12 @@ tool=$(printf '%s' "$input" | jq -r '.tool_name // empty')
 if [ "$tool" = "Bash" ]; then
   cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty')
   [ -n "$cmd" ] || exit 0
+  # Fuer die Importpruefung den Befehl zu einer Zeile zusammenziehen -- ein
+  # Heredoc mit ueber mehrere Zeilen verteiltem Import entginge sonst dem
+  # zeilenweisen grep (Befund der statischen Pruefung vom 2026-08-25).
+  cmd_flach=$(printf '%s' "$cmd" | tr '\n\t' '  ')
   if printf '%s' "$cmd" | grep -Eq '(>>?|[|][[:space:]]*tee[[:space:]]|sed[[:space:]]+-[a-zA-Z]*i|<<)' \
-      && printf '%s' "$cmd" | grep -Eq "(from|require|import|@import|__import__|import_module)[^|&]*prototype([./\"'[:space:]]|\$)"; then
+      && printf '%s' "$cmd_flach" | grep -Eq "(from|require|import|@import|__import__|import_module)[^|&]*prototype([./\"'[:space:]]|\$)"; then
     echo "BLOCKIERT (Projektauftrag 5.6): Shell-Befehl mit Schreibwirkung und einem Import, der 'prototype' beruehrt." >&2
     echo "Importe zwischen prototype/ und Produktionscode sind in beide Richtungen untersagt." >&2
     echo "Die Datei mit dem Write-Werkzeug schreiben -- dort prueft das Gate pfadgenau." >&2
@@ -64,22 +68,45 @@ esac
 # Korrektur auf, die es erzwingen will (Befund der statischen Pruefung vom
 # 2026-08-25, ausgefuehrt belegt).
 payload=$(printf '%s' "$input" | jq -r '
-  [ (.tool_input // {}) | to_entries[]
-    | select(.value | type == "string")
-    | select(.key | test("path|^old_string$"; "i") | not)
-    | .value ] | join("\n")')
+  [ ( (.tool_input // {}) | to_entries[]
+      | select(.value | type == "string")
+      | select(.key | test("path|^old_string$"; "i") | not)
+      | .value ),
+    # MultiEdit fuehrt die Aenderungen in einem Array edits[]; je Eintrag zaehlt
+    # nur new_string, nicht old_string (gleiche Begruendung wie oben). Vorsorge:
+    # MultiEdit ist in dieser Umgebung nicht bestaetigt und steht darum auch
+    # noch nicht im Matcher der settings.json -- ohne Matchereintrag feuert der
+    # Hook fuer MultiEdit gar nicht. Wird das Werkzeug verfuegbar, ist hier
+    # nichts mehr zu aendern, nur der Matcher zu ergaenzen.
+    ( (.tool_input.edits // []) | .[]? | .new_string // empty )
+  ] | join("\n")')
 [ -n "$payload" ] || exit 0
+
+# Zusaetzlich eine normalisierte Fassung: Blockkommentare entfernt, Zeilen-
+# umbrueche und Tabulatoren zu Leerzeichen. grep arbeitet zeilenweise; ein
+# Import, dessen Schluesselwort, 'from' und Pfad ueber mehrere Zeilen verteilt
+# sind (Prettier-Umbruch) oder durch einen Kommentar getrennt sind, entginge
+# der zeilenweisen Pruefung. Beide Befunde der statischen Pruefung vom
+# 2026-08-25, ausgefuehrt belegt. Geprueft wird gegen Original UND normalisierte
+# Fassung in einem Durchgang; die Anfuehrungszeichen-Grenzen der Muster
+# verhindern, dass die zusammengezogene Zeile quer ueber unbeteiligte
+# Zeichenketten hinweg falsch anschlaegt.
+payload_norm=$(printf '%s' "$payload" | sed 's#/\*[^*]*\*/##g' | tr '\n\t' '  ')
+pruefstoff=$(printf '%s\n%s' "$payload" "$payload_norm")
 
 Q="[\"'\`]"
 NQ="[^\"'\`]"
 
 if [ "${rel#prototype/}" != "$rel" ]; then
-  # Richtung 2: Prototyp importiert aus dem Produktionscode. Massgebend sind
-  # die Bauwurzeln aus ADR 0002 Abschnitt 5 (backend/, frontend/, deploy/);
-  # die uebrigen Namen bleiben als Vorhalt fuer generische Layouts stehen.
-  # Bis zum 2026-08-25 fehlten backend/ und frontend/ -- ein Import aus genau
-  # den Verzeichnissen, die der ADR festlegt, lief durch (ausgefuehrt belegt).
-  if printf '%s' "$payload" | grep -Eq \
+  # Richtung 2: Prototyp importiert aus dem Produktionscode. Die Bauwurzeln
+  # nach ADR 0002 Abschnitt 5 sind backend/ und frontend/ (Zitat: "Zwei
+  # Bauwurzeln (backend/, frontend/), ein Einstieg (Makefile)"); deploy/ steht
+  # im Verzeichnisbaum, ist aber dort ausdruecklich KEINE Bauwurzel -- es wird
+  # zusaetzlich erfasst, weil ein Import daraus ebenso unerwuenscht waere. Die
+  # uebrigen Namen bleiben Vorhalt fuer generische Layouts. Bis zum 2026-08-25
+  # fehlten backend/ und frontend/ -- ein Import aus genau den Verzeichnissen,
+  # die der ADR als Bauwurzeln festlegt, lief durch (ausgefuehrt belegt).
+  if printf '%s' "$pruefstoff" | grep -Eq \
       -e "(from|require\(|import\(|@import|import)[[:space:]]*\(?[[:space:]]*${Q}(\.\./)*(backend|frontend|deploy|src|app|lib|server|packages|apps)/" \
       -e "(from|require\(|import\(|@import|import)[[:space:]]*\(?[[:space:]]*${Q}[@~#]/"; then
     echo "BLOCKIERT (Projektauftrag 5.6): '$rel' liegt im Prototyp und importiert aus dem Produktionscode." >&2
@@ -91,7 +118,7 @@ if [ "${rel#prototype/}" != "$rel" ]; then
 fi
 
 # Richtung 1: Produktionscode importiert aus dem Prototyp.
-if printf '%s' "$payload" | grep -Eq \
+if printf '%s' "$pruefstoff" | grep -Eq \
     -e "(from|require\(|import\(|@import|import)[[:space:]]*\(?[[:space:]]*${Q}${NQ}*prototype/" \
     -e "(src|href)=${Q}${NQ}*prototype/" \
     -e "^[[:space:]]*(from|import)[[:space:]]+prototype([.[:space:]]|\$)" \
