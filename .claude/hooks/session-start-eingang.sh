@@ -45,11 +45,13 @@ datei="$proj/docs/EINGANG_METHODIK.md"
 [ -r "$datei" ] || exit 0
 
 # Obergrenzen fuer den Eintragsblock (Massnahme 4). Sie gelten fuer den fremden
-# Teil einschliesslich einer allfaelligen Kuerzungsmeldung, nicht fuer die
-# Gesamtausgabe: Marker und die beiden Warnungen sind fest und kommen mit rund
-# 1550 Zeichen hinzu. Gekuerzt wird vorne, weil angefuegt wird -- der juengste
-# Eintrag steht zuunterst und ist der wichtigste. Zum Vergleich: der Stand vom
-# 2026-08-25 mit zwei Eintraegen belegt 75 Zeilen und rund 2350 Zeichen.
+# Teil einschliesslich Praefix und einer allfaelligen Kuerzungsmeldung, nicht
+# fuer die Gesamtausgabe: Marker und die beiden Warnungen sind fest und kommen
+# mit rund 2360 Zeichen hinzu. Gekuerzt wird vorne, weil angefuegt wird -- der
+# juengste Eintrag steht zuunterst und ist der wichtigste. Zum Vergleich: der
+# Stand vom 2026-08-25 mit zwei Eintraegen belegt als fremder Teil 49 Zeilen und
+# rund 2430 Zeichen. Diese Zahlen sind gemessen, nicht geschaetzt, und gelten
+# fuer die Fassung mit Praefix; wer den Rahmentext aendert, misst sie neu.
 max_zeilen=400
 max_zeichen=20000
 # Zusaetzlich je Zeile, damit eine einzige sehr lange Zeile das Zeichenbudget
@@ -111,9 +113,12 @@ inhalt=$(printf '%s\n' "$roh" | awk '
 
 # Entschaerfen (Massnahme 3) und begrenzen (Massnahme 4) in einem Durchgang.
 #
-# Steuerzeichen fallen weg, Tabulator und Zeilenumbruch bleiben -- ein Eintrag,
-# der Bildschirmsteuerung mitbringt, ist Text, der sich als etwas anderes
-# ausgibt. Die Ersetzung von Gleichheitszeichen bleibt als zweite Lage; die
+# Steuerzeichen fallen weg, Tabulator (9) und Zeilenumbruch (10) bleiben -- ein
+# Eintrag, der Bildschirmsteuerung mitbringt, ist Text, der sich als etwas
+# anderes ausgibt. Der Bereich ist bewusst zusammenhaengend geschrieben
+# (\013-\037 statt \013\014\016-\037): die aufgeteilte Fassung liess den
+# Wagenruecklauf (13) stehen, waehrend der Kommentar daneben das Gegenteil
+# behauptete. Befund F3 der statischen Pruefung vom 2026-08-25. Die Ersetzung von Gleichheitszeichen bleibt als zweite Lage; die
 # Zusicherung gegen Marker-Nachbildung traegt das Praefix (siehe Massnahme 3),
 # nicht sie.
 #
@@ -122,7 +127,7 @@ inhalt=$(printf '%s\n' "$roh" | awk '
 # koennte der Rueckgabewert des abgebrochenen Schreibers durchschlagen. awk
 # liest bis zum Ende.
 inhalt=$(printf '%s\n' "$inhalt" \
-  | tr -d '\000-\010\013\014\016-\037\177' \
+  | tr -d '\000-\010\013-\037\177' \
   | sed 's/=\{3,\}/= = =/g' \
   | awk -v maxz="$max_zeilen" -v maxb="$max_zeichen" -v maxc="$max_zeichen_zeile" -v pre="$praefix" '
       # Schnitt von hinten: liefert die erste Zeile, ab der ausgegeben wird,

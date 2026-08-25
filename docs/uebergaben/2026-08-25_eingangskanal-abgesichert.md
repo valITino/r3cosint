@@ -135,12 +135,46 @@ als 16 Stellen, und die Länge wird danach nicht erneut geprüft. Nachgeprüft:
 `printf '%04x%04x%04x%04x' 100 200 300 200000` liefert 17 Zeichen. Behoben durch
 Maskierung auf 16 Bit je Feld; damit sind es 16 Stellen von Bauart wegen.
 
+### Zweiter Durchgang: bestanden, mit zwei kleinen Befunden
+
+Gegen Commit [`1fd14ad01650`](https://github.com/valITino/r3cosint/commit/1fd14ad016505b164932a96b260dd9d53435c9c3)
+geprüft. F1 und F2 gelten als strukturell behoben. Zwei niedrigschwellige
+Befunde kamen hinzu; beide sind behoben, weil sie klein sind und beide genau das
+betreffen, worum es in dieser Einheit geht.
+
+**F3 — der Wagenrücklauf blieb stehen.** Die Maske
+`tr -d '\000-\010\013\014\016-\037\177'` löscht 0–8, 11, 12, 14–31 und 127.
+Byte 13 fehlt: ein Abschreibfehler beim Aufteilen eines Bereichs, der
+zusammenhängend gehört. Nachgeprüft gegen alle 256 Bytewerte — übrig blieben
+Tabulator, Zeilenumbruch **und Wagenrücklauf**, während der Kommentar daneben
+behauptete, nur die ersten beiden blieben. Ein Kommentar, der das Gegenteil des
+Codes sagt, ist schlimmer als kein Kommentar. Behoben durch den
+zusammenhängenden Bereich `\013-\037`; nachgemessen bleiben jetzt genau 9 und 10.
+Dieselbe Maske stand spiegelbildlich in `eingang.yml` und ist dort ebenso
+behoben.
+
+**F4 — die Zahlen im Budgetkommentar waren veraltet.** Er nannte «rund 1550
+Zeichen» für den Rahmen und «75 Zeilen» für den Ist-Zustand. Gemessen sind es
+2363 Zeichen und 49 Zeilen — Überbleibsel aus der Fassung vor Präfix und
+erweitertem Warntext. Die Budgetdurchsetzung selbst war davon nicht betroffen.
+Zahlen nachgemessen und ersetzt, mit dem Vermerk, dass sie zu messen sind, wenn
+jemand den Rahmentext ändert.
+
 ### Was die Prüfung ausdrücklich nicht beanstandet hat
 
 Budgetgrenzen, der Abbruchpfad in `eingang.yml` (kein Umgehungsweg gefunden),
 die Kopierregel aus `r3coscrum/CLAUDE.md` (nicht verletzt — die Streichung der
 Neuanlage verhindert im Gegenteil eine Duplizierung), Syntax beider Dateien,
 keine Einsetzungen im Skripttext der `run:`-Blöcke, kein Pfad zu Rückgabewert 2.
+
+Im zweiten Durchgang zusätzlich geprüft und ohne Beanstandung: die Invariante
+hält bei Leerraumzeilen, bei Einträgen, die selbst mit `| ` beginnen, und bei
+wörtlich nachgebautem Markertext; es gibt keine Eingabe, die zwei Anfangs- oder
+zwei Endmarker oder eine Ausgabe ohne Endmarker erzeugt; die Kennung ist aus
+Repo B strukturell nicht erratbar, weil sie erst beim Hook-Lauf gezogen wird;
+der Warnhinweis lässt sich nicht verdrängen, weil ESC von derselben Maske
+entfernt wird; fremder Text kann den Bereich zwischen Warnung und Anfangsmarker
+nicht erreichen.
 
 ### Was auch nach der Prüfung offen bleibt
 
@@ -243,10 +277,16 @@ erzwungen. Für diese Einheit anwendbar und erfüllt: Syntaxprüfung, alle
 Prüffälle je Skript ausgeführt und belegt, Wirkungsnachweis alt gegen neu auf
 identischer Eingabe, kein halbfertiger Zustand, Übergabedatei geschrieben. Die
 Verifikation liegt beim Static Software Tester und ist auf einem anderen Modell
-als die Umsetzung gelaufen (3.4). Der erste Durchgang hat **nicht bestanden**;
-beide Befunde sind behoben und der Prüfsatz um den Fall erweitert, der F1
-aufgedeckt hat. Die Abnahme der Einheit setzt den bestandenen zweiten Durchgang
-voraus.
+als die Umsetzung gelaufen (3.4). Der erste Durchgang hat **nicht bestanden**
+(F1, F2), der zweite **bestanden** mit zwei niedrigschwelligen Befunden (F3, F4).
+Alle vier sind behoben; der Prüfsatz ist um die Fälle erweitert, die F1 und F3
+aufgedeckt haben, und läuft mit 15 von 15 Punkten ohne Beanstandung.
+
+**Vorschlag, nicht eigenmächtig umgesetzt:** Der Prüfsatz existiert derzeit nur
+als Wegwerf-Skript in der Arbeitsumgebung. Er hat in dieser Einheit zwei echte
+Rückschritte gefangen und wäre der natürliche Keim für die DoD-Befehlskette aus
+R3-Q-001. Wo er abgelegt wird und wie er in die Kette eingebunden wird, gehört
+aber zu R3-Q-001 und zu ADR 0002 — deshalb hier nur als Vorschlag vermerkt.
 
 **Ein Fehler im Ablauf dieser Einheit**, damit er sich nicht wiederholt: Der
 erste Prüflauf ist abgebrochen, weil die Dateien während der Prüfung noch
