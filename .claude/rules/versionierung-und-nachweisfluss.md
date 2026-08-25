@@ -60,8 +60,8 @@ Grundlage: Projektauftrag 6.6, 3.2 c. Umgesetzt in
 `nachweise-uebertragen.yml` läuft bei:
 
 1. **Push nach `main`** mit Änderungen an den Pfaden der Artefaktliste —
-   `docs/**`, `.claude/**`, `prototype/**` oder `CLAUDE.md` — der
-   Regelfall nach jedem Merge. Bezug ist die Prüfsumme des Push-Commits.
+   `docs/**`, `.claude/**`, `prototype/**`, `CLAUDE.md`, `.github/workflows/**`
+   und `scripts/**` — der Regelfall nach jedem Merge. Bezug ist die Prüfsumme des Push-Commits.
 2. **Versionsschild `v*`** — Bezug ist das Versionsschild. Von
    `meilenstein-tag.yml` erzeugte Versionsschilder lösen diesen Weg
    **nicht** aus (GitHub verhindert Kettenauslösung durch das eigene
