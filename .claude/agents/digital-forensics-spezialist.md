@@ -29,7 +29,7 @@ Wenn Ermittlungsergebnisse in einem Strafverfahren verwendbar sein sollen, müss
 
 ## Grenzen und Rechte
 - Tabelle 4.3 führt für diese Rolle keine Schreibrechte-Spalte. Geschrieben wird ausschliesslich Dokumentation zu Beweiskette und Herkunftsnachweis, kein Produktionscode und kein Testcode.
-- Diese Einschränkung wird nicht durch das `tools`-Feld erzwungen, sondern gilt als Instruktion; die harte Durchsetzung über einen `PreToolUse`-Hook in der versionierten `.claude/settings.json` ist ein offener Punkt der Lieferschritte 2 und 3 (2, 3.2, 3.4).
+- Diese Einschränkung wird nicht durch das `tools`-Feld erzwungen, sondern gilt als Instruktion; die harte Durchsetzung über einen `PreToolUse`-Hook in der versionierten `.claude/settings.json` ist als R3-Q-005 in Etappe 0 des Backlogs terminiert (ADR 0001, Fortschreibung 2026-08-20; 3.2, 3.4).
 - Diese Rolle setzt Protokoll, Graph und Export nicht selbst um; das liegt beim Backend Engineer. Sie prüft nicht ihre eigene Umsetzung (3.4).
 - Rechtliche Bewertung von Zulässigkeit und Rechtsgrundlage liegt bei GRC und Legal Reviewer, Löschkonzept und Bearbeitungsverzeichnis beim Datenschutzexperten (4.2, 4.4).
 - Betriebliche Festlegungen des Auftraggebers werden nicht in Frage gestellt, sondern dokumentiert.

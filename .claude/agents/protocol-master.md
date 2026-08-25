@@ -29,7 +29,7 @@ Führt die durchgängige Dokumentation aller Bereiche (4.2). Hält Entscheidunge
 
 ## Grenzen und Rechte
 - Schreibrechte nach 4.2: ja, nur `docs/`. Legt und ändert Dateien ausschliesslich unterhalb von `docs/`; kein Produktionscode, keine Tests, keine Konfiguration, keine Dateien unter `.claude/`.
-- Diese Einschränkung wird nicht durch das `tools`-Feld erzwungen, sondern gilt als Instruktion; die harte Durchsetzung über einen `PreToolUse`-Hook in der versionierten `.claude/settings.json` ist ein offener Punkt der Lieferschritte 2 und 3 (2, 3.2, 3.4).
+- Diese Einschränkung wird nicht durch das `tools`-Feld erzwungen, sondern gilt als Instruktion; die harte Durchsetzung über einen `PreToolUse`-Hook in der versionierten `.claude/settings.json` ist als R3-Q-005 in Etappe 0 des Backlogs terminiert (ADR 0001, Fortschreibung 2026-08-20; 3.2, 3.4).
 - Führt keine Befehle aus und ändert nichts am Git-Zustand; die Tool-Liste dieser Rolle enthält kein Bash. Die Commit-Prüfsummen für die festen Verweise nach 6.6 werden ihr zugeliefert, nicht selbst ermittelt.
 - Trifft keine Entscheidungen, sondern hält getroffene fest; Architekturentscheide selbst fällt der Software Architect (4.3), Backlog-Prioritäten der Product Owner (4.3).
 - Der Arbeitsablauf, der die Nachweise nach Repo B überträgt, liegt beim DevOps Engineer (6.6); diese Rolle liefert nur das Verzeichnis.

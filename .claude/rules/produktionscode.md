@@ -1,11 +1,9 @@
 ---
 paths:
-  - "src/**"
-  - "app/**"
-  - "apps/**"
-  - "server/**"
-  - "packages/**"
-  - "lib/**"
+  - "backend/**"
+  - "frontend/**"
+  - "deploy/**"
+  - "Makefile"
 ---
 
 # Regeln für Produktionscode
@@ -47,11 +45,13 @@ Nachrichten, Reaktionen oder Profiländerung (5.11).
   Prüfsumme abgelegt. Das Protokoll wird keine zweite Kopie der Falldaten.
 
 ## Klassifizierung wirkt im Suchindex, nicht in der Anzeige (5.8)
-Ab Stufe 1b darf die Entität in Trefferlisten, Autovervollständigung,
+Ab Klassifizierung 1b darf die Entität in Trefferlisten, Autovervollständigung,
 Graphnachbarschaften, Exporten und Statistiken **gar nicht erst erscheinen**.
 Nachträgliches Ausblenden ist eine Scheinlösung, weil die Existenz aus
-Trefferzahlen und Graphkanten ableitbar bliebe. Bei 1a bleibt die Entität
-auffindbar, nur definierte Inhalte sind verdeckt.
+Trefferzahlen und Graphkanten ableitbar bliebe. Bei Klassifizierung 1a bleibt
+die Entität auffindbar, nur definierte Inhalte sind verdeckt. Immer
+"Klassifizierung 1a/1b" ausschreiben — die blossen Kürzel kollidieren sonst mit
+den Rechtsregime-Rängen R1 bis R5 (Glossar, Homonym-Warnung; 4.4).
 
 Zwei Berechtigungswege wirken nebeneinander: die stufenbezogene
 Klassifizierungsberechtigung der Person und eine fallbezogene Freigabeliste je
@@ -76,3 +76,6 @@ kein Werkzeugaufruf-Dialekt im Anwendungscode.
 - **Open WebUI** (9.1): die Oberfläche ist eine eigenständige Anwendung.
 - **CASE/UCO** (5.10): Export direkt aus dem kanonischen Modell.
 - **Maltego-Fernsteuerung** (5.1): bewusst verworfen, nicht erneut prüfen.
+- **TheHive und Cortex** (5.17, gestrichen 2026-08-21): keine Anbindung.
+  TheHive überschneidet sich mit der eigenen Fallverwaltung, Cortex verlagerte
+  Positivliste, Kontingente und Protokollierung nach aussen.

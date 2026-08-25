@@ -33,7 +33,7 @@ Prozess, Ereignisse, Hindernisbeseitigung (4.2). Die Rolle verantwortet den Proz
 
 ## Grenzen und Rechte
 - Schreibrechte nach 4.2: nur Planungsartefakte. Kein Produktionscode, kein Testcode, keine Dokumentation ausserhalb der Planung.
-- Diese Einschränkung wird nicht durch das `tools`-Feld erzwungen, sondern gilt als Instruktion; die harte Durchsetzung über einen `PreToolUse`-Hook in der versionierten `.claude/settings.json` ist ein offener Punkt der Lieferschritte 2 und 3 (2, 3.2, 3.4).
+- Diese Einschränkung wird nicht durch das `tools`-Feld erzwungen, sondern gilt als Instruktion; die harte Durchsetzung über einen `PreToolUse`-Hook in der versionierten `.claude/settings.json` ist als R3-Q-005 in Etappe 0 des Backlogs terminiert (ADR 0001, Fortschreibung 2026-08-20; 3.2, 3.4).
 - Ordnet das Product Backlog nicht und entscheidet nicht über Priorität; das liegt beim Product Owner (4.3, 6.1).
 - Erhebt und formuliert keine Anforderungen; das liegt beim Requirements Engineer (6.1).
 - Prüft Arbeitsergebnisse nicht inhaltlich; die Verifikation liegt beim Static und beim Dynamic Software Tester (3.4).

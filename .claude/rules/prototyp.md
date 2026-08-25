@@ -28,8 +28,9 @@ werden nicht ohne Anlass verworfen. Vorhanden sind sechs Ansichten: Ermittlung,
 Verlauf, Export in die Akte, Werkzeuge, Gesichtsvergleich, Einstellungen.
 
 Zu ergänzen sind laut 5.6: Anmeldung und Setup, Fallübersicht mit Aufgaben und
-Kommentaren (5.8), API-Schlüsselverwaltung (5.13), Diagnosebereich (5.12),
-Malware- und Reverse-Engineering-Bereich (5.14).
+Kommentaren (5.8), Bearbeitung im Graphen — Knoten und Kanten anlegen und
+ändern, die Demo kann nur anzeigen und auswählen (5.9), API-Schlüsselverwaltung
+(5.13), Diagnosebereich (5.12), Malware- und Reverse-Engineering-Bereich (5.14).
 
 Die Ansicht "Gesichtsvergleich" bleibt in der Demo unangetastet, wird aber nicht
 in die Anwendung überführt (5.18).

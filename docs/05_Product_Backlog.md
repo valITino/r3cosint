@@ -98,7 +98,7 @@ echten Abfrage, nicht danach (6.8).
 ### R3-F-001 — Fall eröffnen und schliessen
 - **Art:** funktional · **Kano:** Basisfaktor · **Prüfaufwand:** 4 h · **Quelle:** 5.4, 5.8, 4.4 · **Etappe:** 1
 - **Als** Fallverantwortlicher **möchte ich** einen Fall mit Aktenzeichen, ermittelnder Person, Rechtsgrundlage, Rechtsregime und Aufbewahrungsklasse eröffnen und wieder schliessen, **sodass** jede spätere Abfrage einem Verfahren und einer Person zugeordnet ist und später bestimmbar bleibt, welche Löschregel gilt.
-- **Abnahme:** Test `R3-F-001_fall_traegt_regime` — ein Fall lässt sich nur mit gesetztem Rechtsregime (1a StPO oder 1b PolG) eröffnen; beim Schliessen wird der Zeitpunkt festgeschrieben und die Prüffrist der Aufbewahrungsklasse beginnt; beide Vorgänge erzeugen je einen Protokolleintrag.
+- **Abnahme:** Test `R3-F-001_fall_traegt_regime` — ein Fall lässt sich nur mit gesetztem Rechtsregime (R1 StPO oder R2 PolG) eröffnen; beim Schliessen wird der Zeitpunkt festgeschrieben und die Prüffrist der Aufbewahrungsklasse beginnt; beide Vorgänge erzeugen je einen Protokolleintrag.
 
 ### R3-F-002 — Fallbindung: kein Werkzeug ohne Fall
 - **Art:** funktional · **Kano:** Basisfaktor · **Prüfaufwand:** 3 h · **Quelle:** 5.4 · **Etappe:** 1

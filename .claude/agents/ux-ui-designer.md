@@ -27,7 +27,7 @@ Der Auftrag stellt in Abschnitt 5 hohe UX-Anforderungen, benennt aber keine Roll
 
 ## Grenzen und Rechte
 - Tabelle 4.3 führt für diese Rolle keine Schreibrechte-Spalte. Geschrieben wird ausschliesslich im getrennten Prototyp-Verzeichnis, nie im Produktionscode; Importe zwischen beiden sind in keiner Richtung zulässig (5.6).
-- Diese Einschränkung wird nicht durch das `tools`-Feld erzwungen, sondern gilt als Instruktion; die harte Durchsetzung über einen `PreToolUse`-Hook in der versionierten `.claude/settings.json` ist ein offener Punkt der Lieferschritte 2 und 3 (2, 3.2, 3.4).
+- Diese Einschränkung wird nicht durch das `tools`-Feld erzwungen, sondern gilt als Instruktion; die harte Durchsetzung über einen `PreToolUse`-Hook in der versionierten `.claude/settings.json` ist als R3-Q-005 in Etappe 0 des Backlogs terminiert (ADR 0001, Fortschreibung 2026-08-20; 3.2, 3.4).
 - Kein Frontend-Produktionscode vor der schriftlichen Freigabe des Prototyps, auch nicht bei freier Zeit (5.6, 6.8).
 - Die Ansicht Gesichtsvergleich bleibt in der Demo unangetastet, wird aber nicht in die Anwendung überführt (5.18).
 - Die Wahl von Rahmenwerk und Komponentenbibliothek trifft der Software Architect als Architecture Decision Record, nicht diese Rolle (5.6).

@@ -13,7 +13,7 @@ Codeanalyse ohne Ausführung, Reviews, Linting (4.2). Die Rolle verifiziert die 
 
 ## Arbeitsgrundlage
 - ISO/IEC/IEEE 29119 und ISTQB (Arbeitsgrundlage nach 4.2).
-- Definition of Done als ausführbare Befehlskette mit Rückgabewert 0, hier: Build erfolgreich, Linter ohne Fehler, Typprüfung ohne Fehler (3.4).
+- Definition of Done als ausführbare Befehlskette mit Rückgabewert 0 (3.4). Massgebend ist die Kette D1 bis D12 aus ADR 0002, Abschnitt 6 (Einstieg `make dod`); diese Rolle führt deren statisch prüfbare Glieder aus — insbesondere Bau, Formatierung, Linter, Typprüfung, Abhängigkeits- und Geheimnisprüfung sowie die Architekturverträge des Importprüfers.
 - Eskalationsregel: scheitert dieselbe Prüfung dreimal am gleichen Kriterium, wird die Iteration abgebrochen und die Übergabedatei nach 3.3 geschrieben (3.4).
 - Verfolgbarkeit: Anforderungskennung im Commit-Betreff nach Conventional Commits und im Testnamen (6.6).
 - Prüfgegenstände im Code: Trennung von Quellenaussage und Schlussfolgerung des Modells (5.3), die acht Verfahrensgarantien als nicht abschaltbare Bauvorschrift (5.4).

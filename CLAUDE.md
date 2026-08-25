@@ -21,7 +21,7 @@ vorherige freigegeben ist.
 | 2 CLAUDE.md, Rules, Hooks | erledigt |
 | 3 Requirements Engineering und Planung | erledigt |
 | 4 **Freigabe-Gate durch den Auftraggeber** | erledigt — Freigabe 2026-08-20, Commit `5c5ecde6c6f1b2eba67cd22e24b40b6439aebac4` (`docs/08_Freigabe_Schritt_4.md`) |
-| 5 Umsetzung | läuft — R3-C-001 abgenommen (ADR 0002, 2026-08-20); nächste Einheit: Grundgerüst |
+| 5 Umsetzung | läuft — R3-C-001 abgenommen (ADR 0002, 2026-08-20). Freigegebene Reihenfolge vom 2026-08-25: C-Fix ✓, E1 ✓, E2 ✓, dann Befund F, R3-Q-001, D2, E4, E3, E5, danach Grundgerüst (`docs/uebergaben/2026-08-25_eingangskanal-repariert.md`) |
 
 - **Freigabe-Gate Schritt 4 erteilt, Architekturentscheid angenommen**
   (beides 2026-08-20). Gebaut wird entlang ADR 0002; Abweichungen davon nur
@@ -110,9 +110,10 @@ Einzelheiten stehen in `.claude/rules/produktionscode.md`.
 
 ## Nicht bauen — gestrichen
 
-VirusTotal (5.17), Gesichtserkennung (5.18), Open WebUI als Oberfläche (9.1),
-CASE/UCO als Exportformat (5.10), Fernsteuerung von Maltego (5.1). Kein Modul,
-keine Konfigurationsoption, kein Platzhalter. Diese Entscheide werden nicht neu
+VirusTotal (5.17), TheHive und Cortex (5.17, gestrichen 2026-08-21),
+Gesichtserkennung (5.18), Open WebUI als Oberfläche (9.1), CASE/UCO als
+Exportformat (5.10), Fernsteuerung von Maltego (5.1). Kein Modul, keine
+Konfigurationsoption, kein Platzhalter. Diese Entscheide werden nicht neu
 aufgerollt.
 
 ## Aktive Gates
@@ -124,6 +125,10 @@ Rückgabewert 2 blockiert; Rückgabewert 1 blockiert nicht (3.4).
 |---|---|
 | `block-prototype-import.sh` | Blockiert Importe zwischen `prototype/` und Produktionscode in beide Richtungen (5.6) |
 | `block-main-write.sh` | Blockiert Dateiänderungen auf `main` sowie Commit, Merge und Push nach `main` (3.2 c) |
+
+Daneben läuft ein `SessionStart`-Hook (`session-start-eingang.sh`): er gibt den
+Eingang aus dem Methodik-Repository als Kontext mit (6.6) und blockiert nie —
+ein Kanal, kein Gate.
 
 Beide setzen `jq` voraus. Fehlt es, blockieren sie mit einer Meldung, statt
 stillschweigend durchzulassen.

@@ -1,13 +1,14 @@
 ---
 paths:
   - ".claude/**"
+  - "CLAUDE.md"
 ---
 
 # Regeln für die Claude-Code-Konfiguration
 
 Grundlage: Projektauftrag 3.2, 3.4, 4.1.
 
-## Die vier Mechanismen nicht vermischen (3.2)
+## Die fünf Mechanismen nicht vermischen (3.2)
 
 | Mechanismus | Ablageort | Wofür |
 |---|---|---|
@@ -15,7 +16,7 @@ Grundlage: Projektauftrag 3.2, 3.4, 4.1.
 | Rules | `.claude/rules/*.md` | Themenspezifische Standards, pfadgebunden über `paths:` |
 | Skills | `.claude/skills/<name>/SKILL.md` | Wiederverwendbare Prozeduren und Checklisten |
 | Subagents | `.claude/agents/<name>.md` | Rollen mit eigenem Kontext, eigenen Tools, eigenem Modell |
-| Hooks | `.claude/settings.json` | Harte Gates, die unabhängig vom Modell greifen |
+| Hooks | `.claude/settings.json` | Harte Gates, die unabhängig vom Modell greifen, und Kontext beim Sitzungsstart (`SessionStart`) |
 
 CLAUDE.md ist **Kontext, keine Durchsetzung**. Wer eine Regel garantiert
 durchsetzen will, braucht einen Hook.
@@ -32,11 +33,13 @@ durchsetzen will, braucht einen Hook.
   `"${CLAUDE_PROJECT_DIR}"` angesprochen, nie über einen relativen Pfad.
 - Jedes Hook-Skript wird vor dem Einbau gegen einen blockierenden und einen
   durchzulassenden Fall geprüft. Ein ungetestetes Gate ist kein Gate.
-- Das main-Gate prüft den **Text** des Bash-Befehls. Ein Befehl, der die Wörter
-  nur als Inhalt trägt — etwa ein Heredoc, das diese Regel dokumentiert, oder ein
-  `grep` danach — wird ebenfalls blockiert. Das ist gewollt: ein Fehlalarm kostet
-  einen Versuch, ein übersehener Push nach `main` kostet mehr. In solchen Fällen
-  die Datei mit dem `Write`-Werkzeug schreiben statt über die Shell.
+- Das main-Gate und das Prototyp-Gate prüfen bei `Bash` den **Text** des
+  Befehls. Ein Befehl, der die Wörter nur als Inhalt trägt — etwa ein Heredoc,
+  das diese Regel dokumentiert — kann deshalb blockiert werden. Das ist gewollt:
+  ein Fehlalarm kostet einen Versuch, ein übersehener Push nach `main` oder ein
+  eingeschleuster Prototyp-Import kostet mehr. In solchen Fällen die Datei mit
+  dem `Write`-Werkzeug schreiben statt über die Shell — dort prüfen die Gates
+  pfadgenau.
 - Bei `Stop`-Hooks: `stop_hook_active` prüfen und dann mit 0 enden, sonst
   blockiert ein nie erfüllbares Kriterium die Sitzung dauerhaft (3.4, Ebene 4).
 

@@ -114,10 +114,12 @@ FollowTheMoney, STIX 2.1, W3C PROV (5.1).
 klassifiziert, 1a (Eingeschränkt), 1b (Ermittlungen), 2 (Geheim), sowie
 "verborgen" ohne Klassifizierungswirkung (5.8). Wirkt zusätzlich zur
 Organisationszugehörigkeit, nicht statt ihrer.
-*Homonym-Warnung:* Die Stufen 1a und 1b der Klassifizierung sind **nicht**
-dasselbe wie die Prioritäten 1a und 1b der Rechtsregime in 4.4. In
-Arbeitsprodukten immer "Klassifizierung 1b" beziehungsweise "Rechtsregime-Prio
-1b" ausschreiben.
+*Homonym-Warnung:* Die Kürzel 1a, 1b und 2 bezeichnen ausschliesslich
+Klassifizierungsstufen. Die Rechtsregime-Ränge aus 4.4 heissen R1 bis R5 —
+ausdrücklich nicht 1a, 1b, 2 (4.4, "Zur Bezeichnung"). In Arbeitsprodukten
+"Klassifizierung 1b" beziehungsweise "Rechtsregime R2" schreiben. Bis zum
+2026-08-25 empfahl dieser Eintrag selbst die Schreibweise "Rechtsregime-Prio
+1b" und damit genau die Doppelbelegung, die 4.4 untersagt.
 
 **Klassifizierungsberechtigung** — Die stufenbezogene Berechtigung einer Person.
 Wirkt neben der fallbezogenen Freigabeliste je Entität; beide Wege sind

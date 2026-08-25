@@ -42,6 +42,11 @@ on:
       - ".claude/**"
       - "prototype/**"
       - "CLAUDE.md"
+      # Seit 2026-08-25 (E5): deckungsgleich mit der Artefaktliste in
+      # scripts/nachweise-erzeugen.sh — eine Aenderung an den Arbeitsablaeufen
+      # oder am Erzeuger selbst loest den Nachweisfluss sonst nicht aus.
+      - ".github/workflows/**"
+      - "scripts/**"
   workflow_dispatch:
     inputs:
       schild:

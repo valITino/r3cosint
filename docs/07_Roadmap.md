@@ -169,8 +169,8 @@ und tatsächlichen Prüfaufwand je Eintrag und korrigiert die Schätzungen.
 
 | Was | Blockiert | Wer löst es |
 |---|---|---|
-| Freigabe-Gate Schritt 4 | **alles** | Auftraggeber |
-| Architekturentscheid R3-C-001 | Etappe 1 und alles danach | Software Architect, Freigabe Auftraggeber |
+| Freigabe-Gate Schritt 4 | erledigt — Freigabe 2026-08-20 (`docs/08_Freigabe_Schritt_4.md`) | Auftraggeber |
+| Architekturentscheid R3-C-001 | erledigt — ADR 0002 angenommen 2026-08-20 | Software Architect, Freigabe Auftraggeber |
 | Prototyp-Freigabe R3-F-050 | alles ab R3-F-051 | Auftraggeber und Studienkollege |
 | Beschaffung lizenzierter Quellen | nur Etappe 5 | Auftraggeber, Gruppenleitung |
 | Anbindungsdaten Entra ID | nur den Wechsel auf den echten Mandanten, nicht die Entwicklung | KapoBE Informatik |

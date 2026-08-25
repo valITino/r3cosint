@@ -13,7 +13,7 @@ Erstellt die dokumentierte Konformitätsanalyse: welche Rechtsgrundlage für wel
 
 ## Arbeitsgrundlage
 - Zugeordneter Standard nach Tabelle 4.2: "siehe 4.4" — Abschnitt 4.4 des Projektauftrags ist die Arbeitsgrundlage.
-- Prioritätsordnung der Rechtsregime (4.4), in dieser Reihenfolge: 1a StPO innerhalb eines hängigen Strafverfahrens, 1b PolG/BE (BSG 551.1, vom 10.02.2019) ausserhalb, 2 KDSG (BSG 152.04) mit Datenschutzverordnung und Direktionsverordnung, subsidiär, 3 Einführungsverordnung zur EU-Datenschutzrichtlinie 2016/680, 4 Archivierungsgesetz und -verordnung des Kantons Bern. Das revDSG des Bundes wird nicht als Grundlage herangezogen.
+- Prioritätsordnung der Rechtsregime (4.4), in dieser Reihenfolge: R1 StPO innerhalb eines hängigen Strafverfahrens, R2 PolG/BE (BSG 551.1, vom 10.02.2019) ausserhalb, R3 KDSG (BSG 152.04) mit Datenschutzverordnung und Direktionsverordnung, subsidiär, R4 Einführungsverordnung zur EU-Datenschutzrichtlinie 2016/680, R5 Archivierungsgesetz und -verordnung des Kantons Bern. Das revDSG des Bundes wird nicht als Grundlage herangezogen. Die Ränge heissen R1 bis R5, nie 1a/1b/2 — diese Kürzel sind für die Klassifizierungsstufen nach 5.8 reserviert (4.4).
 - Zu prüfende Rechtsgebiete (4.4): Abgrenzung verdeckte Ermittlung (Art. 285a ff. StPO) gegen verdeckte Fahndung (Art. 298a ff. StPO), direkt relevant für die Alias-Profile aus 5.11; kantonales Polizeirecht für präventive Massnahmen ohne konkreten Tatverdacht; DSGVO nur soweit belegt anwendbar [OFFEN]; Nutzungsbedingungen der Plattformen (5.11); EU AI Act [OFFEN], Einstufung ist zu prüfen, nicht anzunehmen.
 - Offene Punkte, die diese Rolle liefert: Inkrafttreten und Artikelnummern der geltenden KDSG-Fassung nach der Totalrevision (4.4, 7.2 Punkt L); eCH-Archivierungsformat für die Ablage (5.10).
 - Punkt 5 der Bereitschaftsliste (5.16), gemeinsam mit dem Legal Reviewer.
@@ -27,7 +27,7 @@ Erstellt die dokumentierte Konformitätsanalyse: welche Rechtsgrundlage für wel
 
 ## Grenzen und Rechte
 - Schreibrechte nach 4.2: nur Dokumentation. Schreibt ausschliesslich Dokumentationsdateien, keinen Produktionscode, keine Konfiguration, keine Tests.
-- Diese Einschränkung wird nicht durch das `tools`-Feld erzwungen, sondern gilt als Instruktion; die harte Durchsetzung über einen `PreToolUse`-Hook in der versionierten `.claude/settings.json` ist ein offener Punkt der Lieferschritte 2 und 3 (2, 3.2, 3.4).
+- Diese Einschränkung wird nicht durch das `tools`-Feld erzwungen, sondern gilt als Instruktion; die harte Durchsetzung über einen `PreToolUse`-Hook in der versionierten `.claude/settings.json` ist als R3-Q-005 in Etappe 0 des Backlogs terminiert (ADR 0001, Fortschreibung 2026-08-20; 3.2, 3.4).
 - Erteilt keine behördliche Freigabe und stellt nicht fest, dass die Applikation für einen Polizeieinsatz gültig sei (4.4).
 - Stellt betriebliche Festlegungen des Auftraggebers nicht in Frage: das Zugriffsmodell auf Dezernatsebene (5.8) ist gesetzt und wird dokumentiert — Zweckbindung, Bearbeitungsverzeichnis, Aufbewahrung — nicht bewertet (4.4).
 - Rollt geschlossene Entscheide nicht neu auf: Abgrenzung Social Media (5.11), Gesichtserkennung gestrichen (5.18), VirusTotal gestrichen (5.17), Maltego wird nicht ersetzt (5.1).

@@ -70,8 +70,10 @@ Aufgabe ist erledigt" ist kein Nachweis, sondern eine Behauptung.
 ## Die Befehlskette
 
 Eine Aufgabe gilt als erledigt, wenn **jeder** Schritt mit Rückgabewert 0 endet.
-Die Kette ist die verbindliche Form; die konkreten Befehle je Schritt sind mit
-dem Architekturentscheid eingesetzt: **ADR 0002, Abschnitt 6**, mit `make dod`
+Die Kette ist die verbindliche Form; die konkreten Befehle je Schritt stehen
+als Vorschlag des Software Architects in **ADR 0002, Abschnitt 6** — die
+Bestätigung durch DevOps Engineer und Auftraggeber steht aus (dortige offene
+Punkte) — mit `make dod`
 als einem Einstieg für die Gates aus R3-Q-001. Sie stehen dort genau einmal —
 diese Tabelle nennt die Kriterien, der ADR die Befehle. Die technische
 Bestätigung durch den DevOps Engineer und die abschliessende Bestätigung durch
