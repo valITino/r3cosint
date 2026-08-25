@@ -78,6 +78,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # vollständige Historie: die festen Verweise brauchen die Prüfsummen
+          # Dieser Lauf liest nur aus Repo A; geschrieben wird ausschliesslich
+          # in Repo B, mit dessen eigenem Auscheckvorgang. Ohne diese Zeile
+          # bliebe das Token von Repo A in .git/config des Laeufers stehen,
+          # waehrend danach ein Skript aus dem Repository ausgefuehrt wird.
+          persist-credentials: false
 
       - name: Bezug bestimmen
         id: schild
@@ -85,35 +90,63 @@ jobs:
         # beim manuellen Start das eingegebene Versionsschild, beim Tag-Push
         # das Versionsschild selbst, beim Push nach main — wo es kein
         # Versionsschild gibt — die Prüfsumme des Push-Commits.
+        #
+        # Beide Quellen sind frei formulierbar: die Eingabe des manuellen
+        # Starts ohnehin, und ein Referenzname darf "$", Rueckwaertsapostroph
+        # und Klammern enthalten. Sie kommen deshalb ueber env herein und nie
+        # als Einsetzung von ${{ ... }} unmittelbar im run-Block — dort waere
+        # der Wert eine Textersetzung vor der Ausfuehrung und damit Code. Vor
+        # der Weitergabe wird die Form geprueft: der Wert wandert durch
+        # mehrere Schritte bis in einen Commit-Betreff.
+        env:
+          EINGABE_SCHILD: ${{ inputs.schild }}
         run: |
-          if [ -n "${{ inputs.schild }}" ]; then
-            echo "wert=${{ inputs.schild }}" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          if [ -n "${EINGABE_SCHILD:-}" ]; then
+            wert="$EINGABE_SCHILD"
+            form='^v[0-9]+\.[0-9]+\.[0-9]+$'
           elif [ "${GITHUB_REF_TYPE}" = "tag" ]; then
-            echo "wert=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+            wert="$GITHUB_REF_NAME"
+            form='^v[0-9]+\.[0-9]+\.[0-9]+$'
           else
-            echo "wert=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+            wert="$GITHUB_SHA"
+            form='^[0-9a-f]{40}$'
           fi
+
+          if ! printf '%s' "$wert" | grep -Eq "$form"; then
+            echo "::error::Bezug hat eine unerwartete Form. Erwartet wird ein Versionsschild vMAJOR.MINOR.PATCH oder eine 40-stellige Pruefsumme."
+            exit 1
+          fi
+          echo "wert=$wert" >> "$GITHUB_OUTPUT"
 
       - name: Nachweisverzeichnis neu erzeugen
         run: |
+          set -euo pipefail
           bash scripts/nachweise-erzeugen.sh docs/NACHWEISE.md
 
       - name: Erzeugtes Verzeichnis prüfen
         run: |
+          set -euo pipefail
           # Ein Verweis auf einen Zweig ist kein Nachweis (6.6). Findet sich einer,
           # bricht der Lauf ab, statt einen wertlosen Nachweis zu übertragen.
           # Geprüft werden ausschliesslich echte Verweisziele, nicht der Fliesstext:
           # der erklärende Absatz nennt die unzulässige Form absichtlich.
-          ziele=$(grep -oE '\]\(https://github\.com/[^)]+\)' docs/NACHWEISE.md || true)
-          if printf '%s' "$ziele" | grep -Eq '/blob/(main|master|HEAD)/'; then
+          # Die Verweisziele gehen in eine Datei, nicht durch eine Pipe:
+          # "grep -q" schliesst die Pipe beim ersten Treffer, und unter
+          # pipefail wuerde der Rueckgabewert des abgebrochenen Schreibers
+          # den Rueckgabewert der Pruefung ueberschreiben. Die Pruefung
+          # meldete dann "kein Zweigverweis", obwohl sie einen gefunden hat.
+          ziele="$RUNNER_TEMP/verweisziele.txt"
+          grep -oE '\]\(https://github\.com/[^)]+\)' docs/NACHWEISE.md > "$ziele" || true
+          if grep -Eq '/blob/(main|master|HEAD)/' "$ziele"; then
             echo "::error::Zweigverweis in docs/NACHWEISE.md gefunden. Nach 6.6 ist das kein Nachweis."
-            printf '%s\n' "$ziele" | grep -E '/blob/(main|master|HEAD)/'
+            grep -E '/blob/(main|master|HEAD)/' "$ziele"
             exit 1
           fi
           # Jedes Verweisziel trägt eine vollständige 40-stellige Prüfsumme.
-          if printf '%s' "$ziele" | grep -Eqv '/blob/[0-9a-f]{40}/'; then
+          if grep -Eqv '/blob/[0-9a-f]{40}/' "$ziele"; then
             echo "::error::Verweisziel ohne vollständige 40-stellige Commit-Prüfsumme."
-            printf '%s\n' "$ziele" | grep -Ev '/blob/[0-9a-f]{40}/'
+            grep -Ev '/blob/[0-9a-f]{40}/' "$ziele"
             exit 1
           fi
           anzahl=$(grep -cE '^\| .+ \| `.+` \|' docs/NACHWEISE.md || true)
@@ -137,11 +170,13 @@ jobs:
         # verhindert Rauschen in Repo B, obwohl jeder Merge nach main den
         # Lauf auslösen darf. Ein angeforderter Abzug erzwingt den Lauf,
         # weil er unabhängig vom Verzeichnisinhalt eine Kopie erzeugen soll.
+        env:
+          ABZUG: ${{ inputs.abzug }}
         run: |
           set -euo pipefail
           if [ -f "repo-b/${ZIEL_VERZEICHNIS}/NACHWEISE.md" ] \
              && cmp -s docs/NACHWEISE.md "repo-b/${ZIEL_VERZEICHNIS}/NACHWEISE.md"; then
-            if [ "${{ inputs.abzug }}" = "true" ]; then
+            if [ "${ABZUG:-}" = "true" ]; then
               echo "Nachweisverzeichnis identisch, aber Abzug angefordert: Lauf wird fortgesetzt."
               echo "schreiben=ja" >> "$GITHUB_OUTPUT"
             else
@@ -155,6 +190,8 @@ jobs:
 
       - name: Nachweisverzeichnis nach Repo B schreiben
         if: ${{ steps.vergleich.outputs.schreiben == 'ja' }}
+        env:
+          BEZUG: ${{ steps.schild.outputs.wert }}
         run: |
           set -euo pipefail
           # Ausschliesslich in nachweise/. Alles ausserhalb gehört dem
@@ -165,12 +202,14 @@ jobs:
             echo "<!-- Erzeugt aus ${GITHUB_REPOSITORY} durch den Arbeitsablauf"
             echo "     nachweise-uebertragen.yml. Nicht von Hand ändern:"
             echo "     Änderungen gehen beim nächsten Lauf verloren."
-            echo "     Bezug (Versionsschild oder Commit): ${{ steps.schild.outputs.wert }}"
+            echo "     Bezug (Versionsschild oder Commit): ${BEZUG}"
             echo "     Quell-Commit:   ${GITHUB_SHA} -->"
           } > "repo-b/${ZIEL_VERZEICHNIS}/HINWEIS.md"
 
       - name: Eingefrorenen Abzug erzeugen
         if: ${{ inputs.abzug == true && steps.vergleich.outputs.schreiben == 'ja' }}
+        env:
+          BEZUG: ${{ steps.schild.outputs.wert }}
         run: |
           set -euo pipefail
           # Der einzige zulässige Fall, in dem Inhalte doppelt vorliegen (6.6).
@@ -187,7 +226,7 @@ jobs:
               echo "     Pfad:        $pfad"
               echo "     Prüfsumme:   $pruefsumme"
               echo "     Abzugsdatum: $datum"
-              echo "     Bezug:       ${{ steps.schild.outputs.wert }} -->"
+              echo "     Bezug:       ${BEZUG} -->"
               echo
               cat "$pfad"
             } > "$ziel"
@@ -196,6 +235,8 @@ jobs:
       - name: Commit in Repo B erzeugen
         if: ${{ steps.vergleich.outputs.schreiben == 'ja' }}
         working-directory: repo-b
+        env:
+          BEZUG: ${{ steps.schild.outputs.wert }}
         run: |
           set -euo pipefail
           git config user.name "r3cosint-nachweise[bot]"
@@ -212,7 +253,7 @@ jobs:
           fi
           # Das Versionsschild steht im Betreff, damit später erkennbar ist,
           # welcher Stand von Repo A welchen Stand von Repo B erzeugt hat (6.6).
-          git commit -m "nachweise: Stand ${{ steps.schild.outputs.wert }} aus r3cosint" \
+          git commit -m "nachweise: Stand ${BEZUG} aus r3cosint" \
                      -m "Quell-Commit: ${GITHUB_SHA}" \
                      -m "Erzeugt durch nachweise-uebertragen.yml. Nur ${ZIEL_VERZEICHNIS}/ berührt."
           git push
