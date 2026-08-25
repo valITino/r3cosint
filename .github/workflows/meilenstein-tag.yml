@@ -70,6 +70,28 @@ jobs:
           letztes=$(git for-each-ref --sort=-v:refname --count=1 \
             --format='%(refname:short)' 'refs/tags/v*')
 
+          # Der Name des letzten Versionsschilds wird unten arithmetisch
+          # weiterverarbeitet und bestimmt den Wert, der als "wert" nach
+          # GITHUB_OUTPUT geht. Nur die erwartete Form wird akzeptiert; alles
+          # andere bricht den Lauf ab, statt eine unsinnige Version zu
+          # erzeugen oder unter set -e an der Arithmetik zu scheitern.
+          #
+          # Geprueft und ausdruecklich NICHT der Grund: eine Befehlsausfuehrung
+          # ueber $(( )). Bash fuehrt zwar einen Feldindex "x[$(...)]" bei der
+          # arithmetischen Auswertung mit aus, aber "[" ist in einem Git-
+          # Referenznamen unzulaessig (git check-ref-format weist ihn ab), und
+          # die schlichte Form "$(...)" wird in $(( )) nicht ersetzt, sondern
+          # als Syntaxfehler gemeldet. Beides am 2026-08-25 mit bash 5.2
+          # geprueft. Die Pruefung bleibt trotzdem stehen: sie haelt den Wert
+          # nachweisbar wohlgeformt, bevor er weitergereicht wird.
+          if [ -n "$letztes" ] \
+              && ! printf '%s' "$letztes" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Letztes Versionsschild hat eine unerwartete Form." >&2
+            echo "Erwartet wird vMAJOR.MINOR.PATCH mit reinen Ziffern." >&2
+            echo "Das Versionsschild von Hand pruefen und den Lauf wiederholen." >&2
+            exit 1
+          fi
+
           if [ -n "$letztes" ]; then
             bereich="${letztes}..HEAD"
             IFS='.' read -r major minor patch <<<"${letztes#v}"
@@ -78,17 +100,25 @@ jobs:
             major=0; minor=0; patch=0
           fi
 
-          betreffs=$(git log --format=%s "$bereich")
-          if [ -z "$betreffs" ]; then
+          # Die Betreffzeilen gehen in eine Datei im Lauf-Arbeitsverzeichnis,
+          # nicht durch GITHUB_OUTPUT. Ein mehrzeiliger Ausgabewert braucht
+          # dort einen Trenner; ein Betreff, der den Trenner nachahmt, wuerde
+          # den Block vorzeitig beenden und die Folgezeilen als weitere
+          # Ausgaben setzen. Betreffzeilen bestimmt jeder, dessen Pull Request
+          # gemergt wird — auch aus einem Fork (CONTRIBUTING.md). Die Datei
+          # kennt dieses Problem nicht.
+          betreffs_datei="$RUNNER_TEMP/betreffs.txt"
+          git log --format=%s "$bereich" > "$betreffs_datei"
+          if [ ! -s "$betreffs_datei" ]; then
             echo "Keine Commits seit ${letztes:-Beginn}. Kein Versionsschild."
             echo "erzeugen=nein" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           stufe=patch
-          if printf '%s\n' "$betreffs" | grep -Eq '^[a-z]+(\([^)]*\))?!:|BREAKING CHANGE'; then
+          if grep -Eq '^[a-z]+(\([^)]*\))?!:|BREAKING CHANGE' "$betreffs_datei"; then
             stufe=major
-          elif printf '%s\n' "$betreffs" | grep -Eq '^feat(\([^)]*\))?!?:'; then
+          elif grep -Eq '^feat(\([^)]*\))?!?:' "$betreffs_datei"; then
             stufe=minor
           fi
 
@@ -109,14 +139,16 @@ jobs:
           echo "Abgeleitet: ${version} (Stufe ${stufe}, seit ${letztes:-Beginn})"
           echo "erzeugen=ja" >> "$GITHUB_OUTPUT"
           echo "wert=${version}" >> "$GITHUB_OUTPUT"
-          {
-            echo "betreffs<<ENDE_BETREFFS"
-            printf '%s\n' "$betreffs"
-            echo "ENDE_BETREFFS"
-          } >> "$GITHUB_OUTPUT"
 
       - name: Versionsschild erzeugen und pushen
         if: ${{ steps.version.outputs.erzeugen == 'ja' }}
+        # Jeder Wert kommt ueber env herein und wird als "$VARIABLE" benutzt.
+        # Eine Einsetzung von ${{ ... }} unmittelbar in den run-Block waere
+        # eine Textersetzung vor der Ausfuehrung: Der Wert wuerde zu Code.
+        env:
+          VERSION: ${{ steps.version.outputs.wert }}
+          PR_NUMMER: ${{ github.event.pull_request.number }}
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
         run: |
           set -euo pipefail
           git config user.name "r3cosint-meilenstein[bot]"
@@ -128,22 +160,25 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # Das Versionsschild zeigt auf den Merge-Commit des
           # Meilenstein-Pull-Requests, nicht auf einen späteren Stand.
-          git tag -a "${{ steps.version.outputs.wert }}" \
-            -m "Meilenstein: Pull Request #${{ github.event.pull_request.number }}" \
-            "${{ github.event.pull_request.merge_commit_sha }}"
-          git push origin "${{ steps.version.outputs.wert }}"
+          git tag -a "$VERSION" \
+            -m "Meilenstein: Pull Request #${PR_NUMMER}" \
+            "$MERGE_SHA"
+          git push origin "$VERSION"
 
       - name: Release erzeugen
         if: ${{ steps.version.outputs.erzeugen == 'ja' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BETREFFS: ${{ steps.version.outputs.betreffs }}
+          VERSION: ${{ steps.version.outputs.wert }}
         run: |
           set -euo pipefail
           # Beschreibung: die Commit-Betreffzeilen seit dem letzten
-          # Versionsschild, eine je Zeile.
-          printf '%s\n' "$BETREFFS" | sed 's/^/- /' > /tmp/release-notizen.md
-          gh release create "${{ steps.version.outputs.wert }}" \
-            --title "${{ steps.version.outputs.wert }}" \
-            --notes-file /tmp/release-notizen.md \
+          # Versionsschild, eine je Zeile. Sie kommen aus der Datei, die der
+          # Ableitungsschritt geschrieben hat — RUNNER_TEMP bleibt ueber die
+          # Schritte desselben Auftrags bestehen.
+          sed 's/^/- /' "$RUNNER_TEMP/betreffs.txt" \
+            > "$RUNNER_TEMP/release-notizen.md"
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --notes-file "$RUNNER_TEMP/release-notizen.md" \
             --verify-tag

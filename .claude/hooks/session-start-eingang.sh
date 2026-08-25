@@ -25,8 +25,15 @@ inhalt=$(sed -n '/^## Einträge/,$p' "$datei" | awk '
   { print }
 ' | sed '/^[[:space:]]*$/d')
 
-# Ohne Eintraege keinen Kontext verbrauchen.
-if printf '%s' "$inhalt" | grep -q 'Noch kein Eintrag'; then
+# Ohne Eintraege keinen Kontext verbrauchen. Geprueft wird das Vorhandensein
+# einer Eintragsueberschrift mit ISO-Datum, nicht ein Satz im Fliesstext.
+#
+# Grund: Bis zum 2026-08-25 prueft dieser Hook auf die Vorlagenzeile
+# "Noch kein Eintrag". Die Zeile blieb beim ersten echten Eintrag stehen und
+# stand fortan ueber zwei Eintraegen — der Hook endete mit 0 und gab null
+# Zeichen aus. Die Gegenrichtung B nach A (6.6) war damit still wirkungslos.
+# Eine vergessene Vorlagenzeile darf den Kanal nicht stilllegen koennen.
+if ! printf '%s\n' "$inhalt" | grep -Eq '^#{2,3}[[:space:]]+[0-9]{4}-[0-9]{2}-[0-9]{2}'; then
   exit 0
 fi
 

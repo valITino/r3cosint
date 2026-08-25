@@ -35,10 +35,14 @@ darf sein Inhalt nicht automatisch zur Regel werden.
 Neueste zuoberst. Je Eintrag: Datum, was sich geändert hat, warum, und ein
 fester Verweis mit vollständiger Commit-Prüfsumme zurück nach Repo B.
 
-<!-- Ab hier trägt der Arbeitsablauf aus Repo B ein. Diesen Kommentar stehen lassen. -->
+<!-- Ab hier trägt der Arbeitsablauf aus Repo B ein. Diesen Kommentar stehen lassen.
 
-*Noch kein Eintrag. Diese Datei ist eine Vorlage und wird durch den
-Arbeitsablauf in Repo B fortgeschrieben.*
+     Liegt kein Eintrag vor, bleibt dieser Abschnitt leer. Der SessionStart-Hook
+     erkennt das an der fehlenden Eintragsüberschrift und gibt nichts aus.
+
+     Kein Platzhalter im Fliesstext. Bis zum 2026-08-25 stand hier der Satz
+     "Noch kein Eintrag"; der Hook prüfte darauf. Die Zeile blieb beim ersten
+     echten Eintrag stehen und legte den Kanal still, ohne dass es auffiel. -->
 
 <!-- Vorlage für einen Eintrag:
 
