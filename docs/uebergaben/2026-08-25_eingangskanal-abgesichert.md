@@ -25,7 +25,7 @@ Verfahrensgarantie 5.4. Vier Massnahmen, jede gegen eine eigene Gefahr:
 |---|---|---|
 | 1 | **Kennung je Sitzung in beiden Markern** (16 Stellen aus `/dev/urandom`) | Ein fester Endmarker steht im Repository und ist damit bekannt. Wer ihn nachbildet, täuscht vor, der fremde Teil sei zu Ende — der Rest seines Textes stünde scheinbar ausserhalb der Einfassung |
 | 2 | **Warnhinweis vor und nach dem Block** | Ein Hinweis nur davor ist bei wachsendem Eingang irgendwann weit weg vom Ende des fremden Textes |
-| 3 | **Entschärfung**: Folgen von drei oder mehr `=` werden zu `= = =`, Steuerzeichen fallen weg (Tabulator und Zeilenumbruch bleiben) | Nachgebildete Markerzeilen; Text, der Bildschirmsteuerung mitbringt und sich damit als etwas anderes ausgibt |
+| 3 | **Jede Zeile des fremden Teils beginnt mit `| `**, die beiden Marker beginnen am Zeilenanfang. Zusätzlich fallen Steuerzeichen weg (Tabulator und Zeilenumbruch bleiben) | Nachgebildete Markerzeilen — unabhängig davon, welche Zeichen sie verwenden. Text, der Bildschirmsteuerung mitbringt und sich damit als etwas anderes ausgibt |
 | 4 | **Obergrenzen** 400 Zeilen und 20 000 Zeichen für den Eintragsblock, zusätzlich 500 Zeichen je Zeile; gekürzt wird vorne, die jüngste Zeile bleibt immer | Der Eingang wächst unbegrenzt und niemand bemerkt, wie viel Kontext er belegt. Eine einzige sehr lange Zeile könnte das Budget allein aufbrauchen |
 
 Zwei weitere Änderungen, die beim Bauen nötig wurden:
@@ -91,6 +91,67 @@ Hook geschickt.
 | längste Zeile | 904 Zeichen | 517 Zeichen |
 | Zeilenzahl je Eintrag | unbegrenzt | 60 plus Kürzungsvermerk |
 | Zieldatei fehlt in Repo A | Lauf grün, verkürzte Datei angelegt, **Hook gibt 0 Zeichen aus** | Lauf bricht mit Rückgabewert 1 ab |
+
+## Ergebnis der unabhängigen Prüfung
+
+Der Static Software Tester hat auf einem anderen Modell gegen den eingefrorenen
+Commit [`103edb45d7bf`](https://github.com/valITino/r3cosint/commit/103edb45d7bf467ba993fe9aadc6a8c7e2326112)
+geprüft. Ergebnis des ersten Durchgangs: **nicht bestanden**, zwei Befunde.
+
+### F1 — die Entschärfung war eine Sperrliste (blockierend)
+
+Die Ersetzung fasste nur das ASCII-Gleichheitszeichen. Eine Markerzeile aus
+Unicode-Homoglyphen — `＝` (U+FF1D), `═` (U+2550), `〓` (U+3013) — ging
+unverändert und am Zeilenanfang durch. Nachgeprüft und bestätigt: drei so
+gebaute Zeilen erschienen unversehrt in der Ausgabe.
+
+**Der Befund trifft, und er trifft tiefer als die drei konkreten Zeichen.** Eine
+Sperrliste ist an dieser Stelle grundsätzlich das falsche Mittel: es gibt
+beliebig viele ähnlich aussehende Zeichen, und jede Ergänzung der Liste lädt
+denselben Befund erneut ein. Behoben wurde deshalb nicht die Liste, sondern die
+Bauform:
+
+- **Jede Zeile des fremden Teils beginnt mit `| `**, ohne Ausnahme, auch eine
+  Kürzungsmeldung. Das Präfix zählt zum Budget.
+- **Die Marker liegen eng um den fremden Teil**, nicht um die ganze Ausgabe. Die
+  beiden Warnhinweise stehen ausserhalb. Vorher lagen sie innerhalb — die
+  Zusicherung «zwischen den Markern beginnt jede Zeile mit `| `» hätte für den
+  eigenen Warntext nicht gegolten. Eine Zusicherung mit Ausnahme ist an dieser
+  Stelle keine.
+- Die Zeichenersetzung bleibt als zweite, schwächere Lage bestehen, trägt aber
+  die Zusicherung nicht mehr. Der Kommentar in beiden Dateien sagt das
+  ausdrücklich, damit sie später nicht wieder dafür gehalten wird.
+
+Die Zusicherung ist damit **mechanisch prüfbar** statt aufzählend: zwischen den
+Markern gibt es keine Zeile ohne Präfix. Genau das prüft der Prüfsatz jetzt, mit
+ASCII-Marker, drei Homoglyphen-Varianten und einer Kastenzeichnung im selben
+Eintrag.
+
+### F2 — Kennung-Rückfall konnte 16 Stellen verfehlen (gering)
+
+`printf '%04x'` ist eine Mindestbreite, keine Kappung. Bei einer Prozess-ID über
+65535 — auf Systemen mit hohem `pid_max` verbreitet — erzeugt der Rückfall mehr
+als 16 Stellen, und die Länge wird danach nicht erneut geprüft. Nachgeprüft:
+`printf '%04x%04x%04x%04x' 100 200 300 200000` liefert 17 Zeichen. Behoben durch
+Maskierung auf 16 Bit je Feld; damit sind es 16 Stellen von Bauart wegen.
+
+### Was die Prüfung ausdrücklich nicht beanstandet hat
+
+Budgetgrenzen, der Abbruchpfad in `eingang.yml` (kein Umgehungsweg gefunden),
+die Kopierregel aus `r3coscrum/CLAUDE.md` (nicht verletzt — die Streichung der
+Neuanlage verhindert im Gegenteil eine Duplizierung), Syntax beider Dateien,
+keine Einsetzungen im Skripttext der `run:`-Blöcke, kein Pfad zu Rückgabewert 2.
+
+### Was auch nach der Prüfung offen bleibt
+
+- **Verhalten unter BSD-Werkzeugen** (macOS) ist nicht ausgeführt geprüft,
+  sondern nur gegen die Spezifikation eingeschätzt. Für `eingang.yml` entfällt
+  die Frage, weil der Arbeitsablauf auf `ubuntu-latest` festgelegt ist; für den
+  Hook bleibt sie offen und gehört auf einen echten macOS-Rechner.
+- **Ob ein Sprachmodell eine nachgebildete Einfassung für echt hält**, ist eine
+  Verhaltensfrage und mit statischen Mitteln nicht zu klären. Sie gehört zu
+  R3-C-014 (Penetrationstest). Die Bauform beantwortet sie insofern, als eine
+  Nachbildung am Zeilenanfang gar nicht mehr entstehen kann.
 
 ## Korrekturen an eigenen Annahmen
 
@@ -182,4 +243,12 @@ erzwungen. Für diese Einheit anwendbar und erfüllt: Syntaxprüfung, alle
 Prüffälle je Skript ausgeführt und belegt, Wirkungsnachweis alt gegen neu auf
 identischer Eingabe, kein halbfertiger Zustand, Übergabedatei geschrieben. Die
 Verifikation liegt beim Static Software Tester und ist auf einem anderen Modell
-als die Umsetzung gelaufen (3.4).
+als die Umsetzung gelaufen (3.4). Der erste Durchgang hat **nicht bestanden**;
+beide Befunde sind behoben und der Prüfsatz um den Fall erweitert, der F1
+aufgedeckt hat. Die Abnahme der Einheit setzt den bestandenen zweiten Durchgang
+voraus.
+
+**Ein Fehler im Ablauf dieser Einheit**, damit er sich nicht wiederholt: Der
+erste Prüflauf ist abgebrochen, weil die Dateien während der Prüfung noch
+geändert wurden. Das hat einen vollen Durchgang gekostet. Richtig ist, den Stand
+zuerst als Commit einzufrieren und erst dann prüfen zu lassen.
