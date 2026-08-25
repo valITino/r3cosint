@@ -32,10 +32,17 @@ tool=$(printf '%s' "$input" | jq -r '.tool_name // empty')
 if [ "$tool" = "Bash" ]; then
   cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty')
   [ -n "$cmd" ] || exit 0
-  # Fuer die Importpruefung den Befehl zu einer Zeile zusammenziehen -- ein
-  # Heredoc mit ueber mehrere Zeilen verteiltem Import entginge sonst dem
-  # zeilenweisen grep (Befund der statischen Pruefung vom 2026-08-25).
-  cmd_flach=$(printf '%s' "$cmd" | tr '\n\t' '  ')
+  # Fuer die Importpruefung den Befehl zu einer Zeile zusammenziehen und
+  # Kommentare entfernen -- ein Heredoc mit ueber mehrere Zeilen verteiltem oder
+  # durch Kommentar getrenntem Import entginge sonst dem zeilenweisen grep
+  # (Befunde der statischen Pruefung vom 2026-08-25).
+  cmd_flach=$(printf '%s' "$cmd" | sed 's#//[^\n]*##')
+  for _i in 1 2 3 4 5; do
+    neu=$(printf '%s' "$cmd_flach" | sed 's#/\*[^*]*\*/##g')
+    [ "$neu" = "$cmd_flach" ] && break
+    cmd_flach="$neu"
+  done
+  cmd_flach=$(printf '%s' "$cmd_flach" | tr '\n\t' '  ')
   if printf '%s' "$cmd" | grep -Eq '(>>?|[|][[:space:]]*tee[[:space:]]|sed[[:space:]]+-[a-zA-Z]*i|<<)' \
       && printf '%s' "$cmd_flach" | grep -Eq "(from|require|import|@import|__import__|import_module)[^|&]*prototype([./\"'[:space:]]|\$)"; then
     echo "BLOCKIERT (Projektauftrag 5.6): Shell-Befehl mit Schreibwirkung und einem Import, der 'prototype' beruehrt." >&2
@@ -73,25 +80,33 @@ payload=$(printf '%s' "$input" | jq -r '
       | select(.key | test("path|^old_string$"; "i") | not)
       | .value ),
     # MultiEdit fuehrt die Aenderungen in einem Array edits[]; je Eintrag zaehlt
-    # nur new_string, nicht old_string (gleiche Begruendung wie oben). Vorsorge:
-    # MultiEdit ist in dieser Umgebung nicht bestaetigt und steht darum auch
-    # noch nicht im Matcher der settings.json -- ohne Matchereintrag feuert der
-    # Hook fuer MultiEdit gar nicht. Wird das Werkzeug verfuegbar, ist hier
-    # nichts mehr zu aendern, nur der Matcher zu ergaenzen.
-    ( (.tool_input.edits // []) | .[]? | .new_string // empty )
+    # nur new_string, nicht old_string (gleiche Begruendung wie oben). MultiEdit
+    # steht seit dem 2026-08-25 in beiden Matchern der settings.json, damit der
+    # Hook dafuer ueberhaupt feuert. Ob das Werkzeug in dieser Umgebung
+    # tatsaechlich verfuegbar ist, ist offen; die Behandlung ist Vorsorge und
+    # schadet nichts, falls es nie auftritt.
+    ( (.tool_input.edits // []) | .[]? | objects | .new_string // empty )
   ] | join("\n")')
 [ -n "$payload" ] || exit 0
 
-# Zusaetzlich eine normalisierte Fassung: Blockkommentare entfernt, Zeilen-
-# umbrueche und Tabulatoren zu Leerzeichen. grep arbeitet zeilenweise; ein
-# Import, dessen Schluesselwort, 'from' und Pfad ueber mehrere Zeilen verteilt
-# sind (Prettier-Umbruch) oder durch einen Kommentar getrennt sind, entginge
-# der zeilenweisen Pruefung. Beide Befunde der statischen Pruefung vom
-# 2026-08-25, ausgefuehrt belegt. Geprueft wird gegen Original UND normalisierte
-# Fassung in einem Durchgang; die Anfuehrungszeichen-Grenzen der Muster
-# verhindern, dass die zusammengezogene Zeile quer ueber unbeteiligte
-# Zeichenketten hinweg falsch anschlaegt.
-payload_norm=$(printf '%s' "$payload" | sed 's#/\*[^*]*\*/##g' | tr '\n\t' '  ')
+# Zusaetzlich eine normalisierte Fassung: Kommentare entfernt, Zeilenumbrueche
+# und Tabulatoren zu Leerzeichen. grep arbeitet zeilenweise; ein Import, dessen
+# Schluesselwort, 'from' und Pfad ueber mehrere Zeilen verteilt sind
+# (Prettier-Umbruch) oder durch einen Kommentar getrennt sind, entginge der
+# zeilenweisen Pruefung (Befunde der statischen Pruefung vom 2026-08-25).
+# Entfernt werden ZUERST Zeilenkommentare (// bis Zeilenende, N2) und DANN
+# Blockkommentare -- letztere in einer Schleife, weil eine einzelne Ersetzung
+# verschachtelte Kommentare '/* a /* b */ c */' nur teilweise aufloest (N3).
+# Geprueft wird gegen Original UND normalisierte Fassung in einem Durchgang; die
+# Anfuehrungszeichen-Grenzen der Muster verhindern, dass die zusammengezogene
+# Zeile quer ueber unbeteiligte Zeichenketten hinweg falsch anschlaegt.
+payload_norm=$(printf '%s' "$payload" | sed 's#//[^\n]*##')
+for _i in 1 2 3 4 5; do
+  neu=$(printf '%s' "$payload_norm" | sed 's#/\*[^*]*\*/##g')
+  [ "$neu" = "$payload_norm" ] && break
+  payload_norm="$neu"
+done
+payload_norm=$(printf '%s' "$payload_norm" | tr '\n\t' '  ')
 pruefstoff=$(printf '%s\n%s' "$payload" "$payload_norm")
 
 Q="[\"'\`]"
