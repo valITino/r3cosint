@@ -5,7 +5,7 @@
 | **Erzeugt durch** | `scripts/nachweise-erzeugen.sh` |
 | **Grundlage** | Projektauftrag 6.6 |
 | **Verantwortlich** | Protocol Master |
-| **Stand des Repositories** | `403f84d0cd48c527c9643596253788b665ff97c2` |
+| **Stand des Repositories** | `edd895b9e4b210f39d0f1a94c891ce86a7c47fc9` |
 | **Artefakte** | 48 |
 
 **Diese Datei wird erzeugt, nicht von Hand gepflegt** (6.6). Sie wird bei jedem
@@ -44,8 +44,8 @@ selbst trägt die vollständigen 40 Stellen.
 | Regel Dokumentation | `.claude/rules/dokumentation.md` | [`68f22aa3c0e2`](https://github.com/valITino/r3cosint/blob/68f22aa3c0e2c8d6bba74b308cbfb23d40991209/.claude/rules/dokumentation.md) | 2026-08-25 | Feste Verweise, Nachweisverzeichnis, Verfolgbarkeit |
 | Regel Recht und Datenschutz | `.claude/rules/recht-und-datenschutz.md` | [`68f22aa3c0e2`](https://github.com/valITino/r3cosint/blob/68f22aa3c0e2c8d6bba74b308cbfb23d40991209/.claude/rules/recht-und-datenschutz.md) | 2026-08-25 | Rechtsregime, Belegpflicht, Aufbewahrung |
 | Regel Claude-Konfiguration | `.claude/rules/claude-konfiguration.md` | [`68f22aa3c0e2`](https://github.com/valITino/r3cosint/blob/68f22aa3c0e2c8d6bba74b308cbfb23d40991209/.claude/rules/claude-konfiguration.md) | 2026-08-25 | Mechanismen, Hooks, Rollendateien |
-| Gate Prototyp-Trennung | `.claude/hooks/block-prototype-import.sh` | [`5a4609c3755f`](https://github.com/valITino/r3cosint/blob/5a4609c3755feedcd750564150965d251b36fc06/.claude/hooks/block-prototype-import.sh) | 2026-08-25 | Blockiert Importe zwischen Prototyp und Produktionscode |
-| Gate main-Schutz | `.claude/hooks/block-main-write.sh` | [`5a4609c3755f`](https://github.com/valITino/r3cosint/blob/5a4609c3755feedcd750564150965d251b36fc06/.claude/hooks/block-main-write.sh) | 2026-08-25 | Blockiert Schreibzugriffe und Pushes nach main |
+| Gate Prototyp-Trennung | `.claude/hooks/block-prototype-import.sh` | [`edd895b9e4b2`](https://github.com/valITino/r3cosint/blob/edd895b9e4b210f39d0f1a94c891ce86a7c47fc9/.claude/hooks/block-prototype-import.sh) | 2026-08-26 | Blockiert Importe zwischen Prototyp und Produktionscode |
+| Gate main-Schutz | `.claude/hooks/block-main-write.sh` | [`edd895b9e4b2`](https://github.com/valITino/r3cosint/blob/edd895b9e4b210f39d0f1a94c891ce86a7c47fc9/.claude/hooks/block-main-write.sh) | 2026-08-26 | Blockiert Schreibzugriffe und Pushes nach main |
 | Hook Eingang Methodik | `.claude/hooks/session-start-eingang.sh` | [`f3262b843076`](https://github.com/valITino/r3cosint/blob/f3262b8430764acac76aea27d4a3b457c5a62906/.claude/hooks/session-start-eingang.sh) | 2026-08-25 | Gibt den Eingang beim Sitzungsstart mit |
 | Hook- und Gate-Konfiguration | `.claude/settings.json` | [`1f093ae2f8cd`](https://github.com/valITino/r3cosint/blob/1f093ae2f8cd7d9e410994cee1c0e38ac4ac16d1/.claude/settings.json) | 2026-08-25 | Versionierte Hook-Konfiguration |
 | Regel Versionierung und Nachweisfluss | `.claude/rules/versionierung-und-nachweisfluss.md` | [`1aa10a11a090`](https://github.com/valITino/r3cosint/blob/1aa10a11a0909de36e8aca71f5a2c5e603bbab0b/.claude/rules/versionierung-und-nachweisfluss.md) | 2026-08-25 | Versionsschilder, Commit-Identitaet, Nachweisfluss |

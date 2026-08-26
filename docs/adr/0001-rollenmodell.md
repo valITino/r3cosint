@@ -5,7 +5,7 @@
 | **Titel** | Rollenmodell: 21 Rollen als Subagents unter `.claude/agents/` |
 | **Status** | angenommen |
 | **Datum** | 2026-08-19 |
-| **Fortgeschrieben** | 2026-08-20 — Abschnitte 4, 7.4 und 8: Stand der `settings.json`; Terminierung der Hooks (R3-Q-001 aus Schritt 3, R3-Q-005 ergänzt am 2026-08-20); Auflösung der Befunde V-02 und V-04 (`docs/08_Freigabe_Schritt_4.md`) |
+| **Fortgeschrieben** | 2026-08-25 — Abschnitte 2.4, 3 und 5.2: `maxTurns` des Static Software Testers von 30 auf 80, nach gemessenem Abbruch an der Grenze (Begründung in 5.2). 2026-08-20 — Abschnitte 4, 7.4 und 8: Stand der `settings.json`; Terminierung der Hooks (R3-Q-001 aus Schritt 3, R3-Q-005 ergänzt am 2026-08-20); Auflösung der Befunde V-02 und V-04 (`docs/08_Freigabe_Schritt_4.md`) |
 | **Grundlage** | Projektauftrag Abschnitt 4 (4.1 Umsetzungsform, 4.2 Rollen aus dem Originalauftrag, 4.3 ergänzende Rollen, 4.4 rechtliche Rollen), ergänzend 3.2 und 3.4 |
 | **Lieferschritt** | Schritt 1 nach Abschnitt 2 (Rollenmodell aufbauen) |
 
@@ -56,7 +56,7 @@ Verwendet sind ausschliesslich die Aliase `sonnet` und `opus`; keine Rolle nennt
 
 ### 2.4 `maxTurns` als Endlosschleifen-Schutz (3.4)
 
-3.4, Ebene 4, verlangt verbindlich: "Turn-Begrenzung je Rolle: Im Frontmatter jedes Subagenten wird `maxTurns` gesetzt, damit eine delegierte Rolle nicht unbegrenzt weiterläuft." Jede der 21 Rollen trägt `maxTurns`. Die Staffelung folgt dem Arbeitsumfang der Rolle: 40 für die vier Rollen, die durchgängige Inkremente umsetzen, 30 für Rollen mit mehrschrittiger Analyse- oder Prüfarbeit, 25 für Rollen mit eng umrissenem Arbeitsprodukt. `maxTurns` ergänzt die Eskalationsregel aus 3.4 (Abbruch nach dreimaligem Scheitern am gleichen Kriterium), es ersetzt sie nicht.
+3.4, Ebene 4, verlangt verbindlich: "Turn-Begrenzung je Rolle: Im Frontmatter jedes Subagenten wird `maxTurns` gesetzt, damit eine delegierte Rolle nicht unbegrenzt weiterläuft." Jede der 21 Rollen trägt `maxTurns`. Die Staffelung folgt dem Arbeitsumfang der Rolle: 80 für den Static Software Tester (korrigiert am 2026-08-25, Begründung in 5.2), 40 für die vier Rollen, die durchgängige Inkremente umsetzen, 30 für Rollen mit mehrschrittiger Analyse- oder Prüfarbeit, 25 für Rollen mit eng umrissenem Arbeitsprodukt. `maxTurns` ergänzt die Eskalationsregel aus 3.4 (Abbruch nach dreimaligem Scheitern am gleichen Kriterium), es ersetzt sie nicht.
 
 ---
 
@@ -72,7 +72,7 @@ Spalte "Quelle" verweist auf den Abschnitt des Projektauftrags, aus dem die Roll
 | DevOps Engineer | 4.2 | `devops-engineer.md` | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash | ja | Pipeline-, Arbeitsablauf- und Changelog-Dateien im Repository; `Bash` für Bau- und Sicherungsläufe gegen Test/Schulung. |
 | SecDevOps Engineer | 4.2 | `secdevops-engineer.md` | sonnet | 30 | Read, Grep, Glob, Edit, Write, Bash | ja | Pipeline- und Hook-Konfiguration, SBOM, Secret-Scanning; `Bash`, weil die Wirkung über den Rückgabewert belegt wird (3.4). |
 | Docker- und Kubernetes/Portainer-Experte | 4.2 | `docker-kubernetes-experte.md` | sonnet | 30 | Read, Grep, Glob, Edit, Write, Bash | ja | Containerdefinitionen und Manifeste je Umgebung; `Bash` für Härtungs- und Offline-Nachweise. |
-| Static Software Tester | 4.2 | `static-software-tester.md` | opus | 30 | Read, Grep, Glob, Bash | nein | Kein `Edit`, kein `Write` — die Rolle meldet Befunde und behebt sie nicht. `Bash` ausschliesslich für lesende Prüfläufe (Linter, Typprüfung, statische Analyse). |
+| Static Software Tester | 4.2 | `static-software-tester.md` | opus | 80 | Read, Grep, Glob, Bash | nein | Kein `Edit`, kein `Write` — die Rolle meldet Befunde und behebt sie nicht. `Bash` ausschliesslich für lesende Prüfläufe (Linter, Typprüfung, statische Analyse). |
 | Dynamic Software Tester | 4.2 | `dynamic-software-tester.md` | opus | 30 | Read, Grep, Glob, Edit, Write, Bash | nur Testcode | `Edit` und `Write` werden gebraucht, weil Testcode zu schreiben ist; die Begrenzung auf Testverzeichnisse und Testdaten steht als Instruktion im Body (siehe Abschnitt 4). `Bash` für die Testläufe. |
 | Scrum Master | 4.2 | `scrum-master.md` | sonnet | 25 | Read, Grep, Glob, Edit, Write | nur Planungsartefakte | Schreibt Sprint-Planungsartefakt, Ereignisplan, Hindernisliste, Retrospektivprotokoll und Übergabedatei; kein `Bash`, weil die Rolle keine Befehle ausführt. |
 | Pentester | 4.2 | `pentester.md` | opus | 25 | Read, Grep, Glob, Bash | nein | Kein `Edit`, kein `Write`. `Bash` dient ausschliesslich dem Ausführen von Prüfungen gegen die laufende Anwendung in Test/Schulung, nicht dem Ändern von Dateien. |
@@ -134,6 +134,12 @@ Für alle drei gilt der in 3.4 als häufigster Fehler benannte Punkt: **Nur Rüc
 `maxTurns` ist ein offiziell dokumentiertes Frontmatter-Feld und steht in der Referenztabelle der Subagent-Dokumentation. Dokumentiert ist dort allerdings nur die Bedeutung "Obergrenze der agentischen Turns, nach der der Subagent stoppt". Nicht dokumentiert sind: was ein agentischer Turn genau zählt, welches Verhalten das Erreichen der Grenze auslöst und welcher Wert ohne das Feld gilt.
 
 Daraus folgt eine ehrliche Trennung: Dass `maxTurns` gesetzt wird, ist eine Vorgabe aus 3.4. Dass die Werte 25, 30 und 40 lauten, ist eine Projektfestlegung nach Arbeitsumfang und aus der Dokumentation nicht ableitbar. Die Werte sind Startwerte und werden korrigiert, sobald Rollen erkennbar zu früh abbrechen oder zu lange laufen.
+
+**Erste Korrektur, 2026-08-25 — der Fall ist eingetreten.** Der Static Software Tester ist im Full-Review vom 2026-08-25 dreimal mitten in der Arbeit gestoppt, zuletzt nachweislich an der Turn-Grenze. Gemessen: Der Abbruch erfolgte nach 34 Werkzeugaufrufen bei `maxTurns: 30`; der anschliessende Fortsetzungslauf brauchte 35 weitere Werkzeugaufrufe bis zum Bericht. Ein vollständiger ausführungslastiger Prüfdurchgang liegt damit bei rund 69 Werkzeugaufrufen beziehungsweise etwa 61 Turns. **Der Wert steht neu auf 80** — rund 30 Prozent Reserve über dem gemessenen Bedarf, und weiterhin eine harte Obergrenze im Sinne von 3.4, Ebene 4.
+
+Die Praxis liefert damit auch die fehlende Grössenordnung, die die Dokumentation nicht hergibt: Ein agentischer Turn entspricht in dieser Umgebung ungefähr einem Werkzeugaufruf (30 Turns ≙ 34 Aufrufe).
+
+**Bewusst nicht mitgeändert:** Dynamic Software Tester (30) und Pentester (25) gehören derselben Klasse an — Prüfrollen, die ausführen statt nur zu lesen — und laufen vermutlich in dieselbe Grenze. Für sie liegt aber **keine Messung** vor; sie werden korrigiert, wenn sie erkennbar zu früh abbrechen, nicht auf Verdacht. Das Kriterium dafür ist dasselbe wie hier: ein belegter Abbruch an der Grenze vor geliefertem Arbeitsprodukt.
 
 ### 5.3 Positivliste statt `disallowedTools`
 

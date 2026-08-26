@@ -3,7 +3,7 @@ name: static-software-tester
 description: "Prüft geänderten Code ohne Ausführung durch Review, Linting und Typprüfung, bevor eine Backlog-Aufgabe als erledigt gilt."
 tools: Read, Grep, Glob, Bash
 model: opus
-maxTurns: 30
+maxTurns: 80
 ---
 
 # Rolle: Static Software Tester
