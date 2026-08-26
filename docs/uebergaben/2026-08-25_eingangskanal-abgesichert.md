@@ -241,6 +241,9 @@ Wirkung misst und nicht den Rückgabewert.
   an fünf Stellen in beiden Repositories. Unverändert seit der letzten Einheit:
   zum Pinnen wird die Prüfsumme aus `actions/checkout` gebraucht, der
   GitHub-Zugang der Sitzung ist auf `valITino/*` beschränkt.
+  **Richtigstellung vom 2026-08-25:** falsch — öffentliche Repositories sind
+  über den Git-Proxy lesbar. Inzwischen gepinnt auf
+  `11d5960a326750d5838078e36cf38b85af677262` (v4.4.0), mit Dependabot.
 - **Kein echter Lauf auf GitHub.** Die Nachweise oben beruhen auf einer
   vollständigen Nachbildung — echtes Git, echte Arbeitsablauf-Schritte aus der
   YAML-Datei, lokales Fernarchiv, `gh` als Attrappe. Der erste echte Lauf ist

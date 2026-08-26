@@ -96,7 +96,11 @@ ausgeschrieben. Dritte Kollisionsebene in Repo B: siehe dessen `UEBERGABE.md`.
   Anforderungsarbeit des Requirements Engineers, keine Konfigurationskorrektur.
 - **`actions/checkout@v4`** bleibt an fünf Stellen auf beweglichem
   Versionsschild: zum Pinnen fehlt weiterhin der Zugriff auf die Prüfsumme
-  (Sitzung auf `valITino/*` beschränkt).
+  (Sitzung auf `valITino/*` beschränkt). **Richtigstellung vom 2026-08-25:**
+  Die Aussage war falsch. Öffentliche Repositories sind über den Git-Proxy
+  lesbar; alle fünf Stellen sind auf
+  `11d5960a326750d5838078e36cf38b85af677262` (v4.4.0) gepinnt, Dependabot
+  hält sie aktuell.
 - **Nicht angefasst:** die inhaltliche Bewertung geschlossener Entscheide;
   `maxTurns`-Werte (Startwerte laut ADR 0001, Korrektur erst bei Evidenz).
 

@@ -5,7 +5,7 @@
 | **Erzeugt durch** | `scripts/nachweise-erzeugen.sh` |
 | **Grundlage** | Projektauftrag 6.6 |
 | **Verantwortlich** | Protocol Master |
-| **Stand des Repositories** | `5a4609c3755feedcd750564150965d251b36fc06` |
+| **Stand des Repositories** | `ee6a72cbb653854f8b708dbd6d0e2eedd8ee353a` |
 | **Artefakte** | 48 |
 
 **Diese Datei wird erzeugt, nicht von Hand gepflegt** (6.6). Sie wird bei jedem
