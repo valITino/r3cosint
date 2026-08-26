@@ -5,7 +5,7 @@
 | **Arbeitsprodukt nach** | Projektauftrag 6.3 |
 | **Verantwortlich** | Requirements Engineer; ein benannter Verantwortlicher ist noch zu bestimmen |
 | **Lebensdauer** | langlebig |
-| **Stand** | 2026-08-19, Erstfassung |
+| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19 |
 
 **Die Verwendung dieses Glossars ist für alle Arbeitsprodukte und für die
 Oberflächentexte verpflichtend** (6.3). Synonyme sind gekennzeichnet, Homonyme
@@ -30,6 +30,15 @@ Kontaktaufnahme. Der zugehörige MCP-Server ist ausschliesslich lesend gebaut
 ändert sich nie, auch wenn der Text sich ändert (6.6). Steht im Commit-Betreff
 und im Testnamen.
 
+**Antwortschema** — Die je Werkzeug hinterlegte, verbindliche Beschreibung der
+zulässigen Form einer Quellantwort: Pflichtfelder, Feldtypen, Obergrenzen für
+Feldlänge und Antwortgrösse, keine unbekannten Zusatzfelder. Eine Antwort, die
+ihm nicht entspricht, gelangt nicht in den kanonischen Datenbestand, sondern
+wird verworfen und protokolliert (R3-F-022). Jeder Eintrag im
+Werkzeugverzeichnis verweist auf genau ein Antwortschema (R3-F-026).
+*Abzugrenzen von:* Vorschlagsschema (siehe dort) — jenes prüft die Ausgabe des
+Sprachmodells, dieses die Antwort einer externen Quelle.
+
 **Arbeitsspur** — Spur 2 der Protokollierung. Beantwortet: *wie sind wir darauf
 gekommen*. Enthält jede Abfrage mit Werkzeug und Parametern, jedes Ergebnis,
 jede Schlussfolgerung, jede Freigabe und zwingend die Negativbefunde. Adressat:
@@ -41,6 +50,18 @@ Daraus übernommene Werte tragen die Herkunftsangabe auf das Asservat.
 **Aufbewahrungsklasse** — Konfigurierbare Fallkategorie, an der die Prüffrist
 hängt. Sie löst **nie** eine Löschung aus, sondern eine Aufgabe an den
 Fallverantwortlichen (4.4).
+
+**Ausgabeweg** — Ein in den Modulen `export` beziehungsweise `graph`
+registrierter Erzeuger, der Werte des kanonischen Datenbestands in genau ein
+Zielformat überführt. **Zähleinheit ist der Eintrag in dieser Registrierung** —
+weder die einzelne Funktion noch der einzelne Aufrufort einer
+Zeichenkettenverkettung. Je Zielformat existiert genau ein registrierter
+Ausgabeweg, und jedes Artefakt dieses Formats entsteht über ihn; damit ist die
+Menge der Ausgabewege auslesbar und abzählbar (R3-F-025). Die Zielformate der
+ersten Fassung sind Mermaid, `.drawio`, JSON, CSV, XLSX und PDF/A-3.
+*Abzugrenzen von:* Export — der Export ist die protokollpflichtige Erzeugung
+eines Artefakts ausserhalb des Systems, der Ausgabeweg der Erzeuger, der es
+formatgerecht schreibt.
 
 ## B
 
@@ -86,11 +107,24 @@ und einer Person zugeordnet (5.4).
 **Freigabe** — Die bewusste Bestätigung eines Menschen vor der Ausführung von
 Abfragen nach aussen. Steht mit Zeitpunkt und Person im Protokoll. Vorschlag und
 Ausführung dürfen technisch nicht selbstständig verkettbar sein (5.2).
-*Abzugrenzen von:* Freigabe-Gate (siehe dort).
+*Abzugrenzen von:* Freigabe-Gate und Freigabevorlage (siehe dort).
 
 **Freigabe-Gate** — Ein Prüfpunkt im Projektablauf, an dem der Auftraggeber
 schriftlich zustimmt, bevor der nächste Lieferschritt beginnt (Abschnitt 2, 5.6).
 *Homonym-Warnung:* nicht dasselbe wie die Freigabe einer Abfrage.
+
+**Freigabevorlage** — Der vom Modul `freigabe.vorschlag` erzeugte, noch nicht
+bestätigte Vorschlag im Zustand *offen*. Er führt als Vorschau die vorgesehenen
+Abfragen, die Ziele und den zu erwartenden Kontingentverbrauch. Bei der
+Ausführung werden Umfang und Zielmenge gegen die Freigabevorlage geprüft; weicht
+die Ausführung ab, wird sie abgewiesen (ADR 0002, Abschnitte 3.5 und 4.1).
+*Nicht verwenden als Synonym für:* Freigabe — die Freigabevorlage ist ein
+Vorschlag, den noch niemand bestätigt hat, und löst für sich genommen nichts
+aus; erst die Freigabe eines Menschen erzeugt die einmal verwendbare
+Freigabe-Kennung, ohne die nicht ausgeführt wird. *Homonym-Warnung:* ebenso
+wenig dasselbe wie das Freigabe-Gate, das den Projektablauf betrifft und nicht
+eine einzelne Abfrage. Auch keine Formularvorlage: "Vorlage" meint hier den
+einzelnen, fallbezogenen Vorschlag, nicht ein Muster.
 
 ## G
 
@@ -173,11 +207,23 @@ daran (6.8).
 Schlussfolgerung des Modells. Beide werden unterschiedlich gekennzeichnet, im
 Protokoll wie in der Darstellung. Das ist die wichtigste einzelne Absicherung
 gegen den Vorwurf, eine Maschine habe Tatsachen erfunden (5.3).
+*Abzugrenzen von:* Rohantwort (siehe dort).
 
 ## R
 
 **Recherche** — Das Abfragen offen zugänglicher Quellen. Reine Recherche, keine
 verdeckte Ermittlung (5.11). *Abzugrenzen von:* Ermittlung als Oberbegriff.
+
+**Rohantwort** — Die unveränderte, wie empfangen aufgezeichnete Antwort einer
+externen Quelle oder des Sprachmodells. Sie wird mit Prüfsumme im Fallbestand
+abgelegt, damit ein Lauf gegen denselben aufgezeichneten Quellstand wiederholbar
+ist (ADR 0002, Abschnitt 4.2; R3-Q-002). Auch eine verworfene Antwort wird mit
+der Prüfsumme ihrer Rohantwort festgehalten (R3-F-022, R3-F-023). Eine
+Rohantwort ist ein von aussen bezogener Inhalt: Sie gilt als Daten, nie als
+Anweisung, und wird in jeder Darstellung als Text ausgegeben, nie als
+Auszeichnung ausgewertet (R3-F-017, R3-Q-006). *Abzugrenzen von:*
+Quellenaussage — diese entsteht erst, nachdem die Rohantwort dem Antwortschema
+entsprochen hat und in den kanonischen Datenbestand überführt wurde.
 
 **Rückkanal** — Jede ausgehende Verbindung zu Zwecken des Systems selbst:
 Nutzungsstatistik, Fehlerbericht, Aktualisierungsabfrage. **Es gibt keinen.**
@@ -229,6 +275,34 @@ abschaltbar. *Nicht:* eine Einstellung.
 **verborgen** — Markierung für den Austausch zwischen Rialto und ELS. **Keine
 Klassifizierungsfunktion**, wirkt nicht auf Zugriffsrechte (5.8). Wird leicht für
 eine Schutzstufe gehalten und ist keine.
+
+**Vorschlagsschema** — Die verbindliche Beschreibung der zulässigen Form einer
+Modellantwort: erlaubte Felder, Feldtypen, zulässige Werkzeugnamen, zulässige
+Ziele, Obergrenze der Ausgabelänge. Das Sprachmodell liefert ausschliesslich
+einen Vorschlag als strukturierte Ausgabe; was dem Vorschlagsschema nicht
+entspricht, wird vollständig verworfen und protokolliert — nie teilweise
+übernommen und nie zurechtgebogen (ADR 0002, Abschnitt 3.7; R3-F-023). Aus einer
+schemakonformen Modellantwort entsteht eine Freigabevorlage, keine Ausführung.
+*Abzugrenzen von:* Antwortschema (siehe dort).
+
+## W
+
+**Werkzeugverzeichnis** — Das auslesbare Verzeichnis aller aufrufbaren Werkzeuge
+im Modul `beschaffung`. Jeder Werkzeugaufruf läuft über den **einen** Aufrufpfad,
+der einen gültigen Fallbezug und das Kontingent prüft; die Werkzeuge selbst
+enthalten keine eigene Prüfung. Weil das Verzeichnis auslesbar ist, kann ein Test
+über alle registrierten Werkzeuge laufen (ADR 0002, Abschnitte 4.1 und 4.2;
+R3-F-002). Jeder Eintrag trägt Name, Verweis auf das Antwortschema, die
+Grenzwerte und ein Fallbindungskennzeichen (R3-F-026).
+*Homonym-Warnung:* Anhang A des Konzeptdokuments trägt dieselbe Bezeichnung,
+meint dort aber die fachliche Liste der gewünschten Quellen (Projektauftrag 5.17;
+Backlog, Etappe 2). Unbezeichnet meint "Werkzeugverzeichnis" immer das
+Verzeichnis des Moduls `beschaffung`; ist die Liste aus dem Konzept gemeint, wird
+der Bezug auf das Konzept mitgeführt und nicht dem Leser überlassen — etwa
+"Werkzeugverzeichnis in Anhang A des Konzepts" (Projektauftrag 5.17) oder
+"Gruppen des Werkzeugverzeichnisses (Anhang A des Konzepts)" (Backlog,
+Einleitung zu Etappe 2). Verbindlich ist der mitgeführte Bezug, nicht eine feste
+Wendung.
 
 ---
 

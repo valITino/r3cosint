@@ -4,7 +4,7 @@
 |---|---|
 | **Arbeitsprodukt nach** | Projektauftrag 6.8, 9.1 |
 | **Verantwortlich** | Product Owner, Scrum Master |
-| **Stand** | 2026-08-20, nachgeführt (V-04 aus `docs/08_Freigabe_Schritt_4.md`) |
+| **Stand** | 2026-08-26, nachgeführt (Befund F des Deep Reviews vom 2026-08-25, Nachführung durch den Product Owner; frühere Nachführung: V-04 aus `docs/08_Freigabe_Schritt_4.md`) |
 
 ## Grundlage der Zahlen
 
@@ -13,9 +13,9 @@ Schätzung in `05_Product_Backlog.md` wurde keine Kalenderzahl geschrieben (6.8)
 
 | Grösse | Wert | Quelle |
 |---|---|---|
-| Prüfaufwand erste Fassung | 300 h | Backlog, 71 Einträge |
+| Prüfaufwand erste Fassung | 344 h | Backlog, 79 Einträge |
 | Prüfaufwand zweite Fassung | 23 h | Backlog, 5 Einträge |
-| Prüfaufwand gesamt | 323 h | Backlog, 76 Einträge |
+| Prüfaufwand gesamt | 367 h | Backlog, 84 Einträge |
 | Sprintlänge | 2 Wochen | 6.8, festgelegt |
 | Kapazität je Person | 7 bis 10 h pro Woche | 6.8, geklärt |
 | Kapazität Team je Sprint | **28 bis 40 h** | 6.8 |
@@ -29,15 +29,15 @@ gefährlichste Form von Fortschritt.
 
 ## Abgeleitete Sprintzahl
 
-300 h ÷ 40 h = **8 Sprints** im günstigen Fall.
-300 h ÷ 28 h = **11 Sprints** im ungünstigen Fall.
+344 h ÷ 40 h = **9 Sprints** im günstigen Fall.
+344 h ÷ 28 h = **13 Sprints** im ungünstigen Fall.
 
 | | Erste Fassung | Gesamt |
 |---|---|---|
-| Sprints bei 40 h | 8 | 9 |
-| Sprints bei 28 h | 11 | 12 |
-| Wochen bei 40 h | 16 | 18 |
-| Wochen bei 28 h | 22 | 24 |
+| Sprints bei 40 h | 9 | 10 |
+| Sprints bei 28 h | 13 | 14 |
+| Wochen bei 40 h | 18 | 20 |
+| Wochen bei 28 h | 26 | 28 |
 
 **Was diese Zahlen nicht sind.** Kein Termin und keine Zusage. Sie sind eine
 Ableitung aus einer Erstschätzung, die naturgemäss ungenau ist. Die Retrospektive
@@ -56,6 +56,24 @@ kalkulierten mit Open WebUI, also mit einer Oberfläche, die nicht gebaut werden
 musste (9.1). Die Grössenordnung der Verdopplung, die 9.1 zur Plausibilitäts-
 prüfung nennt, bestätigt sich in dieser Schätzung.
 
+**Nachführung 2026-08-26.** Befund F des Deep Reviews vom 2026-08-25 belegte
+eine Lücke: ADR 0002 sicherte Eigenschaften zu, für die der Backlog kein
+Abnahmekriterium führte. Der Product Owner hat acht neue Einträge eingeordnet
+(`docs/05_Product_Backlog.md`, Stand 2026-08-26) und den Prüfaufwand von 300 h
+auf 342 h (erste Fassung) angehoben. Die Sprintzahlen oben sind daraus neu
+gerechnet, nicht fortgeschrieben.
+
+**Zweite Nachführung 2026-08-26 (Koordinatorenprüfung).** Zwei unabhängige
+Prüfinstanzen befanden die Einordnung von Befund F für nicht bestanden. Der
+Product Owner hat R3-F-017 um ein zweites Abnahmekriterium ergänzt, das die
+von ADR 0002, Abschnitt 3.7 zugesicherte Ursache prüft (keine
+Werkzeugbeschreibung wird an das Modell übergeben) statt nur deren Wirkung;
+der Prüfaufwand dieses Eintrags steigt von 8 h auf 10 h. R3-F-024 bleibt in
+Etappe 1 mit selbstskalierend reformuliertem Abnahmekriterium; Einträge und
+Prüfaufwand ändern sich dadurch nicht. Der Prüfaufwand der ersten Fassung
+steigt von 342 h auf 344 h, der Gesamtaufwand von 365 h auf 367 h. Die
+Sprintzahlen ändern sich dadurch nicht, weil die Rundung gleich bleibt.
+
 ---
 
 ## Etappenfolge
@@ -66,10 +84,10 @@ entfällt (5.18).
 | # | Etappe | Prüfaufwand | Sprints bei 34 h | Voraussetzung |
 |---|---|---|---|---|
 | 0 | Vorlauf: Architekturentscheid, Umbenennung, Umgebungstrennung, Entwicklungs-Gates | 27 h | ~1 | Freigabe-Gate Schritt 4 |
-| 1 | Fundament: Server, Protokoll, Datenbestand | 113 h | ~3 bis 4 | Etappe 0 |
+| 1 | Fundament: Server, Protokoll, Datenbestand | 147 h | ~4 bis 5 | Etappe 0 |
 | 2 | Freie Quellen ohne Beschaffung | 37 h | ~1 | Etappe 1 |
-| 3 | Prototyp, Oberfläche, Anmeldestack | 59 h | ~2 | Prototyp-Freigabe für alles ab R3-F-051 |
-| 4 | Darstellung und Export | 26 h | ~1 | Etappe 1, für den Graphen auch Etappe 3 |
+| 3 | Prototyp, Oberfläche, Anmeldestack | 63 h | ~2 | Prototyp-Freigabe für alles ab R3-F-051 |
+| 4 | Darstellung und Export | 32 h | ~1 | Etappe 1, für den Graphen auch Etappe 3 |
 | 5 | Lizenzierte Quellen | 8 h | <1 | Beschaffung durch den Auftraggeber |
 | 6 | Härtung und Abnahme | 30 h | ~1 | alle vorherigen |
 | — | Zweite Fassung | 23 h | ~1 | Entscheid nach der ersten Fassung |
@@ -115,15 +133,25 @@ alle Einträge der ersten Fassung, einschliesslich Etappe 0.
 
 | Bereich | Einträge |
 |---|---|
-| Fundament: Server, kanonischer Datenbestand, beide Protokollspuren | R3-F-003 bis R3-F-012 |
-| Ermittlungskreislauf mit Freigabesperre | R3-F-013 bis R3-F-017, R3-F-060 |
+| Fundament: Server, kanonischer Datenbestand, beide Protokollspuren | R3-F-003 bis R3-F-012, R3-F-022, R3-F-027 |
+| Ermittlungskreislauf mit Freigabesperre | R3-F-013 bis R3-F-017, R3-F-023, R3-F-026, R3-F-028, R3-F-060 |
 | Anmeldung, Rollen, Klassifizierung | R3-F-051 bis R3-F-057 |
 | Die freien Quellen ohne Beschaffung | R3-F-030 bis R3-F-040 |
-| Fallverwaltung im Kern, Graph, Export | R3-F-001, R3-F-002, R3-F-058, R3-F-059, R3-F-072 bis R3-F-075 |
+| Fallverwaltung im Kern, Graph, Export | R3-F-001, R3-F-002, R3-F-024, R3-F-025, R3-F-058, R3-F-059, R3-F-072 bis R3-F-075 |
 | Darstellung über Mermaid und draw.io | R3-F-070, R3-F-071 |
 | Aufbewahrung, Löschwege, Offline-Betrieb | R3-F-020, R3-F-021 |
 | Härtung und Abnahme | R3-C-010 bis R3-C-014 |
-| **Summe** | **71 Einträge, 300 h Prüfaufwand** |
+| **Summe** | **79 Einträge, 344 h Prüfaufwand** |
+
+Nachgeführt am 2026-08-26 nach Befund F: sieben neue Einträge aus
+`docs/05_Product_Backlog.md` sind den thematischen Zeilen zugeordnet
+(R3-F-022, R3-F-027 zum Fundament; R3-F-023, R3-F-026, R3-F-028 zum
+Ermittlungskreislauf; R3-F-024, R3-F-025 zu Fallverwaltung, Graph, Export).
+R3-Q-006 ist — wie zahlreiche weitere Einträge der ersten Fassung, darunter
+auch R3-Q-002 und R3-Q-003 — nicht einzeln in der obigen thematischen Tabelle
+aufgeführt; diese Tabelle ist eine thematische Auswahl der Kernbereiche, keine
+vollständige Liste (siehe Einleitung oben). Die Summenzeile zählt R3-Q-006
+mit.
 
 ### Zweite Fassung — später
 
