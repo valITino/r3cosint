@@ -78,6 +78,18 @@ if [ "$tool" = "Bash" ]; then
     [ -n "$kp" ] || continue
     kb=$(git -C "$kp" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
     if is_protected "$kb"; then ziel_geschuetzt=1; fi
+    # Relative Pfade zusaetzlich gegen CLAUDE_PROJECT_DIR aufloesen. 'git -C'
+    # loest relativ zum CWD DIESES Hook-Prozesses auf, nicht zu dem, in dem der
+    # gepruefte Befehl laufen wird -- steht der Hook-Prozess anderswo, ginge
+    # 'cd ../main-klon && git commit' durch (ausgefuehrt belegt am 2026-08-25:
+    # CWD=Projektbaum -> blockiert, CWD=/ -> nicht blockiert). Der Projektbaum
+    # ist der beste verfuegbare Anker; welchen CWD der Harness dem Hook gibt,
+    # ist von hier nicht feststellbar. Absolute Pfade sind davon nicht betroffen.
+    case "$kp" in
+      /*) ;;
+      *)  kb=$(git -C "$proj/$kp" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+          if is_protected "$kb"; then ziel_geschuetzt=1; fi ;;
+    esac
   done < <(printf '%s' "$cmd" \
     | grep -oE '(^|[;&|[:space:](])(cd|pushd|git[[:space:]]+-C|env[[:space:]]+-C)[[:space:]]+("[^"]+"|'\''[^'\'']+'\''|[^[:space:];&|)]+)' \
     | sed -E 's/^[;&|( [:space:]]*(cd|pushd|git[[:space:]]+-C|env[[:space:]]+-C)[[:space:]]+//; s/^"//; s/"$//; s/^'\''//; s/'\''$//')

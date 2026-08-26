@@ -5,7 +5,7 @@
 | **Erzeugt durch** | `scripts/nachweise-erzeugen.sh` |
 | **Grundlage** | Projektauftrag 6.6 |
 | **Verantwortlich** | Protocol Master |
-| **Stand des Repositories** | `ee6a72cbb653854f8b708dbd6d0e2eedd8ee353a` |
+| **Stand des Repositories** | `403f84d0cd48c527c9643596253788b665ff97c2` |
 | **Artefakte** | 48 |
 
 **Diese Datei wird erzeugt, nicht von Hand gepflegt** (6.6). Sie wird bei jedem
@@ -49,8 +49,8 @@ selbst trägt die vollständigen 40 Stellen.
 | Hook Eingang Methodik | `.claude/hooks/session-start-eingang.sh` | [`f3262b843076`](https://github.com/valITino/r3cosint/blob/f3262b8430764acac76aea27d4a3b457c5a62906/.claude/hooks/session-start-eingang.sh) | 2026-08-25 | Gibt den Eingang beim Sitzungsstart mit |
 | Hook- und Gate-Konfiguration | `.claude/settings.json` | [`1f093ae2f8cd`](https://github.com/valITino/r3cosint/blob/1f093ae2f8cd7d9e410994cee1c0e38ac4ac16d1/.claude/settings.json) | 2026-08-25 | Versionierte Hook-Konfiguration |
 | Regel Versionierung und Nachweisfluss | `.claude/rules/versionierung-und-nachweisfluss.md` | [`1aa10a11a090`](https://github.com/valITino/r3cosint/blob/1aa10a11a0909de36e8aca71f5a2c5e603bbab0b/.claude/rules/versionierung-und-nachweisfluss.md) | 2026-08-25 | Versionsschilder, Commit-Identitaet, Nachweisfluss |
-| Arbeitsablauf Nachweisfluss | `.github/workflows/nachweise-uebertragen.yml` | [`68f22aa3c0e2`](https://github.com/valITino/r3cosint/blob/68f22aa3c0e2c8d6bba74b308cbfb23d40991209/.github/workflows/nachweise-uebertragen.yml) | 2026-08-25 | Erzeugt und uebertraegt das Nachweisverzeichnis nach Repo B (6.6) |
-| Arbeitsablauf Meilenstein | `.github/workflows/meilenstein-tag.yml` | [`07925f22fb01`](https://github.com/valITino/r3cosint/blob/07925f22fb0141920acb2db31fba5092770fe1b4/.github/workflows/meilenstein-tag.yml) | 2026-08-25 | Versionsschild und Release bei Meilenstein-Merge (6.6) |
+| Arbeitsablauf Nachweisfluss | `.github/workflows/nachweise-uebertragen.yml` | [`403f84d0cd48`](https://github.com/valITino/r3cosint/blob/403f84d0cd48c527c9643596253788b665ff97c2/.github/workflows/nachweise-uebertragen.yml) | 2026-08-26 | Erzeugt und uebertraegt das Nachweisverzeichnis nach Repo B (6.6) |
+| Arbeitsablauf Meilenstein | `.github/workflows/meilenstein-tag.yml` | [`403f84d0cd48`](https://github.com/valITino/r3cosint/blob/403f84d0cd48c527c9643596253788b665ff97c2/.github/workflows/meilenstein-tag.yml) | 2026-08-26 | Versionsschild und Release bei Meilenstein-Merge (6.6) |
 | Erzeuger Nachweisverzeichnis | `scripts/nachweise-erzeugen.sh` | [`68f22aa3c0e2`](https://github.com/valITino/r3cosint/blob/68f22aa3c0e2c8d6bba74b308cbfb23d40991209/scripts/nachweise-erzeugen.sh) | 2026-08-25 | Erzeugt docs/NACHWEISE.md; Artefaktliste ist hier massgebend |
 | Rolle backend-engineer | `.claude/agents/backend-engineer.md` | [`4a878f3f3d4e`](https://github.com/valITino/r3cosint/blob/4a878f3f3d4ee27b3c0c1ab723e5e2c578812d3b/.claude/agents/backend-engineer.md) | 2026-08-19 | Rollendatei nach ADR 0001: Ausloesefall, Rechte, Modell, maxTurns |
 | Rolle datenschutzexperte | `.claude/agents/datenschutzexperte.md` | [`68f22aa3c0e2`](https://github.com/valITino/r3cosint/blob/68f22aa3c0e2c8d6bba74b308cbfb23d40991209/.claude/agents/datenschutzexperte.md) | 2026-08-25 | Rollendatei nach ADR 0001: Ausloesefall, Rechte, Modell, maxTurns |

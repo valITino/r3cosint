@@ -100,6 +100,18 @@ payload=$(printf '%s' "$input" | jq -r '
 # Geprueft wird gegen Original UND normalisierte Fassung in einem Durchgang; die
 # Anfuehrungszeichen-Grenzen der Muster verhindern, dass die zusammengezogene
 # Zeile quer ueber unbeteiligte Zeichenketten hinweg falsch anschlaegt.
+#
+# BEWUSSTER PREIS -- nicht "wegoptimieren": Weil auch die UNBEREINIGTE Fassung
+# geprueft wird, blockiert das Gate auch eine Datei, deren Kommentar einen
+# verbotenen Importpfad woertlich als Beispiel zeigt
+# ('// Verboten: import { h } from "../prototype/helper";'). Das ist ein
+# Fehlalarm, und er ist der guenstigere Fehler. Wuerde nur die bereinigte
+# Fassung geprueft, entkaeme ein echter Import: 'import x from "prototype//y"'
+# wird von der //-Bereinigung zu 'import x from "prototype' verstuemmelt und
+# passt auf kein Muster mehr (ausgefuehrt belegt am 2026-08-25). Wer den
+# Fehlalarm beseitigen will, oeffnet damit dieses Loch. Ausweg fuer den
+# Einzelfall: solche Beispiele in eine .md-Datei schreiben (Doku-Ausnahme
+# weiter oben) oder den Pfad im Kommentar nicht woertlich ausschreiben.
 payload_norm=$(printf '%s' "$payload" | sed 's#//[^\n]*##')
 for _i in 1 2 3 4 5; do
   neu=$(printf '%s' "$payload_norm" | sed 's#/\*[^*]*\*/##g')
