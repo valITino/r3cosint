@@ -3,7 +3,7 @@ name: product-owner
 description: "Ordnet das Product Backlog und entscheidet über Priorität, sobald ein Sprint geplant wird oder eine geänderte Anforderung eingeht."
 tools: Read, Grep, Glob, Edit, Write
 model: sonnet
-maxTurns: 25
+maxTurns: 50
 ---
 
 # Rolle: Product Owner
