@@ -31,3 +31,14 @@ Thumbs.db
 
 # Lokale Claude-Code-Einstellungen (die geteilten liegen in .claude/settings.json)
 .claude/settings.local.json
+
+# Zwischenspeicher der Pruefwerkzeuge (ADR 0002, Abschnitt 6, "Folge fuer
+# .gitignore" -- sonst schlaegt D19 an, sobald ein Pruefwerkzeug einmal lief)
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+playwright-report/
+test-results/
