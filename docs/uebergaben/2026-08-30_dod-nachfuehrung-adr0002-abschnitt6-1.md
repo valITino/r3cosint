@@ -3,15 +3,15 @@
 | | |
 |---|---|
 | **Arbeitsprodukt nach** | Projektauftrag 3.3 (Übergabedatei je Arbeitseinheit), 4.2 (Protocol Master) |
-| **Einheit** | Zwei Dateien, die die Definition-of-Done-Kette benennen, gegen ADR 0002, Abschnitt 6.1 (Fortschreibung vom 2026-08-29) nachführen |
-| **Datum** | 2026-08-29 |
+| **Einheit** | Zwei Dateien, die die Definition-of-Done-Kette benennen, gegen ADR 0002, Abschnitt 6.1 (Fortschreibung vom 2026-08-30) nachführen |
+| **Datum** | 2026-08-30 |
 | **Rolle** | Protocol Master |
 | **Grundlage** | Auftrag des Koordinators; ADR 0002, `docs/adr/0002-architekturentscheid-ziel-stack.md`, Abschnitt 6 und 6.1; Nachzuführen-Tabelle in ADR 0002 Abschnitt 9 |
 | **Commit der ADR-Fortschreibung** | `84450a71569120e8deb30ecb0349ea8a92f6d736` — ermittelt aus `.git/refs/heads/claude/next-step-g8slnq` und `.git/logs/HEAD` (Reflog-Zeile: `commit: docs(ADR 0002): Abschnitt 6 fortgeschrieben -- D11 berichtigt, D18 ergaenzt`), nicht Bash-gestützt, da diese Rolle kein `Bash`-Werkzeug führt |
 
 ## Worum es ging
 
-Der Software Architect hat ADR 0002, Abschnitt 6, am 2026-08-29 um Abschnitt 6.1
+Der Software Architect hat ADR 0002, Abschnitt 6, am 2026-08-30 um Abschnitt 6.1
 fortgeschrieben: D11 prüft seither zwei Gegenstände (Arbeitsbaum und
 Git-Historie statt nur Historie), ein neuer Kettenschritt D18
 (Architekturverträge) ist eingefügt, und ein neuer Kettengrundsatz hält fest,
@@ -22,13 +22,13 @@ in eigenen Worten beschreiben, waren dadurch veraltet.
 
 **`docs/06_Definition_of_Ready_und_Done.md`** — vollständig nachgeführt:
 
-- Stand-Zeile im Kopf um die Fortschreibung vom 2026-08-29 samt Commit-Verweis ergänzt.
+- Stand-Zeile im Kopf um die Fortschreibung vom 2026-08-30 samt Commit-Verweis ergänzt.
 - Neuer Abschnitt „Fortschreibungen dieses Dokuments" (vorher/jetzt/warum, dreizeilig, mit Quellenverweis auf ADR 0002 Abschnitt 6.1 und Commit) — Nachweisdokumentation nach dem Grundsatz, dass ein spurlos verschwindender Irrtum kein Nachweis ist.
 - Absatz vor der Befehlskette-Tabelle: neue Regel „Nummer ist Kennung, keine Reihenfolge" aufgenommen, mit Verweis auf `make dod` als Ort der Ausführungsreihenfolge.
 - Kriterienzeile **D11** auf beide Gegenstände erweitert (Arbeitsbaum und Git-Historie, zwei eigenständige Läufe), mit Vorher/Jetzt-Vermerk und Verweis auf ADR 0002, 6.1.1.
 - Neue Kriterienzeile **D18** (Architekturverträge) ergänzt, mit Begründung der Nummer (nicht D13, weil D13–D17 an die menschlich bestätigten Bedingungen vergeben sind) und Verweis auf ADR 0002, 6.1.2.
 - Neuer Abschnitt „Ein Prüflauf verändert den Gegenstand nicht, über den er urteilt" (Kettengrundsatz), mit Verweis auf ADR 0002, 6.1.3.
-- Offener Punkt 3 der Fusstabelle um die Fortschreibung vom 2026-08-29 und den Verweis auf O-10 (Prüffläche des Arbeitsbaumlaufs) ergänzt.
+- Offener Punkt 3 der Fusstabelle um die Fortschreibung vom 2026-08-30 und den Verweis auf O-10 (Prüffläche des Arbeitsbaumlaufs) ergänzt.
 - Teil 1 (Definition of Ready) und die Tabelle D13 bis D17 in Teil 2 („Ergänzende Bedingungen") sind unangetastet geblieben, wie verlangt.
 - Sprachprüfung durchgeführt: kein Eszett, keine typografischen Anführungszeichen (per Grep verifiziert).
 
@@ -62,7 +62,7 @@ durch:
 
 > Definition of Done als ausführbare Befehlskette mit Rückgabewert 0 (3.4).
 > Massgebend ist die Kette aus ADR 0002, Abschnitt 6 (Einstieg `make dod`)
-> samt der Fortschreibung vom 2026-08-29 in Abschnitt 6.1 — die Nummer eines
+> samt der Fortschreibung vom 2026-08-30 in Abschnitt 6.1 — die Nummer eines
 > Kettenschritts ist eine Kennung, keine Reihenfolge, und die Kette umfasst
 > seither zusätzlich D18; diese Rolle führt die statisch prüfbaren Glieder
 > aus — insbesondere Bau, Formatierung, Linter, Typprüfung, Abhängigkeits-

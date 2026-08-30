@@ -4,7 +4,7 @@
 |---|---|
 | **Arbeitsprodukt nach** | Projektauftrag 6.5, 6.8, 3.4 |
 | **Verantwortlich** | Scrum Master (Prozess), Requirements Engineer (Ready), Static und Dynamic Software Tester (Done) |
-| **Stand** | 2026-08-20, nachgeführt am 2026-08-29 (ADR 0002, Abschnitt 6.1: D18 ergänzt, D11 auf zwei Gegenstände erweitert, Kettengrundsatz aufgenommen; Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`) |
+| **Stand** | 2026-08-20, nachgeführt am 2026-08-30 (ADR 0002, Abschnitt 6.1: D18 ergänzt, D11 auf zwei Gegenstände erweitert, Kettengrundsatz aufgenommen; Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`) |
 
 Beide sind zu unterscheiden: **Ready gilt für den Eingang in den Sprint, Done
 für den Ausgang** (6.8).
@@ -13,13 +13,13 @@ für den Ausgang** (6.8).
 
 | Datum | Was vorher galt | Was jetzt gilt | Warum |
 |---|---|---|---|
-| 2026-08-29 | D11 (Teil 2, Befehlskette) prüfte nach dieser Tabelle "im Programmstand"; der dafür vorgeschlagene Befehl (`gitleaks detect` ohne `--no-git`) durchsuchte in der Praxis ausschliesslich die Git-Historie | D11 prüft zwei Gegenstände in zwei eigenständigen Läufen: Arbeitsbaum und Git-Historie; keiner ersetzt den anderen | Der Hook aus R3-Q-001 läuft als `Stop` beziehungsweise `SubagentStop`, also **vor** dem Commit — der Arbeitsbaum ist damit der Regelfall des Einsatzes. Belegt mit einem ausgeführten Lauf am 2026-08-29 |
-| 2026-08-29 | Die Befehlskette (Teil 2) führte D1 bis D12; der von ADR 0002, Abschnitt 3.5, seit dem 2026-08-20 verlangte Importprüfer-Schritt fehlte in dieser Tabelle | Neuer Kettenschritt **D18** (Architekturverträge), in der Zielliste von `make dod` nach D4 und vor D5 eingeordnet | Löst einen Widerspruch innerhalb des ADR auf: Abschnitt 3.5 verlangte den Schritt als eigenen Kettenschritt, die Tabelle in Abschnitt 6 führte ihn nicht |
-| 2026-08-29 | Kein Grundsatz hielt fest, dass ein Prüflauf den Arbeitsbaum unverändert lässt | Neuer Grundsatz: Kein Kettenschritt ändert eine versionierte Datei des Arbeitsbaums | Voraussetzung dafür, dass D11 den Arbeitsbaum zuverlässig beurteilt, unabhängig davon, welcher Schritt vorher lief |
+| 2026-08-30 | D11 (Teil 2, Befehlskette) prüfte nach dieser Tabelle "im Programmstand"; der dafür vorgeschlagene Befehl (`gitleaks detect` ohne `--no-git`) durchsuchte in der Praxis ausschliesslich die Git-Historie | D11 prüft zwei Gegenstände in zwei eigenständigen Läufen: Arbeitsbaum und Git-Historie; keiner ersetzt den anderen | Der Hook aus R3-Q-001 läuft als `Stop` beziehungsweise `SubagentStop`, also **vor** dem Commit — der Arbeitsbaum ist damit der Regelfall des Einsatzes. Belegt mit einem ausgeführten Lauf am 2026-08-30 |
+| 2026-08-30 | Die Befehlskette (Teil 2) führte D1 bis D12; der von ADR 0002, Abschnitt 3.5, seit dem 2026-08-20 verlangte Importprüfer-Schritt fehlte in dieser Tabelle | Neuer Kettenschritt **D18** (Architekturverträge), in der Zielliste von `make dod` nach D4 und vor D5 eingeordnet | Löst einen Widerspruch innerhalb des ADR auf: Abschnitt 3.5 verlangte den Schritt als eigenen Kettenschritt, die Tabelle in Abschnitt 6 führte ihn nicht |
+| 2026-08-30 | Kein Grundsatz hielt fest, dass ein Prüflauf den Arbeitsbaum unverändert lässt | Neuer Grundsatz: Kein Kettenschritt ändert eine versionierte Datei des Arbeitsbaums | Voraussetzung dafür, dass D11 den Arbeitsbaum zuverlässig beurteilt, unabhängig davon, welcher Schritt vorher lief |
 
 Quelle für alle drei Zeilen: ADR 0002, Abschnitt 6.1
 (`docs/adr/0002-architekturentscheid-ziel-stack.md`), Fortschreibung vom
-2026-08-29, Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`. Einzelheiten
+2026-08-30, Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`. Einzelheiten
 unten unter "Die Befehlskette".
 
 ---
@@ -94,7 +94,7 @@ den Auftraggeber — samt der Schwellenwerte aus E-07 und E-08 — erfolgen mit
 R3-Q-001; dort werden auch die Befunde des ADR zu D10 und D12 behandelt.
 
 Die Kette bestand bis zur Fortschreibung von ADR 0002, Abschnitt 6, am
-2026-08-29 aus den Schritten D1 bis D12; seither ist sie um **D18** ergänzt,
+2026-08-30 aus den Schritten D1 bis D12; seither ist sie um **D18** ergänzt,
 und D11 prüft zwei statt einem Gegenstand. Die Nummer eines Kettenschritts ist
 dabei eine Kennung, keine Reihenfolge: Frühere Nummern werden nicht neu
 vergeben, ein neuer Schritt erhält die nächste freie Nummer, und die
@@ -114,9 +114,9 @@ Abschnitt 6.1.
 | D8 | Abhängigkeitsprüfung | Keine Abhängigkeit mit bekannter Schwachstelle oberhalb der vereinbarten Schwelle |
 | D9 | Kein Rückkanal | Der Prüfschritt aus R3-C-004 endet mit 0 |
 | D10 | Prototyp-Trennung | Der Prüflauf des Gates `block-prototype-import.sh` findet keinen Verstoss |
-| D11 | Geheimnisse | Secret-Scanning findet keinen Schlüssel und kein Token — geprüft in zwei eigenständigen Läufen, Arbeitsbaum und Git-Historie; keiner der beiden Läufe ersetzt den anderen (vorher: nur die Historie; Fortschreibung 2026-08-29, ADR 0002, Abschnitt 6.1.1) |
+| D11 | Geheimnisse | Secret-Scanning findet keinen Schlüssel und kein Token — geprüft in zwei eigenständigen Läufen, Arbeitsbaum und Git-Historie; keiner der beiden Läufe ersetzt den anderen (vorher: nur die Historie; Fortschreibung 2026-08-30, ADR 0002, Abschnitt 6.1.1) |
 | D12 | Nachweise | Das Nachweisverzeichnis `docs/NACHWEISE.md` ist neu erzeugt und der Commit-Verweis stimmt |
-| D18 | Architekturverträge | Der Importprüfer findet keinen Verstoss gegen die Modulgrenzen aus ADR 0002, Abschnitt 4.3; läuft in der Zielliste von `make dod` nach D4 und vor D5. Nummer D18, nicht D13: D13 bis D17 sind unten an die menschlich zu bestätigenden Bedingungen vergeben (Fortschreibung 2026-08-29, ADR 0002, Abschnitt 6.1.2) |
+| D18 | Architekturverträge | Der Importprüfer findet keinen Verstoss gegen die Modulgrenzen aus ADR 0002, Abschnitt 4.3; läuft in der Zielliste von `make dod` nach D4 und vor D5. Nummer D18, nicht D13: D13 bis D17 sind unten an die menschlich zu bestätigenden Bedingungen vergeben (Fortschreibung 2026-08-30, ADR 0002, Abschnitt 6.1.2) |
 
 ## Ein Prüflauf verändert den Gegenstand nicht, über den er urteilt
 
@@ -126,7 +126,7 @@ Erzeugnisse eines Bauschritts liegen ausschliesslich in Pfaden, die die
 Versionsverwaltung ignoriert. Grund: Sonst hängt das Ergebnis eines Schrittes
 davon ab, welcher Schritt vorher lief — mit D11 seit dieser Fortschreibung
 unmittelbar wirksam, weil D11 über den Arbeitsbaum urteilt. Grundsatz
-aufgenommen mit der Fortschreibung vom 2026-08-29, ADR 0002, Abschnitt 6.1.3.
+aufgenommen mit der Fortschreibung vom 2026-08-30, ADR 0002, Abschnitt 6.1.3.
 
 ## Ergänzende Bedingungen, die kein Befehl prüft
 
@@ -195,4 +195,4 @@ für den Prototyp.
 |---|---|---|
 | 1 | Bestätigung der Abdeckungsschwelle in D6 | Auftraggeber |
 | 2 | Schwellenwert für Linter-Warnungen (D3) und für Abhängigkeitsschwachstellen (D8) | Auftraggeber mit SecDevOps |
-| 3 | Konkrete Befehle je Kettenschritt: eingesetzt am 2026-08-20 mit ADR 0002, Abschnitt 6 (Einstieg `make dod`), am 2026-08-29 fortgeschrieben (Abschnitt 6.1: D11 auf zwei Gegenstände erweitert, D18 ergänzt, Kettengrundsatz aufgenommen); offen bleibt die technische Bestätigung samt der Befunde zu D10 und D12 sowie der Prüffläche des Arbeitsbaumlaufs in D11 (O-10) | DevOps Engineer und Auftraggeber, mit R3-Q-001 |
+| 3 | Konkrete Befehle je Kettenschritt: eingesetzt am 2026-08-20 mit ADR 0002, Abschnitt 6 (Einstieg `make dod`), am 2026-08-30 fortgeschrieben (Abschnitt 6.1: D11 auf zwei Gegenstände erweitert, D18 ergänzt, Kettengrundsatz aufgenommen); offen bleibt die technische Bestätigung samt der Befunde zu D10 und D12 sowie der Prüffläche des Arbeitsbaumlaufs in D11 (O-10) | DevOps Engineer und Auftraggeber, mit R3-Q-001 |
