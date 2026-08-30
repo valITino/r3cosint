@@ -4,7 +4,7 @@
 |---|---|
 | **Titel** | Ziel-Stack, Modulschnitt, Datenzugriff und Grundgerüst für R3cOSINT |
 | **Status** | **angenommen** — Freigabe des Auftraggebers am 2026-08-20, Abschnitt 10 |
-| **Fortschreibung** | 2026-08-21 — O-4 entfallen: TheHive und Cortex mit der Neufassung von Projektauftrag 5.17 gestrichen; Abschnitte 8 und 9 nachgeführt. Der Optionenvergleich der Sprachwahl in Abschnitt 3.1 bleibt als damalige Entscheidungsgrundlage unverändert |
+| **Fortschreibung** | 2026-08-21 — O-4 entfallen: TheHive und Cortex mit der Neufassung von Projektauftrag 5.17 gestrichen; Abschnitte 8 und 9 nachgeführt. Der Optionenvergleich der Sprachwahl in Abschnitt 3.1 bleibt als damalige Entscheidungsgrundlage unverändert. — 2026-08-29 — Abschnitt 6 in drei Punkten fortgeschrieben: D11 prüft zwei Gegenstände (Arbeitsbaum und Git-Historie) statt nur der Historie; neuer Kettenschritt D18 für die Architekturverträge des Importprüfers, den Abschnitt 3.5 seit dem 2026-08-20 verlangt, ohne dass die Tabelle ihn führte; Kettengrundsatz "ein Prüflauf verändert den Gegenstand nicht, über den er urteilt" samt Folge für D12. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.1; als Verweis berührt sind zusätzlich 1.3 (K5), 3.5, 3.12 sowie 8 (O-8, neu O-10) und 9 |
 | **Datum** | 2026-08-20 |
 | **Kennung** | R3-C-001 |
 | **Grundlage** | Projektauftrag 3.1, 3.4, 5.1 bis 5.18, 9.1; `docs/05_Product_Backlog.md` (Etappen 0 und 1); `docs/06_Definition_of_Ready_und_Done.md`; `docs/04_Kontextmodell.md`; `docs/adr/0001-rollenmodell.md` |
@@ -58,7 +58,7 @@ Jeder Entscheid in Abschnitt 3 wird gegen dieselben acht Kriterien geprüft. Sie
 | K2 | Erlaubt, die Verfahrensgarantien **strukturell** zu verankern statt als Prüfung im Aufrufer | 5.4 |
 | K3 | Vollständig offline betreibbar, ohne Rückkanal, ohne Aktualisierungsabfrage | 5.17, R3-C-004, R3-F-021 |
 | K4 | Reproduzierbar: feste Programmstände, gleiche Eingabe gleiche Ausgabe, ein Jahr später wiederholbar | 5.4, R3-Q-002 |
-| K5 | Maschinell prüfbar über eine Befehlskette mit Rückgabewert 0 | 3.4, DoD D1 bis D12 |
+| K5 | Maschinell prüfbar über eine Befehlskette mit Rückgabewert 0 | 3.4, DoD-Befehlskette nach Abschnitt 6 (bis zur Fortschreibung vom 2026-08-29 hier als "D1 bis D12" bezeichnet; die Kette umfasst seither zusätzlich D18) |
 | K6 | Nachweisbar: Herkunft, Versionen und Modulstand sind bei jedem Export benennbar | 5.10, 6.6 |
 | K7 | Betreibbar von einer kleinen Dienststelle: Setup vom Klonen bis zum Start, Fehlermeldung statt Stacktrace | 5.5, R3-F-019 |
 | K8 | Übersteht einen Modell-, Anbieter- und Mandantenwechsel als Konfigurationsänderung | 5.7, 5.15 |
@@ -180,7 +180,7 @@ Damit ist der offene Punkt 3 des Kontextmodells entschieden.
 
 **Entscheid.** Option (b), in vier Stufen:
 
-1. **Zwei Module ohne Aufrufkante.** `freigabe.vorschlag` erzeugt eine Freigabevorlage und schreibt sie in den Zustand *offen*. `freigabe.ausfuehrung` nimmt Arbeit ausschliesslich mit einer Freigabe-Kennung an. Das Vorschlagsmodul importiert das Ausführungsmodul nicht und kennt weder dessen Namen noch dessen Adresse. Durchgesetzt über einen Architekturvertrag im Importprüfer (Abschnitt 3.12), der als eigener Kettenschritt läuft.
+1. **Zwei Module ohne Aufrufkante.** `freigabe.vorschlag` erzeugt eine Freigabevorlage und schreibt sie in den Zustand *offen*. `freigabe.ausfuehrung` nimmt Arbeit ausschliesslich mit einer Freigabe-Kennung an. Das Vorschlagsmodul importiert das Ausführungsmodul nicht und kennt weder dessen Namen noch dessen Adresse. Durchgesetzt über einen Architekturvertrag im Importprüfer (Abschnitt 3.12), der als eigener Kettenschritt läuft — seit der Fortschreibung vom 2026-08-29 als **D18** in der Tabelle in Abschnitt 6 geführt. Bis dahin verlangte dieser Satz einen Kettenschritt, den die eigene Tabelle des ADR nicht führte; Befund und Auflösung stehen in 6.1.
 2. **Die Freigabe-Kennung entsteht nur an einem Ort.** Sie wird ausschliesslich von dem Endpunkt erzeugt, der eine angemeldete, interaktive Benutzersitzung voraussetzt. Ein Dienstzugang, ein API-Schlüssel nach 5.13 und der Aufrufweg des Sprachmodells können sie nicht erzeugen — nicht weil es verboten wäre, sondern weil dieser Weg dort nicht existiert.
 3. **Einmalverwendung.** Die Kennung wird bei der Ausführung verbraucht (Zustandsübergang in derselben Transaktion). Eine zweite Ausführung mit derselben Kennung wird abgewiesen und protokolliert. Umfang und Zielmenge der Ausführung werden gegen die Vorlage geprüft; weicht sie ab, wird abgewiesen.
 4. **Prozessgrenze.** Die Ausführung läuft im Beschaffungsprozess, der Vorschlag im Anwendungsprozess. Der Beschaffungsprozess nimmt Aufträge nur über die Warteschlange entgegen und liest die Freigabe selbst aus der Datenbank nach, statt der aufrufenden Seite zu glauben.
@@ -333,7 +333,7 @@ Damit sind drei Anforderungen nicht mehr nur Code, sondern Netzwerktopologie: R3
 | Formatierung und Linter, Backend | Ruff (Formatierung und Prüfung in einem Werkzeug) | D2, D3 |
 | Typprüfung, Backend | mypy im strengen Modus | D4 |
 | Tests, Backend | pytest mit asynchroner Unterstützung, Abdeckungsmessung | D5, D6 |
-| **Architekturverträge** | Importprüfer mit Verträgen (import-linter-Klasse) | Macht die Modulgrenzen aus Abschnitt 4 maschinell prüfbar — Voraussetzung für R3-F-014 und R3-F-018 |
+| **Architekturverträge** | Importprüfer mit Verträgen (import-linter-Klasse) | D18 (Kettenschritt, seit der Fortschreibung vom 2026-08-29 in Abschnitt 6 geführt). Macht die Modulgrenzen aus Abschnitt 4 maschinell prüfbar — Voraussetzung für R3-F-014 und R3-F-018 |
 | Integrationstests | Gegen eine PostgreSQL-Instanz aus dem Prüfstapel, kein Nachladen von Images zur Testzeit | K3, K4 |
 | Linter und Typprüfung, Oberfläche | ESLint, Prettier, TypeScript-Compiler ohne Ausgabe | D2, D3, D4 |
 | Tests, Oberfläche | Vitest für Einheiten, Playwright für durchgehende Abläufe | D5 |
@@ -490,9 +490,11 @@ Zwei Bauwurzeln (`backend/`, `frontend/`), ein Einstieg (`Makefile`). `frontend/
 
 ---
 
-## 6. Definition-of-Done-Befehlskette — Vorschlag zu D1 bis D12
+## 6. Definition-of-Done-Befehlskette — Vorschlag je Kettenschritt
 
 Dies löst den offenen Punkt 3 der Definition of Ready und Done. **Vorschlag des Software Architects, zu bestätigen durch DevOps Engineer und Auftraggeber.** Erwartet wird je Schritt Rückgabewert 0.
+
+*Bis zur Fortschreibung vom 2026-08-29 trug dieser Abschnitt den Titel "Vorschlag zu D1 bis D12" und führte genau diese zwölf Schritte. Die Kette umfasst seither zusätzlich D18; die Nummer 18 ist eine Kennung, keine Reihenfolge (siehe unten und 6.1).*
 
 | Nr. | Schritt | Befehl | Anmerkung |
 |---|---|---|---|
@@ -506,14 +508,88 @@ Dies löst den offenen Punkt 3 der Definition of Ready und Done. **Vorschlag des
 | D8 | Abhängigkeiten | `make abhaengigkeiten` → `uv run pip-audit --strict` · `npm audit --prefix frontend --audit-level <Schwelle>` | Schwelle offen, Entscheid E-08. Offline setzt eine gespiegelte Schwachstellendatenbank voraus — DevOps |
 | D9 | Kein Rückkanal | `make rueckkanal` → `bash scripts/rueckkanal-pruefen.sh` | Eigenes Projektartefakt, entsteht mit R3-C-004. Es gibt dafür kein Standardwerkzeug |
 | D10 | Prototyp-Trennung | `make prototyp-trennung` → `bash scripts/prototyp-trennung-pruefen.sh` | **Befund:** Das bestehende `.claude/hooks/block-prototype-import.sh` ist ein `PreToolUse`-Hook und liest ein JSON-Ereignis von der Standardeingabe. Für D10 wird eine Stapelprüfung über den Bestand gebraucht — entweder als Betriebsart des bestehenden Skripts oder als eigenes Skript. Zu klären mit DevOps |
-| D11 | Geheimnisse | `make geheimnisse` → `gitleaks detect --redact --exit-code 1` | |
-| D12 | Nachweise | `make nachweise` → `bash scripts/nachweise-erzeugen.sh` · `bash scripts/nachweise-vollstaendig.sh` | **Befund:** Ein Abgleich über `git diff --exit-code docs/NACHWEISE.md` kann nicht funktionieren. Die erzeugte Datei trägt den Stand des Repositories (`git rev-parse HEAD`); der ändert sich mit dem Commit, der die Datei enthält, weshalb der nächste Lauf immer eine Abweichung erzeugt. D12 prüft deshalb den Rückgabewert des Erzeugers — er endet mit 1, wenn ein Artefakt fehlt oder nicht committet ist — und zusätzlich, dass kein nachweispflichtiges Artefakt in der Liste fehlt. Zu klären mit Protocol Master und DevOps |
+| D11 | Geheimnisse | `make geheimnisse` → **zwei Läufe, beide zwingend, jeder mit eigenem Rückgabewert.** (1) Arbeitsbaum: `gitleaks detect --no-git --redact --exit-code 1 --source .` (2) Git-Historie: `gitleaks detect --redact --exit-code 1`. Der Schritt endet ungleich 0, sobald einer der beiden Läufe ungleich 0 endet; kein Lauf schneidet den anderen ab, beide Befunde erscheinen | **Fortschreibung 2026-08-29**, frühere Fassung und Beleg in 6.1. `gitleaks detect` ohne `--no-git` durchsucht ausschliesslich die Git-Historie. Der Gegenstand, über den die Kette zur Laufzeit des Hooks aus R3-Q-001 urteilt, ist der Arbeitsbaum vor dem Commit — genau den sah die frühere Fassung nicht |
+| D12 | Nachweise | `make nachweise` → `bash scripts/nachweise-erzeugen.sh` · `bash scripts/nachweise-vollstaendig.sh` | **Befund:** Ein Abgleich über `git diff --exit-code docs/NACHWEISE.md` kann nicht funktionieren. Die erzeugte Datei trägt den Stand des Repositories (`git rev-parse HEAD`); der ändert sich mit dem Commit, der die Datei enthält, weshalb der nächste Lauf immer eine Abweichung erzeugt. D12 prüft deshalb den Rückgabewert des Erzeugers — er endet mit 1, wenn ein Artefakt fehlt oder nicht committet ist — und zusätzlich, dass kein nachweispflichtiges Artefakt in der Liste fehlt. Zu klären mit Protocol Master und DevOps. **Fortschreibung 2026-08-29:** Der Schritt ruft den Erzeuger ausschliesslich in einer Betriebsart auf, die **nicht** in den Arbeitsbaum schreibt — er prüft und meldet, er erzeugt nicht. Grund ist der Kettengrundsatz unterhalb dieser Tabelle; das Erzeugen von `docs/NACHWEISE.md` bleibt Sache der Automatik (6.6, `.claude/rules/dokumentation.md`). Welche Form diese Betriebsart erhält — eigener Schalter am Erzeuger oder Lauf gegen ein temporäres Ziel mit Vergleich —, bleibt bei O-8 |
+| D18 | Architekturverträge | `make architekturvertraege` → `uv run lint-imports --config backend/importvertraege.toml`. Läuft in der Reihenfolge **nach D4 und vor D5** | **Fortschreibung 2026-08-29**, Begründung in 6.1. Abschnitt 3.5 verlangt diesen Schritt seit dem 2026-08-20 ausdrücklich, die Tabelle führte ihn nicht; Abschnitt 3.12 führt den Importprüfer als eigene Prüfstufe. Er belegt die Verträge aus 4.3 und damit R3-F-014 und R3-F-018. Die Nummer ist die nächste freie im gemeinsamen D-Namensraum — D13 bis D17 sind in `docs/06_Definition_of_Ready_und_Done.md`, Teil 2, an die menschlich bestätigten Bedingungen vergeben. Existiert `backend/src/r3cosint/` ohne `backend/importvertraege.toml`, endet der Schritt ungleich 0: dann fehlt das Prüfmittel bei vorhandenem Gegenstand |
+
+**Ein Prüflauf verändert den Gegenstand nicht, über den er urteilt.** *(Kettengrundsatz, aufgenommen mit der Fortschreibung vom 2026-08-29.)* Kein Kettenschritt ändert eine versionierte Datei des Arbeitsbaums — weder erzeugend noch formatierend noch nebenbei ein Verzeichnis neu schreibend. Erzeugnisse eines Bauschritts (D1) liegen ausschliesslich in Pfaden, die die Versionsverwaltung ignoriert. Drei Gründe, jeder für sich tragend:
+
+1. **Sonst hängt das Ergebnis eines Schrittes davon ab, welcher Schritt vorher lief.** D11 urteilt seit dieser Fortschreibung über den Arbeitsbaum. Ein früher laufender Schritt, der in den Arbeitsbaum schreibt, verändert damit den Gegenstand von D11, und die Kette prüft nicht mehr den Stand, den sie zu prüfen vorgibt.
+2. **K4.** Zwei Läufe hintereinander müssen dasselbe Ergebnis liefern. Ein schreibender Schritt macht den zweiten Lauf zu einem Lauf über einen anderen Gegenstand.
+3. **Halbfertige Zustände werden nicht committet** (CLAUDE.md, 3.3). Ein Schritt, der schreibt, erzeugt unbemerkte Änderungen und drängt sie in den nächsten Commit — die Prüfung produziert dann genau das, was sie verhindern soll.
+
+Die Einhaltung ist beobachtbar und braucht keine Zusicherung: Der Bestand der versionierten Dateien ist vor und nach `make dod` identisch. Die unmittelbare Folge steht in der Anmerkung zu D12.
+
+**Die Nummer eines Kettenschritts ist eine Kennung, keine Reihenfolge.** *(Aufgenommen mit der Fortschreibung vom 2026-08-29.)* Nummern werden nicht umnummeriert und nicht wiederverwendet; ein neuer Schritt erhält die nächste freie Nummer im gemeinsamen D-Namensraum von `docs/06_Definition_of_Ready_und_Done.md`, Teil 2 (Befehlskette und menschlich bestätigte Bedingungen zählen dort fortlaufend). Die Reihenfolge der Ausführung ergibt sich aus der Zielliste von `make dod`, nicht aus der Zahl. Begründung in 6.1.
 
 **Zwei Ebenen der Namensbindung.** Die Backend-Befehle stehen unmittelbar im Makefile, die Oberflächenbefehle laufen über Skripte in `frontend/package.json`. Damit steht jeder Werkzeugname genau einmal und an der Stelle, an der er hingehört; die Kette selbst bleibt unverändert, wenn ein Werkzeug ausgetauscht wird.
 
-**Ein Einstieg für den Hook.** `make dod` ruft D1 bis D12 der Reihe nach auf und endet bei der ersten Abweichung ungleich 0. Der Hook aus R3-Q-001 ruft **diesen einen Befehl** auf. Damit hängt R3-Q-001 nur noch am Vorhandensein des Makefiles und nicht mehr an einzelnen Werkzeugnamen; ändert sich ein Werkzeug, ändert sich das Makefile, nicht der Hook. Für den Hook gelten unverändert: nur Rückgabewert 2 blockiert, Reentranz-Schutz über `stop_hook_active`, Eskalation nach dreimaligem Scheitern am gleichen Kriterium (3.4).
+**Ein Einstieg für den Hook.** `make dod` ruft **alle Kettenschritte dieser Tabelle** in der festgelegten Reihenfolge auf — D1 bis D4, dann D18, dann D5 bis D12 — und endet bei der ersten Abweichung ungleich 0. *(Bis zur Fortschreibung vom 2026-08-29 lautete dieser Satz: "ruft D1 bis D12 der Reihe nach auf". Die Aufzählung war dort zugleich die Reihenfolge; mit D18 gilt das nicht mehr.)* Der Hook aus R3-Q-001 ruft **diesen einen Befehl** auf. Damit hängt R3-Q-001 nur noch am Vorhandensein des Makefiles und nicht mehr an einzelnen Werkzeugnamen; ändert sich ein Werkzeug, ändert sich das Makefile, nicht der Hook. Für den Hook gelten unverändert: nur Rückgabewert 2 blockiert, Reentranz-Schutz über `stop_hook_active`, Eskalation nach dreimaligem Scheitern am gleichen Kriterium (3.4).
 
-**Umgang mit noch nicht vorhandenen Teilbäumen.** Solange `frontend/package.json` fehlt, entfallen die Oberflächenschritte und der Kettenschritt endet mit 0 und einer Meldung. Sobald die Datei existiert, laufen sie zwingend. Das ist als Bedingung im Makefile zu prüfen und nicht als auskommentierte Zeile abzubilden — eine auskommentierte Prüfung bleibt still liegen, nachdem sie gebraucht würde.
+**Umgang mit noch nicht vorhandenen Teilbäumen.** Solange `frontend/package.json` fehlt, entfallen die Oberflächenschritte und der Kettenschritt endet mit 0 und einer Meldung. Sobald die Datei existiert, laufen sie zwingend. Das ist als Bedingung im Makefile zu prüfen und nicht als auskommentierte Zeile abzubilden — eine auskommentierte Prüfung bleibt still liegen, nachdem sie gebraucht würde. Dasselbe gilt für D18 gegenüber dem Backend-Teilbaum, mit der Verschärfung aus der Tabelle: Fehlt `backend/` ganz, entfällt der Schritt mit Meldung; existiert `backend/src/r3cosint/` ohne `backend/importvertraege.toml`, endet er ungleich 0.
+
+### 6.1 Fortschreibung vom 2026-08-29 — was vorher galt, was jetzt gilt, weshalb
+
+**Anlass.** Beim Bau des Makefiles nach diesem Abschnitt hat eine adversarische Prüfung auf einem anderen Modell (3.4) zwei Mängel **an diesem ADR** belegt, nicht am Makefile: Das Makefile setzte den Wortlaut jeweils korrekt um, der Wortlaut trug nicht. Beide Mängel werden hier aufgelöst; die früheren Fassungen bleiben im Text stehen, weil ein Nachweisdokument, dessen Irrtum verschwindet, als Nachweis untauglich ist.
+
+#### 6.1.1 D11 prüfte den falschen Gegenstand
+
+| | |
+|---|---|
+| **Vorher galt** | `make geheimnisse` → `gitleaks detect --redact --exit-code 1` |
+| **Jetzt gilt** | Zwei Läufe, beide zwingend, jeder mit eigenem Rückgabewert: Arbeitsbaum `gitleaks detect --no-git --redact --exit-code 1 --source .`, Git-Historie `gitleaks detect --redact --exit-code 1` |
+
+**Beleg.** Ausgeführter Lauf am 2026-08-29 mit gitleaks 8.21.2: Ein RSA-Privatschlüssel, als nicht committete Datei im Arbeitsbaum abgelegt, wurde von `gitleaks detect --redact --exit-code 1` **nicht** gefunden; `gitleaks detect --no-git --redact --exit-code 1 --source .` fand ihn und endete mit 1. `gitleaks detect` ohne `--no-git` durchsucht ausschliesslich die Git-Historie.
+
+**Weshalb das den Regelfall trifft und nicht den Randfall.** Der Hook aus R3-Q-001 läuft als `Stop` beziehungsweise `SubagentStop`, also **vor** dem Commit; CLAUDE.md untersagt zugleich das Committen halbfertiger Zustände. Der Gegenstand, über den die Kette zum Zeitpunkt ihres Laufs urteilt, ist damit systematisch der Arbeitsbaum. Ein Schlüssel, der dort liegt und noch nicht committet ist, ist genau der Fall, den ein Gate vor dem Commit abfangen soll — und der einzige, in dem das Abfangen noch etwas nützt. Ist das Geheimnis erst in der Historie, hilft kein Prüflauf mehr, sondern nur noch der Austausch des Geheimnisses; die Historie wird in diesem Projekt nicht umgeschrieben.
+
+**Weshalb dennoch beide Gegenstände geprüft werden.** Der Lauf über die Historie fällt nicht weg. Er ist der einzige, der einen Fund aus einem früheren Commit meldet — etwa aus einem übernommenen Zweig oder aus der Zeit vor dem Bestehen dieser Kette. Ein Gate, das nur den Arbeitsbaum sieht, erklärt ein Repository für sauber, dessen dritter Commit einen Schlüssel trägt.
+
+**Geprüfte Teilfragen des Vorschlags:**
+
+1. **Ändert `--source .` gegenüber dem Vorgabewert etwas?** Am Verhalten nichts: Der Vorgabewert des Quellpfads ist das aktuelle Arbeitsverzeichnis. Aufgenommen wird die Angabe trotzdem, aus zwei Gründen. Erstens hängt die Aussage des Schrittes damit nicht mehr an einer ungeschriebenen Annahme über das Arbeitsverzeichnis, aus dem `make` gestartet wurde. Zweitens stehen die beiden Aufrufe unmittelbar nebeneinander; ihr Unterschied muss aus der Zeile lesbar sein, ohne dass man den Vorgabewert eines Werkzeugs kennt. Verbindlich ist: Beide Läufe beurteilen dieselbe Wurzel, nämlich das Repository-Verzeichnis.
+2. **Wird ein `.gitleaksignore` nötig?** Nicht als Bestandteil dieses Entscheids und nicht auf Vorrat. Eine Ausnahmeliste entsteht ausschliesslich zu einem **belegten** Fehlalarm, je Eintrag mit Fundstelle und Begründung; eine pauschale Ausnahme für ein Verzeichnis oder eine Regel ist unzulässig, weil sie das Gate stillschweigend abschaltet. Dabei ist zu beachten, dass der Fingerabdruck eines Fundes für beide Läufe **verschieden** ist: Der Lauf über die Historie bildet ihn aus Commit, Datei, Regel und Zeile, der Lauf über den Arbeitsbaum ohne den Commit-Anteil. Eine Ausnahme, die in einem Lauf greift, greift im anderen nicht — auch das ist ein Grund, sie nur im belegten Einzelfall zu setzen und zu dokumentieren.
+3. **Spielt die Reihenfolge der beiden Aufrufe eine Rolle?** Für die Aussage des Schrittes nicht, weil kein Lauf den anderen abschneidet: Beide laufen immer, beide Befunde erscheinen, und der Schritt endet ungleich 0, sobald einer ungleich 0 endete. Festgelegt wird sie dennoch — Arbeitsbaum zuerst —, damit die Ausgabe bei zwei Befunden immer gleich zu lesen ist und der Befund zuoberst steht, der vor dem Commit noch abwendbar ist. Ein Abbruch nach dem ersten Fund wäre ein Fehler: Dann bliebe der zweite Gegenstand ungeprüft, und der Schritt urteilte wieder nur über die Hälfte.
+
+**Befund für den DevOps Engineer (neu als O-10 in Abschnitt 8).** Der Lauf über den Arbeitsbaum sieht auch Dateien, die die Versionsverwaltung nie aufnimmt — Bauerzeugnisse, Abhängigkeitsverzeichnisse, lokale Konfiguration. Welche Menge er beurteilt und wie er sich gegenüber `.gitignore` verhält, ist mit einem ausgeführten Lauf festzustellen und festzuhalten, nicht anzunehmen. Massgeblich ist der Grundsatz: Geprüft wird, was das Repository tragen kann; ausgeschlossen wird nur, was die Versionsverwaltung ohnehin nicht aufnimmt, und auch das nachvollziehbar.
+
+**Hinweis zur Werkzeugfassung.** Festgelegt sind hier die beiden **Gegenstände** — Arbeitsbaum und Historie —, nicht die Schreibweise eines Unterbefehls. Führt die eingesetzte gitleaks-Fassung eigene Unterbefehle für Verzeichnis- und Historienlauf und kennzeichnet `detect` als überholt, ist der Wechsel zulässig, sobald ein ausgeführter Lauf die Gleichwertigkeit belegt; er wird als Fortschreibung vermerkt. Ein Wechsel, der einen der beiden Gegenstände fallen lässt, ist keine Fassungsanpassung, sondern eine Änderung dieses Entscheids.
+
+#### 6.1.2 Der Kettenschritt für die Architekturverträge fehlte in der eigenen Tabelle
+
+| | |
+|---|---|
+| **Vorher galt** | Abschnitt 3.5 verlangte den Importprüfer ausdrücklich "als eigener Kettenschritt", Abschnitt 3.12 führte ihn als eigene Prüfstufe — die Tabelle in Abschnitt 6 kannte ihn nicht. Ein Widerspruch innerhalb desselben angenommenen ADR |
+| **Jetzt gilt** | D18 `make architekturvertraege` → `uv run lint-imports --config backend/importvertraege.toml`, in der Reihenfolge nach D4 und vor D5 |
+
+**Weshalb ein eigener Schritt und keine Zuordnung zu einem bestehenden.** Die nächstliegende Alternative wäre gewesen, die Verträge als Tests unter `backend/tests/architektur/` in D5 laufen zu lassen und die Aussage in 3.5 zurückzunehmen. Dagegen sprechen drei Punkte:
+
+1. **Eigener Rückgabewert für die stärkste Garantie.** Die Verträge aus 4.3 sind die Stelle, an der die Freigabesperre (5.2, R3-F-014) und die Modellunabhängigkeit (5.15, R3-F-018) als Struktur belegt werden. D5 erlaubt übersprungene Tests mit begründeter Markierung; ein übersprungener Vertragstest wäre ein abgeschalteter Verfahrensgarantie-Nachweis mit grünem Lauf. Ein eigener Schritt kann nicht übersprungen werden, ohne dass die Kette rot wird.
+2. **Gleichbehandlung der Prüfstufen.** Jede Prüfstufe aus 3.12 hat einen eigenen Kettenschritt — Formatierung D2, Linter D3, Typprüfung D4, Tests D5, Abhängigkeiten D8, Geheimnisse D11. Der Importprüfer war die einzige Ausnahme, ohne dass ein Grund dafür genannt war.
+3. **Er läuft früher und schneller als die Testsuite.** Ein Verstoss gegen eine Modulgrenze ist eine Aussage über die Struktur; sie soll vor dem Lauf der Testsuite fallen, nicht nach ihm. Deshalb die Stellung nach D4 und vor D5.
+
+**Weshalb die Nummer 18 und keine Umnummerierung.** D13 bis D17 sind in `docs/06_Definition_of_Ready_und_Done.md`, Teil 2, an die menschlich bestätigten Bedingungen vergeben; `docs/08_Freigabe_Schritt_4.md` führt beide Tabellen ausdrücklich als einen Bereich ("D1–D12 plus die menschlich bestätigten Bedingungen D13–D17"). Ein Schritt "D13" wäre also eine Kollision, und ein Einschub als neues D5 würde D5 bis D12 verschieben. Der entscheidende Grund gegen jede Verschiebung: Die D-Nummern stehen in Dokumenten, die einen vergangenen Stand belegen und deshalb **nicht** geändert werden dürfen — Freigabevermerk vom 2026-08-20, Zustandsbericht vom 2026-08-21, die Übergabedateien. Eine Umnummerierung würde diese Nachweise falsch machen, ohne dass sie korrigierbar wären. Daraus folgt die Regel oberhalb: Nummern sind Kennungen, sie werden nicht umnummeriert und nicht wiederverwendet, und die Reihenfolge steht in der Zielliste von `make dod`.
+
+**Was das für die Tragfähigkeit der Nummerierung heisst.** Sie trägt, sobald die Nummer nicht mehr als Reihenfolge gelesen wird. Jeder weitere Kettenschritt erhält die nächste freie Nummer (nach D18 also D19) und seine Stellung in der Kette über den Zielnamen. Die Zielnamen — `bau`, `linter`, `typen`, `architekturvertraege` — sind die Handhabe im Makefile; die Nummern bleiben die Handhabe für Verfolgbarkeit, Backlog und Definition of Done.
+
+**Nicht berührt.** Der Vertrag 7 aus 4.3 (Trennung zu `prototype/`) bleibt zusätzlich Gegenstand von D10. Die Überschneidung ist beabsichtigt: zwei unabhängige Wege zur selben Aussage, ein Vertrag über den geschriebenen Stand und eine Stapelprüfung über den Bestand.
+
+#### 6.1.3 Der Kettengrundsatz
+
+| | |
+|---|---|
+| **Vorher galt** | Kein Satz dieses ADR sagte, dass ein Prüflauf den Arbeitsbaum unverändert lässt. D12 rief den Erzeuger des Nachweisverzeichnisses auf, der `docs/NACHWEISE.md` schreibt |
+| **Jetzt gilt** | Der Grundsatz oberhalb dieses Unterabschnitts, und als Folge die geänderte Anmerkung zu D12: prüfende Betriebsart, kein Schreiben in den Arbeitsbaum |
+
+**Weshalb er in Abschnitt 6 gehört und nicht in eine Betriebsanweisung.** Er ist keine Umsetzungsfrage, sondern eine Eigenschaft der Kette: Ohne ihn hängt das Ergebnis eines Schrittes davon ab, welcher Schritt vorher lief. Mit der Fortschreibung zu D11 wird das unmittelbar wirksam — D11 urteilt jetzt über den Arbeitsbaum, also darf kein Schritt vor D11 diesen Arbeitsbaum verändern. Ein Grundsatz, der in einer Betriebsanweisung stünde, wäre für die Umsetzung derselbe Satz, aber er wäre nicht Bestandteil des Entscheids, gegen den geprüft wird.
+
+**Er war an einer Stelle bereits umgesetzt, nur nicht benannt.** D2 ruft `ruff format --check` und nicht `ruff format`, prüft also, statt zu formatieren. Der Grundsatz macht aus dieser einen richtigen Entscheidung eine Regel für alle Schritte.
+
+**Abgrenzung.** Der Grundsatz verbietet nicht jedes Schreiben. Ein Bauschritt erzeugt Artefakte; das ist seine Aufgabe. Verboten ist die Änderung **versionierter** Dateien. Erzeugnisse liegen in Pfaden, die die Versionsverwaltung ignoriert — was zugleich Bedingung dafür ist, dass der Arbeitsbaumlauf aus D11 nicht in Bauerzeugnissen sucht.
+
+#### 6.1.4 Was diese Fortschreibung nicht ändert
+
+D1 bis D10 und D12 bleiben im Befehl unverändert; bei D12 ändert sich ausschliesslich die Betriebsart des Aufrufs, der Befund zum untauglichen `git diff`-Abgleich bleibt bestehen. Die Werkzeugwahl aus 3.12 bleibt unverändert. Die offenen Schwellenwerte (O-7) und die offenen Formfragen zu D10 und D12 (O-8) bleiben offen. Die drei am Makefile festgestellten Mängel, die diesen ADR nicht berühren — nicht ausgewertete Lage-Marke von `make dod`, falsche Lage-Zuordnung bei D9, schreibender D12-Lauf in seiner Makefile-Umsetzung —, behebt der DevOps Engineer in derselben Arbeitseinheit; der ADR-seitige Anteil des dritten Punktes ist 6.1.3.
 
 ---
 
@@ -546,8 +622,9 @@ Dies löst den offenen Punkt 3 der Definition of Ready und Done. **Vorschlag des
 | O-5 | Erzeugung und Prüfung von PDF/A-3 mit eingebetteten Daten (R3-F-074) | Die Wahl entscheidet über zusätzliche Abhängigkeiten und möglicherweise eine zweite Laufzeitumgebung im Prüfcontainer | Software Architect mit Backend Engineer; eigener ADR | vor Etappe 4 |
 | O-6 | Verwaltung der fallbezogenen Schlüssel (4.4, Problem B): wo das Schlüsselmaterial liegt und wie es getrennt von den verschlüsselten Daten gesichert wird | Berührt Sicherung und Wiederherstellung (Bereitschaft 3) und ist mit SecDevOps und Datenschutz gemeinsam zu entscheiden | Software Architect mit SecDevOps und Datenschutzexperte; eigener ADR | vor R3-F-020, Etappe 1 |
 | O-7 | Schwellenwerte in D3, D6 und D8 | Sind am Gate als E-07 und E-08 offen | Auftraggeber mit SecDevOps | mit R3-Q-001 beziehungsweise der ersten Umsetzungseinheit mit Code |
-| O-8 | Betriebsart für D10 und Form von D12 (Befunde in Abschnitt 6) | Betrifft bestehende Skripte, die anderen Rollen gehören | DevOps Engineer mit Protocol Master | mit R3-Q-001 |
+| O-8 | Betriebsart für D10 und Form von D12 (Befunde in Abschnitt 6) | Betrifft bestehende Skripte, die anderen Rollen gehören | DevOps Engineer mit Protocol Master | mit R3-Q-001. **Fortschreibung 2026-08-29:** Für D12 kommt die Bindung an den Kettengrundsatz aus 6.1.3 hinzu — die gewählte Form schreibt nicht in den Arbeitsbaum |
 | O-9 | Anbindungsdaten des Entra-ID-Mandanten | Liegen bei der Informatik der Kantonspolizei Bern | KapoBE Informatik | blockiert nur den Mandantenwechsel, nicht die Entwicklung |
+| O-10 | Prüffläche des Arbeitsbaumlaufs in D11: welche Dateien er beurteilt, wie er sich gegenüber `.gitignore` verhält, und wie ein belegter Fehlalarm behandelt wird, dessen Fingerabdruck in den beiden Läufen verschieden ist (6.1.1) | **Neu am 2026-08-29.** Mit einem ausgeführten Lauf der eingesetzten Werkzeugfassung festzustellen, nicht durch Annahme; berührt Laufzeit und Aussagekraft des Schrittes | DevOps Engineer mit SecDevOps | mit R3-Q-001 |
 
 Nicht offen, sondern entschieden und hier nur zur Klarstellung: `pgvector` (A4), Suchindex (A3), Orchestrierung (A11). Nicht offen, weil gestrichen: VirusTotal, Gesichtserkennung samt biometrischer Vektoren, Open WebUI, CASE/UCO, Fernsteuerung von Maltego; seit der Fortschreibung vom 2026-08-21 auch TheHive und Cortex (5.17).
 
@@ -571,10 +648,15 @@ Nicht offen, sondern entschieden und hier nur zur Klarstellung: `pgvector` (A4),
 |---|---|---|
 | Suchindex in PostgreSQL, Container- und Netzlayout, Modulschnitt, Auflösung der offenen Punkte 1 und 3 | `docs/04_Kontextmodell.md` | Software Architect, eigene Arbeitseinheit |
 | Konkrete Befehle in der Tabelle D1 bis D12, Befunde zu D10 und D12 | `docs/06_Definition_of_Ready_und_Done.md` | DevOps Engineer, Bestätigung Auftraggeber |
+| **Fortschreibung 2026-08-29:** Kriterienzeile für den Kettenschritt D18 (Architekturverträge) in Teil 2; Kriterium D11 auf beide Gegenstände erweitert (Arbeitsbaum **und** Git-Historie); die Wendung "Kette D1 bis D12" ist unvollständig geworden | `docs/06_Definition_of_Ready_und_Done.md` | DevOps Engineer mit Product Owner, Bestätigung Auftraggeber mit R3-Q-001 |
+| **Fortschreibung 2026-08-29:** zwei gitleaks-Läufe in D11, neues Ziel `architekturvertraege` für D18 in der Reihenfolge nach D4 und vor D5, D12 ohne Schreibvorgang in den Arbeitsbaum | `Makefile` | DevOps Engineer, in derselben Arbeitseinheit |
+| **Fortschreibung 2026-08-29:** die Wendung "Kette D1 bis D12" im Rollenprofil | `.claude/agents/static-software-tester.md` | Rolle, die die Rollendateien pflegt (ADR 0001) |
 | Backlog-Eintrag für TheHive/Cortex (O-4) — **entfallen am 2026-08-21**, O-4 gestrichen (5.17 neu); bleibt: Formulierung der Abnahme von R3-C-001 gegenüber 5.6 (O-1) | `docs/05_Product_Backlog.md` | Product Owner |
 | Zeile für diesen ADR in der Artefaktliste des Erzeugers; Neuerzeugung des Nachweisverzeichnisses; Changelog | `scripts/nachweise-erzeugen.sh`, `docs/NACHWEISE.md`, `CHANGELOG.md` | Protocol Master (4.2, 6.6) |
 | Statustabelle und Verweis auf den Ziel-Stack | `CLAUDE.md` | Protocol Master |
 | Anlegen des Grundgerüsts nach Abschnitt 5 | `backend/`, `deploy/`, `Makefile` | Backend Engineer und DevOps Engineer, nächste Arbeitseinheit |
+
+**Nicht nachzuführen, weil sie einen vergangenen Stand belegen:** `docs/08_Freigabe_Schritt_4.md`, `docs/09_Zustandsbericht_2026-08-21.md` und die Dateien unter `docs/uebergaben/`. Sie nennen die Kette als "D1 bis D12" beziehungsweise "D1–D12 plus D13–D17"; das war am Tag ihrer Entstehung richtig und bleibt als Nachweis unverändert. Genau deshalb werden D-Nummern nicht umnummeriert (6.1.2).
 
 ---
 
