@@ -6,7 +6,7 @@
 | **Anlass** | Vorschlag des Auftraggebers nach CAS-Blockwoche 3 "Cyber Investigations" |
 | **Umfang** | 14 Werkzeuge, vier Vorschlagsstränge |
 | **Stand** | 2026-08-29 |
-| **Entscheid** | offen — liegt beim Auftraggeber |
+| **Entscheid** | **erteilt am 2026-08-29** — siehe Abschnitt "Entscheid des Auftraggebers" |
 
 ## Was geprüft wurde und wie
 
@@ -270,7 +270,38 @@ herhalten muss.
 | **Jotti** | unvereinbar | Dieselbe Klasse wie VirusTotal, und der Upload eines Fallartefakts an einen öffentlichen Dienst Dritter ist genau, was 5.14 untersagt. Weitergabe zugesichert und unumkehrbar |
 | **Sn1per, SCANNER-INURLBR** | unvereinbar | Angriffswerkzeuge mit Ausnutzungsmodulen, keine Quellen. Ausserhalb dessen, was dieses Projekt baut |
 
+## Entscheid des Auftraggebers vom 2026-08-29
+
+**Zu Frage 1 — Weisung nach 5.17: erteilt, für die gesamte eingereichte Liste.**
+Das Quellenverzeichnis nach Anhang A wird damit um die vierzehn Werkzeuge
+erweitert, die der Auftraggeber am 2026-08-29 vorgelegt hat. Der Ablehnungsgrund
+"steht nicht im Quellenverzeichnis, eine Aufnahme wäre eine Erweiterung nach
+5.17" entfällt damit bei allen sieben Bewertungen, die ihn geführt haben.
+
+**Was das ändert — und was nicht.** Die Weisung räumt einen Ablehnungsgrund
+aus, nicht alle. Nach ihrem Wegfall bleibt je Werkzeug stehen, was sachlich
+übrig ist:
+
+| Werkzeug | Nach Wegfall des 5.17-Grundes bleibt |
+|---|---|
+| MalwareBazaar, mnemonic pDNS, sitemapper, SpiderFoot-Korrelation | nichts Trennendes — Auflagen wie in der Tabelle, Einordnung durch den Product Owner |
+| HackerTarget, WiGLE | allein die vertragliche Frage. Nach 5.17 ("Schlüsselweitergabe [GEKLÄRT]") ist das kein Ausschluss, sondern das Muster von Etappe 5: geführter Eintrag bis zum Beschaffungsentscheid |
+| viewDNS Registrierungshistorie, bgp.he.net | der Bedarf ist durch DomainTools (R3-F-081) und crt.sh (R3-F-032) bereits gedeckt. Aufnahme möglich, aber ohne fachlichen Zugewinn — Entscheid des Product Owners nach B2 (nicht redundant) |
+| viewDNS Portscan | die offene Rechtsfrage. Geht vor jeder Umsetzung an die GRC-Rolle und den Legal Reviewer (Frage 2 unten, noch nicht entschieden) |
+| URLQuery.net, Jotti | die Nutzungsbedingungen. Beide untersagen den dienstlichen Einsatz beziehungsweise das Einreichen personenbezogener Daten; die Weisung des Auftraggebers hebt einen Vertrag Dritter nicht auf. Aufnahme nur nach schriftlicher Vereinbarung mit dem Anbieter |
+| SpyOnWeb, OSINT Cabal | die Bauvorschrift. SpyOnWeb verkettet Vorschlag und Ausführung über seine Überwachungsfunktion (5.2), OSINT Cabal ist die Cortex-Konstellation (5.17). Beides bleibt unabhängig von der Weisung bestehen |
+| Sn1per, SCANNER-INURLBR | Angriffswerkzeuge mit Ausnutzungsmodulen. Aufnahme ins Quellenverzeichnis setzt voraus, dass der Auftraggeber sie als Ermittlungsmassnahme will — das ist Frage 2 und nicht mit der Weisung mitentschieden |
+
+**Zu Frage 4 — Reihenfolge: der freigegebene Plan hat Vorrang.** Als Nächstes
+R3-Q-001, danach E4 und E3. Die Werkzeugfragen laufen parallel als Vorlage an
+GRC-Rolle und Product Owner; **es beginnt keine Umsetzungsarbeit daran.**
+
+**Fragen 2 und 3 sind nicht entschieden** und bleiben offen: aktives Scannen als
+Fähigkeit, und direkter Onion-Zugriff gegenüber dem bereits gedeckten Weg über
+RansomLook und Ransomware.live.
+
 ## Was der Auftraggeber entscheiden muss
+
 
 **1. Ist der Vorschlag vom 2026-08-29 eine Weisung nach 5.17?** Das ist die
 Frage, die alles andere aufhält, und sie ist in einem Satz zu beantworten. 5.17
