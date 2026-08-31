@@ -357,8 +357,11 @@ endif
 # hat, und die einzige, die ein Makefile abdecken kann.
 #
 # NICHT GESCHUETZT wird gegen jemanden, der die UMGEBUNG des Aufrufs
-# beherrscht. Drei ausgefuehrte Belege vom 2026-08-31 stehen dafuer; der
-# dritte ist am selben Tag geschlossen worden und steht als Geschichte da:
+# beherrscht. Dafuer stehen ZWEI ausgefuehrte Belege vom 2026-08-31: Fall 1
+# und Fall 2. Ein dritter Fall ist am selben Tag gefunden und am selben Tag
+# GESCHLOSSEN worden; er steht als Fall 3 mit dabei, weil er der Grund fuer
+# UV_NO_CACHE=1 ist und weil er zeigt, was eine zu breite Positivliste
+# anrichtet -- nicht, weil er offen waere.
 #   1. BASH_ENV. Bash liest diese Variable auch fuer nicht-interaktive Shells,
 #      und zwar BEVOR die erste Rezeptzeile laeuft. Eine dort definierte
 #      Funktion "env" verschluckt jeden $(UV)-Aufruf; D1 bis D8 und D18 melden

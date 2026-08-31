@@ -872,8 +872,11 @@ den Gegenstand verändert, über den er urteilt; eine Lage-Marke, die etwas
 anderes behauptet als der Rückgabewert. Das ist die Fehlerklasse aus 3.4.
 
 Sie schützt **nicht** gegen jemanden, der die Umgebung des Aufrufs beherrscht.
-Zwei ausgeführte Belege vom 2026-08-31 — ein dritter Fall, der **nicht** unter
-diese Begründung fällt, ist am selben Tag hinzugekommen und steht in 6.6:
+Zwei ausgeführte Belege vom 2026-08-31. Ein dritter Fall, der **nicht** unter
+diese Begründung fiel, ist am selben Tag hinzugekommen (6.6.1) und am selben
+Tag geschlossen worden (6.7) — er ist deshalb kein Beleg mehr für diesen
+Absatz, sondern für den Satz, der aus ihm folgt: **Eine Abgrenzung ist keine
+Erlaubnis.**
 
 1. **`BASH_ENV`.** Bash liest die Variable auch für nicht-interaktive Shells,
    und zwar **bevor die erste Rezeptzeile läuft**. Eine dort definierte Funktion
