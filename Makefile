@@ -357,8 +357,8 @@ endif
 # hat, und die einzige, die ein Makefile abdecken kann.
 #
 # NICHT GESCHUETZT wird gegen jemanden, der die UMGEBUNG des Aufrufs
-# beherrscht, und -- Fall 3 -- gegen einen praeparierten Zwischenspeicher.
-# Drei ausgefuehrte Belege vom 2026-08-31 stehen dafuer:
+# beherrscht. Drei ausgefuehrte Belege vom 2026-08-31 stehen dafuer; der
+# dritte ist am selben Tag geschlossen worden und steht als Geschichte da:
 #   1. BASH_ENV. Bash liest diese Variable auch fuer nicht-interaktive Shells,
 #      und zwar BEVOR die erste Rezeptzeile laeuft. Eine dort definierte
 #      Funktion "env" verschluckt jeden $(UV)-Aufruf; D1 bis D8 und D18 melden
@@ -374,28 +374,31 @@ endif
 #      bestanden". Dieser Fall ist NICHT dasselbe wie 1 und 2, und er wird
 #      hier ausdruecklich einzeln benannt, weil die Nachpruefung zu Recht
 #      beanstandet hat, dass die Begruendung unten ihn nicht traegt:
-#      Die drei dafuer tauglichen Variablen (UV_CACHE_DIR, XDG_CACHE_HOME,
-#      TMPDIR) standen einen Tag lang auf der Positivliste und sind wieder
-#      entfernt -- damit ist der Weg "eine einzige Umgebungsvariable genuegt"
-#      zu. Offen bleibt: HOME MUSS durchgereicht werden (ohne HOME laeuft uv
-#      nicht), und der Zwischenspeicher liegt darunter. Wer HOME setzen oder
-#      in ~/.cache/uv schreiben kann, kann D1 taeuschen.
-#      Was das schliessen wuerde, und weshalb es hier nicht geschieht:
-#        - "uv sync --no-cache" umgeht den Zwischenspeicher ganz, jedes Paket
-#          wird neu geladen und dabei gegen die Sperrdatei geprueft. Preis:
-#          jeder "make dod"-Lauf laedt den vollstaendigen Abhaengigkeitsbaum
-#          neu und braucht Netz. Das ist eine Betriebsentscheidung, keine
-#          Programmierentscheidung -> ADR 0002, Abschnitt 8, offener Punkt
-#          O-13, zum Entscheid durch den Auftraggeber.
-#        - Ein fest verdrahteter Zwischenspeicherpfad (etwa unter PROJ) waere
-#          gegen HOME dicht, tauscht den Weg aber gegen zwei neue Fehler ein:
-#          ein nicht beschreibbarer Ort laesst JEDEN uv-Schritt als "Lage A --
-#          durchgefallen" enden (genau die Falschaussage, die diese Datei am
-#          2026-08-31 andernorts beseitigt hat), und ein Zwischenspeicher im
-#          Arbeitsbaum kaeme unter den Arbeitsbaumlauf von D11 (gitleaks
-#          "--no-git --source .") und damit unter einen Pruefer, der auf
-#          Paketinhalt nicht ausgelegt ist. Deshalb bewusst nicht getan,
-#          sondern benannt.
+#      GESCHLOSSEN am 2026-08-31, nachdem der Auftraggeber O-13 entschieden
+#      hat ("das, was korrekt und qualitativ ist"). Zwei Schritte:
+#        - Die drei dafuer tauglichen Variablen (UV_CACHE_DIR, XDG_CACHE_HOME,
+#          TMPDIR) sind von der Positivliste entfernt. Damit faellt der Weg
+#          "eine einzige Umgebungsvariable genuegt" weg.
+#        - Es blieb ein Restweg: HOME MUSS durchgereicht werden (ohne HOME
+#          laeuft uv nicht), und der Zwischenspeicher liegt darunter -- wer
+#          HOME setzen oder in ~/.cache/uv schreiben konnte, taeuschte D1.
+#          Ausgefuehrt belegt. Deshalb setzt $(UV) jetzt UV_NO_CACHE=1: uv
+#          liest und schreibt den Zwischenspeicher gar nicht mehr, jedes
+#          Paket wird geladen und dabei gegen die Sperrdatei geprueft. Fuenf
+#          Laeufe mit vergiftetem Zwischenspeicher blieben sauber, die
+#          Gegenprobe ohne die Variable wurde manipuliert.
+#      Damit ist Fall 3 kein offener Weg mehr, sondern Geschichte. Er steht
+#      hier trotzdem, weil die Begruendung des Abschnitts sonst nicht mehr
+#      nachvollziehbar waere -- und weil er zeigt, was eine zu breite
+#      Positivliste anrichtet.
+#      Ein fest verdrahteter Zwischenspeicherpfad (etwa unter PROJ) waere der
+#      andere Weg gewesen und ist bewusst NICHT gewaehlt: ein nicht
+#      beschreibbarer Ort liesse JEDEN uv-Schritt als "Lage A --
+#      durchgefallen" enden (genau die Falschaussage, die diese Datei am
+#      2026-08-31 andernorts beseitigt hat), und ein Zwischenspeicher im
+#      Arbeitsbaum kaeme unter den Arbeitsbaumlauf von D11 (gitleaks
+#      "--no-git --source .") und damit unter einen Pruefer, der auf
+#      Paketinhalt nicht ausgelegt ist.
 #
 # Weshalb das nicht zu schliessen ist: Jede gesperrte Variable hat eine
 # Nachfolgerin, und die zuletzt gefundene wirkt vor dem ersten eigenen Befehl.
@@ -403,14 +406,15 @@ endif
 # aufgerufen wird, kann den Aufruf ebenso gut unterlassen oder diese Datei
 # aendern. Ein Gate im Arbeitsverzeichnis ist gegen den, der das
 # Arbeitsverzeichnis beherrscht, grundsaetzlich wirkungslos. Fuer Fall 3
-# traegt diese Begruendung NUR noch, seit die drei Zwischenspeichervariablen
-# von der Positivliste verschwunden sind: Uebrig ist HOME, und wer HOME beim
-# Aufruf setzen kann, steht in derselben Lage wie unter 1 und 2. Solange die
-# drei Variablen durchgereicht wurden, traf das nicht zu -- eine einzige
-# gesetzte Variable genuegte, ohne jede Kontrolle ueber Shell oder PATH.
-# Diesen Unterschied hat die Nachpruefung vom 2026-08-31 aufgedeckt; er ist
-# der Grund, weshalb Fall 3 oben getrennt steht und nicht unter 1 subsumiert
-# wird.
+# trug diese Begruendung NICHT: Eine einzige gesetzte Variable genuegte, ohne
+# jede Kontrolle ueber Shell oder PATH -- und die Kette hatte diese Variable
+# selbst freigegeben. Diesen Unterschied hat die Nachpruefung vom 2026-08-31
+# aufgedeckt; er ist der Grund, weshalb Fall 3 oben getrennt steht und nicht
+# unter 1 subsumiert wird, und weshalb er nicht mit einer Begruendung
+# abgelegt, sondern mit UV_NO_CACHE=1 geschlossen wurde. Die Lehre daraus
+# steht in einem Satz: Eine Abgrenzung ist keine Erlaubnis. Was sich
+# schliessen laesst, wird geschlossen; abgegrenzt wird nur, was sich in
+# dieser Datei nicht schliessen laesst.
 #
 # FOLGE, und sie gehoert benannt: Diese Kette ist die ZWEITE Linie -- genau wie
 # die beiden PreToolUse-Gates, deren Kopfkommentare dasselbe festhalten. Die
@@ -489,11 +493,32 @@ endif
 #   TMPDIR ist gestrichen: ohne die Variable benutzt uv "/tmp", also die
 #   Vorgabe des Betriebssystems. Ein Wettlauf in "/tmp" ist eine Eigenschaft
 #   des Betriebssystems, keine, die diese Liste aufmacht.
+#
+# ENTSCHEID DES AUFTRAGGEBERS vom 2026-08-31 zu O-13, hier umgesetzt:
+# "Das, was korrekt und qualitativ ist. Soll zwar effizient sein, aber nie an
+# Korrektheit und Qualitaet verlieren." Deshalb UV_NO_CACHE=1.
+# Was das schliesst: Nach dem Entfernen der drei Variablen blieb ein Restweg
+# ueber HOME -- uv legt seinen Zwischenspeicher darunter ab, und "--locked"
+# prueft ein bereits entpacktes Archiv nicht erneut. Ausgefuehrt belegt am
+# 2026-08-31: HOME auf ein Heimatverzeichnis mit vergiftetem Zwischenspeicher
+# -> "::LAGE ... D1 bau A_OK::" bei manipuliertem Paketinhalt in
+# backend/.venv. Mit UV_NO_CACHE=1 liest und schreibt uv den Zwischenspeicher
+# gar nicht mehr, sondern benutzt ein temporaeres Verzeichnis fuer die Dauer
+# des Aufrufs; jedes Paket wird geladen und dabei gegen die Sperrdatei
+# geprueft. Damit ist HOME als Weg zu einem falschen A_OK zu.
+# Die Variable wird HIER GESETZT, nicht durchgereicht: "env -i" loescht eine
+# von aussen mitgebrachte Fassung, und der eigene Wert kommt danach. Ein
+# Aufrufer kann sie also nicht auf 0 stellen -- das ist der Unterschied
+# zwischen einer Einstellung und einer Bauvorschrift (5.4).
+# Der Preis ist benannt und angenommen: Jeder Lauf, der wirklich etwas
+# installiert, laedt den Abhaengigkeitsbaum neu und braucht dafuer Netz.
+# Laeuft ein Schritt gegen ein bereits vollstaendiges Umfeld, installiert uv
+# nichts und laedt deshalb auch nichts (ausgefuehrt geprueft).
 # Kommt ein Werkzeug hinzu, das eine weitere Variable braucht, wird sie hier
 # einzeln, mit Begruendung UND mit einem Satz dazu ergaenzt, was sie einem
 # Aufrufer erlaubt. Das ist der Unterschied: Eine Luecke faellt dann als
 # Fehlschlag auf, nicht als stiller Durchgang.
-UV := env -i PATH="$(PATH)" HOME="$(HOME)" PYTHONNOUSERSITE=1 \
+UV := env -i PATH="$(PATH)" HOME="$(HOME)" PYTHONNOUSERSITE=1 UV_NO_CACHE=1 \
 	$(foreach v,SSL_CERT_FILE SSL_CERT_DIR CURL_CA_BUNDLE REQUESTS_CA_BUNDLE PIP_CERT NODE_EXTRA_CA_CERTS HTTPS_PROXY HTTP_PROXY NO_PROXY https_proxy http_proxy no_proxy LANG LC_ALL,$(if $($(v)),$(v)="$($(v))" )) \
 	uv
 

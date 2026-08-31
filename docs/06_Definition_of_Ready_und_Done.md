@@ -104,7 +104,7 @@ Abschnitt 6.1.
 
 | Nr. | Schritt | Kriterium |
 |---|---|---|
-| D1 | Bau | Der Programmstand baut fehlerfrei |
+| D1 | Bau | Der Programmstand baut fehlerfrei — aus der Sperrdatei und **ohne Zwischenspeicher**: jedes Paket wird geladen und dabei gegen `uv.lock` geprüft. Eine Abweichung zwischen `pyproject.toml` und `uv.lock` macht den Schritt rot (Entscheid des Auftraggebers vom 2026-08-31 zu O-13, ADR 0002, 6.7) |
 | D2 | Formatierung | Keine Abweichung vom Projekt-Codingstandard |
 | D3 | Linter | Null Fehler; Warnungen unterhalb des vereinbarten Schwellenwerts |
 | D4 | Typprüfung | Null Fehler |
