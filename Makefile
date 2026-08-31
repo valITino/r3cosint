@@ -200,7 +200,58 @@ override MAKE_REKURSIV := $(MAKE)
 # bei D1 abbricht: ohne "-C" sucht jeder Unter-Make-Aufruf im aktuellen
 # Arbeitsverzeichnis nach einer Datei "Makefile"/"makefile" und findet dort
 # keine, wenn dieses Verzeichnis nicht das Projektverzeichnis ist.
-PROJ := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
+#
+# Diese vier Zeilen waren dreimal falsch. Die Geschichte steht hier, weil die
+# dritte Fassung den schwersten der drei Fehler trug:
+#   1. "$(dir $(abspath $(firstword $(MAKEFILE_LIST))))" -- $(dir) und
+#      $(firstword) behandeln Leerzeichen als Feldtrenner. Fuer
+#      ".../mit raum/Makefile" kam ".../ raum/" heraus.
+#   2. Eine Wache mit $(wildcard ...) -- die spaltet genauso. Sie trug also
+#      genau den Fehler in sich, den sie feststellen sollte, und machte die
+#      Kette fuer jeden Pfad mit Leerzeichen durch KEINE Aufrufart lauffaehig.
+#   3. Rueckfall auf $(CURDIR), dazu eine Wache, die prueft, ob in PROJ
+#      IRGENDEIN Marker liegt (CLAUDE.md oder .git).
+#      BLOCKIEREND (Nachpruefung 2026-08-31, ausgefuehrt belegt mit zwei
+#      vollstaendigen Arbeitskopien): Steht der Aufrufer in einem ANDEREN
+#      echten Arbeitsbaum -- zwei Arbeitskopien nebeneinander sind die
+#      naheliegende Arbeitsform, siehe den Kommentar bei D19 --, dann traegt
+#      der Rueckfallort seinen eigenen Marker, die Wache schweigt, und
+#      "make dod" prueft vollstaendig und unbemerkt das FALSCHE Repository.
+#      Der Lauf sieht aus wie eine regulaere Pruefung von A, geprueft wurde B.
+#      Kommt B weiter als A, ist das ein falsches Gruen fuer einen Stand, den
+#      niemand angesehen hat. Es ist dieselbe Fehlerklasse wie ueberall in
+#      dieser Datei: Die Wache misst einen NAMEN ("hier liegt ein CLAUDE.md")
+#      statt den GEGENSTAND ("das ist das Verzeichnis DIESES Makefiles").
+#
+# Jetzt am Gegenstand, ohne spaltende Make-Funktion und ohne Rueckfall:
+# $(MAKEFILE_LIST) wird als GANZER Wert verwendet. Diese Datei bindet nichts
+# ein -- "include" kommt in ihr nicht vor --, also enthaelt die Liste genau
+# einen Eintrag: den Pfad dieses Makefiles, Leerzeichen inbegriffen. Gespalten
+# wurde er immer erst durch $(firstword)/$(dir)/$(wildcard). Der Shell-Test
+# bekommt ihn gequotet und damit unverfaelscht; "cd <verzeichnis> && pwd -P"
+# liefert den Pfad. Damit ist auch der bisher nicht unterstuetzte Fall
+# ("make -f '<pfad mit leerzeichen>/Makefile'" aus fremdem Arbeitsverzeichnis)
+# nicht mehr nur erkannt, sondern richtig aufgeloest.
+# KEIN Rueckfall auf $(CURDIR): Laesst sich der Pfad nicht bestimmen -- etwa
+# weil MAKEFILES gesetzt ist und die Liste mehrere Eintraege traegt, oder weil
+# der Pfad ein Anfuehrungszeichen enthaelt --, bricht der Lauf ab. Lieber kein
+# Urteil als ein Urteil ueber das falsche Verzeichnis.
+MAKEFILE_ROH := $(MAKEFILE_LIST)
+PROJ := $(shell test -f "$(MAKEFILE_ROH)" && cd "$$(dirname "$(MAKEFILE_ROH)")" && pwd -P)
+ifeq ($(strip $(PROJ)),)
+$(error Das Verzeichnis dieses Makefiles liess sich nicht bestimmen. $$(MAKEFILE_LIST) lautet "$(MAKEFILE_ROH)" und zeigt nicht auf eine vorhandene Datei. Moegliche Ursachen: die Umgebungsvariable MAKEFILES ist gesetzt, so dass die Liste mehrere Eintraege traegt; oder der Pfad enthaelt ein Anfuehrungszeichen oder ein Dollarzeichen. Abhilfe: MAKEFILES leeren beziehungsweise das Projekt in einen Pfad ohne diese Zeichen legen. Ein Rueckfall auf das Arbeitsverzeichnis findet bewusst nicht statt -- er hat am 2026-08-31 belegt dazu gefuehrt, dass die Kette ein fremdes Repository geprueft und das Ergebnis dem hier gemeinten zugeschrieben hat.)
+endif
+
+# Zweite, unabhaengige Bedingung: PROJ ist nach der Herleitung oben zwar
+# zwingend das Verzeichnis DIESES Makefiles, aber das Makefile koennte allein
+# irgendwohin kopiert worden sein. Dann gibt es nichts zu pruefen, und die
+# Kette soll das sagen statt gegen ein leeres Verzeichnis zu laufen. Diese
+# Wache traegt nach der Behebung von Fehler 3 keine Last mehr fuer die
+# Verwechslungsfrage -- die ist oben strukturell erledigt.
+PROJ_TAUGLICH := $(shell test -e "$(PROJ)/CLAUDE.md" -o -e "$(PROJ)/.git" && echo ja)
+ifneq ($(PROJ_TAUGLICH),ja)
+$(error Im Verzeichnis dieses Makefiles (PROJ="$(PROJ)") liegt weder CLAUDE.md noch .git. Das sieht nicht nach dem Projektverzeichnis aus -- vermutlich wurde das Makefile einzeln dorthin kopiert. Die Kette bricht ab, statt gegen ein Verzeichnis ohne Gegenstand zu laufen.)
+endif
 
 # Zielkonflikt, absichtlich so geloest, nicht versehentlich: Ohne weitere
 # Vorkehrung erzeugt "make -j4 dod" mehrere "jobserver unavailable"-
@@ -252,6 +303,209 @@ KRITISCHE_MODULE := spur zugriff freigabe
 #   make abhaengigkeiten AUDIT_LEVEL=high
 LINT_MAX_WARNINGS ?=
 AUDIT_LEVEL ?=
+
+# E6 (Full-Review 2026-08-30, blockierend-nah): Beide Werte werden weiter unten
+# von make in den Rezepttext expandiert und landen dort in doppelt gequoteten
+# Zeichenketten. Ein Anfuehrungszeichen im Wert bricht daraus aus und fuehrt
+# Befehle aus -- ausgefuehrt belegt, auch durch den Einstieg "make dod"
+# hindurch. Deshalb werden beide Werte VOR jeder Verwendung gegen eine enge
+# Form geprueft, und zwar mit make-eigenen Mitteln (kein Shell-Aufruf, der die
+# Einschleusung selbst waere). Das legt KEINEN Zahlenwert fest -- E-08 bleibt
+# offen (O-7) --, sondern nur die zulaessige FORM.
+ENTZIFFERT = $(strip $(subst 0,,$(subst 1,,$(subst 2,,$(subst 3,,$(subst 4,,$(subst 5,,$(subst 6,,$(subst 7,,$(subst 8,,$(subst 9,,$(1))))))))))))
+ifneq ($(strip $(LINT_MAX_WARNINGS)),)
+ifneq ($(call ENTZIFFERT,$(LINT_MAX_WARNINGS)),)
+$(error LINT_MAX_WARNINGS muss eine reine Zahl sein, ist aber "$(LINT_MAX_WARNINGS)". Siehe E6 im Variablenblock.)
+endif
+endif
+# Die zulaessigen Stufen gibt npm audit vor, nicht dieses Projekt -- die Liste
+# ist keine erfundene Schwelle, sondern der Wertebereich des Werkzeugs.
+AUDIT_LEVEL_ERLAUBT := info low moderate high critical
+ifneq ($(strip $(AUDIT_LEVEL)),)
+ifeq ($(filter $(AUDIT_LEVEL),$(AUDIT_LEVEL_ERLAUBT)),)
+$(error AUDIT_LEVEL muss eine von "$(AUDIT_LEVEL_ERLAUBT)" sein, ist aber "$(AUDIT_LEVEL)". Siehe E6 im Variablenblock.)
+endif
+endif
+
+# =============================================================================
+# WOGEGEN DIESE KETTE SCHUETZT -- UND WOGEGEN NICHT
+# =============================================================================
+# Diese Abgrenzung steht hier, weil fuenf Pruefrunden gezeigt haben, dass ohne
+# sie immer weiter geflickt wird. Sie ist kein Rueckzug, sondern das Ergebnis.
+#
+# GESCHUETZT wird gegen Bequemlichkeit und Abkuerzung: gegen einen Schritt, der
+# mit 0 endet, ohne geprueft zu haben; gegen ein fehlendes Pruefmittel, das als
+# "keine Beanstandung" durchgeht; gegen einen Kettenschritt, der den Gegenstand
+# veraendert, ueber den er urteilt; gegen eine Lage-Marke, die etwas anderes
+# behauptet als den Rueckgabewert. Das ist die Fehlerklasse, die 3.4 im Auge
+# hat, und die einzige, die ein Makefile abdecken kann.
+#
+# NICHT GESCHUETZT wird gegen jemanden, der die UMGEBUNG des Aufrufs
+# beherrscht, und -- Fall 3 -- gegen einen praeparierten Zwischenspeicher.
+# Drei ausgefuehrte Belege vom 2026-08-31 stehen dafuer:
+#   1. BASH_ENV. Bash liest diese Variable auch fuer nicht-interaktive Shells,
+#      und zwar BEVOR die erste Rezeptzeile laeuft. Eine dort definierte
+#      Funktion "env" verschluckt jeden $(UV)-Aufruf; D1 bis D8 und D18 melden
+#      "bestanden", ohne dass ein Werkzeug lief. Der Angriff landet, bevor
+#      irgendeine Abwehr dieser Datei ueberhaupt existiert.
+#   2. Ein gefaelschtes "uv" frueher im PATH bedient die Umfeldprobe UND den
+#      eigentlichen Aufruf.
+#   3. Der Zwischenspeicher von uv. "--locked" prueft die Pruefsumme eines
+#      Pakets beim HERUNTERLADEN; liegt ein bereits entpacktes Archiv im
+#      Zwischenspeicher, wird es ohne erneute Pruefung ins Umfeld gelegt.
+#      Ausgefuehrt belegt am 2026-08-31: praeparierter Zwischenspeicher ->
+#      manipulierter Paketinhalt in backend/.venv, D1 meldet "Lage A --
+#      bestanden". Dieser Fall ist NICHT dasselbe wie 1 und 2, und er wird
+#      hier ausdruecklich einzeln benannt, weil die Nachpruefung zu Recht
+#      beanstandet hat, dass die Begruendung unten ihn nicht traegt:
+#      Die drei dafuer tauglichen Variablen (UV_CACHE_DIR, XDG_CACHE_HOME,
+#      TMPDIR) standen einen Tag lang auf der Positivliste und sind wieder
+#      entfernt -- damit ist der Weg "eine einzige Umgebungsvariable genuegt"
+#      zu. Offen bleibt: HOME MUSS durchgereicht werden (ohne HOME laeuft uv
+#      nicht), und der Zwischenspeicher liegt darunter. Wer HOME setzen oder
+#      in ~/.cache/uv schreiben kann, kann D1 taeuschen.
+#      Was das schliessen wuerde, und weshalb es hier nicht geschieht:
+#        - "uv sync --no-cache" umgeht den Zwischenspeicher ganz, jedes Paket
+#          wird neu geladen und dabei gegen die Sperrdatei geprueft. Preis:
+#          jeder "make dod"-Lauf laedt den vollstaendigen Abhaengigkeitsbaum
+#          neu und braucht Netz. Das ist eine Betriebsentscheidung, keine
+#          Programmierentscheidung -> ADR 0002, Abschnitt 8, offener Punkt
+#          O-13, zum Entscheid durch den Auftraggeber.
+#        - Ein fest verdrahteter Zwischenspeicherpfad (etwa unter PROJ) waere
+#          gegen HOME dicht, tauscht den Weg aber gegen zwei neue Fehler ein:
+#          ein nicht beschreibbarer Ort laesst JEDEN uv-Schritt als "Lage A --
+#          durchgefallen" enden (genau die Falschaussage, die diese Datei am
+#          2026-08-31 andernorts beseitigt hat), und ein Zwischenspeicher im
+#          Arbeitsbaum kaeme unter den Arbeitsbaumlauf von D11 (gitleaks
+#          "--no-git --source .") und damit unter einen Pruefer, der auf
+#          Paketinhalt nicht ausgelegt ist. Deshalb bewusst nicht getan,
+#          sondern benannt.
+#
+# Weshalb das nicht zu schliessen ist: Jede gesperrte Variable hat eine
+# Nachfolgerin, und die zuletzt gefundene wirkt vor dem ersten eigenen Befehl.
+# Weshalb es vertretbar ist: Wer BASH_ENV setzen kann, waehrend "make dod"
+# aufgerufen wird, kann den Aufruf ebenso gut unterlassen oder diese Datei
+# aendern. Ein Gate im Arbeitsverzeichnis ist gegen den, der das
+# Arbeitsverzeichnis beherrscht, grundsaetzlich wirkungslos. Fuer Fall 3
+# traegt diese Begruendung NUR noch, seit die drei Zwischenspeichervariablen
+# von der Positivliste verschwunden sind: Uebrig ist HOME, und wer HOME beim
+# Aufruf setzen kann, steht in derselben Lage wie unter 1 und 2. Solange die
+# drei Variablen durchgereicht wurden, traf das nicht zu -- eine einzige
+# gesetzte Variable genuegte, ohne jede Kontrolle ueber Shell oder PATH.
+# Diesen Unterschied hat die Nachpruefung vom 2026-08-31 aufgedeckt; er ist
+# der Grund, weshalb Fall 3 oben getrennt steht und nicht unter 1 subsumiert
+# wird.
+#
+# FOLGE, und sie gehoert benannt: Diese Kette ist die ZWEITE Linie -- genau wie
+# die beiden PreToolUse-Gates, deren Kopfkommentare dasselbe festhalten. Die
+# harte Zusicherung liegt dort, wo der Aufrufer die Umgebung nicht beherrscht:
+# in einem Lauf auf der Gegenseite (Bauumgebung, Server), analog zum Ruleset,
+# das den Schutz von "main" traegt. Solange dieser Lauf fehlt, gilt die Kette
+# als Selbstpruefung eines kooperierenden Aufrufers -- nicht mehr, und das
+# ist beim Nachweis nach 5.3 mitzudenken.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# BLOCKIEREND (Nachpruefung 2026-08-30): UV_PROJECT_ENVIRONMENT haebelt die
+# Umfeldprobe vollstaendig aus
+# -----------------------------------------------------------------------------
+# Die Probe unten vergleicht den aufgeloesten Programmpfad mit sys.prefix des
+# Projektumfelds. WELCHES Verzeichnis das Projektumfeld ist, bestimmt aber uv --
+# und das laesst sich von aussen setzen: Mit
+# "UV_PROJECT_ENVIRONMENT=<eigenes venv mit Attrappen> make dod" lief die Kette
+# bis D6 mit lauter A_OK durch, ohne dass ein echter Pruefer lief. Ausgefuehrt
+# belegt. Das ist schwerer als der urspruengliche PATH-Angriff, weil kein
+# Schreibzugriff noetig ist -- eine Umgebungsvariable beim Aufruf genuegt.
+# VIRTUAL_ENV ist nicht ausnutzbar (uv erkennt den Widerspruch und ignoriert
+# es, ebenfalls geprueft), wird aber aus demselben Grund mitentfernt.
+# Deshalb wird JEDER uv-Aufruf ueber diese Variable gefuehrt; ein Aufruf, der
+# sie umgeht, ist der Fehler, den es hier zu verhindern gilt.
+# Zweiter, schwererer Weg (Nachpruefung 2026-08-30): Die Aufrufer in
+# backend/.venv/bin/{mypy,pytest,pip-audit,lint-imports} sind reine
+# Python-Skripte ("from mypy.__main__ import console_entry"). Ein Verzeichnis
+# mit gleichnamigem Fake-Paket in PYTHONPATH wird INNERHALB des korrekt
+# aufgeloesten Umfelds geladen: Die Umfeldprobe wird dabei gar nicht getaeuscht
+# -- sie findet zu Recht das echte, gesperrte Werkzeug --, unterwandert wird
+# dessen AUSFUEHRUNG. Ausgefuehrt belegt fuer D4, D5, D8 und D18, je mit
+# "Lage A -- bestanden". ruff ist als kompiliertes Programm nicht betroffen.
+# PYTHONNOUSERSITE schliesst zusaetzlich das Benutzer-Site-Verzeichnis aus.
+# STRUKTURELL, nicht Fall fuer Fall: Die erste Behebung dieses Befunds war
+# "env -u UV_PROJECT_ENVIRONMENT -u VIRTUAL_ENV uv" -- eine Negativliste. Die
+# Nachpruefung fand darauf prompt PYTHONPATH als vierten Weg. Eine Negativliste
+# ueber die Umgebung kann nicht schliessen: Es gibt beliebig viele Variablen,
+# die Aufloesung oder Ausfuehrung verschieben (UV_*, PYTHON*, LD_PRELOAD,
+# LD_LIBRARY_PATH und was ein kuenftiges Werkzeug hinzufuegt). Dieselbe Einsicht
+# steht in den Kopfkommentaren der beiden PreToolUse-Gates und in ADR 0002,
+# 6.2.2 ("die Lage wird an einem Namen festgemacht statt am Gegenstand").
+# Deshalb hier eine POSITIVLISTE: leere Umgebung, und durchgereicht wird nur,
+# was nachweislich gebraucht wird.
+#   PATH  -- uv und die Werkzeuge muessen auffindbar sein. Der PATH selbst ist
+#            kein Angriffsweg mehr, weil UMFELD_PROBE unten prueft, dass das
+#            aufgeloeste Programm INNERHALB des gesperrten Umfelds liegt.
+#   HOME  -- uv legt seinen Zwischenspeicher darunter ab; ohne HOME schlaegt
+#            der Aufruf fehl.
+#   PYTHONNOUSERSITE -- schliesst das Benutzer-Site-Verzeichnis aus.
+# Ergaenzt am 2026-08-31 nach einem belegten Fehlschlag: Die erste Fassung
+# reichte NUR PATH und HOME durch. Folge in einer Umgebung mit Proxy und eigener
+# Wurzelzertifizierungsstelle -- bei einer Polizeiorganisation der Regelfall --:
+# D1 scheiterte bei kaltem Zwischenspeicher an "invalid peer certificate", D8
+# scheiterte IMMER, weil pip-audit je Aufruf eine Live-Abfrage macht. Und zwar
+# als "Lage A -- durchgefallen", also mit der falschen Aussage, das Werkzeug sei
+# gelaufen und durchgefallen. Ein Gate, das nichts mehr durchlaesst, ist so
+# kaputt wie eines, das alles durchlaesst. Die Netz- und Zertifikatsvariablen
+# werden deshalb durchgereicht -- aber einzeln aufgezaehlt und nur, wenn sie
+# gesetzt sind, nicht pauschal.
+# BLOCKIEREND (Nachpruefung 2026-08-31, ausgefuehrt belegt): Diese Ergaenzung
+# war zu breit. Sie reichte neben den Netz- und Zertifikatsvariablen auch
+# UV_CACHE_DIR, XDG_CACHE_HOME und TMPDIR durch -- keine davon wird fuer den
+# Proxy- und Zertifikatsfall gebraucht, alle drei waren stillschweigend
+# mitgenommen. Belegter Angriff ueber UV_CACHE_DIR: "--locked" prueft die
+# Pruefsumme beim HERUNTERLADEN, nicht noch einmal, wenn ein bereits
+# entpacktes Archiv im Zwischenspeicher liegt. Ein praeparierter
+# Zwischenspeicher liefert damit manipulierten Paketinhalt ins Umfeld,
+# waehrend D1 "Lage A -- bestanden" meldet. Die drei sind deshalb wieder
+# entfernt. Was nicht gebraucht wird, wird nicht durchgereicht -- das ist der
+# ganze Sinn einer Positivliste, und die erste Fassung dieser Ergaenzung hat
+# ihn verfehlt.
+#   LANG, LC_ALL bleiben: Sie steuern die Sprache und Kodierung der Ausgabe,
+#   nicht die Aufloesung eines Programms und nicht dessen Ausfuehrung. Ohne
+#   sie kann die Ausgabe eines Werkzeugs in einer C-Locale unlesbar werden.
+#   TMPDIR ist gestrichen: ohne die Variable benutzt uv "/tmp", also die
+#   Vorgabe des Betriebssystems. Ein Wettlauf in "/tmp" ist eine Eigenschaft
+#   des Betriebssystems, keine, die diese Liste aufmacht.
+# Kommt ein Werkzeug hinzu, das eine weitere Variable braucht, wird sie hier
+# einzeln, mit Begruendung UND mit einem Satz dazu ergaenzt, was sie einem
+# Aufrufer erlaubt. Das ist der Unterschied: Eine Luecke faellt dann als
+# Fehlschlag auf, nicht als stiller Durchgang.
+UV := env -i PATH="$(PATH)" HOME="$(HOME)" PYTHONNOUSERSITE=1 \
+	$(foreach v,SSL_CERT_FILE SSL_CERT_DIR CURL_CA_BUNDLE REQUESTS_CA_BUNDLE PIP_CERT NODE_EXTRA_CA_CERTS HTTPS_PROXY HTTP_PROXY NO_PROXY https_proxy http_proxy no_proxy LANG LC_ALL,$(if $($(v)),$(v)="$($(v))" )) \
+	uv
+
+# -----------------------------------------------------------------------------
+# B1 — Pruefmittel im gesperrten Umfeld nachweisen, nicht im PATH
+# -----------------------------------------------------------------------------
+# BLOCKIERENDER BEFUND der Schlusspruefung vom 2026-08-30: "uv run --project
+# backend --locked <werkzeug>" faellt auf ein gleichnamiges Programm im PATH
+# zurueck, wenn das Werkzeug KEINE erklaerte, gesperrte Abhaengigkeit von
+# backend/ ist. Ein Lauf mit dreizeiligen Attrappen fuer ruff, mypy,
+# lint-imports und pip-audit endete deshalb mit "make dod" = 0 und der Meldung
+# "alle 13 Kettenschritte durchlaufen" -- ohne dass ein einziger Pruefer lief.
+# Das entwertete D18 in seiner tragenden Funktion (ADR 0002, Abschnitt 4.3:
+# D18 belegt die Freigabesperre R3-F-014 und die Modellunabhaengigkeit
+# R3-F-018).
+#
+# Die Probe unten ist NAMENSUNABHAENGIG: Sie fragt nicht, ob ein Programm
+# dieses Namens auffindbar ist, sondern ob das aufgeloeste Programm INNERHALB
+# des gesperrten Umfelds liegt (sys.prefix des Projektumfelds). Damit entfaellt
+# das Raten von Modulnamen ("import ruff"?) ebenso wie die PATH-Ruecklage.
+# Ausgefuehrt belegt am 2026-08-30: ruff im PATH, nicht als Abhaengigkeit ->
+# Probe schlaegt fehl (richtig), waehrend "uv run --locked ruff --version"
+# erfolgreich ist (falsch). Attrappe ins Umfeld gelegt -> Probe erfolgreich.
+#
+# Fuer Erweiterungen ohne eigenes Programm (pytest-cov) traegt die Probe nicht;
+# dort bleibt der Einfuhrtest ("import pytest_cov") das richtige Mittel, weil
+# ein Zusatzmodul kein auffindbares Programm hat.
+UMFELD_PROBE = $(UV) run --project backend --locked python -c 'import sys,shutil,os; p=shutil.which(sys.argv[1]); sys.exit(0 if p and os.path.realpath(p).startswith(os.path.realpath(sys.prefix)+os.sep) else 1)'
 
 # -----------------------------------------------------------------------------
 # Lage-Marke — aus Variablen zusammengesetzt, nicht als Literal im Quelltext.
@@ -372,7 +626,7 @@ bau:
 			# "--directory"), das Argument "backend/src" bleibt deshalb relativ zur
 			# Repository-Wurzel gueltig, wie es die Tabelle in ADR 0002, Abschnitt
 			# 6 woertlich vorgibt.
-			uv sync --project backend --locked && uv run --project backend --locked python -m compileall -q backend/src || fehlgeschlagen=1
+			$(UV) sync --project backend --locked && $(UV) run --project backend --locked python -m compileall -q backend/src || fehlgeschlagen=1
 		fi
 	fi
 	if [ -f frontend/package.json ]; then
@@ -381,6 +635,14 @@ bau:
 		if ! command -v npm >/dev/null 2>&1 || ! command -v node >/dev/null 2>&1; then
 			echo "[D1 bau] LAGE C: frontend/package.json existiert, aber 'npm' und/oder 'node' sind nicht installiert." >&2
 			echo "Beschaffen: Node.js-Installation inklusive npm (https://nodejs.org)." >&2
+			hat_lage_c=1
+		elif [ "$$(npm pkg get scripts.build --prefix frontend 2>/dev/null)" = "{}" ]; then
+			# E7 (Schlusspruefung 2026-08-30): D2 bis D5 pruefen das npm-Skript
+			# vorab, D1 tat es nicht -- ein fehlendes "build" ergab A_FAIL statt
+			# Lage C. Beide Ausgaenge sind rot, aber die Lage war falsch benannt,
+			# und der Hook aus R3-Q-001 liest die Lage (Regel 4 der Objekttabelle
+			# in ADR 0002, Abschnitt 6).
+			echo "[D1 bau] LAGE C: frontend/package.json existiert, aber das Skript 'build' ist darin nicht definiert." >&2
 			hat_lage_c=1
 		else
 			npm ci --prefix frontend && npm run build --prefix frontend || fehlgeschlagen=1
@@ -419,8 +681,12 @@ format-pruefen:
 		if ! command -v uv >/dev/null 2>&1; then
 			echo "[D2 format-pruefen] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
 			hat_lage_c=1
+		elif ! $(UMFELD_PROBE) ruff >/dev/null 2>&1; then
+			echo "[D2 format-pruefen] LAGE C: backend/pyproject.toml existiert, aber 'ruff' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
+			echo "Beschaffen: ruff in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
+			hat_lage_c=1
 		else
-			uv run --project backend --locked ruff format --check backend || fehlgeschlagen=1
+			$(UV) run --project backend --locked ruff format --check backend || fehlgeschlagen=1
 		fi
 	fi
 	if [ -f frontend/package.json ]; then
@@ -460,8 +726,12 @@ linter:
 		if ! command -v uv >/dev/null 2>&1; then
 			echo "[D3 linter] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
 			hat_lage_c=1
+		elif ! $(UMFELD_PROBE) ruff >/dev/null 2>&1; then
+			echo "[D3 linter] LAGE C: backend/pyproject.toml existiert, aber 'ruff' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
+			echo "Beschaffen: ruff in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
+			hat_lage_c=1
 		else
-			uv run --project backend --locked ruff check backend || fehlgeschlagen=1
+			$(UV) run --project backend --locked ruff check backend || fehlgeschlagen=1
 		fi
 	fi
 	if [ -f frontend/package.json ]; then
@@ -502,8 +772,12 @@ typen:
 		if ! command -v uv >/dev/null 2>&1; then
 			echo "[D4 typen] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
 			hat_lage_c=1
+		elif ! $(UMFELD_PROBE) mypy >/dev/null 2>&1; then
+			echo "[D4 typen] LAGE C: backend/pyproject.toml existiert, aber 'mypy' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
+			echo "Beschaffen: mypy in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
+			hat_lage_c=1
 		else
-			uv run --project backend --locked mypy backend/src backend/tests || fehlgeschlagen=1
+			$(UV) run --project backend --locked mypy backend/src backend/tests || fehlgeschlagen=1
 		fi
 	fi
 	if [ -f frontend/package.json ]; then
@@ -586,12 +860,12 @@ architekturvertraege:
 		elif ! command -v uv >/dev/null 2>&1; then
 			echo "[D18 architekturvertraege] LAGE C: Python-Quelltext unterhalb backend/src/ und backend/importvertraege.toml existieren, aber 'uv' ist nicht installiert." >&2
 			hat_lage_c=1
-		elif ! uv run --project backend --locked lint-imports --version >/dev/null 2>&1; then
-			echo "[D18 architekturvertraege] LAGE C: Python-Quelltext unterhalb backend/src/ und backend/importvertraege.toml existieren, aber 'lint-imports' ist nicht installiert (uv run lint-imports --version schlaegt fehl)." >&2
+		elif ! $(UMFELD_PROBE) lint-imports >/dev/null 2>&1; then
+			echo "[D18 architekturvertraege] LAGE C: Python-Quelltext unterhalb backend/src/ und backend/importvertraege.toml existieren, aber 'lint-imports' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
 			echo "Beschaffen: import-linter als Abhaengigkeit von backend/ eintragen und 'uv sync' erneut ausfuehren." >&2
 			hat_lage_c=1
 		else
-			uv run --project backend --locked lint-imports --config backend/importvertraege.toml || fehlgeschlagen=1
+			$(UV) run --project backend --locked lint-imports --config backend/importvertraege.toml || fehlgeschlagen=1
 		fi
 	fi
 	$(call KLASSIFIZIEREN,D18,architekturvertraege,keine *.py-Datei unterhalb backend/src/ vorhanden. Es gibt keine Modulgrenzen die verletzt werden koennten.)
@@ -609,8 +883,12 @@ test:
 		if ! command -v uv >/dev/null 2>&1; then
 			echo "[D5 test] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
 			hat_lage_c=1
+		elif ! $(UMFELD_PROBE) pytest >/dev/null 2>&1; then
+			echo "[D5 test] LAGE C: backend/pyproject.toml existiert, aber 'pytest' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
+			echo "Beschaffen: pytest in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
+			hat_lage_c=1
 		else
-			uv run --project backend --locked pytest -q --strict-markers || fehlgeschlagen=1
+			$(UV) run --project backend --locked pytest -q --strict-markers || fehlgeschlagen=1
 		fi
 	fi
 	if [ -f frontend/package.json ]; then
@@ -655,7 +933,10 @@ abdeckung:
 		if ! command -v uv >/dev/null 2>&1; then
 			echo "[D6 abdeckung] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
 			hat_lage_c=1
-		elif ! uv run --project backend --locked python -c "import pytest_cov" >/dev/null 2>&1; then
+		elif ! $(UMFELD_PROBE) pytest >/dev/null 2>&1; then
+			echo "[D6 abdeckung] LAGE C: backend/pyproject.toml existiert, aber 'pytest' ist keine gesperrte Abhaengigkeit von backend/ (B1)." >&2
+			hat_lage_c=1
+		elif ! $(UV) run --project backend --locked python -c "import pytest_cov" >/dev/null 2>&1; then
 			echo "[D6 abdeckung] LAGE C: backend/pyproject.toml existiert, aber 'pytest-cov' ist nicht installiert (uv run python -c 'import pytest_cov' schlaegt fehl)." >&2
 			echo "Beschaffen: pytest-cov als Abhaengigkeit von backend/ eintragen und 'uv sync' erneut ausfuehren." >&2
 			hat_lage_c=1
@@ -663,12 +944,12 @@ abdeckung:
 			# E2 (zusaetzlich): COVERAGE_FILE zeigt auf eine Wegwerfdatei, damit
 			# "make dod" keine ".coverage" im Arbeitsbaum hinterlaesst.
 			covdatei=$$(mktemp)
-			COVERAGE_FILE="$$covdatei" uv run --project backend --locked pytest --cov=backend/src/r3cosint --cov-fail-under=$(COV_FAIL_UNDER) || fehlgeschlagen=1
+			COVERAGE_FILE="$$covdatei" $(UV) run --project backend --locked pytest --cov=backend/src/r3cosint --cov-fail-under=$(COV_FAIL_UNDER) || fehlgeschlagen=1
 			kritische_flags=""
 			for m in $(KRITISCHE_MODULE); do
 				kritische_flags="$$kritische_flags --cov=backend/src/r3cosint/$$m"
 			done
-			COVERAGE_FILE="$$covdatei" uv run --project backend --locked pytest $$kritische_flags --cov-fail-under=$(COV_FAIL_UNDER_KRITISCH) || fehlgeschlagen=1
+			COVERAGE_FILE="$$covdatei" $(UV) run --project backend --locked pytest $$kritische_flags --cov-fail-under=$(COV_FAIL_UNDER_KRITISCH) || fehlgeschlagen=1
 			rm -f "$$covdatei"
 		fi
 	fi
@@ -700,30 +981,44 @@ abnahme:
 		if ! command -v uv >/dev/null 2>&1; then
 			echo "[D7 abnahme] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
 			hat_lage_c=1
+		elif ! $(UMFELD_PROBE) pytest >/dev/null 2>&1; then
+			echo "[D7 abnahme] LAGE C: backend/pyproject.toml existiert, aber 'pytest' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
+			echo "Beschaffen: pytest in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
+			hat_lage_c=1
 		else
-			uv run --project backend --locked pytest -q -m abnahme || fehlgeschlagen=1
+			$(UV) run --project backend --locked pytest -q -m abnahme || fehlgeschlagen=1
 		fi
 	fi
 	# G1: fester Dateiname ersetzt durch Glob -- "docs/05_Product_Backlog.md"
 	# allein uebersah z. B. eine Umbenennung nach "docs/05_Product_Backlog_v2.md"
 	# und meldete danach faelschlich Lage B mit Rueckgabewert 0, obwohl der
 	# Backlog nur umbenannt, nicht verschwunden war.
-	backlog_datei=""
-	if compgen -G "docs/05_Product_Backlog*.md" >/dev/null 2>&1; then
-		backlog_datei=$$(compgen -G "docs/05_Product_Backlog*.md" | head -n1)
-	fi
-	if [ -n "$$backlog_datei" ]; then
-		hat_objekt=1
-		if [ -f scripts/abnahme-abgleich.sh ]; then
+	# E4 (ADR 0002, dritte Fortschreibung 6.3.2): D7 hat KEINE Lage B mehr. Der
+	# Backlog besteht seit der Freigabe von Schritt 3 dauerhaft; findet das
+	# Suchmuster nichts, ist das ein Befund und kein "nichts zu pruefen".
+	# M3: Es werden ALLE Treffer genannt, nicht nur der erste, und es wird
+	# nicht behauptet, sie enthielten Abnahmekriterien, ohne nachzusehen.
+	hat_objekt=1
+	backlog_treffer=$$(compgen -G "docs/05_Product_Backlog*.md" 2>/dev/null || true)
+	if [ -z "$$backlog_treffer" ]; then
+		echo "[D7 abnahme] LAGE C: kein Backlog gefunden (Muster docs/05_Product_Backlog*.md). Der Backlog besteht seit der Freigabe von Schritt 3 dauerhaft; sein Fehlen ist ein Befund, nicht ein leerer Gegenstand (ADR 0002, 6.3.2)." >&2
+		hat_lage_c=1
+	else
+		backlog_liste=$$(printf '%s' "$$backlog_treffer" | tr '\n' ' ')
+		mit_kriterien=$$(grep -l -- '\*\*Abnahme:\*\*' $$backlog_treffer 2>/dev/null | tr '\n' ' ' || true)
+		if [ -z "$$mit_kriterien" ]; then
+			echo "[D7 abnahme] LAGE C: gefunden wurde $$backlog_liste, aber keine dieser Dateien fuehrt Abnahmekriterien (Muster '**Abnahme:**')." >&2
+			hat_lage_c=1
+		elif [ -f scripts/abnahme-abgleich.sh ]; then
 			bash scripts/abnahme-abgleich.sh || fehlgeschlagen=1
 		else
-			echo "[D7 abnahme] LAGE C: $$backlog_datei enthaelt bereits Abnahmekriterien, aber scripts/abnahme-abgleich.sh existiert nicht." >&2
+			echo "[D7 abnahme] LAGE C: $$mit_kriterien fuehrt Abnahmekriterien, aber scripts/abnahme-abgleich.sh existiert nicht." >&2
 			echo "Der Abgleich Backlog gegen Testkennungen (Projektauftrag 6.6) kann deshalb nicht laufen; 'bestanden' waere hier nicht belegt." >&2
 			echo "Skript folgt mit dem Grundgeruest (ADR 0002, Abschnitt 5 und 6, D7)." >&2
 			hat_lage_c=1
 		fi
 	fi
-	$(call KLASSIFIZIEREN,D7,abnahme,weder backend/pyproject.toml noch docs/05_Product_Backlog*.md vorhanden. Nichts abzugleichen.)
+	$(call KLASSIFIZIEREN,D7,abnahme,tritt nicht ein -- D7 hat seit ADR 0002 6.3.2 keine Lage B.)
 
 # =============================================================================
 # D8 — Abhaengigkeitspruefung
@@ -748,12 +1043,12 @@ abhaengigkeiten:
 		if ! command -v uv >/dev/null 2>&1; then
 			echo "[D8 abhaengigkeiten] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
 			hat_lage_c=1
-		elif ! uv run --project backend --locked pip-audit --version >/dev/null 2>&1; then
-			echo "[D8 abhaengigkeiten] LAGE C: backend/pyproject.toml existiert, aber 'pip-audit' ist nicht installiert (uv run pip-audit --version schlaegt fehl)." >&2
+		elif ! $(UMFELD_PROBE) pip-audit >/dev/null 2>&1; then
+			echo "[D8 abhaengigkeiten] LAGE C: backend/pyproject.toml existiert, aber 'pip-audit' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
 			echo "Beschaffen: pip-audit als Abhaengigkeit von backend/ eintragen und 'uv sync' erneut ausfuehren." >&2
 			hat_lage_c=1
 		else
-			uv run --project backend --locked pip-audit --strict || fehlgeschlagen=1
+			$(UV) run --project backend --locked pip-audit --strict || fehlgeschlagen=1
 		fi
 	fi
 	if [ -f frontend/package.json ]; then
@@ -890,15 +1185,31 @@ geheimnisse:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D11 geheimnisse] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
 	hat_objekt=1; hat_lage_c=0; fehlgeschlagen=0
-	if ! command -v gitleaks >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1; then
-		echo "[D11 geheimnisse] LAGE C: 'gitleaks' und/oder 'git' sind nicht installiert. Das Repository existiert bereits und koennte Geheimnisse enthalten." >&2
-		echo "Beschaffen: https://github.com/gitleaks/gitleaks (Release-Binary oder Paketmanager, z. B. 'brew install gitleaks') sowie git." >&2
+	# E2 (Schlusspruefung 2026-08-30): Die beiden Laeufe haben VERSCHIEDENE
+	# Pruefmittel. Lauf 1 durchsucht den Arbeitsbaum und braucht kein git; er
+	# entfaellt deshalb nicht, wenn git fehlt. ADR 0002, 6.3.3 verlangt das
+	# ausdruecklich -- und es ist der Lauf, dessen Befund vor dem Commit noch
+	# abwendbar ist. Die fruehere Fassung liess ihn mit ausfallen.
+	# E3: Lauf 2 braucht zusaetzlich ein Repository. Ohne .git/ endete gitleaks
+	# trotz "ERR failed to scan Git repository" mit 0, und der Schritt meldete
+	# "bestanden" fuer einen Historienlauf, der nicht stattgefunden hat.
+	if ! command -v gitleaks >/dev/null 2>&1; then
+		echo "[D11 geheimnisse] LAGE C: 'gitleaks' ist nicht installiert. Das Repository existiert bereits und koennte Geheimnisse enthalten." >&2
+		echo "Beschaffen: https://github.com/gitleaks/gitleaks (Release-Binary oder Paketmanager, z. B. 'brew install gitleaks')." >&2
 		hat_lage_c=1
 	else
 		echo "[D11 geheimnisse] Lauf 1/2 -- Arbeitsbaum (gitleaks detect --no-git):"
 		gitleaks detect --no-git --redact --exit-code 1 --source . || fehlgeschlagen=1
 		echo "[D11 geheimnisse] Lauf 2/2 -- Git-Historie (gitleaks detect):"
-		gitleaks detect --redact --exit-code 1 || fehlgeschlagen=1
+		if ! command -v git >/dev/null 2>&1; then
+			echo "[D11 geheimnisse] LAGE C: 'git' ist nicht installiert; der Historienlauf kann nicht stattfinden. Lauf 1 ist gelaufen, sein Befund steht oben." >&2
+			hat_lage_c=1
+		elif ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+			echo "[D11 geheimnisse] LAGE C: kein Git-Arbeitsbaum -- der Historienlauf hat keinen Gegenstand. 'bestanden' waere hier nicht belegt." >&2
+			hat_lage_c=1
+		else
+			gitleaks detect --redact --exit-code 1 || fehlgeschlagen=1
+		fi
 	fi
 	$(call KLASSIFIZIEREN,D11,geheimnisse,entfaellt -- das Repository existiert immer.)
 
@@ -1082,16 +1393,47 @@ endif
 	set -uo pipefail
 	# D19, Teil 1: Gegenstand und Pruefmittel feststellen, BEVOR irgendein
 	# Kettenschritt laeuft ("vor dem ersten ausgefuehrten Schritt").
+	# B2 (blockierend, Schlusspruefung 2026-08-30): Frueher "[ -d .git ]". In
+	# einem "git worktree" und in einem Submodul ist .git eine DATEI, kein
+	# Verzeichnis -- D19 meldete dort Lage B und beobachtete nichts, obwohl der
+	# Baum voll versioniert war. Der Arbeitszweig-Betrieb nach CLAUDE.md macht
+	# worktrees zu einer naheliegenden Arbeitsform. Der Gegenstand wird deshalb
+	# ueber git selbst bestimmt, nicht ueber einen Pfadnamen.
+	# M1: "--untracked-files=all" -- ohne den Schalter entfernt die
+	# Repository-Einstellung "status.showUntrackedFiles no" den ??-Teil still,
+	# und unverfolgte VERZEICHNISSE kollabieren auf eine Zeile.
+	# M2: $(PROJ) ist ueberall gequotet -- ungequotet bricht ein Leerzeichen im
+	# Repository-Pfad den Aufruf und legte D19 still.
 	d19_hat_repo=0
 	d19_werkzeug_fehlt=0
-	if [ -d "$(PROJ).git" ]; then
-		d19_hat_repo=1
-		if command -v git >/dev/null 2>&1; then
-			d19_status_vorher=$$(git -C $(PROJ) status --porcelain)
-		else
+	d19_masken_vorher=""
+	d19_status_vorher=""
+	if ! command -v git >/dev/null 2>&1; then
+		if [ -e "$(PROJ)/.git" ]; then
+			d19_hat_repo=1
 			d19_werkzeug_fehlt=1
-			d19_status_vorher=""
 		fi
+	elif git -C "$(PROJ)" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+		d19_hat_repo=1
+		# Selbst gefunden beim Wirkungsnachweis am 2026-08-30: Die blosse
+		# Statusliste misst WELCHE Dateien abweichen, nicht WIE. Eine Datei,
+		# die schon vor dem Lauf geaendert war, bleibt " M datei" -- auch wenn
+		# ein Kettenschritt sie waehrend des Laufs erneut aendert. Der Vergleich
+		# vorher/nachher ist dann blind, und zwar genau im Regelfall des
+		# Einsatzes (die Kette laeuft VOR dem Commit, also auf einem Baum, der
+		# ueblicherweise schon Aenderungen traegt). Das ist dasselbe Muster, das
+		# die Schlusspruefung vom 2026-08-30 als Ursache benannt hat: gemessen
+		# wird eine Liste statt des Gegenstands. Die Aufnahme umfasst deshalb
+		# zusaetzlich eine Inhaltspruefsumme je verfolgter Datei.
+		d19_status_vorher=$$(git -C "$(PROJ)" status --porcelain --untracked-files=all; git -C "$(PROJ)" ls-files -z | xargs -0 -r sha256sum 2>/dev/null)
+		# E5: "git status" richtet sich nach dem Index. Ein Kettenschritt kann
+		# die Beobachtung mit "git update-index --assume-unchanged" oder
+		# "--skip-worktree" abschalten -- ausgefuehrt belegt. Beide Bits sind
+		# in "git ls-files -v" an einem KLEINBUCHSTABEN als Statuszeichen
+		# erkennbar. Der Bestand wird vorher und nachher erhoben; jede
+		# Veraenderung und jedes bereits gesetzte Bit macht die Zusicherung
+		# unbeobachtbar und ist deshalb selbst ein Befund.
+		d19_masken_vorher=$$(git -C "$(PROJ)" ls-files -v | grep -E '^[a-zS]' || true)
 	fi
 	# LAUF_KENNUNG: siehe Begruendung beim MARKE_PRAEFIX-Block weiter oben.
 	# PID + zwei $RANDOM + Nanosekunden -- ausreichend, um eine Ausgabezeile
@@ -1143,13 +1485,26 @@ endif
 		# "make -j4 dod", ohne "+" als Rezeptpraefix zu benutzen (Zielkonflikt-
 		# Kommentar bei MAKE_REKURSIV oben). LAUF_KENNUNG wird NUR ueber die
 		# Umgebung dieses einen Aufrufs weitergereicht.
-		out=$$(env -u MAKEFLAGS LAUF_KENNUNG="$$lauf_kennung" $(MAKE_REKURSIV) --no-print-directory -j1 -C $(PROJ) "$$ziel" 2>&1)
+		out=$$(env -u MAKEFLAGS LAUF_KENNUNG="$$lauf_kennung" $(MAKE_REKURSIV) --no-print-directory -j1 -C "$(PROJ)" "$$ziel" 2>&1)
 		rc=$$?
 		echo "$$out"
-		lagezeile=$$(printf '%s\n' "$$out" | grep -oE "::LAGE $$lauf_kennung [^ ]+ [^ ]+ [A-Za-z_]+[^:]*::" | tail -n1)
+		# E1 (Schlusspruefung 2026-08-30): Frueher "tail -n1". Ein Werkzeug, das
+		# die Lauf-Kennung aus seiner Umgebung ausliest und eine markenfoermige
+		# Zeile NACH der echten ausgibt, gewann damit -- die Uebersicht wies
+		# einen Negativbefund als bestanden aus (5.3), waehrend der Lauf nur
+		# ueber den Rueckgabewert rot blieb. Verlangt ist deshalb GENAU EINE
+		# passende Marke; mehr als eine ist selbst ein Befund.
+		alle_lagezeilen=$$(printf '%s\n' "$$out" | grep -oE "::LAGE $$lauf_kennung [^ ]+ [^ ]+ [A-Za-z_]+[^:]*::" || true)
+		anzahl_marken=$$(printf '%s' "$$alle_lagezeilen" | grep -c . || true)
+		lagezeile=$$(printf '%s\n' "$$alle_lagezeilen" | tail -n1)
 		marke_ok=0
 		gefundene_lage=""
-		if [[ "$$lagezeile" =~ ^::LAGE\ $$lauf_kennung\ ([^\ ]+)\ ([^\ ]+)\ ([A-Za-z_]+) ]]; then
+		if [ "$$anzahl_marken" -gt 1 ]; then
+			echo "" >&2
+			echo "make dod: Schritt $$kennung $$ziel hat $$anzahl_marken passende Lage-Marken ausgegeben; genau eine ist zulaessig (E1)." >&2
+			printf '%s\n' "$$alle_lagezeilen" >&2
+			if [ "$$gesamt_rc" -eq 0 ]; then gesamt_rc=2; fi
+		elif [[ "$$lagezeile" =~ ^::LAGE\ $$lauf_kennung\ ([^\ ]+)\ ([^\ ]+)\ ([A-Za-z_]+) ]]; then
 			if [ "$${BASH_REMATCH[1]}" = "$$kennung" ] && [ "$${BASH_REMATCH[2]}" = "$$ziel" ]; then
 				marke_ok=1
 				gefundene_lage="$${BASH_REMATCH[3]}"
@@ -1184,19 +1539,33 @@ endif
 	# D19, Teil 2: "nach dem letzten AUSGEFUEHRTEN Schritt" -- hier, weil kein
 	# weiterer Kettenschritt mehr laeuft, unabhaengig davon, ob die Schleife
 	# vollstaendig durchlief oder vorher abgebrochen ist ("auch bei Abbruch").
+	# G1: Die Schlusszeile verschmolz frueher "beobachtet und in Ordnung" mit
+	# "gar nicht beobachtet" ("Arbeitsbaum unveraendert oder kein .git/"). Als
+	# Nachweiszeile (5.3) ist das untauglich -- deshalb ein eigener Befundtext.
 	d19_verletzt=0
+	d19_befund="ohne Befund, Arbeitsbaum unveraendert"
 	if [ "$$d19_hat_repo" -eq 1 ]; then
 		if [ "$$d19_werkzeug_fehlt" -eq 1 ]; then
 			echo "" >&2
 			echo "make dod: D19 LAGE C: .git/ ist vorhanden, aber 'git' ist nicht installiert -- der Kettengrundsatz (ADR 0002, Abschnitt 6, D19) kann nicht beobachtet werden, kein stilles Durchwinken." >&2
+			d19_befund="Lage C -- git fehlt, nicht beobachtet"
 			if [ "$$gesamt_rc" -eq 0 ]; then gesamt_rc=2; fi
 		else
-			d19_status_nachher=$$(git -C $(PROJ) status --porcelain)
+			d19_status_nachher=$$(git -C "$(PROJ)" status --porcelain --untracked-files=all; git -C "$(PROJ)" ls-files -z | xargs -0 -r sha256sum 2>/dev/null)
+			d19_masken_nachher=$$(git -C "$(PROJ)" ls-files -v | grep -E '^[a-zS]' || true)
+			if [ -n "$$d19_masken_nachher" ] || [ -n "$$d19_masken_vorher" ]; then
+				echo "" >&2
+				echo "make dod: D19 nicht beobachtbar -- fuer mindestens eine verfolgte Datei ist 'assume-unchanged' oder 'skip-worktree' gesetzt; 'git status' verschweigt Aenderungen daran (E5)." >&2
+				d19_befund="nicht beobachtbar -- assume-unchanged/skip-worktree gesetzt"
+				printf '%s\n' "$$d19_masken_nachher" >&2
+				if [ "$$gesamt_rc" -eq 0 ]; then gesamt_rc=2; fi
+			fi
 			if [ "$$d19_status_vorher" != "$$d19_status_nachher" ]; then
 				d19_verletzt=1
+				d19_befund="VERLETZT -- versionierter Bestand veraendert"
 				echo "" >&2
 				echo "make dod: D19 verletzt (ADR 0002, Abschnitt 6, Kettengrundsatz): der Bestand der versionierten Dateien hat sich zwischen dem ersten und dem letzten ausgefuehrten Schritt ($$letzter_schritt) veraendert." >&2
-				echo "make dod: Differenz von 'git status --porcelain' vorher/nachher (betroffene Dateien):" >&2
+				echo "make dod: Differenz der Aufnahme vorher/nachher (Statusliste und Inhaltspruefsummen der verfolgten Dateien):" >&2
 				diff <(printf '%s\n' "$$d19_status_vorher") <(printf '%s\n' "$$d19_status_nachher") >&2 || true
 				# "kann gruen rot machen, nie rot gruen": nur von 0 auf ungleich 0 heben.
 				if [ "$$gesamt_rc" -eq 0 ]; then gesamt_rc=2; fi
@@ -1204,10 +1573,15 @@ endif
 		fi
 	else
 		echo ""
-		echo "make dod: D19 Lage B -- kein .git/ vorhanden, der Kettengrundsatz kann an einem nicht versionierten Bestand nicht beobachtet werden."
+		d19_befund="Lage B -- kein Git-Arbeitsbaum, nicht beobachtet"
+		echo "make dod: D19 Lage B -- kein Git-Arbeitsbaum, der Kettengrundsatz kann an einem nicht versionierten Bestand nicht beobachtet werden."
 	fi
 	if [ "$$gesamt_rc" -ne 0 ]; then
 		echo "" >&2
+		# Gering-Befund der Nachpruefung: Die D19-Zeile stand nur im Erfolgspfad;
+		# bei einem Abbruch ohne D19-Verletzung erschien ueberhaupt keine
+		# Aussage zu D19. Als Nachweiszeile (5.3) war das unvollstaendig.
+		echo "make dod: D19: $$d19_befund." >&2
 		echo "make dod: abgebrochen, Rueckgabewert $$gesamt_rc." >&2
 		exit $$gesamt_rc
 	fi
@@ -1217,5 +1591,5 @@ endif
 		exit 2
 	fi
 	echo ""
-	echo "make dod: alle $$erwartete_marken Kettenschritte durchlaufen (D1 bis D12 plus D18), keiner ungleich 0, $$erwartete_marken gueltige Marken gezaehlt, D19 ohne Befund (Arbeitsbaum unveraendert oder kein .git/)."
+	echo "make dod: alle $$erwartete_marken Kettenschritte durchlaufen (D1 bis D12 plus D18), keiner ungleich 0, $$erwartete_marken gueltige Marken gezaehlt, D19: $$d19_befund."
 	exit 0

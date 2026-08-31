@@ -4,7 +4,7 @@
 |---|---|
 | **Titel** | Ziel-Stack, Modulschnitt, Datenzugriff und Grundgerüst für R3cOSINT |
 | **Status** | **angenommen** — Freigabe des Auftraggebers am 2026-08-20, Abschnitt 10 |
-| **Fortschreibung** | 2026-08-21 — O-4 entfallen: TheHive und Cortex mit der Neufassung von Projektauftrag 5.17 gestrichen; Abschnitte 8 und 9 nachgeführt. Der Optionenvergleich der Sprachwahl in Abschnitt 3.1 bleibt als damalige Entscheidungsgrundlage unverändert. — 2026-08-30 — Abschnitt 6 in drei Punkten fortgeschrieben: D11 prüft zwei Gegenstände (Arbeitsbaum und Git-Historie) statt nur der Historie; neuer Kettenschritt D18 für die Architekturverträge des Importprüfers, den Abschnitt 3.5 seit dem 2026-08-20 verlangt, ohne dass die Tabelle ihn führte; Kettengrundsatz "ein Prüflauf verändert den Gegenstand nicht, über den er urteilt" samt Folge für D12. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.1; als Verweis berührt sind zusätzlich 1.3 (K5), 3.5, 3.12 sowie 8 (O-8, neu O-10) und 9. — 2026-08-30, **zweite Fortschreibung desselben Tages** nach einer abschliessenden adversarischen Prüfung: Die Kette schreibt keine Sperrdatei mehr (`uv sync --locked` und `uv run --locked` statt `--frozen`), die Unverändertheit des Arbeitsbaums wird als Rahmenprüfung **D19** tatsächlich beobachtet statt nur behauptet, die Objektbestimmung aller Kettenschritte steht neu einmal und einheitlich in einer eigenen Tabelle (löst den Widerspruch bei D18 und die fehlende Bedingung bei D10 auf), und die Prüffläche des Arbeitsbaumlaufs aus D11 ist festgelegt. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.2; berührt sind zusätzlich 1.3 (K5), 3.11 und 8 (O-10 neu gefasst) sowie 9. — 2026-08-30, **dritte Fortschreibung desselben Tages** nach vier vom DevOps Engineer gemeldeten Abweichungen zwischen diesem ADR und dem Makefile: Jeder `uv`-Aufruf der Kette trägt `--project backend`, ohne das `--locked` wirkungslos bleibt (belegter Lauf); D7 erkennt seinen Gegenstand am Backlog statt am Dateinamen und hat keine Lage B mehr; `git` ist bei D11 Prüfmittel des Historienlaufs, sein Fehlen ist Lage C; der Abgleich der Wurzelpakete für D18 ist als O-11 terminiert. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.3; berührt sind zusätzlich 8 (O-11 neu) und 9 |
+| **Fortschreibung** | 2026-08-21 — O-4 entfallen: TheHive und Cortex mit der Neufassung von Projektauftrag 5.17 gestrichen; Abschnitte 8 und 9 nachgeführt. Der Optionenvergleich der Sprachwahl in Abschnitt 3.1 bleibt als damalige Entscheidungsgrundlage unverändert. — 2026-08-30 — Abschnitt 6 in drei Punkten fortgeschrieben: D11 prüft zwei Gegenstände (Arbeitsbaum und Git-Historie) statt nur der Historie; neuer Kettenschritt D18 für die Architekturverträge des Importprüfers, den Abschnitt 3.5 seit dem 2026-08-20 verlangt, ohne dass die Tabelle ihn führte; Kettengrundsatz "ein Prüflauf verändert den Gegenstand nicht, über den er urteilt" samt Folge für D12. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.1; als Verweis berührt sind zusätzlich 1.3 (K5), 3.5, 3.12 sowie 8 (O-8, neu O-10) und 9. — 2026-08-30, **zweite Fortschreibung desselben Tages** nach einer abschliessenden adversarischen Prüfung: Die Kette schreibt keine Sperrdatei mehr (`uv sync --locked` und `uv run --locked` statt `--frozen`), die Unverändertheit des Arbeitsbaums wird als Rahmenprüfung **D19** tatsächlich beobachtet statt nur behauptet, die Objektbestimmung aller Kettenschritte steht neu einmal und einheitlich in einer eigenen Tabelle (löst den Widerspruch bei D18 und die fehlende Bedingung bei D10 auf), und die Prüffläche des Arbeitsbaumlaufs aus D11 ist festgelegt. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.2; berührt sind zusätzlich 1.3 (K5), 3.11 und 8 (O-10 neu gefasst) sowie 9. — 2026-08-30, **dritte Fortschreibung desselben Tages** nach vier vom DevOps Engineer gemeldeten Abweichungen zwischen diesem ADR und dem Makefile: Jeder `uv`-Aufruf der Kette trägt `--project backend`, ohne das `--locked` wirkungslos bleibt (belegter Lauf); D7 erkennt seinen Gegenstand am Backlog statt am Dateinamen und hat keine Lage B mehr; `git` ist bei D11 Prüfmittel des Historienlaufs, sein Fehlen ist Lage C; der Abgleich der Wurzelpakete für D18 ist als O-11 terminiert. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.3; berührt sind zusätzlich 8 (O-11 neu) und 9. — 2026-08-30, **vierte Fortschreibung desselben Tages**: D19 misst den Inhalt des Arbeitsbaums (Prüfsummen aller versionierten Dateien und die Maskierungsmerkmale des Index) statt nur der Statusliste; eine Änderung an einer bereits geänderten Datei blieb sonst unsichtbar. Belege in Abschnitt 6.4. — 2026-08-31, **fünfte Fortschreibung**: Die Reichweite der Kette ist entschieden statt offengelassen — sie schützt gegen Bequemlichkeit und Abkürzung, nicht gegen einen Aufrufer, der die Umgebung beherrscht; die harte Zusicherung liegt in einem Lauf auf der Gegenseite, neu als O-12 terminiert. Belege in Abschnitt 6.5. — 2026-08-31, **sechste Fortschreibung desselben Tages** nach einer eng gefassten Nachprüfung auf einem anderen Modell, die beide Änderungen der fünften Fortschreibung blockierend beanstandet hat: Die Positivliste um `$(UV)` gibt `UV_CACHE_DIR`, `XDG_CACHE_HOME` und `TMPDIR` nicht mehr frei (ein präparierter Zwischenspeicher erzeugte damit ein falsches `A_OK`, weil `--locked` ein bereits entpacktes Archiv nicht erneut prüft), und die Projektbestimmung fällt nicht mehr auf das Arbeitsverzeichnis zurück (die Kette prüfte sonst still ein fremdes Repository). Belege in Abschnitt 6.6; berührt ist zusätzlich 8 (O-13 neu) |
 | **Datum** | 2026-08-20 |
 | **Kennung** | R3-C-001 |
 | **Grundlage** | Projektauftrag 3.1, 3.4, 5.1 bis 5.18, 9.1; `docs/05_Product_Backlog.md` (Etappen 0 und 1); `docs/06_Definition_of_Ready_und_Done.md`; `docs/04_Kontextmodell.md`; `docs/adr/0001-rollenmodell.md` |
@@ -531,7 +531,7 @@ Die Einhaltung ist beobachtbar und braucht keine Zusicherung: Der Bestand der ve
 
 | Gegenstand | Festlegung |
 |---|---|
-| Mittel | `git status --porcelain` unmittelbar vor dem ersten und unmittelbar nach dem letzten ausgeführten Kettenschritt; verglichen wird die vollständige Ausgabe zeilenweise, einschliesslich der unverfolgten Einträge (`??`) |
+| Mittel | `git status --porcelain --untracked-files=all` **und** eine Inhaltsprüfsumme je verfolgter Datei (`git ls-files -z \| xargs -0 sha256sum`), unmittelbar vor dem ersten und unmittelbar nach dem letzten ausgeführten Kettenschritt; verglichen wird die vollständige Aufnahme zeilenweise, einschliesslich der unverfolgten Einträge (`??`). Fortgeschrieben am 2026-08-30, siehe 6.4 |
 | Massstab | Vorher gegen Nachher, **nicht** gegen einen sauberen Arbeitsbaum. Die Kette läuft vor dem Commit und trifft regelmässig einen veränderten Arbeitsbaum an; das ist zulässig — ihn zu verändern ist es nicht |
 | Ausgang | Bei Abweichung endet `make dod` ungleich 0 und nennt die abweichenden Zeilen. Der Befund kann einen grünen Lauf rot machen, nie einen roten grün |
 | Auch bei Abbruch | Die Nachher-Aufnahme läuft auch dann, wenn die Kette an einem Schritt vorher abgebrochen ist. Sonst bliebe gerade der Schritt unbeobachtet, der schreibt und zugleich scheitert |
@@ -814,6 +814,181 @@ Die Werkzeugwahl aus 3.12 bleibt unverändert. Kein Kettenschritt wechselt sein 
 
 ---
 
+### 6.4 Vierte Fortschreibung vom 2026-08-30 — D19 misst den Inhalt, nicht die Statusliste
+
+**Eingetragen durch den Koordinator**, nicht durch den Software Architect. Der
+Grund gehört zur Sache: Der Befund entstand beim Wirkungsnachweis zu B2 und ist
+ausgeführt belegt; die Umsetzung im Makefile wäre sonst stillschweigend vom ADR
+abgewichen, was CLAUDE.md untersagt. Der Software Architect prüft die
+Formulierung bei nächster Gelegenheit nach.
+
+**Was vorher galt.** Abschnitt 6.3 legte für D19 als Mittel `git status
+--porcelain` fest, vorher und nachher, zeilenweise verglichen.
+
+**Was jetzt gilt.** Die Aufnahme umfasst zusätzlich eine Inhaltsprüfsumme je
+verfolgter Datei, und die Statusliste wird mit `--untracked-files=all` erhoben.
+
+**Weshalb.** Die blosse Statusliste misst, **welche** Dateien abweichen, nicht
+**wie**. Eine Datei, die schon vor dem Lauf geändert war, trägt vorher wie
+nachher denselben Eintrag `` M datei`` — auch wenn ein Kettenschritt sie
+während des Laufs erneut ändert. Ausgeführt belegt am 2026-08-30 in einem
+`git worktree`:
+
+```
+Vorbedingung: " M Makefile  M README.md"
+Kettenschritt haengt eine Zeile an README.md an
+vorher:  make dod endete mit 0 -- "D19 ohne Befund"
+nachher: make dod endet mit 2 -- "D19 verletzt"
+```
+
+Der Fall ist nicht der Randfall, sondern der Regelfall: Die Kette läuft nach
+6.1.1 **vor** dem Commit, also auf einem Baum, der üblicherweise bereits
+Änderungen trägt. Ohne die Prüfsumme wäre der Kettengrundsatz aus 6.1.3 genau
+dort blind, wo er gebraucht wird.
+
+**Einordnung in das Muster.** Die Schlussprüfung vom 2026-08-30 hat als Ursache
+aller drei gescheiterten Runden benannt: *die Kette misst die Verfügbarkeit
+eines Namens, nicht die Anwesenheit des Gegenstands.* Die Statusliste ist
+derselbe Fehler eine Ebene höher — sie misst eine Liste von Namen statt den
+Inhalt. Die Fortschreibung schliesst ihn an dieser Stelle.
+
+**Preis, benannt statt verschwiegen.** Die Prüfsumme läuft zweimal je
+`make dod` über alle verfolgten Dateien. Bei einem grossen Bestand ist das
+spürbar; die Alternative wäre ein unbeobachtbarer Grundsatz. Sollte die Laufzeit
+stören, ist die Antwort eine schnellere Prüfsumme, nicht eine ungenauere
+Aufnahme.
+
+### 6.5 Fünfte Fortschreibung vom 2026-08-31 — wogegen die Kette schützt, und wogegen nicht
+
+**Eingetragen durch den Koordinator.** Fünf adversarische Prüfrunden haben ein
+Muster erzeugt: Jede geschlossene Umgehung brachte eine neue hervor —
+`PATH`, dann `UV_PROJECT_ENVIRONMENT`, dann `PYTHONPATH`, dann `BASH_ENV`.
+Der ADR entscheidet deshalb, was er bisher offenliess: die Reichweite.
+
+**Was jetzt gilt.** Die Definition-of-Done-Kette schützt gegen **Bequemlichkeit
+und Abkürzung** — ein Schritt, der mit 0 endet, ohne geprüft zu haben; ein
+fehlendes Prüfmittel, das als "keine Beanstandung" durchgeht; ein Schritt, der
+den Gegenstand verändert, über den er urteilt; eine Lage-Marke, die etwas
+anderes behauptet als der Rückgabewert. Das ist die Fehlerklasse aus 3.4.
+
+Sie schützt **nicht** gegen jemanden, der die Umgebung des Aufrufs beherrscht.
+Zwei ausgeführte Belege vom 2026-08-31 — ein dritter Fall, der **nicht** unter
+diese Begründung fällt, ist am selben Tag hinzugekommen und steht in 6.6:
+
+1. **`BASH_ENV`.** Bash liest die Variable auch für nicht-interaktive Shells,
+   und zwar **bevor die erste Rezeptzeile läuft**. Eine dort definierte Funktion
+   `env` verschluckt jeden `$(UV)`-Aufruf; D1 bis D8 und D18 melden "bestanden",
+   ohne dass ein Werkzeug lief.
+2. **Ein gefälschtes `uv` früher im `PATH`** bedient die Umfeldprobe und den
+   eigentlichen Aufruf zugleich.
+
+**Weshalb das nicht zu schliessen ist.** Jede gesperrte Variable hat eine
+Nachfolgerin, und die zuletzt gefundene wirkt **vor** dem ersten eigenen Befehl
+der Datei. Eine Negativliste über die Umgebung kann nicht schliessen — dieselbe
+Einsicht, die 6.2.2 für die Objektbestimmung festgehalten hat.
+
+**Weshalb es vertretbar ist.** Wer `BASH_ENV` setzen kann, während `make dod`
+aufgerufen wird, kann den Aufruf ebenso gut unterlassen oder das Makefile
+ändern. Ein Gate im Arbeitsverzeichnis ist gegen den, der das
+Arbeitsverzeichnis beherrscht, grundsätzlich wirkungslos.
+
+**Folge, die in die Planung gehört.** Die Kette ist die **zweite Linie** — wie
+die beiden PreToolUse-Gates, deren Kopfkommentare dasselbe festhalten. Die
+harte Zusicherung liegt dort, wo der Aufrufer die Umgebung nicht beherrscht:
+in einem Lauf auf der Gegenseite (Bauumgebung, Server), analog zum Ruleset, das
+den Schutz von `main` trägt. **Solange dieser Lauf fehlt, ist die Kette die
+Selbstprüfung eines kooperierenden Aufrufers.** Das ist beim Nachweis nach 5.3
+mitzudenken und beim Zuschnitt von R3-Q-001 zu berücksichtigen.
+
+**Neuer offener Punkt O-12:** Ein Lauf der Kette auf der Gegenseite, in einer
+Umgebung, die der Aufrufer nicht setzt. Zuständig: DevOps Engineer mit
+SecDevOps; fällig mit dem Grundgerüst, spätestens mit der Bereitschaftsliste.
+
+### 6.6 Sechste Fortschreibung vom 2026-08-31 — die Reichweite aus 6.5 war zu weit gefasst, und die Projektbestimmung urteilte über das falsche Repository
+
+**Eingetragen durch den Koordinator** nach einer sechsten, bewusst eng
+gefassten Prüfrunde auf einem anderen Modell. Sie hat genau die beiden
+Änderungen geprüft, die 6.5 nach sich zog, und für beide einen blockierenden
+Befund erhoben. Beide sind behoben; hier steht, was vorher galt, was jetzt
+gilt und weshalb.
+
+#### 6.6.1 Die Positivliste um `$(UV)` war zu breit — der Zwischenspeicher hebelt `--locked` aus
+
+| | |
+|---|---|
+| **Vorher galt** | Jeder `uv`-Aufruf läuft über eine leere Umgebung (`env -i`), durchgereicht wird nur eine Positivliste. Am 2026-08-31 wurde diese Liste um die Netz- und Zertifikatsvariablen erweitert, weil `uv` in einer Umgebung mit Proxy und eigener Wurzelzertifizierungsstelle sonst scheitert. Mitgenommen wurden dabei `UV_CACHE_DIR`, `XDG_CACHE_HOME` und `TMPDIR` |
+| **Jetzt gilt** | Diese drei stehen nicht mehr auf der Liste. Durchgereicht wird ausschliesslich, was der Proxy- und Zertifikatsfall nachweislich braucht, dazu `LANG`/`LC_ALL` für die Kodierung der Ausgabe |
+
+**Der Beleg.** `--locked` prüft die Prüfsumme eines Pakets beim
+**Herunterladen**. Liegt ein bereits **entpacktes** Archiv im Zwischenspeicher,
+wird es ohne erneute Prüfung ins Umfeld gelegt. Die Prüfung hat das mit einem
+ausgeführten Lauf gezeigt: präparierter Zwischenspeicher, `.venv` gelöscht,
+`make bau` erneut — Ergebnis `A_OK` bei manipuliertem Paketinhalt im Umfeld.
+Der Weg über `HTTPS_PROXY` führt dagegen **nicht** zu einem falschen `A_OK`,
+sondern zu einem sauberen Fehlschlag; dort trägt `--locked`.
+
+**Weshalb das kein Sonderfall von 6.5 ist.** 6.5 begründet die Reichweite mit
+dem Satz: Wer die Umgebung so weit beherrscht, kann den Aufruf ebenso gut
+unterlassen. Für `UV_CACHE_DIR` trug dieser Satz nicht — es genügte **eine
+einzige gesetzte Umgebungsvariable**, ohne Kontrolle über Shell oder `PATH`,
+und diese Variable hatte die Kette selbst freigegeben. Der Befund richtet sich
+also nicht gegen die Reichweite aus 6.5, sondern gegen ihre zu breite
+Umsetzung. Nach der Entfernung der drei Variablen bleibt als Weg nur `HOME`
+— das `uv` zwingend braucht und unter dem der Zwischenspeicher liegt —, und
+für `HOME` trägt der Satz aus 6.5 wieder.
+
+**Was bewusst nicht getan wurde.** Ein fest verdrahteter Zwischenspeicherpfad
+wäre gegen `HOME` dicht, tauscht den Weg aber gegen zwei neue Fehler: Ein nicht
+beschreibbarer Ort lässt **jeden** `uv`-Schritt als "Lage A — durchgefallen"
+enden — genau die Falschaussage, welche die Erweiterung der Positivliste
+beseitigen sollte —, und ein Zwischenspeicher im Arbeitsbaum käme unter den
+Arbeitsbaumlauf von D11 (6.2.3: `.gitignore` wirkt dort nicht) und damit unter
+einen Prüfer, der auf Paketinhalt nicht ausgelegt ist. Der wirksame Abschluss
+ist `uv sync --no-cache`: jedes Paket wird neu geladen und dabei gegen die
+Sperrdatei geprüft, um den Preis eines vollständigen Ladevorgangs je Lauf und
+einer Netzabhängigkeit. Das ist eine Betriebsentscheidung, keine
+Architekturentscheidung — **neu als O-13 in Abschnitt 8**.
+
+#### 6.6.2 Die Projektbestimmung konnte still das falsche Repository prüfen
+
+| | |
+|---|---|
+| **Vorher galt** | Das Projektverzeichnis `PROJ` wurde aus `$(MAKEFILE_LIST)` hergeleitet; scheiterte das (GNU Make trennt die Liste an Leerzeichen), fiel `PROJ` auf das Arbeitsverzeichnis zurück. Eine Wache prüfte, ob dort ein Marker liegt (`CLAUDE.md` oder `.git`) |
+| **Jetzt gilt** | Kein Rückfall. `PROJ` wird aus dem **ganzen** Wert von `$(MAKEFILE_LIST)` hergeleitet — die Datei bindet nichts ein, die Liste trägt also genau einen Eintrag, und gespalten hat ihn immer erst `$(firstword)`. Lässt sich der Pfad nicht bestimmen, bricht der Lauf mit einer Erklärung ab |
+
+**Der Beleg.** Die Wache mass, ob am Rückfallort *irgendein* Marker liegt —
+nicht, ob es der *richtige* ist. Steht der Aufrufer in einem anderen echten
+Arbeitsbaum (zwei Arbeitskopien nebeneinander sind die naheliegende
+Arbeitsform, siehe 6.4), trägt der Rückfallort seinen eigenen Marker, die
+Wache schweigt, und `make dod` prüft vollständig und unbemerkt das falsche
+Repository. Mit zwei Arbeitskopien ausgeführt belegt. Kommt die falsche Kopie
+weiter als die gemeinte, ist das ein **falsches Grün für einen Stand, den
+niemand angesehen hat** — die Fehlerklasse, gegen die diese Kette gerade
+schützen soll.
+
+**Es ist dieselbe Ursache wie in 6.2.2.** Die Wache machte die Lage an einem
+**Namen** fest ("hier liegt ein `CLAUDE.md`") statt am **Gegenstand** ("das ist
+das Verzeichnis dieses Makefiles"). Die Behebung nimmt den Gegenstand: Der
+Pfad, den GNU Make selbst gelesen hat, wird ungeteilt an die Shell gegeben.
+Nebenbei ist damit die bisher als "nicht unterstützt" bezeichnete Aufrufart
+`make -f '<pfad mit leerzeichen>/Makefile'` aus einem fremden
+Arbeitsverzeichnis nicht mehr nur erkannt, sondern richtig aufgelöst
+(ausgeführt belegt für sieben Aufrufarten, einschliesslich symbolischem
+Verweis und umbenannter Datei).
+
+#### 6.6.3 Was diese Fortschreibung nicht ändert
+
+Die Werkzeugwahl aus 3.12 bleibt unverändert. Kein Kettenschritt wechselt sein
+Werkzeug, seine Stellung oder seinen Gegenstand; D1 bis D12, D18 und D19
+bleiben im Befehl unberührt. Der Kettengrundsatz aus 6.1.3, die Nummernregel
+aus 6.1.2, die beiden Läufe aus 6.1.1, die Objektbestimmung aus 6.2.2, die
+Prüffläche aus 6.2.3, `--locked` mit `--project backend` aus 6.3.1 und die
+Inhaltsprüfung aus 6.4 bleiben in Kraft. Die Reichweitenentscheidung aus 6.5
+bleibt bestehen und wird durch 6.6.1 präzisiert, nicht aufgehoben. Offen
+bleiben O-7, O-8, die beiden Restfragen aus O-10, O-11 und O-12; neu
+hinzu kommt O-13.
+
+
 ## 7. Konsequenzen
 
 **7.1 Zwei Sprachstacks.** Python im Backend, TypeScript in der Oberfläche. Das kostet eine zweite Werkzeugkette, eine zweite Sperrdatei und eine grössere Lieferkettenfläche in D8 und D11. Angenommen wird das, weil die Alternative — ein Stack — an einer der beiden Seiten teurer wäre: entweder Nachbau der kanonischen Schemata oder handgeschriebene Interaktionslogik ohne geprüfte Bausteine für Barrierefreiheit.
@@ -849,6 +1024,8 @@ Die Werkzeugwahl aus 3.12 bleibt unverändert. Kein Kettenschritt wechselt sein 
 | O-10 (neu gefasst) | **Beantwortet am 2026-08-30 mit einem ausgeführten Lauf (gitleaks 8.21.2):** `--no-git` beachtet `.gitignore` nicht; eine ignorierte `.env` oder `*.pem` blockiert die ganze Kette. Entschieden in 6.2.3: Zugangsdaten liegen nicht im Arbeitsbaum (3.11), ausgeschlossen wird ausschliesslich, was kein Repository-Inhalt sein kann, der Schutz wird nicht abgestuft. **Offen bleiben zwei Restfragen:** (a) die namentliche Ausschlussliste für Abhängigkeits- und Bauverzeichnisse samt ihrer technischen Form — Werkzeugkonfiguration oder Aufrufparameter; (b) die betriebliche Form der Ablage von Zugangsdaten ausserhalb des Arbeitsbaums, einschliesslich Einhängung im Prüfstapel und Eintrag in die Betriebsdokumentation | (a) hängt an der eingesetzten Werkzeugfassung und ist mit einem ausgeführten Lauf zu belegen; (b) ist Betrieb und Sicherheit, nicht Architektur | (a) DevOps Engineer mit SecDevOps; (b) SecDevOps mit DevOps Engineer | (a) mit R3-Q-001; (b) mit dem Grundgerüst, vor der ersten Umsetzungseinheit mit Code |
 
 | O-11 | Abgleich für D18: Jedes oberste Paket unterhalb `backend/src/` ist in `backend/importvertraege.toml` als Wurzelpaket genannt — und wo dieser Abgleich sitzt, im Aufruf oder als Vertrag im Prüfer selbst | **Neu am 2026-08-30 (6.3.4).** Nicht baubar, solange `backend/importvertraege.toml` nicht besteht; heute im Makefile nur als Kommentar hinterlegt, und ein Kommentar ist keine Prüflogik. Ohne den Abgleich meldet D18 Lage A, ohne etwas beurteilt zu haben — der Befund aus 6.2.2 | DevOps Engineer mit Backend Engineer | mit dem Anlegen von `backend/importvertraege.toml`, also mit dem Grundgerüst und vor der ersten Umsetzungseinheit mit Fachlogik |
+
+| O-13 | Ob die Kette den Zwischenspeicher von `uv` benutzen darf oder ob D1 mit `uv sync --no-cache` läuft | **Neu am 2026-08-31 (6.6.1).** `--locked` prüft die Prüfsumme beim Herunterladen, nicht noch einmal für ein bereits entpacktes Archiv im Zwischenspeicher; ausgeführt belegt. Wer `HOME` setzen oder in `~/.cache/uv` schreiben kann, erhält damit ein falsches `A_OK` in D1. `--no-cache` schliesst das, kostet aber je Lauf einen vollständigen Ladevorgang und macht die Kette netzabhängig — eine Abwägung zwischen Laufzeit und Beweiskraft, die der Auftraggeber trifft, nicht die Umsetzung | Auftraggeber mit SecDevOps und DevOps Engineer | mit R3-Q-001; spätestens mit dem Lauf auf der Gegenseite (O-12), der denselben Punkt betrifft |
 
 Nicht offen, sondern entschieden und hier nur zur Klarstellung: `pgvector` (A4), Suchindex (A3), Orchestrierung (A11). Nicht offen, weil gestrichen: VirusTotal, Gesichtserkennung samt biometrischer Vektoren, Open WebUI, CASE/UCO, Fernsteuerung von Maltego; seit der Fortschreibung vom 2026-08-21 auch TheHive und Cortex (5.17).
 
