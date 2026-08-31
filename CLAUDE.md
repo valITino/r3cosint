@@ -21,7 +21,7 @@ vorherige freigegeben ist.
 | 2 CLAUDE.md, Rules, Hooks | erledigt |
 | 3 Requirements Engineering und Planung | erledigt |
 | 4 **Freigabe-Gate durch den Auftraggeber** | erledigt — Freigabe 2026-08-20, Commit `5c5ecde6c6f1b2eba67cd22e24b40b6439aebac4` (`docs/08_Freigabe_Schritt_4.md`) |
-| 5 Umsetzung | läuft — R3-C-001 abgenommen (ADR 0002, 2026-08-20). Freigegebene Reihenfolge vom 2026-08-25: C-Fix ✓, E1 ✓, E2 ✓, D2 ✓, E5 ✓ (D2 und E5 im Full-Review vom 2026-08-25 vorgezogen), Befund F ✓ (2026-08-26, `docs/uebergaben/2026-08-26_befund-f-abnahmekriterien.md`); **Zwischenschritt auf Weisung vom 2026-08-29:** Makefile mit `make dod` vor R3-Q-001, weil ADR 0002 Abschnitt 6 den Hook auf diesen einen Befehl stützt und das Makefile fehlt (`docs/vorlagen/2026-08-29_werkzeugvorschlag-cas-blockwoche.md`); danach R3-Q-001, E4, E3, dann Grundgerüst |
+| 5 Umsetzung | läuft — R3-C-001 abgenommen (ADR 0002, 2026-08-20). Freigegebene Reihenfolge vom 2026-08-25: C-Fix ✓, E1 ✓, E2 ✓, D2 ✓, E5 ✓ (D2 und E5 im Full-Review vom 2026-08-25 vorgezogen), Befund F ✓ (2026-08-26, `docs/uebergaben/2026-08-26_befund-f-abnahmekriterien.md`); **Zwischenschritt auf Weisung vom 2026-08-29:** Makefile mit `make dod` vor R3-Q-001, weil ADR 0002 Abschnitt 6 den Hook auf diesen einen Befehl stützt und das Makefile fehlt (`docs/vorlagen/2026-08-29_werkzeugvorschlag-cas-blockwoche.md`) — Makefile ✓ (2026-08-31, `docs/uebergaben/2026-08-31_makefile-dod-drei-befunde-behoben.md`); danach R3-Q-001, E4, E3, dann Grundgerüst |
 
 - **Freigabe-Gate Schritt 4 erteilt, Architekturentscheid angenommen**
   (beides 2026-08-20). Gebaut wird entlang ADR 0002; Abweichungen davon nur
