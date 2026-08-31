@@ -5,7 +5,7 @@
 | **Arbeitsprodukt nach** | Projektauftrag 6.3, 6.4 |
 | **Verantwortlich** | Product Owner (Ordnung und Priorität), Requirements Engineer (Formulierung und Prüfbarkeit) |
 | **Lebensdauer** | sich weiterentwickelnd |
-| **Stand** | 2026-08-26, nachgeführt (Befund F des Deep Reviews vom 2026-08-25: R3-F-022 bis R3-F-024 und R3-F-026 bis R3-F-028 neu in Etappe 1, R3-Q-006 neu in Etappe 3, R3-F-025 neu in Etappe 4, R3-F-015 und R3-F-002 um Rückverweis ergänzt; zweite Nachführung 2026-08-26 nach Koordinatorenprüfung (zwei unabhängige Prüfungen der ersten Einordnung nicht bestanden): R3-F-017 um zweites Abnahmekriterium und 2 h ergänzt, R3-F-024 selbstskalierend reformuliert und in Etappe 1 belassen, Querverweis in R3-F-023 korrigiert (R3-F-017 statt R3-F-018), Summen neu gerechnet, Offene Punkte ergänzt; frühere Stände: V-01 und V-04 aus `docs/08_Freigabe_Schritt_4.md`, O-1-Vermerk aus ADR 0002) |
+| **Stand** | 2026-08-26, nachgeführt (Befund F des Deep Reviews vom 2026-08-25: R3-F-022 bis R3-F-024 und R3-F-026 bis R3-F-028 neu in Etappe 1, R3-Q-006 neu in Etappe 3, R3-F-025 neu in Etappe 4, R3-F-015 und R3-F-002 um Rückverweis ergänzt; zweite Nachführung 2026-08-26 nach Koordinatorenprüfung (zwei unabhängige Prüfungen der ersten Einordnung nicht bestanden): R3-F-017 um zweites Abnahmekriterium und 2 h ergänzt, R3-F-024 selbstskalierend reformuliert und in Etappe 1 belassen, Querverweis in R3-F-023 korrigiert (R3-F-017 statt R3-F-018), Summen neu gerechnet, Offene Punkte ergänzt; frühere Stände: V-01 und V-04 aus `docs/08_Freigabe_Schritt_4.md`, O-1-Vermerk aus ADR 0002; dritte Nachführung 2026-08-31 nach Einordnung des Vergleichs mit `valITino/claude-skills-fullstack` (Stand `882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf`): R3-Q-007 und R3-Q-008 neu in Etappe 0, R3-Q-009 neu in Etappe 0 und nicht ready, R3-F-029 neu in Etappe 1 und nicht ready, R3-F-062 neu in Etappe 3, Achtung-Hinweise ergänzt bei R3-Q-001, R3-F-008, R3-F-021, R3-F-054, Summen neu gerechnet, Offene Punkte um Nr. 13 und 14 ergänzt) |
 
 ## Wie dieser Backlog zu lesen ist
 
@@ -59,12 +59,39 @@ Diese Einträge gehen jeder Etappe voraus oder laufen quer.
 - **Abnahme:** Test `R3-Q-001_gate_blockiert` — bei rotem Prüflauf endet der Hook mit Rückgabewert 2 und die Aufgabe lässt sich nicht abschliessen; bei grünem Prüflauf endet er mit 0; bei gesetztem `stop_hook_active` endet er mit 0, auch wenn der Prüflauf rot ist.
 - **Abhängigkeit:** Setzt die Definition of Done (`docs/06_Definition_of_Ready_und_Done.md`) und R3-C-001 voraus, weil die konkreten Befehle je Kettenschritt vom Ziel-Stack abhängen. Vorher gäbe es kein Kriterium, das die Gates prüfen könnten.
 - **Achtung:** Bis zum 2026-08-20 nannte die Abhängigkeit einen Eintrag R3-C-020, den es nie gab — korrigiert nach Befund V-01 (`docs/08_Freigabe_Schritt_4.md`).
+- **Achtung:** Aus dem Vergleich mit `valITino/claude-skills-fullstack` (Stand `882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf`, eingeordnet 2026-08-31) vier Punkte für die Umsetzung festgehalten, keiner davon als eigener Backlog-Eintrag, weil sie den **Inhalt** der Kette betreffen und damit — wie D18 und D19 — über eine Fortschreibung von ADR 0002, Abschnitt 6, laufen, nicht über eine eigene Kennung: (1) Der rote und der grüne Lauf, den `R3-Q-001_gate_blockiert` bereits verlangt, ist der Selbsttest, den die Hook-Regel in `.claude/rules/claude-konfiguration.md` fordert ("Jedes Hook-Skript wird vor dem Einbau gegen einen blockierenden und einen durchzulassenden Fall geprüft") — kein zusätzliches Kriterium nötig. Bekannte Erschwernis: `PROJ` lässt sich nicht überschreiben, ein grüner Lauf braucht deshalb einen vollständigen Scheinbaum (`CLAUDE.md`, `.git/`, `backend/pyproject.toml`, `docs/05_...`). (2) Fehlender Kettenschritt gegen Schwachstellenklassen im eigenen Code — D8 prüft Abhängigkeiten, D11 Geheimnisse, keiner die eigene Zeile; günstigster Weg wäre die Regelgruppe `S` in derselben ruff-Konfiguration, ohne neues Werkzeug. (3) Ein Markdown-Struktur- und Tabellenprüfer gegen verrutschte Tabellenspalten (eine verrutschte Spalte in der Rollentabelle ist eine falsch gelesene Bauvorschrift). (4) Ein Prüfmodus für den Nachweiserzeuger — erst sinnvoll, sobald `scripts/nachweise-erzeugen.sh` mit dem Grundgerüst besteht (heute noch nicht vorhanden, siehe ADR 0002, Dateibaum zu D12). Alle vier sind Sache des Software Architects im Rahmen der Fortschreibung, nicht des Product Owners.
 
 ### R3-Q-005 — Rollen-Schreibgrenzen als PreToolUse-Gate
 - **Art:** Qualitätsanforderung · **Kano:** Basisfaktor · **Prüfaufwand:** 3 h · **Quelle:** 3.4, 4.1 · **Etappe:** 0
 - **Formulierung:** Die in ADR 0001 Abschnitt 4 als Instruktion geführten Schreibgrenzen der Rollen (Verzeichnis- und Arbeitsprodukt-Begrenzung) werden hart durchgesetzt: Ein Schreibzugriff einer Rolle ausserhalb ihres zulässigen Bereichs wird vor der Ausführung mit Rückgabewert 2 blockiert. Die Durchsetzung liegt versioniert im Repository — in `.claude/settings.json` oder im `hooks`-Feld der betroffenen Rollendateien (3.2).
 - **Abnahme:** Test `R3-Q-005_schreibgrenze_blockiert` — ein Schreibversuch des Protocol Masters ausserhalb von `docs/`, des Vulnerability Managers ausserhalb des Registers und des Dynamic Software Testers ausserhalb von Testverzeichnissen wird blockiert; ein zulässiger Schreibzugriff derselben Rollen läuft durch; fehlt `jq`, blockiert das Gate mit Meldung, statt durchzulassen.
 - **Achtung:** Unabhängig vom Ziel-Stack umsetzbar. Kann die schreibende Rolle in einem zentralen Hook nicht zuverlässig festgestellt werden, wird die Grenze je Rolle über das `hooks`-Feld im Frontmatter verankert (ADR 0001, 5.4) und ADR 0001 fortgeschrieben. *(Ergänzt am 2026-08-20, Befund V-04 in `docs/08_Freigabe_Schritt_4.md`.)*
+
+### R3-Q-007 — Konfigurationsprüfer für die 21 Rollendateien
+- **Art:** Qualitätsanforderung · **Kano:** Basisfaktor · **Prüfaufwand:** 3 h · **Quelle:** 3.2, 4.1, ADR 0001 Konsequenz 7.1 · **Etappe:** 0
+- **Formulierung:** Jede der 21 Rollendateien unter `.claude/agents/` wird gegen ein festes Kriterienset geprüft: vollständiges Frontmatter (`name`, `description`, `tools`, `model`, `maxTurns`), `name` deckt sich mit dem Dateinamen, und jede Rolle, deren `tools`-Feld ein über reines Lesen hinausgehendes Werkzeug (`Write`, `Edit`, `Bash` oder gleichwertig) enthält, trägt im Rollentext eine auffindbare Passage, die die zugehörige Schreib- oder Ausführungsgrenze in Worten benennt.
+- **Abnahme:** Test `R3-Q-007_frontmatter_vollstaendig` — für jede der 21 Rollendateien sind `name`, `description`, `tools`, `model` und `maxTurns` gesetzt und `name` stimmt mit dem Dateinamen überein; eine Datei mit fehlendem Feld oder abweichendem Namen lässt den Test fehlschlagen.
+- **Abnahme:** Test `R3-Q-007_schreibgrenze_im_text_benannt` — für jede Rolle, deren `tools`-Feld `Write`, `Edit`, `Bash` oder ein gleichwertiges veränderndes Werkzeug führt, findet eine Textsuche im Rollenkörper mindestens eine Passage, die eine Verzeichnis-, Arbeitsprodukt- oder Artefaktgrenze benennt; eine Rolle ohne eine solche Passage lässt den Test fehlschlagen.
+- **Abhängigkeit:** Seitwärts zu R3-Q-005 — eine harte Durchsetzung braucht eine auffindbare weiche Form, gegen die sie später abgeglichen werden kann. Seitwärts zu R3-C-007: Ob jede in `skills:` genannte Skill existiert, prüft bereits `R3-C-007_skills_konsistent`; dieser Eintrag wiederholt das nicht.
+- **Achtung:** Grundlage ist ADR 0001, Konsequenz 7.1: "Rechte liegen in zwei Formen vor, hart im `tools`-Feld ... und weich als Instruktion ... Beide Formen müssen übereinstimmen ... Bis die Hooks aus Abschnitt 4 existieren, ist die weiche Form für dreizehn der einundzwanzig Rollen die einzige." Eine Übereinstimmung, die niemand prüft, ist eine Hoffnung.
+- **Achtung:** Bewusst nicht Teil der Abnahme: ob `tools`-Feld und Textinstruktion **inhaltlich** übereinstimmen (nur, ob eine Passage überhaupt existiert), und ob `description` "einen Auslösefall beschreibt" — beides ist mit heutigen Mitteln nicht deterministisch prüfbar und bleibt menschliches Review nach 7.3.
+- **Achtung:** Neu eingeordnet nach Vergleich mit `valITino/claude-skills-fullstack`, 2026-08-31.
+
+### R3-Q-008 — ADR-Vorlage: Ablösestatus, geprüfte Alternativen, gegliederte Konsequenzen
+- **Art:** Qualitätsanforderung · **Kano:** Basisfaktor · **Prüfaufwand:** 2 h · **Quelle:** 6.6, `.claude/rules/dokumentation.md` · **Etappe:** 0
+- **Formulierung:** Die ADR-Vorlage in `.claude/rules/dokumentation.md` wird um drei Elemente ergänzt: einen Statuswert "abgelöst durch ADR-NNNN" für den Kopf, einen Pflichtabschnitt "Geprüfte Alternativen", und eine Gliederung der Konsequenzen in positiv, negativ, neutral. Jeder ab dieser Fortschreibung neu angenommene oder inhaltlich fortgeschriebene ADR folgt der ergänzten Vorlage.
+- **Abnahme:** Test `R3-Q-008_vorlage_ergaenzt` — `.claude/rules/dokumentation.md` nennt im Abschnitt "Architecture Decision Records" den Statuswert "abgelöst durch ADR-NNNN", den Pflichtabschnitt "Geprüfte Alternativen" und die dreiteilige Gliederung der Konsequenzen.
+- **Abnahme:** Test `R3-Q-008_bestehende_adrs_belegt_oder_ausgenommen` — jeder ADR unter `docs/adr/` mit Status "angenommen" trägt entweder alle drei Elemente oder einen Vermerk "Vorlage vor Fortschreibung [Datum], nicht rückwirkend nachgeführt".
+- **Achtung:** Grund: Unsere Regel verlangt "fortgeschrieben, nicht stillschweigend überholt", ohne einen Statuswert, der genau das ausdrückt — ADR 0002 selbst zeigt den Bedarf, weil es mehrfach fortgeschrieben wurde. Eine rückwirkende Nachführung von ADR 0001 und ADR 0002 ist nicht Teil dieses Eintrags (zweiter Test lässt den Ausnahmevermerk zu); ob sie nachgeführt werden, entscheidet, wer die ADR pflegt (Software Architect), nicht der Product Owner.
+- **Achtung:** Neu eingeordnet nach Vergleich mit `valITino/claude-skills-fullstack`, 2026-08-31.
+
+### R3-Q-009 — Auslöse-Nachweis für `description`-Felder
+- **Art:** Qualitätsanforderung · **Kano:** offen (siehe Achtung) · **Prüfaufwand:** offen (siehe Achtung) · **Quelle:** 4.1, ADR 0001 Konsequenz 7.3 · **Etappe:** 0
+- **Formulierung:** Ob das `description`-Feld einer Rollendatei die automatische Delegation tatsächlich auslöst, wird durch ein Messverfahren nachgewiesen statt angenommen.
+- **Abnahme:** Nicht formulierbar. **Erfüllt die Definition of Ready derzeit nicht** — R6 (prüfbar) und R4 (vollständig in sich) sind nicht erfüllt. Der Kandidat benennt selbst nur eine Möglichkeit ("Ein Messverfahren über Hooks wäre möglich"), keinen festgelegten, deterministischen Prüfschritt mit Rückgabewert. Solange nicht feststeht, welcher Hook welches Ereignis wie gegen welche erwartete Delegation abgleicht, lässt sich kein Testname und kein Abnahmekriterium formulieren; die Hooks müssten in der versionierten `.claude/settings.json` stehen, nicht in der lokalen.
+- **Abhängigkeit:** Seitwärts zu R3-Q-005 und R3-Q-007: Alle drei betreffen die Rollendateien, aber verschiedene Eigenschaften — R3-Q-005 die Durchsetzung von Schreibgrenzen, R3-Q-007 die Konsistenz von Text und `tools`-Feld, dieser Eintrag die tatsächliche Auslösewirkung von `description`.
+- **Achtung:** Bedingung, unter der der Eintrag ready wird: Software Architect oder SecDevOps Engineer legen ein konkretes, deterministisches Messverfahren fest (z. B. ein Hook, der protokolliert, welche Rolle bei welcher Auftragsformulierung tatsächlich gewählt wurde, abgeglichen gegen eine erwartete Zuordnungstabelle). Erst danach lässt sich ein Abnahmekriterium formulieren. Kano und Prüfaufwand bleiben bis dahin offen, wie bei den Frontend-Einträgen vor der Prototyp-Freigabe: eine Schätzung vor Klärung wäre eine Vermutung (6.8).
+- **Achtung:** Neu eingeordnet nach Vergleich mit `valITino/claude-skills-fullstack`, 2026-08-31.
 
 ### R3-C-007 — Skills je Rolle nachgeführt
 - **Art:** Randbedingung · **Kano:** gesetzt · **Prüfaufwand:** 1 h · **Quelle:** 3.2 · **Etappe:** 0
@@ -136,6 +163,7 @@ echten Abfrage, nicht danach (6.8).
 - **Art:** funktional · **Kano:** Basisfaktor · **Prüfaufwand:** 6 h · **Quelle:** 5.3 · **Etappe:** 1
 - **Als** Gericht **möchte ich**, dass jeder Eintrag beider Spuren die Prüfsumme seines Vorgängers trägt und Protokolle ausschliesslich anfügbar sind, **sodass** man nicht das Ergebnis behalten und den Weg dorthin stillschweigend bereinigen kann.
 - **Abnahme:** Test `R3-F-008_kette_bricht_bei_aenderung` — die nachträgliche Änderung eines Eintrags lässt die Kettenprüfung fehlschlagen und benennt die Bruchstelle; das Entfernen eines Eintrags ebenso; ein Aktualisierungs- oder Löschbefehl auf die Protokolltabelle wird abgewiesen.
+- **Achtung:** Bauform aus dem Vergleich mit `valITino/claude-skills-fullstack` als Hinweis für das Grundgerüst festgehalten (2026-08-31), kein eigener Backlog-Eintrag, weil es Umsetzung und nicht Ergebnis ist — massgebend bleibt der obenstehende Test: Datenbanksitzung als Abhängigkeit mit Transaktionsklammer, ohne Schemaerzeugung aus den Modellen. Eine aus den Modellen erzeugte Tabelle brächte weder einen Migrationsauslöser noch entzogene Schreibrechte der Protokolltabellen mit, und die hier verlangte Anfügbarkeit wäre im Betrieb nicht vorhanden. Sache des Software Architects (ADR 0002, Datenzugriff).
 
 ### R3-F-009 — Negativbefunde erscheinen zwingend
 - **Art:** funktional · **Kano:** Basisfaktor · **Prüfaufwand:** 3 h · **Quelle:** 5.3 · **Etappe:** 1
@@ -212,6 +240,7 @@ echten Abfrage, nicht danach (6.8).
 - **Art:** funktional · **Kano:** Basisfaktor · **Prüfaufwand:** 3 h · **Quelle:** 5.17 · **Etappe:** 1
 - **Als** Betreiber **möchte ich** das System vollständig ohne Netzzugang nach aussen betreiben können, **sodass** Datenbestand und Darstellung auch dann funktionieren.
 - **Abnahme:** Test `R3-F-021_offline_nutzbar` — bei blockiertem ausgehendem Netz starten Anwendung und Datenbestand, Fälle lassen sich öffnen, der Graph lässt sich anzeigen und exportieren; Abfragen nach aussen scheitern mit verständlicher Meldung, ohne die Anwendung zu beenden.
+- **Achtung:** Testmethode aus dem Vergleich mit `valITino/claude-skills-fullstack` übernommen (2026-08-31): ein kontrollierter Ausfallversuch mit Compose-Mitteln (Netzisolierung des Containers), ausschliesslich gegen Test/Schulung (5.16, R3-C-005). Kein eigener Eintrag, weil `R3-F-021_offline_nutzbar` diesen Fall bereits deckt — das ist die Art, wie der Dynamic Software Tester ihn erbringt, kein zusätzlicher Anforderungsinhalt.
 
 ### R3-F-022 — Schemaprüfung eingehender Quellantworten
 - **Art:** funktional · **Kano:** Basisfaktor · **Prüfaufwand:** 6 h · **Quelle:** 5.1, 5.4 · **Etappe:** 1
@@ -287,6 +316,15 @@ echten Abfrage, nicht danach (6.8).
 - **Achtung:** Die Prüfung sitzt am Vermittler `ausgang` und nicht in der aufrufenden Bibliothek. Eine Bibliothek, die Weiterleitungen selbst verfolgt oder den Namen zwischen Prüfung und Verbindung erneut auflöst, hebt die Positivliste auf, ohne dass ein Test es bemerkt.
 - **Achtung:** Eigener Eintrag statt Erweiterung von R3-F-015 (Entscheid des Product Owners, 2026-08-26): B4 und 6.7 verlangen, dass eine geänderte Anforderung als neuer Eintrag hereinkommt und vom Product Owner eingeordnet wird (6.6); das eigene Rollenmandat des Product Owners fasst das ebenso. R3-F-015 bleibt deshalb in Wortlaut, Prüfaufwand und Testumfang unverändert und deckt weiterhin nur das unmittelbar genannte Ziel ab.
 - **Achtung:** Neu am 2026-08-26 aus Befund F des Deep Reviews vom 2026-08-25.
+
+### R3-F-029 — Herkunftsklassen für Aussagen im Produkt
+- **Art:** funktional · **Kano:** offen (siehe Achtung) · **Prüfaufwand:** offen (siehe Achtung) · **Quelle:** 5.3, 5.4, `.claude/rules/produktionscode.md` · **Etappe:** 1
+- **Als** Staatsanwaltschaft **möchte ich**, dass jede Aussage im Produkt einer von vier Herkunftsklassen zugeordnet ist — Quellenaussage wörtlich belegt, abgeleitet aus dem eigenen Bestand, angenommen ohne Bestätigung, offen — mit je eigener Beweisanforderung, **sodass** die heute binäre Unterscheidung nicht unterschiedliche Vertrauensstufen unter dem Sammelbegriff "Schlussfolgerung" verdeckt.
+- **Abnahme:** Nicht formulierbar. **Erfüllt die Definition of Ready derzeit nicht.** R6 (prüfbar) ist nicht erfüllt: Eine testbare Formulierung setzt voraus, dass feststeht, welche Beweisanforderung je Klasse ausreicht und woran ein Test "abgeleitet aus Bestand" von "angenommen ohne Bestätigung" unterscheidet — das ist eine fachliche Festlegung, keine Ordnungsfrage. R1 (adäquat) ist ebenfalls offen: Der Eintrag verfeinert eine Formulierung aus dem präskriptiven Teil (5.3: "Jede Zeile ist entweder Quellenaussage oder Schlussfolgerung des Modells und als solche gekennzeichnet"; Verfahrensgarantie "Herkunft an jedem Datenpunkt"). Der Product Owner entscheidet nicht über Änderungen am präskriptiven Teil (6.6); ob eine Verfeinerung in vier Klassen die bestehende Bauvorschrift zulässig operationalisiert oder sie tatsächlich ändert, entscheiden GRC-Rolle und Auftraggeber.
+- **Abhängigkeit:** Seitwärts zu R3-F-010 — die dortige binäre Kennzeichnung bleibt unverändert massgebend, solange dieser Eintrag nicht ready ist. Seitwärts zu R3-F-005 (PROV-Herkunftsnachweis).
+- **Achtung:** Für die Prüfberichte der Rollen selbst ist eine vergleichbare Klassifizierung mit dem Skill `pruefbefund-melden` bereits umgesetzt; dieser Eintrag betrifft ausschliesslich das Produkt (Ermittlungs- und Arbeitsspur, Berichtsentwurf), nicht die Prüfberichte.
+- **Achtung:** Kano und Prüfaufwand bleiben offen, bis GRC-Rolle und Auftraggeber entschieden haben — eine Schätzung vorher wäre eine Vermutung, dasselbe Prinzip wie bei den Frontend-Einträgen vor der Prototyp-Freigabe (6.8).
+- **Achtung:** Neu eingeordnet nach Vergleich mit `valITino/claude-skills-fullstack`, 2026-08-31.
 
 ### R3-C-006 — Lokales Sprachmodell in Produktion (Stufe 2)
 - **Art:** Randbedingung · **Kano:** gesetzt · **Prüfaufwand:** 4 h · **Quelle:** 5.15, 5.16 Punkt 1 · **Etappe:** 1
@@ -408,6 +446,7 @@ einen Sprint gezogen, bevor R3-F-050 schriftlich freigegeben ist (5.6, 6.8).
 - **Als** Fallverantwortlicher **möchte ich**, dass eine ab Stufe 1b klassifizierte Entität für Unberechtigte gar nicht erst auffindbar ist, **sodass** ihre Existenz nicht aus Trefferzahlen oder Graphkanten ableitbar bleibt.
 - **Abnahme:** Test `R3-F-054_1b_unsichtbar_im_index` — für ein Konto ohne Berechtigung 1b erscheint eine 1b-Entität weder in Trefferlisten noch in der Autovervollständigung noch in Graphnachbarschaften noch in Exporten noch in Statistiken; insbesondere ändert sich die **Trefferzahl** gegenüber einem Bestand ohne diese Entität nicht. Test `R3-F-054_1a_bleibt_auffindbar` — eine 1a-Entität bleibt für alle auffindbar, nur die definierten Inhalte sind verdeckt.
 - **Achtung:** Nachträgliches Ausblenden in der Anzeige wäre eine Scheinlösung (5.8). Der Unterschied 1a zu 1b wird leicht übersehen und ist umsetzungsrelevant.
+- **Achtung:** Zwei Bauformen aus dem Vergleich mit `valITino/claude-skills-fullstack` als Hinweis für das Grundgerüst festgehalten (2026-08-31), kein eigener Backlog-Eintrag, weil beide Umsetzung und nicht Ergebnis sind — massgebend bleibt `R3-F-054_1b_unsichtbar_im_index`: getrennte Eingabe- und Ausgabeschemata statt eines Serialisierungsschalters, und Schlüsselsatz-Blätterung ohne Gesamtzahl, weil eine 1b-Entität auch in einer Gesamtzahl nicht erscheinen darf. Sache des Software Architects (ADR 0002, Datenzugriff).
 
 ### R3-F-055 — Fallbezogene Freigabeliste je Entität
 - **Art:** funktional · **Kano:** Basisfaktor · **Prüfaufwand:** 3 h · **Quelle:** 5.8 · **Etappe:** 3
@@ -443,6 +482,15 @@ einen Sprint gezogen, bevor R3-F-050 schriftlich freigegeben ist (5.6, 6.8).
 - **Art:** funktional · **Kano:** Basisfaktor · **Prüfaufwand:** 1 h · **Quelle:** 5.16 · **Etappe:** 3
 - **Als** Benutzer **möchte ich** in Test/Schulung ein dauerhaftes Band mit deutlich abweichender Farbgebung sehen, **sodass** niemand Schulungsdaten für einen echten Fall hält.
 - **Abnahme:** Test `R3-F-061_band_sichtbar` — im Modus Test/Schulung ist das Band auf jeder Ansicht vorhanden und nicht ausblendbar; in Produktion fehlt es.
+
+### R3-F-062 — Gesperrter Gegenstand von nicht vorhandenem ununterscheidbar
+- **Art:** funktional · **Kano:** Basisfaktor · **Prüfaufwand:** 3 h · **Quelle:** 5.8 · **Etappe:** 3
+- **Als** Fallverantwortlicher **möchte ich**, dass eine Anfrage nach einem direkt referenzierten, aber nicht zugänglichen Gegenstand (fehlende Berechtigung wegen Klassifizierung, Freigabeliste oder Organisationseinheit) dieselbe Fehlerform erhält wie eine Anfrage nach einem nicht existierenden Gegenstand, **sodass** ein direkter Zugriffsversuch über eine erratene oder erschlossene Kennung die Existenz eines gesperrten Gegenstands nicht verrät.
+- **Abnahme:** Test `R3-F-062_gesperrt_gleich_nicht_vorhanden` — für jeden direkt referenzierenden Lesezugriff (Fall, Entität, Anhang, Export über Kennung) liefert eine Anfrage auf einen tatsächlich existierenden, aber nicht zugänglichen Gegenstand denselben Statuscode und dieselbe Fehlerform (Kopfzeilen, Rumpf) wie eine Anfrage auf eine erfundene Kennung; ein Vergleich beider Antworten zeigt keine feststellbare Abweichung im Inhalt.
+- **Abhängigkeit:** Seitwärts zu R3-F-054 (Unsichtbarkeit im Suchindex) und R3-F-055 (Freigabeliste): Jene Einträge verhindern, dass ein gesperrter Gegenstand in Listen, Trefferzahlen und Nachbarschaften erscheint; dieser Eintrag schliesst den verbleibenden Weg, bei dem eine Kennung direkt statt über Suche angefragt wird.
+- **Achtung:** Aus dem Vergleich mit `valITino/claude-skills-fullstack` übernommen, dort als Bauform beschrieben, hier als geprüftes Ergebnis formuliert: Ein Antwortverhalten ist von aussen beobachtbar und deshalb unabhängig von der internen Umsetzung testbar — anders als vier verwandte Bauformen desselben Vergleichs, die interne Umsetzungsentscheidungen sind und deshalb nicht als eigener Backlog-Eintrag, sondern als Hinweis an den Software Architect eingeordnet wurden (siehe Achtung bei R3-F-054 und R3-F-008).
+- **Achtung:** Zeitliche Seitenkanäle (unterscheidbare Antwortzeit zwischen gesperrt und nicht vorhanden) sind ausdrücklich **nicht** Gegenstand dieses Eintrags; der Kandidat nannte nur die Fehlerform. Eine Ausweitung auf Zeitmessung wäre ein weiterer, eigener Eintrag.
+- **Achtung:** Neu eingeordnet nach Vergleich mit `valITino/claude-skills-fullstack`, 2026-08-31.
 
 ### R3-Q-003 — Barrierefreiheit nach WCAG 2.2 AA
 - **Art:** Qualitätsanforderung · **Kano:** Basisfaktor · **Prüfaufwand:** 4 h · **Quelle:** 4.2, 5.6, 6.4 · **Etappe:** 3
@@ -622,16 +670,20 @@ Owners an den Auftraggeber, keine Festlegung; geschnitten wird gemeinsam.
 
 | Etappe | Einträge | Prüfaufwand |
 |---|---|---|
-| 0 — Vorlauf | 8 | 27 h |
+| 0 — Vorlauf | 10 | 32 h |
 | 1 — Fundament | 29 | 147 h |
 | 2 — Freie Quellen | 11 | 37 h |
-| 3 — Prototyp, Oberfläche, Anmeldung | 14 | 63 h |
+| 3 — Prototyp, Oberfläche, Anmeldung | 15 | 66 h |
 | 4 — Darstellung und Export | 7 | 32 h |
 | 5 — Lizenzierte Quellen | 4 | 8 h |
 | 6 — Härtung und Abnahme | 6 | 30 h |
-| **Erste Fassung, Summe** | **79** | **344 h** |
+| **Erste Fassung, Summe** | **82** | **352 h** |
 | Zweite Fassung | 5 | 23 h |
-| **Gesamt** | **84** | **367 h** |
+| **Gesamt** | **87** | **375 h** |
+
+**Nicht in dieser Summe enthalten:** R3-F-029 (Etappe 1) und R3-Q-009 (Etappe 0). Beide erfüllen die Definition of Ready nicht (R6, bei R3-F-029 zusätzlich R1) und tragen deshalb keinen Prüfaufwand; eine Schätzung vor Klärung wäre eine Vermutung (6.8). Sie zählen erst mit, sobald sie geschätzt sind.
+
+**Dritte Nachführung am 2026-08-31** nach Einordnung des Vergleichs mit `valITino/claude-skills-fullstack` (Stand `882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf`): drei neue Einträge in Etappe 0 (R3-Q-007, 3 h; R3-Q-008, 2 h; R3-Q-009, nicht geschätzt), ein neuer Eintrag in Etappe 1 (R3-F-029, nicht geschätzt), ein neuer Eintrag in Etappe 3 (R3-F-062, 3 h). Etappe 2, 4, 5 und 6 sowie die zweite Fassung sind unverändert. Vier bestehende Einträge (R3-Q-001, R3-F-008, R3-F-021, R3-F-054) erhalten eine Achtung-Ergänzung ohne Änderung an Kano, Prüfaufwand oder Abnahme. Fünf der zehn geprüften Kandidaten (A, C, D, G, I) wurden nicht als eigener Eintrag übernommen; bei einem sechsten (H) nur eine von fünf beschriebenen Bauformen (R3-F-062), die übrigen vier als Achtung-Hinweis bei R3-F-054 und R3-F-008. Begründung je Kandidat siehe Rückmeldung des Product Owners an den Auftraggeber. Jede Zeile ist erneut gegen den tatsächlichen Dateiinhalt nachgerechnet, nicht fortgeschrieben.
 
 Nachgeführt am 2026-08-26 nach Befund F des Deep Reviews vom 2026-08-25: sechs
 neue Einträge in Etappe 1 (R3-F-022 bis R3-F-024, R3-F-026 bis R3-F-028, zusammen
@@ -682,3 +734,7 @@ korrigiert die Werte (6.8).
 | 10 | Form der Registrierung der Ausgabewege — Architekturvertrag nach ADR 0002, Abschnitt 4.3, oder ein Vorlagensystem (R3-F-025) | Software Architect |
 | 11 | Ob Anhänge und Asservate im Dateisystem oder in der Datenbank liegen (R3-F-024); ADR 0002, Abschnitt 3.11 legt nur je Umgebung einen eigenen Artefaktspeicher fest, nicht dessen Form | Software Architect |
 | 12 | R3-Q-001 bis R3-Q-005 tragen keinen benannten Stakeholder und erfüllen R1 der Definition of Ready nicht; nachzuführen | Requirements Engineer mit Product Owner |
+| 13 | R3-F-029 (Herkunftsklassen im Produkt): Ob eine Verfeinerung der präskriptiven Bauvorschrift "Quellenaussage oder Schlussfolgerung" in vier Klassen zulässig ist oder eine Änderung am präskriptiven Teil darstellt; erst danach lässt sich ein Abnahmekriterium formulieren | GRC-Rolle mit Auftraggeber |
+| 14 | R3-Q-009 (Auslöse-Nachweis für `description`-Felder): Festlegung eines konkreten, deterministischen Messverfahrens, bevor der Eintrag ready wird | Software Architect mit SecDevOps Engineer |
+| 15 | R3-Q-007 bis R3-Q-009 und R3-F-029, R3-F-062 tragen ebenfalls keinen benannten Stakeholder (wie Punkt 12); nachzuführen | Requirements Engineer mit Product Owner |
+| 16 | Vier bei R3-Q-001, R3-F-054 und R3-F-008 vermerkte Bauformen aus dem Vergleich mit `valITino/claude-skills-fullstack` sind Hinweise, keine Aufträge: Kettenschritt gegen Schwachstellenklassen im eigenen Code (ruff-Regelgruppe `S`), Markdown-/Tabellenprüfer, Prüfmodus für den Nachweiserzeuger (blockiert bis Grundgerüst), Eingabe-/Ausgabeschemata und Blätterung ohne Gesamtzahl, Datenbanksitzung mit Transaktionsklammer ohne Schemaerzeugung. Aufnahme in ADR 0002 liegt beim Software Architect | Software Architect |
