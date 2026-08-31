@@ -253,6 +253,22 @@ ifneq ($(PROJ_TAUGLICH),ja)
 $(error Im Verzeichnis dieses Makefiles (PROJ="$(PROJ)") liegt weder CLAUDE.md noch .git. Das sieht nicht nach dem Projektverzeichnis aus -- vermutlich wurde das Makefile einzeln dorthin kopiert. Die Kette bricht ab, statt gegen ein Verzeichnis ohne Gegenstand zu laufen.)
 endif
 
+# Dateiname dieses Makefiles, ohne Verzeichnis. Gebraucht von der Schleife in
+# "dod": Sie ruft die Kettenschritte als Unter-Make mit -C "$(PROJ)" auf, und
+# ein Unter-Make ohne -f sucht dort die Vorgabenamen "Makefile"/"makefile".
+# BEFUND der Nachpruefung vom 2026-08-31, hier behoben: Heisst die Datei
+# anders (Aufruf "make -f <verzeichnis>/Projektregeln.mk dod"), bestimmt die
+# Herleitung oben PROJ zwar richtig, der Unter-Make-Aufruf brach aber mit
+# "No rule to make target 'bau'" ab, bevor der erste Kettenschritt lief. Das
+# fiel sicher ab (Rueckgabewert 2, Meldung "nicht nachweisbar gelaufen"), war
+# also kein falsches Gruen -- aber eine Aufrufart, die gar nicht lief. Der
+# Befund bestand schon vor der Behebung der PROJ-Bestimmung; er faellt hier
+# mit, weil erst diese Behebung den Dateinamen ueberhaupt verlaesslich macht.
+# Der BASISNAME, nicht der ganze Pfad: Ein relativer -f-Pfad ("sub/Makefile")
+# waere nach dem "-C $(PROJ)" ein anderer ("$(PROJ)/sub/Makefile"). PROJ ist
+# das Verzeichnis genau dieser Datei, also traegt der Basisname eindeutig.
+MAKEFILE_NAME := $(shell basename "$(MAKEFILE_ROH)")
+
 # Zielkonflikt, absichtlich so geloest, nicht versehentlich: Ohne weitere
 # Vorkehrung erzeugt "make -j4 dod" mehrere "jobserver unavailable"-
 # Warnungen (je Unter-Make-Aufruf, weil MAKE_REKURSIV -- anders als ein
@@ -1481,11 +1497,14 @@ endif
 		ziel="$${eintrag#*:}"
 		letzter_schritt="$$kennung $$ziel"
 		# G4: -C $(PROJ) haengt den Unter-Make-Aufruf nicht vom Aufrufort ab.
+		# -f "$(MAKEFILE_NAME)" dazu, damit auch eine umbenannte Datei laeuft:
+		# ohne -f sucht das Unter-Make in $(PROJ) die Vorgabenamen
+		# "Makefile"/"makefile" (Befund und Begruendung bei MAKEFILE_NAME oben).
 		# G5: -j1 und "env -u MAKEFLAGS" unterdruecken Jobserver-Warnungen bei
 		# "make -j4 dod", ohne "+" als Rezeptpraefix zu benutzen (Zielkonflikt-
 		# Kommentar bei MAKE_REKURSIV oben). LAUF_KENNUNG wird NUR ueber die
 		# Umgebung dieses einen Aufrufs weitergereicht.
-		out=$$(env -u MAKEFLAGS LAUF_KENNUNG="$$lauf_kennung" $(MAKE_REKURSIV) --no-print-directory -j1 -C "$(PROJ)" "$$ziel" 2>&1)
+		out=$$(env -u MAKEFLAGS LAUF_KENNUNG="$$lauf_kennung" $(MAKE_REKURSIV) --no-print-directory -j1 -C "$(PROJ)" -f "$(MAKEFILE_NAME)" "$$ziel" 2>&1)
 		rc=$$?
 		echo "$$out"
 		# E1 (Schlusspruefung 2026-08-30): Frueher "tail -n1". Ein Werkzeug, das

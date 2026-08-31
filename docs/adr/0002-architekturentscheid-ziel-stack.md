@@ -972,9 +972,33 @@ das Verzeichnis dieses Makefiles"). Die Behebung nimmt den Gegenstand: Der
 Pfad, den GNU Make selbst gelesen hat, wird ungeteilt an die Shell gegeben.
 Nebenbei ist damit die bisher als "nicht unterstützt" bezeichnete Aufrufart
 `make -f '<pfad mit leerzeichen>/Makefile'` aus einem fremden
-Arbeitsverzeichnis nicht mehr nur erkannt, sondern richtig aufgelöst
-(ausgeführt belegt für sieben Aufrufarten, einschliesslich symbolischem
-Verweis und umbenannter Datei).
+Arbeitsverzeichnis nicht mehr nur erkannt, sondern richtig aufgelöst.
+
+**Präzisierung nach der Nachprüfung** — die erste Fassung dieses Absatzes
+sagte "ausgeführt belegt für sieben Aufrufarten" und war damit zu weit:
+
+- Für die **umbenannte Datei** (`make -f '<verzeichnis>/Projektregeln.mk'`)
+  galt das nur für die Herleitung von `PROJ`, nicht für einen vollständigen
+  `make dod`. Die Schleife in `dod` ruft jeden Kettenschritt als Unter-Make mit
+  `-C "$(PROJ)"` auf; ohne `-f` sucht ein Unter-Make dort die Vorgabenamen
+  `Makefile`/`makefile` und brach mit `No rule to make target 'bau'` ab, **bevor
+  der erste Kettenschritt lief**. Der Fehler bestand schon vor dieser
+  Fortschreibung und fiel sicher ab (Rückgabewert 2, Meldung "nicht nachweisbar
+  gelaufen") — kein falsches Grün, aber eine Aufrufart, die nicht lief. Er ist
+  in derselben Arbeitseinheit behoben: Der Unter-Make-Aufruf trägt jetzt
+  zusätzlich `-f "$(MAKEFILE_NAME)"`, den **Basisnamen** dieser Datei. Der
+  Basisname und nicht der Pfad, weil ein relativer `-f`-Pfad nach dem `-C` ein
+  anderer wäre. Sieben Aufrufarten laufen jetzt vollständig an (ausgeführt
+  belegt: aus dem Verzeichnis selbst, `-f ./Makefile`, `-C` mit und ohne
+  Leerzeichen, `-f` mit Leerzeichen, `-f` mit Apostroph, umbenannte Datei mit
+  und ohne fremdes Arbeitsverzeichnis).
+- Für den **symbolischen Verweis** gilt die Aussage nur für einen Verweis
+  *innerhalb* des Projektverzeichnisses. Zeigt ein Verweis von *aussen* auf das
+  Makefile des Projekts, wird `PROJ` das Verzeichnis des Verweises — weder
+  `dirname` noch `pwd -P` lösen einen Symlink in der letzten Pfadkomponente auf.
+  Das ist gewollt: Ein in eine Arbeitskopie gelegter Verweis soll diese
+  Arbeitskopie prüfen. Liegt der Verweis dagegen in einem Verzeichnis, das kein
+  Projekt ist, greift die zweite Wache und bricht ab.
 
 #### 6.6.3 Was diese Fortschreibung nicht ändert
 
