@@ -4,7 +4,7 @@
 |---|---|
 | **Arbeitsprodukt nach** | Projektauftrag 6.5, 6.8, 3.4 |
 | **Verantwortlich** | Scrum Master (Prozess), Requirements Engineer (Ready), Static und Dynamic Software Tester (Done) |
-| **Stand** | 2026-08-20, nachgeführt am 2026-08-30 (ADR 0002, Abschnitt 6.1: D18 ergänzt, D11 auf zwei Gegenstände erweitert, Kettengrundsatz aufgenommen; Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`) |
+| **Stand** | 2026-08-20, nachgeführt am 2026-08-30 (ADR 0002, Abschnitt 6.1: D18 ergänzt, D11 auf zwei Gegenstände erweitert, Kettengrundsatz aufgenommen; Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`), ergänzt am 2026-08-31 um die Notation der Abnahmekriterien zu R6 — Vorschlag zur Bestätigung |
 
 Beide sind zu unterscheiden: **Ready gilt für den Eingang in den Sprint, Done
 für den Ausgang** (6.8).
@@ -16,8 +16,9 @@ für den Ausgang** (6.8).
 | 2026-08-30 | D11 (Teil 2, Befehlskette) prüfte nach dieser Tabelle "im Programmstand"; der dafür vorgeschlagene Befehl (`gitleaks detect` ohne `--no-git`) durchsuchte in der Praxis ausschliesslich die Git-Historie | D11 prüft zwei Gegenstände in zwei eigenständigen Läufen: Arbeitsbaum und Git-Historie; keiner ersetzt den anderen | Der Hook aus R3-Q-001 läuft als `Stop` beziehungsweise `SubagentStop`, also **vor** dem Commit — der Arbeitsbaum ist damit der Regelfall des Einsatzes. Belegt mit einem ausgeführten Lauf am 2026-08-30 |
 | 2026-08-30 | Die Befehlskette (Teil 2) führte D1 bis D12; der von ADR 0002, Abschnitt 3.5, seit dem 2026-08-20 verlangte Importprüfer-Schritt fehlte in dieser Tabelle | Neuer Kettenschritt **D18** (Architekturverträge), in der Zielliste von `make dod` nach D4 und vor D5 eingeordnet | Löst einen Widerspruch innerhalb des ADR auf: Abschnitt 3.5 verlangte den Schritt als eigenen Kettenschritt, die Tabelle in Abschnitt 6 führte ihn nicht |
 | 2026-08-30 | Kein Grundsatz hielt fest, dass ein Prüflauf den Arbeitsbaum unverändert lässt | Neuer Grundsatz: Kein Kettenschritt ändert eine versionierte Datei des Arbeitsbaums | Voraussetzung dafür, dass D11 den Arbeitsbaum zuverlässig beurteilt, unabhängig davon, welcher Schritt vorher lief |
+| 2026-08-31 | R6 verlangte ein Abnahmekriterium, "das sich als Test formulieren lässt", ohne eine Form dafür zu nennen | Neuer Abschnitt "Notation der Abnahmekriterien (R6)" in Teil 1 — **als Vorschlag zur Bestätigung**, nicht als gesetzte Regel | Ohne benannte Form entsteht die Prüfbarkeit je Eintrag neu und ungleich. Die Form ist am Bestand erhoben, nicht von aussen gesetzt: sie schreibt fest, was die Arbeitseinheit "Befund F" am 2026-08-26 bereits angewandt hat |
 
-Quelle für alle drei Zeilen: ADR 0002, Abschnitt 6.1
+Quelle für die drei Zeilen vom 2026-08-30: ADR 0002, Abschnitt 6.1
 (`docs/adr/0002-architekturentscheid-ziel-stack.md`), Fortschreibung vom
 2026-08-30, Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`. Einzelheiten
 unten unter "Die Befehlskette".
@@ -38,7 +39,7 @@ Kriterien erfüllt sind. Abgeleitet aus den IREB-Qualitätskriterien (6.5).
 | R3 | **eindeutig** | Der Eintrag lässt genau eine Lesart zu. Verwendete Fachbegriffe stehen im Glossar `03_Glossar.md`. |
 | R4 | **vollständig in sich** | Der Eintrag ist ohne Rückfrage bearbeitbar. Offene Punkte sind entweder gelöst oder ausdrücklich als Annahme benannt. |
 | R5 | **verständlich** | Ohne Zusatzerklärung lesbar, auch für jemanden, der nicht dabei war. |
-| R6 | **prüfbar** | Es existiert mindestens ein Abnahmekriterium, das sich als Test formulieren lässt, mit dem Testnamen im Eintrag. |
+| R6 | **prüfbar** | Es existiert mindestens ein Abnahmekriterium, das sich als Test formulieren lässt, mit dem Testnamen im Eintrag. Zur Form siehe unten "Notation der Abnahmekriterien (R6)". |
 | R7 | **zugeordnet** | Anforderungsart nach 6.4 ist gesetzt: funktional, Qualität oder Randbedingung. |
 | R8 | **geschätzt** | Der Prüfaufwand in Stunden ist geschätzt — **nicht** der Umsetzungsaufwand (6.8). |
 | R9 | **verfolgbar** | Der Eintrag trägt eine dauerhafte Kennung und einen Rückverweis auf den Abschnitt des Projektauftrags (6.6). |
@@ -65,6 +66,73 @@ Abnahmekriterium erfüllt die Definition of Ready nicht.
 Die Definition of Ready ist der Ort, an dem der menschliche Anteil der
 80/20-Aufteilung am meisten bewirkt: **Ein schlecht formulierter Eintrag erzeugt
 sauberen Code für das falsche Problem** (6.5).
+
+## Notation der Abnahmekriterien (R6)
+
+**Vorschlag zur Bestätigung durch den Auftraggeber.** Bis zur Bestätigung
+beschreibt dieser Abschnitt die geübte Praxis, er setzt sie nicht.
+
+Die Zeilenform bleibt, wie der Backlog sie führt:
+`- **Abnahme:** Test <Kennung>_<name> — <Bedingung>.` Die Bedingung ist **ein**
+Satz aus vier Gliedern. Die Reihenfolge im Satz ist frei; es sind Satzglieder,
+keine Überschriften und keine Tabellenspalten. Die Benennung ist die, die die
+Arbeitseinheit "Befund F" am 2026-08-26 bereits verwendet hat
+(`docs/05_Product_Backlog.md`, R3-F-024: "Unverändert bleiben Umfang, Prüfsatz,
+Nachbedingung und Gegenprobe").
+
+| Glied | Was es benennt | Wann Pflicht |
+|---|---|---|
+| **Umfang** | Menge und Zähleinheit, über die das Kriterium gilt ("je registriertes Werkzeug", "über alle schreibenden Stellen"). Ist die Zähleinheit strittig, wird sie ausdrücklich benannt | immer |
+| **Prüfsatz** | die Eingaben oder Fälle, gegen die geprüft wird | sobald das Kriterium Eingaben kennt; entfällt bei einer reinen Bestands- oder Existenzaussage |
+| **Erwartung** | die beobachtbare Reaktion **und** die Nachbedingung: was danach gilt und was danach nachweislich nicht existiert | immer |
+| **Gegenprobe** | der zulässige Fall, der durchlaufen muss | bei jedem Kriterium, das eine Abweisung, eine Sperre oder eine Nullaussage verlangt |
+
+Die Gegenprobe trägt am meisten: Ein Kriterium, das nur "null Treffer" oder
+"wird abgewiesen" prüft, ist auch dann grün, wenn die geprüfte Funktion gar
+nicht gebaut ist. Erst der zulässige Fall unterscheidet eine wirksame Sperre von
+einer fehlenden Fähigkeit.
+
+Geschnitten wird nach **Sachverhalt, nicht nach Prüffall**: Mehrere Eingaben
+desselben Sachverhalts bleiben unter einem Testnamen, ein zweiter Sachverhalt
+bekommt ein zweites Kriterium mit eigenem Namen (D7).
+
+### Weshalb weder EARS noch Given/When/Then
+
+Beide Formen sind an vierzehn Kriterien des Bestands geprüft (R3-C-001,
+R3-C-002, R3-Q-001, R3-Q-002, R3-Q-005, R3-Q-007, R3-F-002, R3-F-005, R3-F-011,
+R3-F-014, R3-F-018, R3-F-022, R3-F-024, R3-F-028) und **nicht** übernommen.
+
+- **EARS** ist eine Notation für Anforderungssätze ("das System muss ..."), nicht
+  für Abnahmekriterien. Die Satzform der Anforderung ist mit 6.4 bereits gesetzt
+  — Satzschablone für funktionale Anforderungen, Aussagesatz mit Quelle für
+  Randbedingungen. Eine zweite Satzform dort wäre eine Änderung am
+  Projektauftrag, nicht an dieser Definition. Übernommen ist der Gedanke, der
+  EARS trägt: dass der Geltungsbereich einer Aussage zum Satz gehört — bei uns
+  das Glied Umfang.
+- **Given/When/Then** hat kein Glied für den Umfang, obwohl in **elf der
+  vierzehn** geprüften Kriterien gerade die Allaussage über eine Menge das
+  Tragende ist. **Sechs der vierzehn** (R3-C-001, R3-C-002, R3-Q-007, R3-F-011,
+  R3-F-014, R3-F-018) behaupten einen Bestand oder eine Nichtexistenz und kennen
+  gar keinen Auslöser; das "When" bliebe leer oder würde gefüllt. Und
+  Given/When/Then kennt ein Szenario je Kriterium: Es zerlegte
+  `R3-F-024_schreibweg_name_von_der_person` (alle schreibenden Stellen mal acht
+  Angriffsformen) in Dutzende Kriterien und höbe damit den Schnitt wieder auf,
+  den "Befund F" am 2026-08-26 bewusst nach Sachverhalt gelegt hat. Ein Glied
+  für die Gegenprobe fehlt ebenfalls; **vier der vierzehn** führen sie
+  ausdrücklich mit.
+
+Zulässig bleibt Given/When/Then als Formulierungshilfe **innerhalb** eines
+Kriteriums, wenn ein einzelner Prüffall eine mehrstufige Interaktion beschreibt
+— nie als Ersatz für Umfang und Gegenprobe und nie als eigene Zeilenstruktur.
+
+### Geltung
+
+Gilt für **neue** Kriterien und für solche, die aus anderem Grund ohnehin
+geändert werden. **Der Bestand wird nicht umgeschrieben.** Der Requirements
+Engineer sichtet ihn einmalig im Walkthrough vor dem nächsten Sprint gegen die
+vier Glieder und legt eine Befundliste ohne Lösungsvorschlag vor (6.7); jede
+Nachbesserung kommt als eigener Backlog-Eintrag über den Product Owner herein
+(B4). Erwarteter Schwerpunkt der Befunde ist die fehlende Gegenprobe.
 
 ## Zwei Reihenfolge-Gates
 
@@ -196,3 +264,4 @@ für den Prototyp.
 | 1 | Bestätigung der Abdeckungsschwelle in D6 | Auftraggeber |
 | 2 | Schwellenwert für Linter-Warnungen (D3) und für Abhängigkeitsschwachstellen (D8) | Auftraggeber mit SecDevOps |
 | 3 | Konkrete Befehle je Kettenschritt: eingesetzt am 2026-08-20 mit ADR 0002, Abschnitt 6 (Einstieg `make dod`), am 2026-08-30 fortgeschrieben (Abschnitt 6.1: D11 auf zwei Gegenstände erweitert, D18 ergänzt, Kettengrundsatz aufgenommen); offen bleibt die technische Bestätigung samt der Befunde zu D10 und D12 sowie der Prüffläche des Arbeitsbaumlaufs in D11 (O-10) | DevOps Engineer und Auftraggeber, mit R3-Q-001 |
+| 4 | Bestätigung der Notation der Abnahmekriterien zu R6 (Teil 1): die vier Glieder, die Pflicht zur Gegenprobe und die Geltung nur für neue und ohnehin geänderte Kriterien | Auftraggeber |
