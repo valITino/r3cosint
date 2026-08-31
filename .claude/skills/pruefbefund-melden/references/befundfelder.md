@@ -1,8 +1,14 @@
 # Feldmenge je Prüfrolle, Berichtskopf und Beispiele
 
 Ergänzung zu `../SKILL.md`. Wird geladen, wenn der Bericht geschrieben wird.
-Die Feldmengen stammen aus den drei Rollendateien und werden hier nicht
-erweitert, sondern zusammengeführt.
+
+**Herkunft der Angaben, ausdrücklich getrennt.** Die **Feldmengen je Rolle**
+weiter unten stammen wörtlich aus den drei Rollendateien und werden hier nicht
+erweitert, sondern zusammengeführt. Der **Berichtskopf** dagegen steht in
+keiner Rollendatei; er ist hier ergänzt, damit im Bericht selbst belegt ist,
+was 3.4 (Prüfung auf einem anderen Modell als die Umsetzung) und 6.6
+(Verfolgbarkeit) verlangen. Wer die Herkunft einer Angabe wissen will, findet
+sie damit an dieser Stelle und muss sie nicht raten.
 
 ## Berichtskopf — bei jedem Bericht
 
@@ -31,6 +37,7 @@ Zusätzlich zu den Pflichtfeldern aus `../SKILL.md`:
   Backlog-Eintrag.
 - **Testlaufprotokoll** mit Befehlszeile, Rückgabewert je Befehl und
   gemessener Abdeckung.
+- **Reproduktionsschritte** je Fehlerbericht.
 - **Verwendete synthetische Ausgangslage** je Fehlerbericht. Über den Harness
   laufen zu keinem Zeitpunkt echte Fall- oder Personendaten (5.15); die
   Ausgangslage ist deshalb Teil des Nachweises, nicht Beiwerk.

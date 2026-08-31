@@ -78,7 +78,8 @@ Streichung —, wird sie vor der Meldung am Original nachgeschlagen.
 
 - **Eine eigene Risikoeinstufung des Pentesters.** Er meldet mit CWE-Bezug und
   übergibt an den Vulnerability Manager; die Bewertung nach CVSS liegt dort
-  (ADR 0001).
+  (Projektauftrag 4.2, so auch `.claude/agents/pentester.md` und
+  `.claude/agents/vulnerability-manager.md`).
 - **Die Behebung.** Prüfrollen melden Befunde, sie beheben sie nicht. Ein
   Vorschlag zur Behebung ist zulässig und als Vorschlag zu kennzeichnen.
 - **Bewegliche Werkzeugangaben** wie "Version 1.x" oder "aktuelle Fassung".

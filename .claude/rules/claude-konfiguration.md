@@ -88,9 +88,12 @@ metadata:
   adr: docs/adr/0002-...md         # zuständiger Architekturentscheid
 ```
 
-Eigene Felder gehören ausschliesslich hierhin. Claude Code ignoriert zwar
-unbekannte Felder im Frontmatter — aber die Werkzeuge ausserhalb (Paketierung,
-Übertragung) brechen daran mit einem harten Fehler ab.
+Eigene Felder gehören ausschliesslich hierhin. Belegt ist: Paketierung und
+Übertragung brechen an einem unbekannten Frontmatter-Feld mit einem harten
+Fehler ab (https://code.claude.com/docs/en/skills.md). Wie sich Claude Code
+selbst gegenüber einem unbekannten Feld verhält, sagt die Dokumentation nicht
+— was sie nicht sagt, wird hier auch nicht behauptet. `metadata` ist der Weg,
+der in beiden Fällen trägt.
 
 ### `allowed-tools` wird bei uns nicht gesetzt
 
