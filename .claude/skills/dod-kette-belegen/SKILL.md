@@ -38,6 +38,10 @@ Einzige, was zwischen der Behauptung und dem Nachweis steht.
 | **B** | Es gibt nichts zu prüfen. Der Gegenstand existiert nicht | 0 — und das ist keine Beschönigung, sondern die Wahrheit |
 | **C** | Der Gegenstand existiert, aber das Prüfmittel fehlt | **Ungleich 0.** Hier 0 zu melden, wäre eine Lüge und ist untersagt |
 
+Lage C ist der **Negativbefund der Kette** im Sinn von 5.3: "konnte nicht
+geprüft werden" ist ein Ergebnis und gehört in den Nachweis. Wer sie zu 0
+verkürzt, streicht genau die Aussage, die 5.3 zwingend verlangt.
+
 Der häufigste stille Fehler ist die Verwechslung von A und B: Ein Schritt
 meldet "nichts zu prüfen", obwohl der Gegenstand da ist. Deshalb wird die Lage
 gelesen, nicht nur der Rückgabewert.

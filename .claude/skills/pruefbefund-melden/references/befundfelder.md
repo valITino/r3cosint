@@ -2,15 +2,24 @@
 
 Ergänzung zu `../SKILL.md`. Wird geladen, wenn der Bericht geschrieben wird.
 
-**Herkunft der Angaben, ausdrücklich getrennt.** Die **Feldmengen je Rolle**
-weiter unten stammen wörtlich aus den drei Rollendateien und werden hier nicht
-erweitert, sondern zusammengeführt. Der **Berichtskopf** dagegen steht in
-keiner Rollendatei; er ist hier ergänzt, damit im Bericht selbst belegt ist,
-was 3.4 (Prüfung auf einem anderen Modell als die Umsetzung) und 6.6
-(Verfolgbarkeit) verlangen. Wer die Herkunft einer Angabe wissen will, findet
-sie damit an dieser Stelle und muss sie nicht raten.
+**Herkunft der Angaben.** Diese Datei macht dazu keine Sammelaussage mehr —
+zwei Anläufe dazu waren nacheinander zu stark ("stammen aus den
+Rollendateien", dann "stammen wörtlich"), und beide Male fanden Prüfungen
+Zusätze, die dort nicht standen. **Die Herkunft steht deshalb jetzt bei jeder
+einzelnen Angabe**, nicht in einem Satz über alle. Ein Punkt ohne Zusatz ist
+aus der genannten Rollendatei übernommen; alles, was diese Datei selbst
+hinzufügt, trägt den Vermerk _(Zusatz dieser Datei)_.
+
+Das ist derselbe Grundsatz, den `../SKILL.md` für Prüfberichte aufstellt, hier
+auf die eigene Datei angewandt: Wer eine Sammelaussage über Herkunft schreibt,
+muss sie für jede einzelne Angabe verantworten — und genau das misslingt.
 
 ## Berichtskopf — bei jedem Bericht
+
+**Vollständig Zusatz dieser Datei.** Keines dieser fünf Felder steht in einer
+Rollendatei. Sie sind hier ergänzt, damit im Bericht selbst belegt ist, was
+3.4 (Prüfung auf einem anderen Modell als die Umsetzung) und 6.6
+(Verfolgbarkeit) verlangen.
 
 | Angabe | Weshalb sie dasteht |
 |---|---|
@@ -22,34 +31,44 @@ sie damit an dieser Stelle und muss sie nicht raten.
 
 ## Static Software Tester
 
-Zusätzlich zu den Pflichtfeldern aus `../SKILL.md`:
+Zusätzlich zu den Pflichtfeldern aus `../SKILL.md`; Quelle
+`.claude/agents/static-software-tester.md`, Abschnitt "Erwartete Ausgabeform":
 
 - **Schweregrad** je Befund.
-- **Belegstelle** je Befund — die Stelle im Bestand, die den Befund trägt.
+- **Belegstelle** je Befund. _(Zusatz dieser Datei: gemeint ist die Stelle im
+  Bestand, die den Befund trägt.)_
 - **Protokoll der ausgeführten Prüfbefehle** mit Befehlszeile und
-  Rückgabewert, vollständig, nicht als Auswahl der gelungenen.
+  Rückgabewert. _(Zusatz dieser Datei: vollständig, nicht als Auswahl der
+  gelungenen.)_
 
 ## Dynamic Software Tester
 
+Quelle `.claude/agents/dynamic-software-tester.md`, Abschnitt "Erwartete
+Ausgabeform":
+
 - **Testfall nach ISO/IEC/IEEE 29119**: Vorbedingung, Schritte, erwartetes
   Ergebnis, Bezug auf das Abnahmekriterium.
-- **Testname mit Anforderungskennung** (6.6) — dieselbe Kennung wie im
-  Backlog-Eintrag.
+- **Testname mit Anforderungskennung** (6.6). _(Zusatz dieser Datei: dieselbe
+  Kennung wie im Backlog-Eintrag.)_
 - **Testlaufprotokoll** mit Befehlszeile, Rückgabewert je Befehl und
   gemessener Abdeckung.
 - **Reproduktionsschritte** je Fehlerbericht.
-- **Verwendete synthetische Ausgangslage** je Fehlerbericht. Über den Harness
-  laufen zu keinem Zeitpunkt echte Fall- oder Personendaten (5.15); die
-  Ausgangslage ist deshalb Teil des Nachweises, nicht Beiwerk.
+- **Verwendete synthetische Ausgangslage** je Fehlerbericht. _(Zusatz dieser
+  Datei: Über den Harness laufen zu keinem Zeitpunkt echte Fall- oder
+  Personendaten (5.15); die Ausgangslage ist deshalb Teil des Nachweises,
+  nicht Beiwerk.)_
 
 ## Pentester
+
+Quelle `.claude/agents/pentester.md`, Abschnitt "Erwartete Ausgabeform":
 
 - **Testplan nach OWASP WSTG**, in dem jeder Testfall einer Verfahrensgarantie
   aus 5.4 oder einem Punkt der OWASP Top 10 zugeordnet ist.
 - **Reproduktionsschritte**, betroffenes Bauteil, Nachweis, **CWE-Bezug**.
 - **Keine eigene Risikoeinstufung.** Die Bewertung nach CVSS liegt beim
   Vulnerability Manager; der Befund geht dorthin.
-- Geprüft wird ausschliesslich gegen Test/Schulung (5.16).
+- Geprüft wird ausschliesslich gegen Test/Schulung (5.16). _(Aus dem Abschnitt
+  "Grenzen und Rechte" derselben Rollendatei, nicht aus der Ausgabeform.)_
 
 ## Zwei Beispiele
 
