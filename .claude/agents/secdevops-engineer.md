@@ -1,9 +1,11 @@
 ---
 name: secdevops-engineer
 description: "Sichert Pipeline, Secrets und Lieferkette ab, sobald Build, Abhängigkeiten, Schlüsselablage oder der Manipulationsschutz des Protokolls geändert werden."
-tools: Read, Grep, Glob, Edit, Write, Bash
+tools: Read, Grep, Glob, Edit, Write, Bash, Skill
 model: sonnet
 maxTurns: 30
+skills:
+  - dod-kette-belegen
 ---
 
 # Rolle: SecDevOps Engineer

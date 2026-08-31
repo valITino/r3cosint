@@ -1,9 +1,11 @@
 ---
 name: devops-engineer
 description: "Richtet Build, Auslieferung, Überwachung oder eine Versionsfreigabe ein, sobald eine Aufgabe die Pipeline, die Betriebsumgebung oder den Changelog berührt."
-tools: Read, Grep, Glob, Edit, Write, Bash
+tools: Read, Grep, Glob, Edit, Write, Bash, Skill
 model: sonnet
 maxTurns: 40
+skills:
+  - dod-kette-belegen
 ---
 
 # Rolle: DevOps Engineer
