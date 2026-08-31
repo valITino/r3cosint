@@ -4,7 +4,7 @@
 |---|---|
 | **Arbeitsprodukt nach** | Projektauftrag 6.5, 6.8, 3.4 |
 | **Verantwortlich** | Scrum Master (Prozess), Requirements Engineer (Ready), Static und Dynamic Software Tester (Done) |
-| **Stand** | 2026-08-20, nachgeführt am 2026-08-30 (ADR 0002, Abschnitt 6.1: D18 ergänzt, D11 auf zwei Gegenstände erweitert, Kettengrundsatz aufgenommen; Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`), ergänzt am 2026-08-31 um die Notation der Abnahmekriterien zu R6 — Vorschlag zur Bestätigung |
+| **Stand** | 2026-08-20, nachgeführt am 2026-08-30 (ADR 0002, Abschnitt 6.1: D18 ergänzt, D11 auf zwei Gegenstände erweitert, Kettengrundsatz aufgenommen; Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`), ergänzt am 2026-08-31 um die Notation der Abnahmekriterien zu R6 — Vorschlag zur Bestätigung, am selben Tag nach Prüfbefund berichtigt (drittes Glied heisst "Nachbedingung" wie die Quelle; Ermessensanteil der Zählungen offengelegt) |
 
 Beide sind zu unterscheiden: **Ready gilt für den Eingang in den Sprint, Done
 für den Ausgang** (6.8).
@@ -17,6 +17,7 @@ für den Ausgang** (6.8).
 | 2026-08-30 | Die Befehlskette (Teil 2) führte D1 bis D12; der von ADR 0002, Abschnitt 3.5, seit dem 2026-08-20 verlangte Importprüfer-Schritt fehlte in dieser Tabelle | Neuer Kettenschritt **D18** (Architekturverträge), in der Zielliste von `make dod` nach D4 und vor D5 eingeordnet | Löst einen Widerspruch innerhalb des ADR auf: Abschnitt 3.5 verlangte den Schritt als eigenen Kettenschritt, die Tabelle in Abschnitt 6 führte ihn nicht |
 | 2026-08-30 | Kein Grundsatz hielt fest, dass ein Prüflauf den Arbeitsbaum unverändert lässt | Neuer Grundsatz: Kein Kettenschritt ändert eine versionierte Datei des Arbeitsbaums | Voraussetzung dafür, dass D11 den Arbeitsbaum zuverlässig beurteilt, unabhängig davon, welcher Schritt vorher lief |
 | 2026-08-31 | R6 verlangte ein Abnahmekriterium, "das sich als Test formulieren lässt", ohne eine Form dafür zu nennen | Neuer Abschnitt "Notation der Abnahmekriterien (R6)" in Teil 1 — **als Vorschlag zur Bestätigung**, nicht als gesetzte Regel | Ohne benannte Form entsteht die Prüfbarkeit je Eintrag neu und ungleich. Die Form ist am Bestand erhoben, nicht von aussen gesetzt: sie schreibt fest, was die Arbeitseinheit "Befund F" am 2026-08-26 bereits angewandt hat |
+| 2026-08-31 | Die erste Fassung desselben Tages nannte das dritte Glied "Erwartung" und behauptete zugleich, die Benennung sei die von Befund F. Das Wort "Erwartung" kommt weder in `docs/05_Product_Backlog.md` noch in `docs/uebergaben/2026-08-26_befund-f-abnahmekriterien.md` vor | Das dritte Glied heisst **Nachbedingung**, wie die Quelle. Der Abschnitt trennt jetzt ausdrücklich: die vier **Namen** sind wörtlich übernommen, die **Bestimmungen** der Glieder stehen dort zum ersten Mal, weil Befund F die Glieder benennt, ohne sie zu bestimmen. Dazu die Offenlegung des Ermessensanteils der Zahlen 11/6/4 | Befund einer unabhängigen Prüfung, nachgeprüft und zutreffend. Eine Notation, die ihre Geltung darauf stützt, am Bestand erhoben und nicht gesetzt zu sein, darf ihre Herkunft nicht falsch angeben — sonst trägt die Begründung nicht, mit der sie vorgelegt wird. Die beobachtbare Reaktion, die vorher unter "Erwartung" stand, bleibt erhalten: sie steht in der Nachbedingung, weil Befund F sie dort führt |
 
 Quelle für die drei Zeilen vom 2026-08-30: ADR 0002, Abschnitt 6.1
 (`docs/adr/0002-architekturentscheid-ziel-stack.md`), Fortschreibung vom
@@ -75,17 +76,33 @@ beschreibt dieser Abschnitt die geübte Praxis, er setzt sie nicht.
 Die Zeilenform bleibt, wie der Backlog sie führt:
 `- **Abnahme:** Test <Kennung>_<name> — <Bedingung>.` Die Bedingung ist **ein**
 Satz aus vier Gliedern. Die Reihenfolge im Satz ist frei; es sind Satzglieder,
-keine Überschriften und keine Tabellenspalten. Die Benennung ist die, die die
-Arbeitseinheit "Befund F" am 2026-08-26 bereits verwendet hat
-(`docs/05_Product_Backlog.md`, R3-F-024: "Unverändert bleiben Umfang, Prüfsatz,
-Nachbedingung und Gegenprobe").
+keine Überschriften und keine Tabellenspalten. Die vier Namen sind wörtlich die
+der Arbeitseinheit "Befund F" vom 2026-08-26 (`docs/05_Product_Backlog.md`,
+R3-F-024: "Unverändert bleiben Umfang, Prüfsatz, Nachbedingung und
+Gegenprobe"; dieselbe Aufzählung in
+`docs/uebergaben/2026-08-26_befund-f-abnahmekriterien.md`).
+
+**Wörtlich sind die Namen, nicht die Bestimmungen: Befund F benennt die vier
+Glieder und bestimmt keines davon.** Die Spalte "Was es benennt" steht deshalb
+hier zum ersten Mal. Sie liest ab, wie Befund F die so benannten Glieder
+anwendet, und setzt nichts von aussen hinzu — nachprüfbar an den vier
+Kriterien von R3-F-024.
 
 | Glied | Was es benennt | Wann Pflicht |
 |---|---|---|
 | **Umfang** | Menge und Zähleinheit, über die das Kriterium gilt ("je registriertes Werkzeug", "über alle schreibenden Stellen"). Ist die Zähleinheit strittig, wird sie ausdrücklich benannt | immer |
 | **Prüfsatz** | die Eingaben oder Fälle, gegen die geprüft wird | sobald das Kriterium Eingaben kennt; entfällt bei einer reinen Bestands- oder Existenzaussage |
-| **Erwartung** | die beobachtbare Reaktion **und** die Nachbedingung: was danach gilt und was danach nachweislich nicht existiert | immer |
+| **Nachbedingung** | was nach dem Lauf gilt: die beobachtbare Reaktion (Abweisung, Meldung, Protokolleintrag) **und** der Zustand danach, einschliesslich dessen, was nachweislich nicht existiert | immer |
 | **Gegenprobe** | der zulässige Fall, der durchlaufen muss | bei jedem Kriterium, das eine Abweisung, eine Sperre oder eine Nullaussage verlangt |
+
+Dass die Nachbedingung beides umfasst, ist abgelesen und nicht hinzugefügt:
+`R3-F-024_schreibweg_name_von_der_person` führt die Abweisung "mit
+Protokolleintrag, der die Stelle und die abgewiesene Angabe nennt" und den
+Satz "nach dem Lauf existiert ausserhalb des je Fall vorgesehenen Ablageorts
+keine neue und keine geänderte Datei" in einem Satz und trennt sie nicht.
+Sachlich sind beides Aussagen über den Zustand nach dem Lauf. Ein Kriterium,
+das nur die Reaktion nennt, lässt offen, was der abgewiesene Versuch
+hinterlassen hat — bei einer Pfadangabe von aussen ist genau das die Frage.
 
 Die Gegenprobe trägt am meisten: Ein Kriterium, das nur "null Treffer" oder
 "wird abgewiesen" prüft, ist auch dann grün, wenn die geprüfte Funktion gar
@@ -120,6 +137,20 @@ R3-F-014, R3-F-018, R3-F-022, R3-F-024, R3-F-028) und **nicht** übernommen.
   den "Befund F" am 2026-08-26 bewusst nach Sachverhalt gelegt hat. Ein Glied
   für die Gegenprobe fehlt ebenfalls; **vier der vierzehn** führen sie
   ausdrücklich mit.
+
+Die drei Zahlen sind nachzählbar, aber nicht ermessensfrei, und das gehört
+dazugesagt. R3-F-014 und R3-F-018 mischen eine Bestandsaussage mit einer
+beiläufig genannten Handlung ("der Versuch, die Ausführung ohne
+Freigabe-Kennung aufzurufen, wird abgewiesen"; "ein Wechsel des Endpunkts ...
+lässt die Testsuite unverändert grün"); zu den sechs ohne Auslöser gezählt
+sind sie, weil die tragende Aussage der Bestand ist. Bei der Gegenprobe führen
+nur R3-F-022 und R3-F-024 das Wort; R3-Q-001 ("bei grünem Prüflauf endet er
+mit 0") und R3-Q-005 ("ein zulässiger Schreibzugriff derselben Rollen läuft
+durch") sind der Sache nach mitgezählt, nicht dem Wort nach. Wer streng nach
+dem Wortlaut zählt, kommt auf vier statt sechs und auf zwei statt vier; die
+Zählung der elf beruht auf derselben Art Urteil darüber, was ein Kriterium
+trägt. Das Argument hängt an keiner der drei Zahlen im Einzelnen, sondern
+daran, dass Umfang und Gegenprobe in keiner Zählweise Randfälle sind.
 
 Zulässig bleibt Given/When/Then als Formulierungshilfe **innerhalb** eines
 Kriteriums, wenn ein einzelner Prüffall eine mehrstufige Interaktion beschreibt
@@ -264,4 +295,4 @@ für den Prototyp.
 | 1 | Bestätigung der Abdeckungsschwelle in D6 | Auftraggeber |
 | 2 | Schwellenwert für Linter-Warnungen (D3) und für Abhängigkeitsschwachstellen (D8) | Auftraggeber mit SecDevOps |
 | 3 | Konkrete Befehle je Kettenschritt: eingesetzt am 2026-08-20 mit ADR 0002, Abschnitt 6 (Einstieg `make dod`), am 2026-08-30 fortgeschrieben (Abschnitt 6.1: D11 auf zwei Gegenstände erweitert, D18 ergänzt, Kettengrundsatz aufgenommen); offen bleibt die technische Bestätigung samt der Befunde zu D10 und D12 sowie der Prüffläche des Arbeitsbaumlaufs in D11 (O-10) | DevOps Engineer und Auftraggeber, mit R3-Q-001 |
-| 4 | Bestätigung der Notation der Abnahmekriterien zu R6 (Teil 1): die vier Glieder, die Pflicht zur Gegenprobe und die Geltung nur für neue und ohnehin geänderte Kriterien | Auftraggeber |
+| 4 | Bestätigung der Notation der Abnahmekriterien zu R6 (Teil 1): die vier Glieder **samt ihrer dort erstmals gegebenen Bestimmung** — die Namen stammen wörtlich aus Befund F, die Bestimmungen nicht —, die Pflicht zur Gegenprobe und die Geltung nur für neue und ohnehin geänderte Kriterien | Auftraggeber |
