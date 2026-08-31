@@ -3,11 +3,18 @@ name: dod-kette-belegen
 description: "Wird gebraucht, bevor eine Rolle eine Arbeitseinheit als fertig meldet. Legt fest, wie eine Fertigmeldung belegt wird: den Befehl benennen, ihn frisch ausführen, Ausgabe UND Rückgabewert lesen, die Lage benennen, erst dann behaupten."
 metadata:
   anforderung: R3-Q-001
-  auftrag: "3.4 (Definition-of-Done-Befehlskette), 5.3 (Negativbefunde)"
+  auftrag: "3.4 (Definition-of-Done-Befehlskette)"
   adr: docs/adr/0002-architekturentscheid-ziel-stack.md
 ---
 
 # Die Definition-of-Done-Kette belegen
+
+> **NICHT ABGENOMMEN (Stand 2026-08-31).** Die Prozedur unten ist geprüft und
+> brauchbar. Nicht abgenommen ist die Datei als Nachweis: Dieselbe Prüfung ist
+> dreimal am selben Kriterium gescheitert — eine Aussage über die Herkunft
+> einzelner Angaben war stärker, als die Quelle sie trägt. Nach
+> Eskalationsregel 3.4 ist die Einheit abgebrochen und dem Auftraggeber
+> vorgelegt: `docs/uebergaben/2026-08-31_skill-repository-ausgewertet.md`.
 
 ## Wann diese Prozedur gilt
 
@@ -37,10 +44,6 @@ Einzige, was zwischen der Behauptung und dem Nachweis steht.
 | **A** | Der Prüfer lief. Er ist bestanden oder durchgefallen — beides ist Lage A | 0 bei bestanden, ungleich 0 bei durchgefallen |
 | **B** | Es gibt nichts zu prüfen. Der Gegenstand existiert nicht | 0 — und das ist keine Beschönigung, sondern die Wahrheit |
 | **C** | Der Gegenstand existiert, aber das Prüfmittel fehlt | **Ungleich 0.** Hier 0 zu melden, wäre eine Lüge und ist untersagt |
-
-Lage C ist der **Negativbefund der Kette** im Sinn von 5.3: "konnte nicht
-geprüft werden" ist ein Ergebnis und gehört in den Nachweis. Wer sie zu 0
-verkürzt, streicht genau die Aussage, die 5.3 zwingend verlangt.
 
 Der häufigste stille Fehler ist die Verwechslung von A und B: Ein Schritt
 meldet "nichts zu prüfen", obwohl der Gegenstand da ist. Deshalb wird die Lage

@@ -53,10 +53,11 @@ Ausgabeform":
 - **Testlaufprotokoll** mit Befehlszeile, Rückgabewert je Befehl und
   gemessener Abdeckung.
 - **Reproduktionsschritte** je Fehlerbericht.
-- **Verwendete synthetische Ausgangslage** je Fehlerbericht. _(Zusatz dieser
-  Datei: Über den Harness laufen zu keinem Zeitpunkt echte Fall- oder
-  Personendaten (5.15); die Ausgangslage ist deshalb Teil des Nachweises,
-  nicht Beiwerk.)_
+- **Verwendete synthetische Ausgangslage** je Fehlerbericht. _(Der Satz "über
+  den Harness laufen zu keinem Zeitpunkt echte Fall- oder Personendaten
+  (5.15)" steht in derselben Rollendatei, Abschnitt "Arbeitsgrundlage". Zusatz
+  dieser Datei ist allein der Schluss daraus: Die Ausgangslage ist Teil des
+  Nachweises, nicht Beiwerk.)_
 
 ## Pentester
 
@@ -65,8 +66,8 @@ Quelle `.claude/agents/pentester.md`, Abschnitt "Erwartete Ausgabeform":
 - **Testplan nach OWASP WSTG**, in dem jeder Testfall einer Verfahrensgarantie
   aus 5.4 oder einem Punkt der OWASP Top 10 zugeordnet ist.
 - **Reproduktionsschritte**, betroffenes Bauteil, Nachweis, **CWE-Bezug**.
-- **Keine eigene Risikoeinstufung.** Die Bewertung nach CVSS liegt beim
-  Vulnerability Manager; der Befund geht dorthin.
+- **Keine eigene Risikoeinstufung.** Übergabe sämtlicher Befunde an den
+  Vulnerability Manager zur Bewertung.
 - Geprüft wird ausschliesslich gegen Test/Schulung (5.16). _(Aus dem Abschnitt
   "Grenzen und Rechte" derselben Rollendatei, nicht aus der Ausgabeform.)_
 
@@ -76,7 +77,7 @@ Quelle `.claude/agents/pentester.md`, Abschnitt "Erwartete Ausgabeform":
 
 > **Befund 2 — blockierend — die Wache misst einen Namen, nicht den Gegenstand**
 >
-> **Datei/Zeile:** `Makefile:212` (Rückfall), `Makefile:242-245` (Wache)
+> **Datei/Zeile:** `Makefile`, Herleitung von `PROJ` und die Wache darunter
 > **Was falsch ist:** Die Wache prüft, ob am Rückfallort *irgendein* Marker
 > liegt, nicht ob es der *richtige* ist.
 > **Beleg (ausgeführt):** Zwei vollständige Arbeitskopien; aus `repoB` heraus
@@ -90,10 +91,10 @@ ausgeführter Beleg, und die Begründung der Einstufung. Keine Behebung.
 
 ### Ein Negativbefund
 
-> **Geprüft, ohne Beanstandung:** `PYTHONPATH`, `UV_PROJECT_ENVIRONMENT`,
-> `VIRTUAL_ENV` und `PYTHONHOME` wirken strukturell nicht — alle vier in der
-> aufrufenden Shell auf Angriffswerte gesetzt, danach `make bau`:
-> Rückgabewert 0, Umfeld korrekt angelegt, echtes Paket installiert.
+> **Geprüft, ohne Beanstandung:** `VIRTUAL_ENV` ist nicht ausnutzbar — uv
+> erkennt den Widerspruch und ignoriert die Variable; sie wird dennoch aus
+> demselben Grund mitentfernt wie `UV_PROJECT_ENVIRONMENT`
+> (`Makefile`, Kommentarblock zur Positivliste um `$(UV)`).
 
 Ein Negativbefund ohne Beleg ist kein Negativbefund, sondern eine Beteuerung.
 

@@ -9,6 +9,13 @@ metadata:
 
 # Prüfbefund melden
 
+> **NICHT ABGENOMMEN (Stand 2026-08-31).** Die Prozedur unten ist geprüft und
+> brauchbar. Nicht abgenommen ist die Datei als Nachweis: Dieselbe Prüfung ist
+> dreimal am selben Kriterium gescheitert — eine Aussage über die Herkunft
+> einzelner Angaben war stärker, als die Quelle sie trägt. Nach
+> Eskalationsregel 3.4 ist die Einheit abgebrochen und dem Auftraggeber
+> vorgelegt: `docs/uebergaben/2026-08-31_skill-repository-ausgewertet.md`.
+
 ## Wann diese Prozedur gilt
 
 Immer dann, wenn eine der drei Prüfrollen einen Befund meldet oder einen
