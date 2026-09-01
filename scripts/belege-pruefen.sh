@@ -1,5 +1,28 @@
 #!/usr/bin/env bash
 #
+# ============================================================================
+# NICHT ABGENOMMEN (Stand 2026-08-31) -- Abbruch nach Eskalationsregel 3.4
+# ============================================================================
+# Was dieses Skript FINDET, ist unabhaengig belegt: neun eingebaute
+# Fehlerklassen wurden in drei Pruefrunden je gefangen, die Unterscheidung
+# zwischen Zweigname und kaputtem Pfad haelt, die Scharfschaltung bei
+# entstehendem backend/ haelt, der Lauf veraendert nichts.
+#
+# Nicht abgenommen ist, was dieses Skript UEBER SICH SELBST sagt. Dreimal in
+# Folge hat eine unabhaengige Pruefung eine reale Grenze gefunden, die in der
+# Selbstauskunft fehlte -- und jedes Mal in der Schicht, welche die
+# vorangegangene Behebung erst erreichbar gemacht hatte. Das ist dieselbe
+# Fehlerklasse, gegen die dieses Skript gebaut ist, nur auf es selbst
+# angewandt: eine Aussage, die staerker ist als das, was sie traegt.
+#
+# Deshalb steht in der Schlussausgabe jetzt, dass die Liste der Grenzen
+# unvollstaendig ist. Das ist keine Ausrede, sondern die einzige Aussage, die
+# nach drei Runden noch belegbar war.
+#
+# Einzelheiten und was zu entscheiden ist:
+# docs/uebergaben/2026-08-31_belegpruefer-abbruch-nach-3-4.md
+# ============================================================================
+#
 # belege-pruefen.sh — Herkunftsangaben gegen ihren Fundort prüfen
 #
 # Auftrag: docs/uebergaben/2026-08-31_skill-repository-ausgewertet.md,
@@ -620,7 +643,15 @@ wert_existiert_bereits() {
     ist_backlog_id "$w" && return 0 || return 1
   elif [[ "$w" == *:*  ]]; then
     return 2  # Datei:Zeile-Schlüssel (Regel 7) -> nicht klassifizierbar
-  elif ist_pfadartig "$w" || [ -f "$REPO_ROOT/$w" ] || [ -d "$REPO_ROOT/$w" ]; then
+  elif ist_pfadartig "$w"; then
+    # BEFUND der dritten Nachpruefung vom 2026-08-31, hier durch STREICHUNG
+    # behoben: Hier stand zusaetzlich "|| [ -f "$REPO_ROOT/$w" ] || [ -d ... ]".
+    # Damit loeste die Veraltungspruefung fuer JEDEN Wert aus, der zufaellig
+    # auf einen Datei- oder Verzeichnisnamen an der Wurzel passt -- auch fuer
+    # einen, der gar nicht pfadfoermig ist. Belegt an zwei Gegenproben.
+    # Gestrichen statt umgeschrieben: Eine Streichung kann keinen neuen
+    # Fehlalarm einfuehren. Der Preis ist benannt: Ein nicht pfadfoermiger
+    # Wert wird gar nicht mehr zurueckgeglichen.
     pfad_existiert_wurzel "$w" && return 0 || return 1
   fi
   return 2  # nicht klassifizierbar -> kein Rückgleich
@@ -694,10 +725,17 @@ echo "---"
 echo "belege-pruefen.sh: geprüft sind Fundorte (Datei, Zeile, Abschnitt, Anforderung, Commit)."
 echo "NICHT geprüft: ob der Inhalt an diesem Fundort die Behauptung trägt, die ihm zugeschrieben wird."
 echo "NICHT eingebaut: Prüfung 6 (Skill-Zuordnung im Rollen-Frontmatter), Prüfung 7 (metadata.anforderung)."
-echo "Weitere benannte Grenzen (Einzelheiten im Kopfkommentar):"
+echo "ACHTUNG: Diese Liste der Grenzen ist NICHT vollstaendig. Drei adversarische"
+echo "Pruefrunden haben je eine weitere gefunden, die hier nicht stand -- jedes Mal"
+echo "in der Schicht, die die vorherige Behebung erst erreichbar gemacht hatte."
+echo "Wer diesem Lauf vertraut, vertraut einem Werkzeug, dessen Selbstauskunft"
+echo "dreimal unvollstaendig war. Der Rueckgabewert 0 heisst: nichts von dem"
+echo "gefunden, was hier aufgezaehlt ist -- nicht: nichts vorhanden."
+echo "Bisher benannte Grenzen (Einzelheiten im Kopfkommentar):"
 echo "  - Pfade ausserhalb von Rückwärtsakzenten und im Pfadteil von Shell-Befehlen werden nicht erfasst."
 echo "  - Ein zweites, echt falsches Vorkommen desselben Wertes in derselben Datei deckt eine datei|wert-Ausnahme weiterhin."
-echo "  - Nur Ausnahmen der Form datei:zeile werden nicht auf Veraltung zurückgeglichen; die Form datei|wert wird zurückgeglichen."
+echo "  - Nicht auf Veraltung zurückgeglichen werden: Ausnahmen der Form datei:zeile,"
+echo "    Werte, die nicht pfadförmig sind, und Werte mit einem Doppelpunkt."
 echo "  - Das Muster <inhaber>/<repository> nimmt auch echte künftige Zwei-Segment-Pfade aus."
 echo "  - Bei der Abschnittsprüfung gilt eine Tabelle ohne Leerzeile als ein Absatz."
 echo "Repo B (r3coscrum) mitgelesen: $([ -n "$R3COSCRUM_ROOT" ] && echo ja || echo nein)"
