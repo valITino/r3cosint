@@ -1,5 +1,5 @@
 # =============================================================================
-# R3cOSINT — Makefile: Definition-of-Done-Befehlskette D1 bis D12 (plus D18)
+# R3cOSINT — Makefile: Definition-of-Done-Befehlskette D20, D1 bis D12, D18
 # =============================================================================
 #
 # Grundlage: docs/adr/0002-architekturentscheid-ziel-stack.md, Abschnitt 6 und
@@ -158,7 +158,7 @@ $(error Dieses Makefile braucht GNU Make ab 3.82 wegen .ONESHELL. Gefunden: $(MA
 endif
 endif
 
-.PHONY: bau format-pruefen linter typen architekturvertraege test abdeckung abnahme abhaengigkeiten rueckkanal prototyp-trennung geheimnisse nachweise dod
+.PHONY: belege bau format-pruefen linter typen architekturvertraege test abdeckung abnahme abhaengigkeiten rueckkanal prototyp-trennung geheimnisse nachweise dod
 
 # Berichtigung (Full-Review 2026-08-30): Die fruehere Fassung dieses
 # Kommentars behauptete, die eigene Kopie der Variable verhindere, dass
@@ -621,6 +621,53 @@ define KLASSIFIZIEREN
 	echo "$(MARKE_PRAEFIX) $${LAUF_KENNUNG:-ohne-lauf-kennung} $(1) $(2) $${lage}$(if $(4), $(4))$(MARKE_SUFFIX)"
 	exit $$marke_rc
 endef
+
+# =============================================================================
+# D20 — Belege
+# =============================================================================
+# Objekt der Pruefung: die Herkunfts- und Fundortangaben in den versionierten
+# Markdown-Dateien der Wurzel, unter docs/ und unter .claude/. Der Gegenstand
+# ist immer da -- ein leerer Bestand waere ein Befund und kein leerer
+# Gegenstand. Deshalb hat dieser Schritt KEINE Lage B (ADR 0002, 6.8.3).
+#
+# Weshalb er als ERSTER laeuft und nicht am Ende (ADR 0002, 6.8.2): Die Kette
+# bricht beim ersten Schritt ab, der ungleich 0 endet, und sie bricht heute bei
+# D7 ab. Ein Schritt hinter D7 liefe bis zum Grundgeruest nie. Schlimmer noch:
+# Er wuerde in genau dem Augenblick zum ersten Mal laufen, in dem er am
+# meisten meldet -- die Regel des Skripts, Verweise in noch nicht gebaute
+# Baeume nicht zu beanstanden, schaltet sich mit dem Entstehen von backend/
+# selbst scharf, und dasselbe Grundgeruest bringt scripts/abnahme-abgleich.sh
+# und damit das Ende der Lage C bei D7. Erster Lauf und Scharfschaltung fielen
+# zusammen.
+#
+# Fehlendes git ergibt Lage C und nicht Lage B: Der Gegenstand sind die
+# Dokumente, git ist nur das Mittel, mit dem der Bestand abgegrenzt wird. Der
+# Gegenstand besteht fort, die Pruefung faellt aus -- das ist Lage C.
+#
+# WAS EIN GRUENER LAUF DIESES SCHRITTES AUSSAGT, und das gehoert hierher:
+# Er sagt, dass keine der geprueften Angaben ins Leere zeigt. Er sagt NICHT,
+# dass der Fundort die Behauptung traegt, die ihm zugeschrieben wird -- das
+# prueft kein Werkzeug, das sagt das Skript selbst, und das bleibt beim
+# menschlichen Review. Das Werkzeug ist nach Eskalationsregel 3.4 abgebrochen
+# und NICHT abgenommen (O-15); seine Selbstauskunft erklaert die Liste ihrer
+# eigenen Grenzen ausdruecklich fuer unvollstaendig.
+belege:
+	set -uo pipefail
+	cd "$(PROJ)" || { echo "[D20 belege] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
+	hat_objekt=1; hat_lage_c=0; fehlgeschlagen=0
+	if [ ! -f scripts/belege-pruefen.sh ]; then
+		echo "[D20 belege] LAGE C: scripts/belege-pruefen.sh fehlt. Die Dokumentation besteht, die Pruefung kann nicht stattfinden." >&2
+		hat_lage_c=1
+	elif ! command -v git >/dev/null 2>&1; then
+		echo "[D20 belege] LAGE C: 'git' ist nicht installiert. Der Bestand der Pruefflaeche wird ueber die Versionsverwaltung abgegrenzt; ohne sie faellt die Pruefung aus." >&2
+		hat_lage_c=1
+	elif ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+		echo "[D20 belege] LAGE C: kein Git-Arbeitsbaum. Die Dokumente bestehen, aber die Pruefflaeche laesst sich nicht abgrenzen." >&2
+		hat_lage_c=1
+	else
+		bash scripts/belege-pruefen.sh || fehlgeschlagen=1
+	fi
+	$(call KLASSIFIZIEREN,D20,belege,tritt nicht ein -- D20 hat nach ADR 0002 6.8.3 keine Lage B.)
 
 # =============================================================================
 # D1 — Bau
@@ -1425,7 +1472,7 @@ nachweise:
 # ERWARTETE_KETTENSCHRITTE — eigenstaendige, im Makefile ausgeschriebene
 # Liste, siehe Befund A3 oben. Aenderung nur zusammen mit der Reihe in ADR
 # 0002, Abschnitt 6, und mit "schritte_liste" im Rezept von "dod".
-ERWARTETE_KETTENSCHRITTE := D1 D2 D3 D4 D18 D5 D6 D7 D8 D9 D10 D11 D12
+ERWARTETE_KETTENSCHRITTE := D20 D1 D2 D3 D4 D18 D5 D6 D7 D8 D9 D10 D11 D12
 
 DOD_MAKEFLAGS_ERSTES_WORT := $(firstword $(MAKEFLAGS))
 dod:
@@ -1485,7 +1532,7 @@ endif
 	# Kennung nicht kennt, von einer echten Marke DIESES Laufs zu
 	# unterscheiden. Kein kryptographisches Geheimnis (siehe Grenze oben).
 	lauf_kennung="$$$$-$${RANDOM}$${RANDOM}-$$(date +%s%N 2>/dev/null || date +%s)"
-	schritte_liste="D1:bau D2:format-pruefen D3:linter D4:typen D18:architekturvertraege D5:test D6:abdeckung D7:abnahme D8:abhaengigkeiten D9:rueckkanal D10:prototyp-trennung D11:geheimnisse D12:nachweise"
+	schritte_liste="D20:belege D1:bau D2:format-pruefen D3:linter D4:typen D18:architekturvertraege D5:test D6:abdeckung D7:abnahme D8:abhaengigkeiten D9:rueckkanal D10:prototyp-trennung D11:geheimnisse D12:nachweise"
 	# A3, Teil 1: schritte_liste gegen die EIGENSTAENDIGE Liste
 	# ERWARTETE_KETTENSCHRITTE pruefen, BEVOR ueberhaupt ein Kettenschritt
 	# laeuft -- jede erwartete Kennung muss genau einmal vorkommen, keine
@@ -1638,5 +1685,5 @@ endif
 		exit 2
 	fi
 	echo ""
-	echo "make dod: alle $$erwartete_marken Kettenschritte durchlaufen (D1 bis D12 plus D18), keiner ungleich 0, $$erwartete_marken gueltige Marken gezaehlt, D19: $$d19_befund."
+	echo "make dod: alle $$erwartete_marken Kettenschritte durchlaufen (D20, D1 bis D12, D18), keiner ungleich 0, $$erwartete_marken gueltige Marken gezaehlt, D19: $$d19_befund."
 	exit 0

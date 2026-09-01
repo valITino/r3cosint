@@ -61,3 +61,4 @@ CLAUDE.md:83	Nennt die verbotene Form als Beispiel ("nie über `blob/main/...`")
 docs/00_Projektauftrag.md:938	Nennt die verbotene Form als Beispiel ("Ein Verweis auf `blob/main/...` ist kein Nachweis"), kein Verstoss.
 docs/08_Freigabe_Schritt_4.md:133	Nennt die verbotene Form als Beispiel ("kein Verweis auf `blob/main`"), kein Verstoss.
 docs/uebergaben/2026-08-25_full-review-konfiguration.md:16	Nennt die verbotene Form als Beispiel (deterministische Prüfung auf `blob/main` als Prüfgegenstand), kein Verstoss.
+docs/uebergaben/2026-09-01_belegpruefer-abbruch-nach-3-4.md:28	Nennt die beiden verbotenen Formen als Beschreibung dessen, was der Pruefer sucht -- kein Verstoss, sondern seine Fundstellenliste.
