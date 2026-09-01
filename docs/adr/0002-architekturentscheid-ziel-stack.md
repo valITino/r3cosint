@@ -1203,6 +1203,15 @@ zwar in der Objekttabelle in Abschnitt 6.
 | **B** | **Gibt es nicht.** Siehe unten |
 | **C** | Der Bestand besteht, aber ein Prüfmittel fehlt: kein `git` oder kein Git-Arbeitsbaum, `scripts/belege-pruefen.sh` oder `scripts/belege-ausnahmen.txt` fehlt oder ist nicht lesbar, oder eines der beiden Bezugsdokumente `docs/05_Product_Backlog.md` und `docs/00_Projektauftrag.md` fehlt. Rückgabewert ungleich 0 |
 
+*Berichtigt mit der elften Fortschreibung (ADR 0002, Abschnitt 6.11):* Diese
+Tabelle und der übrige Text von 6.8.3 sowie 6.8.4 kannten an dieser Stelle bis
+dahin nur die Rückgabewerte 0 und 2 des Belegprüfers und behandelten damit
+„das Prüfmittel selbst ist ausgefallen" als denselben Fall wie „am Bestand
+wurde etwas gefunden". Seit der elften Fortschreibung unterscheidet das
+Werkzeug selbst: Rückgabewert 2 heisst mindestens ein Befund, Rückgabewert 3
+heisst Lage C. Beide sind „ungleich 0" im Sinn dieser Tabelle; Einzelheiten
+in 6.11.2.
+
 **Weshalb es keine Lage B geben kann — zwei voneinander unabhängige Gründe.**
 
 1. **Der Bestand kann nicht leer sein.** Die Prüffläche umfasst die
@@ -1286,6 +1295,13 @@ der Abschnittsprüfung gilt eine Tabelle ohne Leerzeile als ein Absatz, und zwei
 vorgesehene Prüfungen — Skill-Zuordnung im Rollen-Frontmatter und
 Anforderungskennung im Skill-Frontmatter — sind nicht gebaut. Drittens und
 entscheidend: **nicht, dass diese Aufzählung vollständig ist.**
+
+*Berichtigt mit der elften Fortschreibung (ADR 0002, Abschnitt 6.11):* Bis
+dahin kannte auch dieser Abschnitt für den Belegprüfer nur die Rückgabewerte
+0 und 2 und behandelte „das Prüfmittel selbst ist ausgefallen" als denselben
+Fall wie „am Bestand wurde etwas gefunden". Seit der genannten Fortschreibung
+meldet das Werkzeug diesen Unterschied selbst, über einen dritten
+Rückgabewert; Einzelheiten in 6.11.2.
 
 **Schadet das der Kette oder tut es ihr gut? Es tut ihr gut, aus drei
 Gründen.**
@@ -1750,6 +1766,185 @@ eine Befundmeldung darf nicht mehr behaupten, als der Schritt messen konnte. Die
 offenen Punkte O-7, O-8, O-10, O-12, O-14 und O-15 bleiben offen; O-16 ist
 geschlossen, O-17 ist neu.
 
+### 6.11 Elfte Fortschreibung vom 2026-09-01 — ein blockierender und fünf nachrangige Befunde behoben, eine Lücke geschlossen
+
+**Anlass.** Eine unabhängige Prüfung auf einem anderen Modell als die
+Umsetzung — Static Software Tester, Dynamic Software Tester und Protocol
+Master, alle drei am 2026-09-01 — hat gegen die achte bis zehnte
+Fortschreibung einen blockierenden und fünf nachrangige Befunde gebracht. Der
+Koordinator hat jeden Befund gegen diese Datei und gegen einen ausgeführten
+Lauf nachgeprüft und behoben. Diese Fortschreibung dokumentiert den Entscheid;
+sie trifft ihn nicht neu.
+
+**Beleglage dieser Fortschreibung.** Wie in 6.8 und 6.9 wird getrennt, worauf
+welche Aussage beruht. Diese Rolle hat den vollständigen, bereits behobenen
+Quelltext von `scripts/belege-pruefen.sh` und die einschlägigen Stellen von
+`Makefile` gelesen; sie hat **nichts selbst ausgeführt**. Aussagen über die
+*Struktur* der Behebung — der neue Rückgabewert 3, die vorgeschaltete Prüfung
+der drei Dateien, die getrennte Auswertung im Makefile-Ziel `belege`, die
+Ersetzung von `wc -l` durch `awk`, die Streichung der beiden Aufzählungen, die
+ergänzte Lagetabelle, das Trimmen der beiden D7-Meldungen, die laufbezogene
+Zeile im D19-Zweig — stammen aus dem gelesenen Quelltext und sind dort
+nachprüfbar. Aussagen über einen *ausgeführten Lauf* — die drei Gegenproben zu
+Lage C, der Hintergrundlauf von `make dod` mit einer während des Laufs
+geänderten Datei, die 67 auf einen Schlussumbruch geprüften Dateien — sind als
+Fremdbeleg des Koordinators übernommen und hier als solche gekennzeichnet,
+nicht als eigene Beobachtung. Dieselbe Trennung wie in 6.8 und 6.9, aus
+demselben Grund: Eine Aussage über die Herkunft, die stärker ist, als die
+Quelle sie trägt, ist genau die Fehlerklasse, gegen die der Belegprüfer gebaut
+wurde und die diese Fortschreibung selbst behebt.
+
+#### 6.11.1 Der blockierende Befund — wortgetreu belegt
+
+Behauptet war an drei Stellen, dass ein fehlendes Bezugsdokument Lage C
+ergibt: hier in 6.8.3 mit dem Satz „Deshalb stehen beide Dateien in der
+Prüfmittelspalte: Lage C sagt, was los ist.", in der D20-Zeile der
+Objekttabelle in Abschnitt 6 mit dem Satz „Fehlt eines davon, ist das Lage
+C — nicht ein bestandener Schritt (6.8.3)." und im D20-Kriterium von
+`docs/06_Definition_of_Ready_und_Done.md`. Gebaut war davon nichts: Das
+Makefile-Ziel `belege` prüfte vor dieser Fortschreibung genau drei
+Bedingungen — Skript vorhanden, `git` installiert, Git-Arbeitsbaum
+vorhanden —, und im Skript stand vor den beiden `mapfile`-Zeilen, die die
+Referenzmengen aus `docs/05_Product_Backlog.md` und
+`docs/00_Projektauftrag.md` bilden, keine Existenzprüfung; die Ausnahmeliste
+wurde über `if [ -f "$AUSNAHMEDATEI" ]` stillschweigend als „keine Ausnahmen"
+behandelt.
+
+**Gemessen** (isolierter Lauf des Koordinators, 2026-09-01, Fremdbeleg): `set
+-uo pipefail` ohne `-e` lässt `mapfile` über eine fehlende Datei mit
+Rückgabewert 0 laufen. Die Referenzmenge bleibt leer, und danach gilt jede
+gültige Anforderungskennung im Bestand als ungültig. Das Ergebnis wäre
+Rückgabewert 2 mit hunderten Scheinfunden gewesen — genau der Fehlermodus,
+den 6.8.3 als vermieden beschreibt, aber nicht baute.
+
+#### 6.11.2 Was behoben wurde, und wie es geprüft ist
+
+1. **Neuer Rückgabewert 3 des Belegprüfers.** `scripts/belege-pruefen.sh`
+   unterscheidet jetzt: 0 = keine Beanstandung, 2 = mindestens ein Befund, 3 =
+   Lage C — ein Prüfmittel fehlt oder trägt die Aussage nicht. Grund für die
+   Trennung: „rot, weil etwas gefunden wurde" und „rot, weil nicht gemessen
+   werden konnte" sind verschiedene Aussagen. Bis zu dieser Fortschreibung
+   kannten 6.8.3 und 6.8.4 nur 0 und 2; das ist unvollständig geworden und in
+   6.11.5 berichtigt.
+2. **Prüfung vor jeder Verwendung.** Das Skript prüft vor jeder Verwendung
+   `docs/05_Product_Backlog.md`, `docs/00_Projektauftrag.md` und
+   `scripts/belege-ausnahmen.txt` auf Vorhandensein und Lesbarkeit, und
+   zusätzlich — nach der geschärften Lage C aus 6.9 — ob die beiden
+   Bezugsdokumente eine **nicht leere** Referenzmenge hergeben. Eine
+   vorhandene, aber aussagelose Datei ist derselbe Ausfall wie eine fehlende.
+   Für die Ausnahmeliste gilt nur der erste Teil: Eine vorhandene Liste ohne
+   Einträge ist ein zulässiger Zustand, eine fehlende lässt jede begründete
+   Ausnahme stumm wegfallen.
+3. **Getrennte Auswertung im Makefile.** Das Ziel `belege` prüft dieselben
+   drei Dateien vorab und wertet den Rückgabewert des Skripts getrennt aus: 3
+   wird Lage C, jeder andere Wert ungleich 0 wird A_FAIL.
+
+**Ausgeführt belegt am 2026-09-01** (Fremdbeleg, drei Gegenproben, Arbeitsbaum
+jeweils vorher und nachher gleich):
+
+- Ausnahmeliste beiseitegelegt: `make belege` meldet Lage C mit dem Hinweis,
+  dass `scripts/belege-ausnahmen.txt` fehlt, samt einer entsprechenden
+  Lage-Marke; das Skript allein endet mit Rückgabewert 3.
+- Backlog beiseitegelegt: dieselbe Wirkung mit der auf den Backlog gemünzten
+  Meldung, Skript ebenfalls 3.
+- Backlog vorhanden, aber ohne jede Kennung als Überschrift: das Skript
+  meldet, dass die Datei keine einzige Anforderungskennung als Überschrift
+  trägt, und endet mit 3 — der zweite Teil der geschärften Lage C, erstmals
+  ausgeführt belegt.
+
+#### 6.11.3 Fünf nachrangige Befunde, ebenfalls behoben
+
+a) **`wc -l` zählte Zeilenumbrüche statt Zeilen** (`scripts/belege-pruefen.sh`).
+Einer Datei ohne abschliessenden Umbruch fehlte in der Zählung die letzte
+Zeile; ein richtiger Verweis auf sie wäre fälschlich ein Fund gewesen — die
+entgegengesetzte Fehlerrichtung zu den drei bisherigen Prüfrunden. Im
+damaligen Bestand latent, weil alle 67 erfassten Dateien mit einem Umbruch
+enden (Fremdbeleg, einzeln gemessen). Ersetzt durch `awk 'END{print NR+0}'`.
+Gegenprobe: drei Zeilen ohne Schlussumbruch — `wc -l` sagt 2, `awk` sagt 3;
+leere Datei: beide 0.
+
+b) **Zwei veraltete Aufzählungen der Ausführungsreihenfolge** im
+Makefile-Kommentar nannten D20 nicht, obwohl er seit dem 2026-09-01 als
+erster Schritt läuft. Bemerkenswert: Der eine Absatz warnt wörtlich davor,
+die Reihenfolge ein zweites Mal aufzuzählen, „die bei der nächsten
+Fortschreibung erneut veralten könnte" — und führte im selben Absatz eine
+solche Aufzählung, die genau so veraltet war. Die Aufzählungen sind
+gestrichen, nicht nachgeführt: eine nachgeführte Aufzählung wäre beim
+nächsten Schritt wieder falsch. Die Reihenfolge steht jetzt ausschliesslich
+in `schritte_liste`.
+
+c) **Die Lagetabelle im Makefile-Kopf führte D20 nicht.** Zeile ergänzt (Lage
+A, keine Lage B nach 6.8.3), Überschrift auf „Stand des Bestands am
+2026-08-30, um D20 ergänzt am 2026-09-01".
+
+d) **Doppeltes Leerzeichen in zwei D7-Meldungen** (`Makefile`) durch `tr '\n'
+' '` auf einem Einzeltreffer: `tr` macht auch aus dem abschliessenden
+Zeilenumbruch ein Leerzeichen. Beide Pfade werden jetzt zusätzlich mit `sed`
+beschnitten, je durch einen ausgeführten Lauf nachgemessen (Fremdbeleg).
+
+e) **Der D19-Zweig für den stummgeschalteten Index sagte nicht, was die
+andere Hälfte in DIESEM Lauf gemessen hat**, obwohl 6.10.2 genau das zusagt.
+Er gab den allgemeinen O-16-Befund aus und schwieg über den Lauf; Schweigen
+ist keine Messung. Der Code ist an die Zusage herangeführt worden, nicht die
+Zusage abgeschwächt: Eine laufbezogene Zeile nennt jetzt, ob Statusliste und
+Inhaltsprüfsummen vorher und nachher gleich waren, mit dem ausdrücklichen
+Zusatz, dass diese Gleichheit den Lauf nicht entlastet, weil sie nicht
+ausschliessen kann, was die blinde Hälfte gar nicht meldet. Ausgeführt belegt
+am 2026-09-01 mit gesetztem `assume-unchanged` (Fremdbeleg).
+
+#### 6.11.4 Eine geschlossene Lücke — D19 während eines laufenden `make dod`
+
+Die dynamische Prüfung hat offengelassen, ob D19 eine **während des Laufs**
+vorgenommene Änderung tatsächlich meldet — nur der Erfolgsfall war
+beobachtet. Der Koordinator hat das am 2026-09-01 nachgeholt (Fremdbeleg):
+`make dod` im Hintergrund gestartet, nach drei Sekunden eine verfolgte Datei
+geändert. D19 meldete den Befund „VERLETZT", nannte den Kettengrundsatz als
+Grundlage, benannte die betroffene Datei und zeigte **beide** Hälften des
+Instruments — die Statuszeile und die geänderte Inhaltsprüfsumme. Damit ist
+erstmals belegt, dass D19 nicht nur schweigt, wenn nichts ist, sondern auch
+spricht, wenn etwas ist.
+
+#### 6.11.5 Zwei Berichtigungen in dieser Datei
+
+**Erstens, 6.8.3 und 6.8.4.** Beide Abschnitte nannten bis zu dieser
+Fortschreibung nur die Rückgabewerte 0 und 2 des Belegprüfers und behandelten
+damit „das Prüfmittel selbst ist ausgefallen" und „am Bestand wurde etwas
+gefunden" als denselben Fall. Das ist seit 6.11.2 unvollständig; an beiden
+Stellen steht jetzt ein kurzer Verweis auf diesen Abschnitt.
+
+**Zweitens, die Tabelle der offenen Punkte in Abschnitt 8.** Sie führte
+„O-10" zweimal: eine Zeile als offenen Punkt vom 2026-08-30, die
+darunterliegende als „O-10 (neu gefasst)" mit dem Vermerk „Beantwortet am
+2026-08-30". Die Nummernregel verlangt, dass die Nummer bleibt und Historie
+nicht umgeschrieben wird; gelöscht wird deshalb keine Zeile. Die erste Zeile
+ist als überholt gekennzeichnet und verweist auf die zweite.
+
+#### 6.11.6 Neuer offener Punkt — O-18
+
+Ob die drei Bezugsdokumente in der Prüfmittelspalte künftig auch auf
+**Aktualität** und nicht nur auf Vorhandensein zu prüfen sind: Eine veraltete
+Referenzmenge — eine Anforderungskennung, die im Backlog längst umbenannt
+oder gestrichen wurde, ein Abschnitt des Projektauftrags, der verschoben
+wurde — fällt heute durch kein Netz. Der Belegprüfer sieht nur, ob die
+Dateien bestehen und eine nicht leere Referenzmenge hergeben, nicht, ob diese
+Referenzmenge noch dem aktuellen Stand entspricht. Zuständig: Software
+Architect mit dem Static Software Tester, terminiert mit R3-Q-001.
+
+#### 6.11.7 Was diese Fortschreibung nicht ändert
+
+Kennung, Stellung, Objektbedingung und die drei ursprünglichen Prüfmittel von
+D20 bleiben unverändert; hinzu kommt ausschliesslich der dritte Rückgabewert
+des Skripts und die vorgeschaltete Prüfung im Makefile, beide bereits als
+Teil von 6.8 angelegt und hier zu Ende gebracht. Gegenstand, Mittel und
+Massstab von D19 bleiben unverändert; geändert ist ausschliesslich, was die
+laufbezogene Meldung zusätzlich nennt (6.11.3, Punkt e). Der Kettengrundsatz
+aus 6.1.3, die Nummernregel aus 6.1.2 und der Grundsatz aus 6.8.4 zur
+Aussagekraft eines Rückgabewerts 0 bleiben in Kraft; 6.8.4 gilt jetzt
+sinngemäss auch für Rückgabewert 3 — auch er sagt nur, was das Prüfmittel
+nicht leisten konnte, nie, dass am Bestand nichts wäre. D1 bis D12 und D18
+bleiben unverändert. Die offenen Punkte O-7, O-8, O-10 (neu gefasst), O-12,
+O-14, O-15 und O-17 bleiben offen. O-16 bleibt geschlossen. O-18 ist neu.
+
 
 ## 7. Konsequenzen
 
@@ -1782,7 +1977,7 @@ geschlossen, O-17 ist neu.
 | O-7 | Schwellenwerte in D3, D6 und D8 | Sind am Gate als E-07 und E-08 offen | Auftraggeber mit SecDevOps | mit R3-Q-001 beziehungsweise der ersten Umsetzungseinheit mit Code |
 | O-8 | Betriebsart für D10 und Form von D12 (Befunde in Abschnitt 6) | Betrifft bestehende Skripte, die anderen Rollen gehören | DevOps Engineer mit Protocol Master | mit R3-Q-001. **Fortschreibung 2026-08-30:** Für D12 kommt die Bindung an den Kettengrundsatz aus 6.1.3 hinzu — die gewählte Form schreibt nicht in den Arbeitsbaum |
 | O-9 | Anbindungsdaten des Entra-ID-Mandanten | Liegen bei der Informatik der Kantonspolizei Bern | KapoBE Informatik | blockiert nur den Mandantenwechsel, nicht die Entwicklung |
-| O-10 | Prüffläche des Arbeitsbaumlaufs in D11: welche Dateien er beurteilt, wie er sich gegenüber `.gitignore` verhält, und wie ein belegter Fehlalarm behandelt wird, dessen Fingerabdruck in den beiden Läufen verschieden ist (6.1.1) | **Neu am 2026-08-30.** Mit einem ausgeführten Lauf der eingesetzten Werkzeugfassung festzustellen, nicht durch Annahme; berührt Laufzeit und Aussagekraft des Schrittes | DevOps Engineer mit SecDevOps | mit R3-Q-001 |
+| O-10 — **überholt, siehe die Zeile „O-10 (neu gefasst)" darunter (ADR 0002, Abschnitt 6.11)** | Prüffläche des Arbeitsbaumlaufs in D11: welche Dateien er beurteilt, wie er sich gegenüber `.gitignore` verhält, und wie ein belegter Fehlalarm behandelt wird, dessen Fingerabdruck in den beiden Läufen verschieden ist (6.1.1) | **Neu am 2026-08-30, am selben Tag neu gefasst — diese Zeile bleibt stehen, weil Nummern nicht umnummeriert und Historie nicht umgeschrieben wird (6.1.2), ist aber durch die Zeile darunter ersetzt.** Mit einem ausgeführten Lauf der eingesetzten Werkzeugfassung festzustellen, nicht durch Annahme; berührt Laufzeit und Aussagekraft des Schrittes | DevOps Engineer mit SecDevOps | mit R3-Q-001 |
 | O-10 (neu gefasst) | **Beantwortet am 2026-08-30 mit einem ausgeführten Lauf (gitleaks 8.21.2):** `--no-git` beachtet `.gitignore` nicht; eine ignorierte `.env` oder `*.pem` blockiert die ganze Kette. Entschieden in 6.2.3: Zugangsdaten liegen nicht im Arbeitsbaum (3.11), ausgeschlossen wird ausschliesslich, was kein Repository-Inhalt sein kann, der Schutz wird nicht abgestuft. **Offen bleiben zwei Restfragen:** (a) die namentliche Ausschlussliste für Abhängigkeits- und Bauverzeichnisse samt ihrer technischen Form — Werkzeugkonfiguration oder Aufrufparameter; (b) die betriebliche Form der Ablage von Zugangsdaten ausserhalb des Arbeitsbaums, einschliesslich Einhängung im Prüfstapel und Eintrag in die Betriebsdokumentation | (a) hängt an der eingesetzten Werkzeugfassung und ist mit einem ausgeführten Lauf zu belegen; (b) ist Betrieb und Sicherheit, nicht Architektur | (a) DevOps Engineer mit SecDevOps; (b) SecDevOps mit DevOps Engineer | (a) mit R3-Q-001; (b) mit dem Grundgerüst, vor der ersten Umsetzungseinheit mit Code |
 
 | O-11 | Abgleich für D18: Jedes oberste Paket unterhalb `backend/src/` ist in `backend/importvertraege.toml` als Wurzelpaket genannt — und wo dieser Abgleich sitzt, im Aufruf oder als Vertrag im Prüfer selbst | **Neu am 2026-08-30 (6.3.4).** Nicht baubar, solange `backend/importvertraege.toml` nicht besteht; heute im Makefile nur als Kommentar hinterlegt, und ein Kommentar ist keine Prüflogik. Ohne den Abgleich meldet D18 Lage A, ohne etwas beurteilt zu haben — der Befund aus 6.2.2 | DevOps Engineer mit Backend Engineer | mit dem Anlegen von `backend/importvertraege.toml`, also mit dem Grundgerüst und vor der ersten Umsetzungseinheit mit Fachlogik |
@@ -1794,6 +1989,7 @@ geschlossen, O-17 ist neu.
 
 | O-16 — **beantwortet am 2026-09-01, siehe 6.10** | Reichweite der Index-Maskierung gegenüber dem zweiten Teil des D19-Instruments: Macht die Maskierung D19 halb oder ganz blind? **Antwort, mit ausgeführtem Lauf belegt: halb.** Die Statusliste ist für die maskierte Datei blind, die Inhaltsprüfsumme erfasst die Änderung weiterhin | **Neu und geschlossen am 2026-09-01 (6.9.4, 6.10.1).** Die Frage war nur durch einen Lauf zu beantworten und ist in diesem ADR bis dahin in keine Richtung behauptet worden. Folge: Der Entscheid bleibt unverändert, eine Begründungszeile aus 6.9.2 ist berichtigt (6.10.3), und die Befundmeldung ist auf die schwächere, richtige Aussage festgelegt (6.10.2) | beantwortet durch den Koordinator, übernommen als Fremdbeleg | erledigt |
 | O-17 | **Löschung einer maskierten, verfolgten Datei.** Die Aufzählung der verfolgten Dateien führt sie weiter, weil sie im Index steht; die Prüfsummenbildung findet die Datei nicht vor. Ob die Aufnahme dadurch abweicht — die Löschung also trotz Maskierung sichtbar wird — oder nicht, ist offen | **Neu am 2026-09-01 (6.10.4).** Der Versuch zu O-16 deckt die Inhaltsänderung einer vorhandenen Datei ab, nicht die Löschung. Dieser ADR behauptet dazu nichts. Am Entscheid ändert die Antwort nichts — die Maskierung bleibt ein Befund, der Ausgang Lage C; sie bestimmt allein, wie weit die Meldung nach 6.10.2 sagen darf, der Inhalt sei beurteilt | DevOps Engineer, Verifikation Static und Dynamic Software Tester (3.4) | mit R3-Q-001 |
+| O-18 | Ob die drei Bezugsdokumente in der Prüfmittelspalte von D20 künftig auch auf **Aktualität** und nicht nur auf Vorhandensein zu prüfen sind — eine veraltete Referenzmenge fällt heute durch kein Netz | **Neu am 2026-09-01 (6.11.6).** Der Belegprüfer prüft seit der elften Fortschreibung, dass `docs/05_Product_Backlog.md` und `docs/00_Projektauftrag.md` bestehen, lesbar sind und eine nicht leere Referenzmenge hergeben — nicht, ob diese Referenzmenge noch dem aktuellen Stand entspricht | Software Architect mit dem Static Software Tester | mit R3-Q-001 |
 
 Nicht offen, sondern entschieden und hier nur zur Klarstellung: `pgvector` (A4), Suchindex (A3), Orchestrierung (A11). Nicht offen, weil gestrichen: VirusTotal, Gesichtserkennung samt biometrischer Vektoren, Open WebUI, CASE/UCO, Fernsteuerung von Maltego; seit der Fortschreibung vom 2026-08-21 auch TheHive und Cortex (5.17).
 
