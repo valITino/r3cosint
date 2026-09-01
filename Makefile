@@ -1649,8 +1649,9 @@ endif
 			d19_masken_nachher=$$(git -C "$(PROJ)" ls-files -v | grep -E '^[a-zS]' || true)
 			if [ -n "$$d19_masken_nachher" ] || [ -n "$$d19_masken_vorher" ]; then
 				echo "" >&2
-				echo "make dod: D19 nicht beobachtbar -- fuer mindestens eine verfolgte Datei ist 'assume-unchanged' oder 'skip-worktree' gesetzt; 'git status' verschweigt Aenderungen daran (E5)." >&2
-				d19_befund="nicht beobachtbar -- assume-unchanged/skip-worktree gesetzt"
+				echo "make dod: D19 LAGE C -- nicht beobachtbar: fuer mindestens eine verfolgte Datei ist 'assume-unchanged' oder 'skip-worktree' gesetzt. Das Pruefmittel ist damit halb stummgeschaltet, und ein halb stummgeschaltetes Pruefmittel traegt die Aussage nicht (ADR 0002, 6.9)." >&2
+				echo "make dod: Ausgefuehrt belegt am 2026-09-01 (O-16): Die Statusliste meldet eine Aenderung an einer so markierten Datei NICHT mehr; die Inhaltspruefsumme erfasst sie weiterhin. Der Befund bleibt trotzdem einer -- die Kette ruht nicht auf der Annahme, die andere Haelfte fange es schon auf." >&2
+				d19_befund="LAGE C, nicht beobachtbar -- assume-unchanged/skip-worktree gesetzt"
 				printf '%s\n' "$$d19_masken_nachher" >&2
 				if [ "$$gesamt_rc" -eq 0 ]; then gesamt_rc=2; fi
 			fi
