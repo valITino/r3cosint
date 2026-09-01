@@ -21,8 +21,11 @@ beim Commit, ergänzt um den Namen des Abschnitts.
 
 ## Nachweisverzeichnis (6.6)
 `docs/NACHWEISE.md` ist eine **erzeugte** Tabelle: Artefakt, Pfad, fester
-Verweis, Stand, kurze Beschreibung. Sie wird bei jedem Meilenstein neu erzeugt,
-nicht von Hand gepflegt.
+Verweis, Stand, kurze Beschreibung. Sie wird von der Automatik neu erzeugt —
+Regelfall ist jeder Merge nach `main` mit Änderungen an den Artefaktpfaden,
+dazu Versionsschilder und der manuelle Start (6.6, nachgeführt 2026-08-21;
+Einzelheiten in `.claude/rules/versionierung-und-nachweisfluss.md`) — und nie
+von Hand gepflegt.
 
 ## Architecture Decision Records
 - Ablage: `docs/adr/NNNN-titel.md`, fortlaufend nummeriert.

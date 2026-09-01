@@ -129,6 +129,14 @@ ist eine andere als die angenommene.
   `actions/checkout` gebraucht; der GitHub-Zugang dieser Sitzung ist auf
   `valITino/*` beschränkt. Entweder das Repository dazunehmen oder die
   Prüfsumme mitgeben.
+
+  > **Richtigstellung vom 2026-08-25:** Der zweite Satz war falsch, und er
+  > wurde ungeprüft über mehrere Übergaben fortgeschrieben. Öffentliche
+  > Repositories sind über den Git-Proxy der Sitzung lesbar; die Abfrage
+  > `git ls-remote --tags https://github.com/actions/checkout` lief ohne
+  > Weiteres. Alle fünf Stellen sind seither auf
+  > `11d5960a326750d5838078e36cf38b85af677262` (v4.4.0) gepinnt, Dependabot
+  > hält sie aktuell.
 - **Die beiden r3coscrum-Anteile von E1 sind nicht umgesetzt:**
   `persist-credentials: false` beim ersten Auschecken in `eingang.yml` und der
   fehlende Zugangsdaten-Block in `r3coscrum/.gitignore` (`.env`, `*.pem`,

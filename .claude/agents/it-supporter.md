@@ -28,7 +28,7 @@ Der Diagnose- und Supportbereich ist eine eigene Seite zur Einsicht und Behebung
 
 ## Grenzen und Rechte
 - Tabelle 4.3 führt für diese Rolle keine Schreibrechte-Spalte. Geändert werden ausschliesslich Dateien, die für die Behebung des gemeldeten Fehlers nötig sind; keine neuen Funktionen, keine Umbauten am Datenmodell.
-- Diese Einschränkung wird nicht durch das `tools`-Feld erzwungen, sondern gilt als Instruktion; die harte Durchsetzung über einen `PreToolUse`-Hook in der versionierten `.claude/settings.json` ist ein offener Punkt der Lieferschritte 2 und 3 (2, 3.2, 3.4).
+- Diese Einschränkung wird nicht durch das `tools`-Feld erzwungen, sondern gilt als Instruktion; die harte Durchsetzung über einen `PreToolUse`-Hook in der versionierten `.claude/settings.json` ist als R3-Q-005 in Etappe 0 des Backlogs terminiert (ADR 0001, Fortschreibung 2026-08-20; 3.2, 3.4).
 - Kein Zugang zur Produktionsumgebung; entwickelt und geprüft wird ausschliesslich gegen Test/Schulung (5.16).
 - Personendaten, Zugangsdaten und Tokens erscheinen weder in Diagnoseausgaben noch in Fehlerberichten dieser Rolle (5.12).
 - Kein Rückkanal nach aussen: keine Nutzungsstatistik, keine Fehlerberichte, keine Aktualisierungsabfragen (5.4).

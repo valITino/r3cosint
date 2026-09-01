@@ -1,9 +1,11 @@
 ---
 name: frontend-engineer
 description: "Setzt eine Ansicht oder Zustandslogik der Oberfläche um, sobald der Prototyp schriftlich freigegeben ist und die Frontend-Aufgabe im Sprint liegt."
-tools: Read, Grep, Glob, Edit, Write, Bash
+tools: Read, Grep, Glob, Edit, Write, Bash, Skill
 model: sonnet
 maxTurns: 40
+skills:
+  - dod-kette-belegen
 ---
 
 # Rolle: Frontend Engineer

@@ -32,10 +32,22 @@ darf sein Inhalt nicht automatisch zur Regel werden.
 
 ## Einträge
 
-Neueste zuoberst. Je Eintrag: Datum, was sich geändert hat, warum, und ein
-fester Verweis mit vollständiger Commit-Prüfsumme zurück nach Repo B.
+**Angefügt, nicht eingefügt: der jüngste Eintrag steht zuunterst.** Das
+entspricht der Doktrin "ausschliesslich anfügbar" aus 5.3 — ein Protokoll, in
+das oben eingefügt wird, ist als Kette nicht mehr lesbar. Der Arbeitsablauf in
+Repo B hängt entsprechend unten an. Bis zum 2026-08-25 stand hier "Neueste
+zuoberst", während der Arbeitsablauf anhängte; die Vorgabe folgt jetzt dem,
+was tatsächlich geschieht, statt umgekehrt.
+
+Die Überschrift eines Eintrags ist `##`, nicht `###`. Je Eintrag: Datum, was
+sich geändert hat, warum, und ein fester Verweis mit vollständiger
+Commit-Prüfsumme zurück nach Repo B.
 
 <!-- Ab hier trägt der Arbeitsablauf aus Repo B ein. Diesen Kommentar stehen lassen.
+
+     Die Überschrift "## Einträge" ist tragend, kein Schmuck: der
+     SessionStart-Hook schneidet den Eintragsbereich an ihr heraus, und der
+     Arbeitsablauf in Repo B bricht ab, wenn sie fehlt. Nicht umbenennen.
 
      Liegt kein Eintrag vor, bleibt dieser Abschnitt leer. Der SessionStart-Hook
      erkennt das an der fehlenden Eintragsüberschrift und gibt nichts aus.
@@ -46,7 +58,7 @@ fester Verweis mit vollständiger Commit-Prüfsumme zurück nach Repo B.
 
 <!-- Vorlage für einen Eintrag:
 
-### JJJJ-MM-TT — <kurzer Titel>
+## JJJJ-MM-TT — <kurzer Titel>
 
 - **Was:** <was sich in Repo B geändert hat>
 - **Warum:** <Begründung aus Repo B>

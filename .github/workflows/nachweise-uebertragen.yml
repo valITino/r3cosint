@@ -42,6 +42,11 @@ on:
       - ".claude/**"
       - "prototype/**"
       - "CLAUDE.md"
+      # Seit 2026-08-25 (E5): deckungsgleich mit der Artefaktliste in
+      # scripts/nachweise-erzeugen.sh — eine Aenderung an den Arbeitsablaeufen
+      # oder am Erzeuger selbst loest den Nachweisfluss sonst nicht aus.
+      - ".github/workflows/**"
+      - "scripts/**"
   workflow_dispatch:
     inputs:
       schild:
@@ -75,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Repo A auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0 # vollständige Historie: die festen Verweise brauchen die Prüfsummen
           # Dieser Lauf liest nur aus Repo A; geschrieben wird ausschliesslich
@@ -157,7 +162,7 @@ jobs:
           fi
 
       - name: Repo B auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: ${{ env.ZIEL_REPO }}
           token: ${{ secrets.NACHWEISE_TOKEN }}

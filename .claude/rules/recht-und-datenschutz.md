@@ -21,13 +21,19 @@ nicht deren Ergebnis.
 
 ## Prioritätsordnung der Rechtsregime (4.4)
 
-| Prio | Erlass | Gilt für |
+Die Ränge heissen **R1 bis R5** und nicht 1a, 1b, 2: diese Kürzel sind für die
+Klassifizierungsstufen nach 5.8 reserviert (4.4, "Zur Bezeichnung"). Bis zum
+2026-08-25 nummerierte diese Tabelle die Regime mit 1a/1b/2 — genau die
+Doppelbelegung, die der Projektauftrag untersagt, weil sie sich in
+Backlog-Einträgen und Code als Verwechslung fortsetzt.
+
+| Rang | Erlass | Gilt für |
 |---|---|---|
-| 1a | StPO (Bund) | Daten innerhalb eines hängigen Strafverfahrens; das kantonale Datenschutzgesetz ist hier ausdrücklich nicht anwendbar |
-| 1b | PolG/BE, BSG 551.1 | Polizeiliche Datenbearbeitung ausserhalb eines hängigen Verfahrens |
-| 2 | KDSG, BSG 152.04 | Allgemeiner kantonaler Rahmen, subsidiär |
-| 3 | Einführungsverordnung zur EU-Richtlinie 2016/680 | Schengen-relevante Bearbeitung |
-| 4 | Archivierungsgesetz und -verordnung BE | Nach Ende des Betriebszwecks |
+| R1 | StPO (Bund) | Daten innerhalb eines hängigen Strafverfahrens; das kantonale Datenschutzgesetz ist hier ausdrücklich nicht anwendbar |
+| R2 | PolG/BE, BSG 551.1 | Polizeiliche Datenbearbeitung ausserhalb eines hängigen Verfahrens |
+| R3 | KDSG, BSG 152.04 | Allgemeiner kantonaler Rahmen, subsidiär |
+| R4 | Einführungsverordnung zur EU-Richtlinie 2016/680 | Schengen-relevante Bearbeitung |
+| R5 | Archivierungsgesetz und -verordnung BE | Nach Ende des Betriebszwecks |
 | — | revDSG des Bundes | Für kantonale Organe **nicht** direkt anwendbar, nicht heranziehen |
 
 Ein Fall trägt sein Regime ab der Eröffnung. Ohne dieses Feld lässt sich später

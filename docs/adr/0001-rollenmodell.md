@@ -5,7 +5,7 @@
 | **Titel** | Rollenmodell: 21 Rollen als Subagents unter `.claude/agents/` |
 | **Status** | angenommen |
 | **Datum** | 2026-08-19 |
-| **Fortgeschrieben** | 2026-08-20 — Abschnitte 4, 7.4 und 8: Stand der `settings.json`; Terminierung der Hooks (R3-Q-001 aus Schritt 3, R3-Q-005 ergänzt am 2026-08-20); Auflösung der Befunde V-02 und V-04 (`docs/08_Freigabe_Schritt_4.md`) |
+| **Fortgeschrieben** | 2026-08-31 — Abschnitte 3, 5.1, 5.5 und 8: Die ersten beiden Skills liegen vor, das `skills:`-Feld ist bei neun Rollen gesetzt (R3-C-007 insoweit erfüllt); die Begründung der Rollentrennung in Abschnitt 1 stützte sich auf Felder, die es unterdessen auch für Skills gibt, und ist durch eine tragfähige in 5.5 ersetzt; neun Rollen führen `Skill` in ihrer Werkzeugliste, solange die Wirkung des Vorladens unbelegt ist — als zweiter Weg, nicht als Voraussetzung des Vorladens, und terminiert; die Wirkung des Vorladens ist in der laufenden Sitzung nicht feststellbar und zu Beginn der nächsten zu prüfen; neuer offener Punkt: wer `.claude/skills/` beschreiben darf. 2026-08-26 — Abschnitte 2.4, 3 und 5.2: `maxTurns` des Product Owners von 25 auf 50, nach gemessenem Abbruch an der Grenze (Begruendung in 5.2). 2026-08-25 — Abschnitte 2.4, 3 und 5.2: `maxTurns` des Static Software Testers von 30 auf 80, nach gemessenem Abbruch an der Grenze (Begründung in 5.2). 2026-08-20 — Abschnitte 4, 7.4 und 8: Stand der `settings.json`; Terminierung der Hooks (R3-Q-001 aus Schritt 3, R3-Q-005 ergänzt am 2026-08-20); Auflösung der Befunde V-02 und V-04 (`docs/08_Freigabe_Schritt_4.md`) |
 | **Grundlage** | Projektauftrag Abschnitt 4 (4.1 Umsetzungsform, 4.2 Rollen aus dem Originalauftrag, 4.3 ergänzende Rollen, 4.4 rechtliche Rollen), ergänzend 3.2 und 3.4 |
 | **Lieferschritt** | Schritt 1 nach Abschnitt 2 (Rollenmodell aufbauen) |
 
@@ -25,7 +25,9 @@ Konsequenz (a) aus 3.2 ist die massgebende Festlegung:
 
 > Rollen gehören in `.claude/agents/`, nicht in Skills. Ein Subagent besitzt ein eigenes Kontextfenster, eine eigene Tool-Liste (`tools`, `disallowedTools`), ein eigenes Modell und einen eigenen Berechtigungsmodus (`permissionMode`). Genau das braucht ein Rollenmodell. Ein Skill kann das nicht, er ändert nur das Verhalten des Hauptagenten.
 
-Ein Skill wird nur bei Bedarf anhand seines `description`-Felds geladen und bringt weder eigenes Kontextfenster noch eigene Tool-Liste noch eigenes Modell mit. Damit liesse sich weder abbilden, dass der Pentester lesen und analysieren, aber nicht schreiben darf, noch dass Umsetzung und Prüfung auf verschiedenen Modellen laufen (3.4). Skills bleiben nach 3.2 (b) für Standards und Prozeduren reserviert.
+Ein Skill wird nur bei Bedarf anhand seines `description`-Felds geladen. Skills bleiben nach 3.2 (b) für Standards und Prozeduren reserviert.
+
+**Berichtigung vom 2026-08-31.** Hier stand ursprünglich, ein Skill bringe "weder eigenes Kontextfenster noch eigene Tool-Liste noch eigenes Modell" mit. Das trifft nach dem heutigen Stand der Dokumentation nicht mehr zu — `model`, `allowed-tools`, `disallowed-tools` und `context: fork` gibt es auch für Skills. Der Entscheid, Rollen als Subagents zu führen, bleibt; er trägt aus anderen Gründen. Sie stehen in **Abschnitt 5.5**.
 
 Abschnitt 4.1 legt die Form fest: YAML-Frontmatter plus Systemprompt im Body, `name` und `description` als Pflichtfelder, dazu je Rolle eine Tool-Liste nach dem Prinzip der minimalen Rechte, ein zugeordneter Standard und eine definierte Ausgabeform.
 
@@ -56,7 +58,7 @@ Verwendet sind ausschliesslich die Aliase `sonnet` und `opus`; keine Rolle nennt
 
 ### 2.4 `maxTurns` als Endlosschleifen-Schutz (3.4)
 
-3.4, Ebene 4, verlangt verbindlich: "Turn-Begrenzung je Rolle: Im Frontmatter jedes Subagenten wird `maxTurns` gesetzt, damit eine delegierte Rolle nicht unbegrenzt weiterläuft." Jede der 21 Rollen trägt `maxTurns`. Die Staffelung folgt dem Arbeitsumfang der Rolle: 40 für die vier Rollen, die durchgängige Inkremente umsetzen, 30 für Rollen mit mehrschrittiger Analyse- oder Prüfarbeit, 25 für Rollen mit eng umrissenem Arbeitsprodukt. `maxTurns` ergänzt die Eskalationsregel aus 3.4 (Abbruch nach dreimaligem Scheitern am gleichen Kriterium), es ersetzt sie nicht.
+3.4, Ebene 4, verlangt verbindlich: "Turn-Begrenzung je Rolle: Im Frontmatter jedes Subagenten wird `maxTurns` gesetzt, damit eine delegierte Rolle nicht unbegrenzt weiterläuft." Jede der 21 Rollen trägt `maxTurns`. Die Staffelung folgt dem Arbeitsumfang der Rolle: 80 für den Static Software Tester (korrigiert am 2026-08-25, Begründung in 5.2), 50 für den Product Owner (korrigiert am 2026-08-26, Begründung in 5.2), 40 für die vier Rollen, die durchgängige Inkremente umsetzen, 30 für Rollen mit mehrschrittiger Analyse- oder Prüfarbeit, 25 für die übrigen Rollen mit eng umrissenem Arbeitsprodukt. `maxTurns` ergänzt die Eskalationsregel aus 3.4 (Abbruch nach dreimaligem Scheitern am gleichen Kriterium), es ersetzt sie nicht.
 
 ---
 
@@ -66,22 +68,22 @@ Spalte "Quelle" verweist auf den Abschnitt des Projektauftrags, aus dem die Roll
 
 | Rolle | Quelle | Datei | model | maxTurns | tools | Schreibrechte laut 4.2 | Begründung der Rechte |
 |---|---|---|---|---|---|---|---|
-| Full-Stack Engineer | 4.2 | `full-stack-engineer.md` | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash | ja | Setzt Features über alle Schichten um; braucht Schreibzugriff auf Code und Tests sowie `Bash` für die Definition-of-Done-Befehlskette (3.4). |
-| Backend Engineer | 4.2 | `backend-engineer.md` | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash | ja | Serverlogik, Datenmodell, Schnittstellen und Migrationsskripte; `Bash` für Build, Linter, Typprüfung, Testsuite. |
-| Frontend Engineer | 4.2 | `frontend-engineer.md` | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash | ja | Oberflächenumsetzung mit Tests; `Bash` für Build und die automatisierte WCAG-2.2-AA-Prüfung. |
-| DevOps Engineer | 4.2 | `devops-engineer.md` | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash | ja | Pipeline-, Arbeitsablauf- und Changelog-Dateien im Repository; `Bash` für Bau- und Sicherungsläufe gegen Test/Schulung. |
-| SecDevOps Engineer | 4.2 | `secdevops-engineer.md` | sonnet | 30 | Read, Grep, Glob, Edit, Write, Bash | ja | Pipeline- und Hook-Konfiguration, SBOM, Secret-Scanning; `Bash`, weil die Wirkung über den Rückgabewert belegt wird (3.4). |
-| Docker- und Kubernetes/Portainer-Experte | 4.2 | `docker-kubernetes-experte.md` | sonnet | 30 | Read, Grep, Glob, Edit, Write, Bash | ja | Containerdefinitionen und Manifeste je Umgebung; `Bash` für Härtungs- und Offline-Nachweise. |
-| Static Software Tester | 4.2 | `static-software-tester.md` | opus | 30 | Read, Grep, Glob, Bash | nein | Kein `Edit`, kein `Write` — die Rolle meldet Befunde und behebt sie nicht. `Bash` ausschliesslich für lesende Prüfläufe (Linter, Typprüfung, statische Analyse). |
-| Dynamic Software Tester | 4.2 | `dynamic-software-tester.md` | opus | 30 | Read, Grep, Glob, Edit, Write, Bash | nur Testcode | `Edit` und `Write` werden gebraucht, weil Testcode zu schreiben ist; die Begrenzung auf Testverzeichnisse und Testdaten steht als Instruktion im Body (siehe Abschnitt 4). `Bash` für die Testläufe. |
+| Full-Stack Engineer | 4.2 | `full-stack-engineer.md` | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash, Skill | ja | Setzt Features über alle Schichten um; braucht Schreibzugriff auf Code und Tests sowie `Bash` für die Definition-of-Done-Befehlskette (3.4). |
+| Backend Engineer | 4.2 | `backend-engineer.md` | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash, Skill | ja | Serverlogik, Datenmodell, Schnittstellen und Migrationsskripte; `Bash` für Build, Linter, Typprüfung, Testsuite. |
+| Frontend Engineer | 4.2 | `frontend-engineer.md` | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash, Skill | ja | Oberflächenumsetzung mit Tests; `Bash` für Build und die automatisierte WCAG-2.2-AA-Prüfung. |
+| DevOps Engineer | 4.2 | `devops-engineer.md` | sonnet | 40 | Read, Grep, Glob, Edit, Write, Bash, Skill | ja | Pipeline-, Arbeitsablauf- und Changelog-Dateien im Repository; `Bash` für Bau- und Sicherungsläufe gegen Test/Schulung. |
+| SecDevOps Engineer | 4.2 | `secdevops-engineer.md` | sonnet | 30 | Read, Grep, Glob, Edit, Write, Bash, Skill | ja | Pipeline- und Hook-Konfiguration, SBOM, Secret-Scanning; `Bash`, weil die Wirkung über den Rückgabewert belegt wird (3.4). |
+| Docker- und Kubernetes/Portainer-Experte | 4.2 | `docker-kubernetes-experte.md` | sonnet | 30 | Read, Grep, Glob, Edit, Write, Bash, Skill | ja | Containerdefinitionen und Manifeste je Umgebung; `Bash` für Härtungs- und Offline-Nachweise. |
+| Static Software Tester | 4.2 | `static-software-tester.md` | opus | 80 | Read, Grep, Glob, Bash, Skill | nein | Kein `Edit`, kein `Write` — die Rolle meldet Befunde und behebt sie nicht. `Bash` ausschliesslich für lesende Prüfläufe (Linter, Typprüfung, statische Analyse). |
+| Dynamic Software Tester | 4.2 | `dynamic-software-tester.md` | opus | 30 | Read, Grep, Glob, Edit, Write, Bash, Skill | nur Testcode | `Edit` und `Write` werden gebraucht, weil Testcode zu schreiben ist; die Begrenzung auf Testverzeichnisse und Testdaten steht als Instruktion im Body (siehe Abschnitt 4). `Bash` für die Testläufe. |
 | Scrum Master | 4.2 | `scrum-master.md` | sonnet | 25 | Read, Grep, Glob, Edit, Write | nur Planungsartefakte | Schreibt Sprint-Planungsartefakt, Ereignisplan, Hindernisliste, Retrospektivprotokoll und Übergabedatei; kein `Bash`, weil die Rolle keine Befehle ausführt. |
-| Pentester | 4.2 | `pentester.md` | opus | 25 | Read, Grep, Glob, Bash | nein | Kein `Edit`, kein `Write`. `Bash` dient ausschliesslich dem Ausführen von Prüfungen gegen die laufende Anwendung in Test/Schulung, nicht dem Ändern von Dateien. |
+| Pentester | 4.2 | `pentester.md` | opus | 25 | Read, Grep, Glob, Bash, Skill | nein | Kein `Edit`, kein `Write`. `Bash` dient ausschliesslich dem Ausführen von Prüfungen gegen die laufende Anwendung in Test/Schulung, nicht dem Ändern von Dateien. |
 | Vulnerability Manager | 4.2 | `vulnerability-manager.md` | sonnet | 25 | Read, Grep, Glob, Edit, Write | nur Register | `Edit` und `Write` ausschliesslich für Schwachstellenregister und Statusübersichten; kein `Bash`, weil die Rolle bewertet und nicht sucht. |
 | Security Specialist GRC | 4.2 | `security-specialist-grc.md` | opus | 30 | Read, Grep, Glob, Edit, Write, WebSearch, WebFetch | nur Dokumentation | Schreibt die Konformitätsanalyse; `WebSearch` und `WebFetch`, weil jede Aussage mit verifizierter Fundstelle zu führen ist (4.4). Kein `Bash`. |
 | Legal Reviewer | 4.2 | `legal-reviewer.md` | sonnet | 25 | Read, Grep, Glob, Edit, Write, WebSearch, WebFetch | nur Dokumentation | Schreibt ausschliesslich den eigenen Prüfbericht; `WebSearch` und `WebFetch` zur Verifikation der angegebenen Fundstellen. Kein `Bash`. |
 | Datenschutzexperte | 4.2 | `datenschutzexperte.md` | opus | 25 | Read, Grep, Glob, Edit, Write | nur Dokumentation | Schreibt Bearbeitungsverzeichnis und Löschkonzept; die technische Umsetzung des Löschwegs liegt bei Backend und DevOps, deshalb kein `Bash`. |
 | Protocol Master | 4.2 | `protocol-master.md` | sonnet | 25 | Read, Grep, Glob, Edit, Write | ja, nur `docs/` | Führt Dokumentation, Changelog und Nachweisverzeichnis. Kein `Bash`: die Rolle ändert nichts am Git-Zustand, die Commit-Prüfsummen für die festen Verweise nach 6.6 werden ihr zugeliefert. |
-| Product Owner | 4.3 | `product-owner.md` | sonnet | 25 | Read, Grep, Glob, Edit, Write | 4.3 ohne Schreibrechte-Spalte; laut Datei nur das Product Backlog samt Ordnung und Schätzung (6.3) | `Edit` und `Write` für das verantwortete Arbeitsprodukt; kein `Bash`, weil die Rolle ordnet und priorisiert, statt auszuführen. |
+| Product Owner | 4.3 | `product-owner.md` | sonnet | 50 | Read, Grep, Glob, Edit, Write | 4.3 ohne Schreibrechte-Spalte; laut Datei nur das Product Backlog samt Ordnung und Schätzung (6.3) | `Edit` und `Write` für das verantwortete Arbeitsprodukt; kein `Bash`, weil die Rolle ordnet und priorisiert, statt auszuführen. |
 | Requirements Engineer | 4.3 | `requirements-engineer.md` | opus | 30 | Read, Grep, Glob, Edit, Write | 4.3 ohne Schreibrechte-Spalte; laut Datei ausschliesslich die Arbeitsprodukte aus 6.3 | Stakeholderliste, Glossar und Anforderungen sind Textartefakte; kein `Bash`, keine externe Recherche (6.8). |
 | Software Architect | 4.3 | `software-architect.md` | opus | 30 | Read, Grep, Glob, Edit, Write | 4.3 ohne Schreibrechte-Spalte; laut Datei Architecture Decision Records und Kontextmodell, keine Fachlogik | Legt die ADR-Dateien unter `docs/adr/` selbst an (4.3); kein `Bash`, weil die Umsetzung bei den Engineer-Rollen liegt. |
 | UX/UI Designer | 4.3 | `ux-ui-designer.md` | sonnet | 30 | Read, Grep, Glob, Edit, Write | 4.3 ohne Schreibrechte-Spalte; laut Datei ausschliesslich im getrennten Prototyp-Verzeichnis | Der Prototyp aus 5.6 wird geschrieben und ergänzt; den maschinell prüfbaren Teil seiner Definition of Done führt der Dynamic Software Tester aus, deshalb kein `Bash`. |
@@ -93,6 +95,14 @@ Anmerkung zum Legal Reviewer: 3.2 (a) hält beispielhaft fest, der Legal Reviewe
 Anmerkung zum IT Supporter: Die Tabellen 4.2 und 4.3 weisen dieser Rolle als einziger keine Arbeitsgrundlage und keinen zugeordneten Standard zu. Die Rollendatei erfindet keinen, sondern setzt die einschlägigen Abschnitte des Projektauftrags an deren Stelle und legt die Festlegung eines Standards dem Auftraggeber vor (4.1).
 
 ---
+
+**Nachtrag vom 2026-08-31 — `Skill` bei neun Rollen, und weshalb die erste Begründung dafür falsch war.** Die neun Rollen, denen in 5.1 ein Skill zugeordnet ist, führen `Skill` neu in ihrer Werkzeugliste.
+
+Die erste Fassung dieses Nachtrags begründete das damit, eine Positivliste ohne `Skill` nehme der Rolle die Fähigkeit, eine zugeordnete Prozedur überhaupt zu laden. **Das ist falsch, und die Nachprüfung vom 2026-08-31 hat es an der Dokumentation belegt**, die dieser Abschnitt selbst als Grundlage nennt: Das Vorladen über `skills:` legt den Inhalt beim Start in den Kontext des Subagenten, **unabhängig vom `tools`-Feld** — die Dokumentation rät sogar ausdrücklich, zum Vorladen `skills:` zu benutzen statt `Skill` in `tools` aufzuführen. Was `Skill` in `tools` steuert, ist etwas anderes: ob der Subagent während der Ausführung **weitere, nicht vorgeladene** Skills finden und aufrufen kann. Quelle: https://code.claude.com/docs/en/sub-agents.md, Abschnitt "Preload skills into subagents", geprüft am 2026-08-31.
+
+**Der tragende Grund ist ein anderer und steht hier neu.** Die Wirkung des Vorladens ist in dieser Umgebung nicht festgestellt (5.1). Solange das so ist, ist `Skill` in der Werkzeugliste der Weg, auf dem die Rolle die zugeordnete Prozedur mit Sicherheit erreicht — und zugleich der Weg zu einer Prozedur, die ihr nicht vorgeladen ist. Die Erweiterung ist eng: `Skill` liest eine Prozedur aus dem eigenen Repository, es gewährt weder Datei- noch Shell-Zugriff und ändert an den Schreibrechten nichts. Die zwölf Rollen ohne Skill-Zuordnung erhalten das Werkzeug nicht.
+
+**Und sie ist terminiert.** Ergibt die Prüfung zu Beginn der nächsten Sitzung (5.1), dass das Vorladen wirkt, wird `Skill` in den neun Werkzeuglisten erneut begründet oder entfernt. Ein Werkzeug, dessen Grund entfallen ist, bleibt nicht aus Gewohnheit stehen — das wäre das Gegenteil des Prinzips der minimalen Rechte.
 
 ## 4. Grenze der Durchsetzbarkeit
 
@@ -125,15 +135,45 @@ Für alle drei gilt der in 3.4 als häufigster Fehler benannte Punkt: **Nur Rüc
 
 ## 5. Bewusst nicht gesetzte Felder
 
-### 5.1 Kein `skills:`-Feld
+### 5.1 `skills:`-Feld — **gesetzt seit dem 2026-08-31**
 
-3.2 (b) sieht vor, dass Skills pro Rolle über das `skills`-Frontmatter-Feld vorgeladen werden. Keine der 21 Dateien setzt es, weil unter `.claude/skills/` noch keine Skill existiert. Ein Verweis auf eine nicht vorhandene Skill wäre eine Behauptung ohne Gegenstand. Die Reihenfolge aus Abschnitt 2 ist bindend: Schritt 1 legt die Rollen an; Skills als wiederverwendbare Prozeduren und Checklisten entstehen mit den späteren Schritten. Sobald eine Skill vorliegt, wird das Feld je betroffener Rolle nachgetragen und dieser ADR fortgeschrieben.
+**Was bis zum 2026-08-31 galt.** 3.2 (b) sieht vor, dass Skills pro Rolle über das `skills`-Frontmatter-Feld vorgeladen werden. Keine der 21 Dateien setzte es, weil unter `.claude/skills/` keine Skill existierte; ein Verweis auf eine nicht vorhandene Skill wäre eine Behauptung ohne Gegenstand gewesen. Der ADR hielt fest: "Sobald eine Skill vorliegt, wird das Feld je betroffener Rolle nachgetragen und dieser ADR fortgeschrieben."
+
+**Was jetzt gilt.** Zwei Skills liegen vor, und das Feld ist bei neun Rollen gesetzt:
+
+| Skill | Vorgeladen bei | Weshalb genau dort |
+|---|---|---|
+| `pruefbefund-melden` | Static Software Tester, Dynamic Software Tester, Pentester | Alle drei melden Befunde und schliessen Prüfberichte ab; die Pflichtfelder, die Negativbefunde und der Berichtskopf sind bei allen dieselben. Der Vulnerability Manager ist Empfänger, nicht Absender — er erhält den Skill nicht |
+| `dod-kette-belegen` | Static und Dynamic Software Tester, Full-Stack, Backend und Frontend Engineer, DevOps Engineer, SecDevOps Engineer, Docker-/Kubernetes-Experte | Alle acht melden Arbeitseinheiten als fertig. Die Prozedur — Befehl benennen, frisch ausführen, Ausgabe und Rückgabewert lesen, Lage benennen, dann behaupten — ist bei allen dieselbe |
+
+Die Bauform der Skills und die Abgrenzung Rolle gegen Skill stehen in `.claude/rules/claude-konfiguration.md`, Abschnitt "Skills". **Terminierung R3-C-007 damit erfüllt**, soweit sie diese beiden Skills betrifft; jede weitere Skill trägt die Nachführung dieses Abschnitts mit sich.
+
+**Was daran belegt ist und was nicht — ausdrücklich, weil die Unterscheidung trägt.** Belegt ist: Beide Skills liegen vor und werden vom Harness als vorhanden geführt; das Feld ist bei neun Rollen gesetzt; die neun Rollendateien laden weiterhin fehlerfrei. **Nicht belegt ist die Wirkung des Vorladens.** Ein Kontrollversuch am 2026-08-31 — eine Rolle mit gesetztem `skills:`-Feld wurde ohne Werkzeugnutzung nach Inhalten aus dem vorgeladenen Skill gefragt — ergab: nicht im Startkontext enthalten. Das **widerlegt** das Vorladen nicht, denn in diesem Projekt ist bereits belegt, dass Änderungen an Rollendateien in der **laufenden** Sitzung nicht wirksam werden; der Versuch kann beides nicht unterscheiden.
+
+Daraus zwei Folgen:
+
+1. **Zweiter Weg gebaut.** Die neun Rollen führen `Skill` in ihrer Werkzeugliste (Nachtrag zu Abschnitt 3). Damit erreicht eine Rolle die Prozedur auch dann, wenn das Vorladen nicht wirkt. **Nicht** deshalb, weil das Vorladen dieses Werkzeug bräuchte — das tut es nach der Dokumentation nicht —, sondern weil ein zweiter Weg trägt, solange der erste unbelegt ist.
+2. **Offene Prüfung, terminiert.** Zu Beginn der nächsten Sitzung ist mit demselben Kontrollversuch festzustellen, ob das Vorladen wirkt. Fällt er wieder negativ aus, ist das `skills:`-Feld in dieser Umgebung wirkungslos und dieser Abschnitt entsprechend zu berichtigen — eine Zuordnung, die nicht wirkt, gehört nicht als wirksam beschrieben.
+
+**Was die Begründung in Abschnitt 1 dabei verliert.** Dort steht, ein Skill bringe "weder eigenes Kontextfenster noch eigene Tool-Liste noch eigenes Modell" mit. Das trifft nach der Dokumentation vom Stand 2026-08-31 nicht mehr zu: Das Frontmatter einer `SKILL.md` kennt `model`, `allowed-tools`, `disallowed-tools` und mit `context: fork` sogar die Ausführung in einem Subagenten (https://code.claude.com/docs/en/skills.md). **Der Entscheid bleibt, die Begründung wird ersetzt** — sie steht neu in 5.5.
 
 ### 5.2 Einordnung von `maxTurns`
 
 `maxTurns` ist ein offiziell dokumentiertes Frontmatter-Feld und steht in der Referenztabelle der Subagent-Dokumentation. Dokumentiert ist dort allerdings nur die Bedeutung "Obergrenze der agentischen Turns, nach der der Subagent stoppt". Nicht dokumentiert sind: was ein agentischer Turn genau zählt, welches Verhalten das Erreichen der Grenze auslöst und welcher Wert ohne das Feld gilt.
 
 Daraus folgt eine ehrliche Trennung: Dass `maxTurns` gesetzt wird, ist eine Vorgabe aus 3.4. Dass die Werte 25, 30 und 40 lauten, ist eine Projektfestlegung nach Arbeitsumfang und aus der Dokumentation nicht ableitbar. Die Werte sind Startwerte und werden korrigiert, sobald Rollen erkennbar zu früh abbrechen oder zu lange laufen.
+
+**Zweite Korrektur, 2026-08-26 — derselbe Fall bei einer anderen Rolle.** Der Product Owner ist bei der Einordnung der Befund-F-Anforderungen mitten in der Arbeit gestoppt, nachweislich an der Turn-Grenze: Abbruch nach 29 Werkzeugaufrufen bei `maxTurns: 25`, der Fortsetzungslauf brauchte bis zum Bericht insgesamt 44 Werkzeugaufrufe. Bei dem gemessenen Verhältnis von rund 1,16 Werkzeugaufrufen je Turn entspricht das etwa 38 Turns für einen vollständigen Einordnungsdurchgang. **Der Wert steht neu auf 50** — rund 30 Prozent Reserve über dem gemessenen Bedarf, dieselbe Bemessung wie bei der ersten Korrektur.
+
+**Beobachtung am Rand, 2026-08-26 — eine Änderung an `maxTurns` wirkt nicht in der laufenden Sitzung.** Der Wert wurde auf 50 gesetzt, *bevor* der Product Owner erneut beauftragt wurde; der Lauf stoppte gleichwohl bei 25 Zügen. Das ist ein Einzelbeleg, kein Beweis, aber er deutet darauf hin, dass die Rollendateien beim Sitzungsstart gelesen und danach nicht erneut eingelesen werden. **Folge für die Praxis:** Wer `maxTurns` korrigiert, darf nicht erwarten, dass die Korrektur die gerade laufende Arbeitseinheit rettet — sie greift ab der nächsten Sitzung. Das passt zu der in diesem Abschnitt bereits festgehaltenen Lücke: Die Dokumentation sagt nicht, wann das Frontmatter gelesen wird. Bei der nächsten Gelegenheit gegenzuprüfen; bis dahin ist es als Beobachtung und nicht als Festlegung zu lesen.
+
+Der Fall bestätigt die Erwartung, dass die Werte Startwerte sind und korrigiert werden, ein zweites Mal und zeigt zugleich die Grenze der ursprünglichen Staffelung: Sie bemass den Wert am Umfang des *Arbeitsprodukts* der Rolle. Der Product Owner verantwortet mit dem Backlog ein eng umrissenes Arbeitsprodukt, doch eine Einordnung, die jede Zahl aus dem Dateiinhalt nachrechnet, statt sie fortzuschreiben, ist unabhängig davon aufwendig. Massgeblich ist nicht die Breite des Arbeitsprodukts, sondern die Zahl der Prüfschritte, die eine Arbeitseinheit verlangt.
+
+**Erste Korrektur, 2026-08-25 — der Fall ist eingetreten.** Der Static Software Tester ist im Full-Review vom 2026-08-25 dreimal mitten in der Arbeit gestoppt, zuletzt nachweislich an der Turn-Grenze. Gemessen: Der Abbruch erfolgte nach 34 Werkzeugaufrufen bei `maxTurns: 30`; der anschliessende Fortsetzungslauf brauchte 35 weitere Werkzeugaufrufe bis zum Bericht. Ein vollständiger ausführungslastiger Prüfdurchgang liegt damit bei rund 69 Werkzeugaufrufen beziehungsweise etwa 61 Turns. **Der Wert steht neu auf 80** — rund 30 Prozent Reserve über dem gemessenen Bedarf, und weiterhin eine harte Obergrenze im Sinne von 3.4, Ebene 4.
+
+Die Praxis liefert damit auch die fehlende Grössenordnung, die die Dokumentation nicht hergibt: Ein agentischer Turn entspricht in dieser Umgebung ungefähr einem Werkzeugaufruf (30 Turns ≙ 34 Aufrufe).
+
+**Bewusst nicht mitgeändert:** Dynamic Software Tester (30) und Pentester (25) gehören derselben Klasse an — Prüfrollen, die ausführen statt nur zu lesen — und laufen vermutlich in dieselbe Grenze. Für sie liegt aber **keine Messung** vor; sie werden korrigiert, wenn sie erkennbar zu früh abbrechen, nicht auf Verdacht. Das Kriterium dafür ist dasselbe wie hier: ein belegter Abbruch an der Grenze vor geliefertem Arbeitsprodukt.
 
 ### 5.3 Positivliste statt `disallowedTools`
 
@@ -148,6 +188,17 @@ Daraus folgt eine ehrliche Trennung: Dass `maxTurns` gesetzt wird, ist eine Vorg
 Nicht gesetzt sind ferner `permissionMode`, `hooks`, `memory`, `background`, `isolation`, `color` und `mcpServers`. Für keines dieser Felder trifft der Projektauftrag eine Vorgabe; sie werden deshalb nicht auf Vorrat belegt. Die rollenspezifische Verankerung von Hooks über das `hooks`-Feld bleibt als Option für die Folgearbeit aus Abschnitt 4 offen.
 
 ---
+
+### 5.5 Weshalb Rollen trotzdem Subagents sind und nicht Skills — Begründung vom 2026-08-31
+
+Die ursprüngliche Begründung stützte sich auf Felder, die es damals nur bei Subagents gab. Sie stützt sich jetzt auf etwas, das kein Feld ändern kann:
+
+1. **Ein Subagent ist ein Handelnder, ein Skill ist eine Prozedur.** An eine Rolle wird delegiert; ein Skill wird geladen. Der Nachweis nach 6.6 muss sagen, **wer** etwas getan hat — und "wer" ist im Verlauf nur bei einem Subagenten ablesbar.
+2. **Die Modelltrennung aus 3.4 hängt am Handelnden, nicht am Text.** Verlangt ist, dass die prüfende Instanz auf einem anderen Modell läuft als die umsetzende. Ein Skill, den dieselbe Instanz lädt, ist eine zweite Meinung derselben Stimme.
+3. **`maxTurns` je Rolle** begrenzt einen Handelnden. Eine Prozedur hat keine Turns.
+4. **Die Rechtestaffelung ist rollengebunden.** Dass der Pentester nicht schreiben darf, ist eine Eigenschaft der Rolle in jedem Auftrag — nicht einer Prozedur, die sie gerade ausführt. `allowed-tools` in einer `SKILL.md` würde das Gegenteil bewirken: Es genehmigt Werkzeuge für den Turn vorab, statt sie zu beschränken. Deshalb wird es bei uns nicht gesetzt.
+
+Was daraus für die Grenze folgt: **Ein Skill entsteht nur, wenn mehrere Rollen dieselbe Prozedur gleich ausführen.** Was nur eine Rolle tut, gehört in ihre Rollendatei; was eine Festlegung ist, in einen ADR oder eine Regel.
 
 ## 6. Release Manager
 
@@ -181,4 +232,5 @@ Die Entscheidung darüber liegt beim Auftraggeber und ist mit dieser Festlegung 
 | Schreibrechte des Legal Reviewers: 3.2 (a) "gar keine" gegen 4.2 "nur Dokumentation" | 3.2, 4.2 | Auftraggeber |
 | Zugeordneter Standard für den IT Supporter | 4.1, 4.2, 4.3 | Auftraggeber |
 | Hooks in der versionierten `.claude/settings.json` | 3.4; terminiert als R3-Q-001 und R3-Q-005 in Etappe 0 (Fortschreibung 2026-08-20) | Folgearbeit im Backlog |
-| `skills:`-Feld je Rolle, sobald Skills existieren | 3.2 (b); terminiert als R3-C-007 (Fortschreibung 2026-08-20) | Folgearbeit im Backlog |
+| `skills:`-Feld je Rolle, sobald Skills existieren — **erledigt am 2026-08-31 für die ersten beiden Skills** (5.1) | 3.2 (b); terminiert als R3-C-007 (Fortschreibung 2026-08-20) | Folgearbeit im Backlog |
+| **Wer `.claude/skills/` beschreiben darf.** Abschnitt 4 weist `.claude/` keiner Rolle zu: Der Protocol Master schreibt nur `docs/`, die Hook-Konfiguration liegt beim SecDevOps Engineer. Die ersten beiden Skills hat der Koordinator angelegt, wie zuvor `CLAUDE.md`, die Regeln und die Hooks in Lieferschritt 2. Vor der dritten Skill ist zu entscheiden, ob das so bleibt | **Neu am 2026-08-31** | Auftraggeber |

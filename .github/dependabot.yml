@@ -1,0 +1,26 @@
+# Dependabot: haelt die auf Pruefsummen gepinnten Arbeitsablauf-Aktionen aktuell.
+#
+# Warum es diese Datei braucht: Seit dem 2026-08-25 sind die Aktionen in
+# .github/workflows/ auf die 40-stellige Commit-Pruefsumme gepinnt statt auf ein
+# bewegliches Schild wie @v4. Das ist die Form, die zur Nachweisdoktrin des
+# Projekts passt (Projektauftrag 6.6) -- ein bewegliches Schild kann unter dem
+# Fuss ausgetauscht werden, eine Pruefsumme nicht.
+#
+# Der Preis: Ein gepinnter Stand bekommt Sicherheitskorrekturen nicht mehr von
+# selbst. Ohne diese Datei tauscht man ein bewegliches Schild gegen einen
+# alternden Stand -- der Tausch waere kein Gewinn. Dependabot eroeffnet deshalb
+# einen Pull Request, sobald eine neuere Fassung vorliegt, und zieht dabei
+# Pruefsumme UND den Versionskommentar dahinter nach.
+#
+# Der Pull Request wird geprueft und gemergt wie jeder andere (CONTRIBUTING.md):
+# kein direkter Push auf main, Merge durch den Repository-Eigentuemer.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "abhaengigkeiten"

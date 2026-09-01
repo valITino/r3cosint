@@ -1,0 +1,64 @@
+# Ausnahmeliste für scripts/belege-pruefen.sh
+#
+# Aufbau je Zeile: der Schlüssel, ein Tabulator, der Grund. Leerzeilen und
+# Zeilen mit # am Anfang werden übergangen.
+#
+# DER SCHLÜSSEL IST ORTSGEBUNDEN. Zwei Formen sind zulässig:
+#   datei:zeile   — genau dieser Fundort, jeder Wert dort
+#   datei|wert    — dieser Wert in dieser Datei, zeilenunabhängig
+# Eine dritte Form gibt es nicht; ein blosser Wert ohne Datei ist selbst ein
+# Befund (Art "ausnahme-form"). Grund: Eine wertgebundene Ausnahme
+# unterdrückte jedes künftige Vorkommen desselben Wortlauts im ganzen
+# Bestand — auch einen echten neuen Fehler. Die Nachprüfung vom 2026-09-01
+# hat das an zwei eingebauten Fällen belegt.
+#
+# Zwei weitere Prüfungen greifen an dieser Datei selbst:
+#   — Ein Eintrag ohne Grund ist ein Befund. Eine Ausnahme ohne Begründung
+#     ist eine Lücke mit Deckmantel.
+#   — Ein Eintrag, dessen Gegenstand inzwischen existiert, ist ein Befund.
+#     Dann gehört die Zeile hier weg, nicht stehen gelassen — sonst deckt sie
+#     beim nächsten Mal etwas Echtes zu.
+#
+# Alle Einträge sind am 2026-09-01 einzeln am Bestand nachgeschlagen worden.
+# Keiner der Funde war ein Fehler in einem Dokument.
+
+# --- Namensschablonen, Zitate und Gegenbeispiele ---------------------------
+.claude/rules/dokumentation.md|docs/adr/NNNN-titel.md	Namensschablone, kein Verweis auf eine bestimmte Datei. NNNN steht fuer die Nummer des jeweiligen ADR.
+docs/00_Projektauftrag.md|./.claude/CLAUDE.md	Zitat aus dem Originalauftrag. Der Projektauftrag fuehrt die Stelle an, um die dortige Annahme als falsch zu kennzeichnen; die Datei soll gerade nicht existieren.
+docs/adr/0002-architekturentscheid-ziel-stack.md|docs/backlog.md	Hypothetischer Name, den der ADR als Gegenbeispiel nennt ("faende er ebenso wenig"). Die Datei soll nicht existieren -- das ist die Aussage.
+docs/uebergaben/2026-08-20_r3-c-001-freigabe-und-nachfuehrung.md|docs/06	Kurzform fuer docs/06_Definition_of_Ready_und_Done.md im Fliesstext, kein Pfadverweis.
+
+# --- Kennung, die es nie gab (Befund V-01, docs/08_Freigabe_Schritt_4.md) ---
+docs/05_Product_Backlog.md|R3-C-020	Kennung, die es im Backlog nie gab; der Verweis darauf ist die dokumentierte Beschreibung eines behobenen Fehlers, keine neue Fehlangabe.
+docs/08_Freigabe_Schritt_4.md|R3-C-020	Kennung, die es im Backlog nie gab; der Verweis darauf ist die dokumentierte Beschreibung eines behobenen Fehlers, keine neue Fehlangabe.
+docs/uebergaben/2026-08-19_schritt-4-freigabe-gate.md|R3-C-020	Kennung, die es im Backlog nie gab; der Verweis darauf ist die dokumentierte Beschreibung eines behobenen Fehlers, keine neue Fehlangabe.
+docs/uebergaben/2026-08-20_befunde-vorpruefung.md|R3-C-020	Kennung, die es im Backlog nie gab; der Verweis darauf ist die dokumentierte Beschreibung eines behobenen Fehlers, keine neue Fehlangabe.
+
+# --- Absichtlich noch nicht vorhandene Artefakte --------------------------
+docs/00_Projektauftrag.md|nachweise/abzug/	Wird erst bei der Abgabe erzeugt, auf ein besonderes Versionsschild hin (6.6). Vorher darf das Verzeichnis nicht bestehen.
+docs/05_Product_Backlog.md|docs/datenschutz/	Entsteht mit R3-C-012 (Bearbeitungsverzeichnis und Loeschnachweis).
+docs/05_Product_Backlog.md|docs/konformitaet/	Entsteht mit R3-C-013 (dokumentierte Konformitaetsanalyse).
+docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/abnahme-abgleich.sh	Folgt mit dem Grundgeruest (D7). Bis dahin meldet D7 der Kette Lage C -- der belegte und gewollte Zustand.
+docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/rueckkanal-pruefen.sh	Folgt mit R3-C-004. Bis dahin meldet D9 Lage C.
+docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/prototyp-trennung-pruefen.sh	Folgt mit dem Grundgeruest; Betriebsart und Form sind als O-8 offen. Bis dahin meldet D10 Lage C.
+docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/nachweise-vollstaendig.sh	Folgt mit dem Grundgeruest; die Form ist als O-8 offen. Bis dahin meldet D12 Lage C.
+docs/uebergaben/2026-08-25_eingangskanal-repariert.md|.claude/skills/einschleusung-pruefen/	Am 2026-08-25 zurueckgestellt. Der damalige Grund -- sie waere die erste Skill und loeste R3-C-007 halb aus -- ist am 2026-08-31 entfallen, weil R3-C-007 mit den ersten zwei Skills erfuellt ist. Die Skill ist wieder baubar; der Eintrag bleibt, bis der Product Owner sie terminiert.
+docs/uebergaben/2026-08-25_eingangskanal-repariert.md|.claude/rules/fremde-inhalte-im-harness.md	Entsteht mit Einheit E3 der freigegebenen Reihenfolge; am 2026-08-25 so festgehalten.
+
+# --- Gegenstaende ausserhalb dieses Repositories --------------------------
+docs/vorlagen/2026-08-29_werkzeugvorschlag-cas-blockwoche.md|spiderfoot/correlation.py	Pfad innerhalb eines fremden Programms, genannt im Werkzeugvorschlag. Kein Gegenstand dieses Repositories.
+docs/05_Product_Backlog.md|882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf	Commit des angebundenen fremden Repositories valITino/claude-skills-fullstack. Dieses Skript kennt nur Objekte der beiden eigenen Arbeitsbaeume.
+docs/uebergaben/2026-08-31_skill-repository-ausgewertet.md|882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf	Commit des angebundenen fremden Repositories valITino/claude-skills-fullstack. Dieses Skript kennt nur Objekte der beiden eigenen Arbeitsbaeume.
+docs/uebergaben/2026-08-25_automatik-gehaertet.md|11d5960a326750d5838078e36cf38b85af677262	Gepinnter Commit der fremden GitHub-Action actions/checkout. Genau so verlangt es 6.6 -- ein Zweigname waere hier der Fehler.
+docs/uebergaben/2026-08-25_eingangskanal-abgesichert.md|11d5960a326750d5838078e36cf38b85af677262	Gepinnter Commit der fremden GitHub-Action actions/checkout. Genau so verlangt es 6.6 -- ein Zweigname waere hier der Fehler.
+docs/uebergaben/2026-08-25_full-review-konfiguration.md|11d5960a326750d5838078e36cf38b85af677262	Gepinnter Commit der fremden GitHub-Action actions/checkout. Genau so verlangt es 6.6 -- ein Zweigname waere hier der Fehler.
+
+# --- blob/main als abschreckendes Beispiel, kein Verstoss -----------------
+CLAUDE.md:83	Nennt die verbotene Form als Beispiel ("nie über `blob/main/...`"), kein Verstoss.
+.claude/agents/devops-engineer.md:23	Nennt die verbotene Form als Beispiel ("nie über `blob/main`"), kein Verstoss.
+.claude/agents/protocol-master.md:16	Nennt die verbotene Form als Beispiel ("ein Verweis auf `blob/main/...` ist kein Nachweis"), kein Verstoss.
+.claude/rules/dokumentation.md:18	Nennt die verbotene Form als Beispiel ("`blob/main/...` ist kein Nachweis"), kein Verstoss.
+docs/00_Projektauftrag.md:938	Nennt die verbotene Form als Beispiel ("Ein Verweis auf `blob/main/...` ist kein Nachweis"), kein Verstoss.
+docs/08_Freigabe_Schritt_4.md:133	Nennt die verbotene Form als Beispiel ("kein Verweis auf `blob/main`"), kein Verstoss.
+docs/uebergaben/2026-08-25_full-review-konfiguration.md:16	Nennt die verbotene Form als Beispiel (deterministische Prüfung auf `blob/main` als Prüfgegenstand), kein Verstoss.
+docs/uebergaben/2026-09-01_belegpruefer-abbruch-nach-3-4.md:28	Nennt die beiden verbotenen Formen als Beschreibung dessen, was der Pruefer sucht -- kein Verstoss, sondern seine Fundstellenliste.

@@ -27,7 +27,7 @@ Verantwortet Datenschutz by Design, das Löschkonzept und das Bearbeitungsverzei
 
 ## Grenzen und Rechte
 - Schreibrechte nach 4.2: nur Dokumentation. Schreibt ausschliesslich Dokumentationsdateien; die technische Umsetzung des Löschwegs liegt bei Backend und DevOps.
-- Diese Einschränkung wird nicht durch das `tools`-Feld erzwungen, sondern gilt als Instruktion; die harte Durchsetzung über einen `PreToolUse`-Hook in der versionierten `.claude/settings.json` ist ein offener Punkt der Lieferschritte 2 und 3 (2, 3.2, 3.4).
+- Diese Einschränkung wird nicht durch das `tools`-Feld erzwungen, sondern gilt als Instruktion; die harte Durchsetzung über einen `PreToolUse`-Hook in der versionierten `.claude/settings.json` ist als R3-Q-005 in Etappe 0 des Backlogs terminiert (ADR 0001, Fortschreibung 2026-08-20; 3.2, 3.4).
 - Bewertet das Zugriffsmodell auf Dezernatsebene nicht; es ist gesetzt und wird dokumentiert (5.8, 4.4).
 - Setzt keine Frist selbst als Recht: die Startwerte sind betriebliche Voreinstellungen, deren Bestätigung oder Korrektur bei der Kantonspolizei Bern liegt (4.4, 7.2 Punkt H-Rest).
 - Führt keine Datenschutz-Folgenabschätzung für biometrische Verarbeitung: das Gesichtserkennungsmodul ist gestrichen, es entstehen keine biometrischen Vektoren (5.18).
