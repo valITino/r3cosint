@@ -4,7 +4,7 @@
 |---|---|
 | **Arbeitsprodukt nach** | Projektauftrag 6.5, 6.8, 3.4 |
 | **Verantwortlich** | Scrum Master (Prozess), Requirements Engineer (Ready), Static und Dynamic Software Tester (Done) |
-| **Stand** | 2026-08-20, nachgeführt am 2026-08-30 (ADR 0002, Abschnitt 6.1: D18 ergänzt, D11 auf zwei Gegenstände erweitert, Kettengrundsatz aufgenommen; Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`), ergänzt am 2026-08-31 um die Notation der Abnahmekriterien zu R6 — Vorschlag zur Bestätigung, am selben Tag nach Prüfbefund berichtigt (drittes Glied heisst "Nachbedingung" wie die Quelle; Ermessensanteil der Zählungen offengelegt) |
+| **Stand** | 2026-08-20, nachgeführt am 2026-08-30 (ADR 0002, Abschnitt 6.1: D18 ergänzt, D11 auf zwei Gegenstände erweitert, Kettengrundsatz aufgenommen; Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`), ergänzt am 2026-08-31 um die Notation der Abnahmekriterien zu R6 — Vorschlag zur Bestätigung, am selben Tag nach Prüfbefund berichtigt (drittes Glied heisst "Nachbedingung" wie die Quelle; Ermessensanteil der Zählungen offengelegt), nachgeführt am 2026-09-01 (Rahmenprüfung **D19** aus der zweiten und vierten Fortschreibung von ADR 0002 vom 2026-08-30 nachgetragen — diese Nachführung stand seither offen; Kettenschritt **D20** aus der achten Fortschreibung vom 2026-09-01 aufgenommen; Kettengrundsatz zum Rückgabewert 0 übernommen) |
 
 Beide sind zu unterscheiden: **Ready gilt für den Eingang in den Sprint, Done
 für den Ausgang** (6.8).
@@ -18,11 +18,19 @@ für den Ausgang** (6.8).
 | 2026-08-30 | Kein Grundsatz hielt fest, dass ein Prüflauf den Arbeitsbaum unverändert lässt | Neuer Grundsatz: Kein Kettenschritt ändert eine versionierte Datei des Arbeitsbaums | Voraussetzung dafür, dass D11 den Arbeitsbaum zuverlässig beurteilt, unabhängig davon, welcher Schritt vorher lief |
 | 2026-08-31 | R6 verlangte ein Abnahmekriterium, "das sich als Test formulieren lässt", ohne eine Form dafür zu nennen | Neuer Abschnitt "Notation der Abnahmekriterien (R6)" in Teil 1 — **als Vorschlag zur Bestätigung**, nicht als gesetzte Regel | Ohne benannte Form entsteht die Prüfbarkeit je Eintrag neu und ungleich. Die Form ist am Bestand erhoben, nicht von aussen gesetzt: sie schreibt fest, was die Arbeitseinheit "Befund F" am 2026-08-26 bereits angewandt hat |
 | 2026-08-31 | Die erste Fassung desselben Tages nannte das dritte Glied "Erwartung" und behauptete zugleich, die Benennung sei die von Befund F. Das Wort "Erwartung" kommt weder in `docs/05_Product_Backlog.md` noch in `docs/uebergaben/2026-08-26_befund-f-abnahmekriterien.md` vor | Das dritte Glied heisst **Nachbedingung**, wie die Quelle. Der Abschnitt trennt jetzt ausdrücklich: die vier **Namen** sind wörtlich übernommen, die **Bestimmungen** der Glieder stehen dort zum ersten Mal, weil Befund F die Glieder benennt, ohne sie zu bestimmen. Dazu die Offenlegung des Ermessensanteils der Zahlen 11/6/4 | Befund einer unabhängigen Prüfung, nachgeprüft und zutreffend. Eine Notation, die ihre Geltung darauf stützt, am Bestand erhoben und nicht gesetzt zu sein, darf ihre Herkunft nicht falsch angeben — sonst trägt die Begründung nicht, mit der sie vorgelegt wird. Die beobachtbare Reaktion, die vorher unter "Erwartung" stand, bleibt erhalten: sie steht in der Nachbedingung, weil Befund F sie dort führt |
+| 2026-09-01 | Diese Datei führte **D19 nicht**, obwohl ADR 0002 die Nummer bereits am 2026-08-30 vergeben hatte (zweite Fortschreibung, Abschnitt 6.2; Messweise nachgeschärft in 6.4). Wer die Freiheit einer D-Nummer an dieser Datei ablesen wollte, hielt D19 für frei | Die Rahmenprüfung **D19** (Unverändertheit des Arbeitsbaums) steht mit eigenem Kriterium unter dem Kettengrundsatz. Dazu die Vergaberegel: **eine D-Nummer ist vergeben, sobald ein ADR sie vergibt**, nicht erst, wenn die Nachführung sie erreicht hat; der gemeinsame Namensraum wird aus beiden Dokumenten gelesen, bei Abweichung gilt der frühere Vergabezeitpunkt | Die Nachführung stand seit dem 2026-08-30 offen (ADR 0002, Abschnitt 9). Beim Vergeben der nächsten Nummer wäre D19 ohne die ausdrückliche Regel ein zweites Mal vergeben worden; der Befund und die Regel stammen aus ADR 0002, 6.8.1 |
+| 2026-09-01 | Die Zielliste von `make dod` führte D1 bis D4, D18, D5 bis D12. Über den Dokumentationsbestand — die einzige Artefaktklasse, die das Repository heute trägt — sagte die Kette nichts | Neuer Kettenschritt **D20** (Belege) als **erster** Schritt, vor D1, **ohne Lage B**. Die Reihe lautet D20, D1 bis D4, D18, D5 bis D12 | Entscheid des Auftraggebers vom 2026-09-01, ausgeführt in der achten Fortschreibung von ADR 0002, Abschnitt 6.8. Am Ende der Kette liefe der Schritt bis auf Weiteres nie, weil die Kette heute bei D7 abbricht, und er würde zum ersten Mal in genau dem Lauf greifen, in dem sich seine schärfste Regel selbst scharf schaltet (6.8.2) |
+| 2026-09-01 | Teil 2 sagte, was jeder Schritt prüft, aber nicht, was ein **bestandener** Schritt behauptet. Unter "Was nicht als erledigt gilt" stand allein, dass ein grüner Prüflauf nicht genügt | Neuer Abschnitt "Was ein grüner Kettenschritt aussagt" mit dem Grundsatz: Rückgabewert 0 heisst, nichts von dem gefunden zu haben, was dieser Schritt sucht — nie, dass nichts vorhanden ist | ADR 0002, 6.8.4 erklärt den Satz ausdrücklich für **alle** Schritte und weist ihn in Abschnitt 9 dieser Datei zu. Er ändert an keinem Schritt das Verhalten, aber den Anspruch eines grünen `make dod`; bei einem Artefakt, dessen Ergebnis nach 5.3 ein Nachweis ist, ist das kein Nebenpunkt |
 
 Quelle für die drei Zeilen vom 2026-08-30: ADR 0002, Abschnitt 6.1
 (`docs/adr/0002-architekturentscheid-ziel-stack.md`), Fortschreibung vom
 2026-08-30, Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`. Einzelheiten
 unten unter "Die Befehlskette".
+
+Quelle für die drei Zeilen vom 2026-09-01: derselbe ADR, Abschnitte 6.2 und 6.4
+(D19) sowie 6.8 (D20, Nummernvergabe und Kettengrundsatz). Worauf die Aussagen
+dieser Nachführung im Einzelnen beruhen, steht unten unter "Die Befehlskette",
+Absatz "Woraus die Nachführung vom 2026-09-01 schöpft".
 
 ---
 
@@ -201,6 +209,41 @@ Ausführungsreihenfolge steht in der Zielliste von `make dod`, nicht in der
 Zahl. Einzelheiten und Begründung bei D11 und D18 unten sowie in ADR 0002,
 Abschnitt 6.1.
 
+**Seit dem 2026-09-01 zwei Nummern mehr.** In die Zielliste kommt **D20**
+(Belege) hinzu, und zwar als **erster** Schritt vor D1; ausserhalb der
+Zielliste steht die Rahmenprüfung **D19** (Unverändertheit des Arbeitsbaums),
+die den ganzen Lauf einklammert und deshalb kein eigenes `make`-Ziel hat. Die
+Ausführungsreihenfolge lautet damit D20, D1 bis D4, D18, D5 bis D12 (ADR 0002,
+Abschnitt 6, "Ein Einstieg für den Hook", fortgeschrieben in 6.8.2). Die
+Wendung "Kette D1 bis D12" ist damit ein zweites Mal unvollständig geworden und
+wird hier nicht weiterverwendet.
+
+**Wann eine D-Nummer vergeben ist.** Zur Nummernregel oben kommt der Satz aus
+ADR 0002, 6.8.1: **Eine D-Nummer ist vergeben, sobald ein ADR sie vergibt** —
+nicht erst, wenn die Nachführung sie erreicht hat. Der gemeinsame Namensraum
+wird aus der Vereinigung dieses Dokuments und der Architekturentscheide
+gelesen; bei Abweichung
+gilt der frühere Vergabezeitpunkt. Anlass ist diese Datei selbst: Sie führte
+D19 vom 2026-08-30 bis zum 2026-09-01 nicht, und wer die Freiheit einer Nummer
+an ihr ablas, hätte D19 ein zweites Mal vergeben.
+
+**Woraus die Nachführung vom 2026-09-01 schöpft.** Die Kriterien zu D19 und D20
+und der Grundsatz weiter unten sind aus ADR 0002 geschrieben — Abschnitt 6
+(Schritttabelle, Objekttabelle, Kettengrundsatz), 6.2.1 und 6.4 für D19,
+6.8.1 bis 6.8.5 für D20 —, nicht aus einer Zusammenfassung davon. Zusätzlich
+gelesen sind der Kopfkommentar des `Makefile`, sein Ziel `belege`, der
+D19-Teil seines Ziels `dod` und der Kopfkommentar von
+`scripts/belege-pruefen.sh`; daraus stammen ausschliesslich die Angaben zur
+heutigen Umsetzung. **Nicht ausgeführt** hat diese Rolle `make dod` und
+`bash scripts/belege-pruefen.sh`: Sie hat kein Ausführungswerkzeug und prüft
+ihre eigene Arbeit ohnehin nicht (3.4). Jede Aussage über einen ausgeführten
+Lauf — die in drei Runden gefangenen Fehlerklassen, null Funde über den
+heutigen Bestand bei 30 Ausnahmen, das Umschlagen auf 46 Funde beim Entstehen
+eines Teilbaums — ist **Fremdbeleg** aus
+`docs/uebergaben/2026-09-01_belegpruefer-abbruch-nach-3-4.md` und aus ADR 0002,
+6.8; sie ist hier nicht nachgeprüft und wird nicht als eigene Beobachtung
+geführt.
+
 | Nr. | Schritt | Kriterium |
 |---|---|---|
 | D1 | Bau | Der Programmstand baut fehlerfrei — aus der Sperrdatei und **ohne Zwischenspeicher**: jedes Paket wird geladen und dabei gegen `uv.lock` geprüft. Eine Abweichung zwischen `pyproject.toml` und `uv.lock` macht den Schritt rot (Entscheid des Auftraggebers vom 2026-08-31 zu O-13, ADR 0002, 6.7) |
@@ -216,6 +259,7 @@ Abschnitt 6.1.
 | D11 | Geheimnisse | Secret-Scanning findet keinen Schlüssel und kein Token — geprüft in zwei eigenständigen Läufen, Arbeitsbaum und Git-Historie; keiner der beiden Läufe ersetzt den anderen (vorher: nur die Historie; Fortschreibung 2026-08-30, ADR 0002, Abschnitt 6.1.1) |
 | D12 | Nachweise | Das Nachweisverzeichnis `docs/NACHWEISE.md` ist neu erzeugt und der Commit-Verweis stimmt |
 | D18 | Architekturverträge | Der Importprüfer findet keinen Verstoss gegen die Modulgrenzen aus ADR 0002, Abschnitt 4.3; läuft in der Zielliste von `make dod` nach D4 und vor D5. Nummer D18, nicht D13: D13 bis D17 sind unten an die menschlich zu bestätigenden Bedingungen vergeben (Fortschreibung 2026-08-30, ADR 0002, Abschnitt 6.1.2) |
+| D20 | Belege | Über die versionierten Markdown-Dateien der Wurzel, unter `docs/` und unter `.claude/` zeigt kein Zeilenverweis, keine Commit-Prüfsumme, keine Anforderungskennung, kein Pfadverweis und keine Abschnittsangabe des Projektauftrags auf etwas Nichtvorhandenes, und keine Stelle verwendet die nach 6.6 unzulässige Zweigform statt der Commit-Prüfsumme. **Ein grüner Lauf sagt, dass keine der geprüften Angaben ins Leere zeigt. Er sagt nicht, dass der Fundort die Behauptung trägt, die ihm zugeschrieben wird — das prüft kein Werkzeug, und es bleibt beim menschlichen Review.** Läuft als **erster** Schritt der Kette, vor D1. **Keine Lage B**: ein leerer Bestand wäre ein Befund und kein leerer Gegenstand; fehlt ein Prüfmittel — `git`, der Arbeitsbaum, `scripts/belege-pruefen.sh`, `scripts/belege-ausnahmen.txt` oder eines der beiden Bezugsdokumente `docs/05_Product_Backlog.md` und `docs/00_Projektauftrag.md` —, ist das Lage C und endet ungleich 0. Das Prüfmittel ist nach Eskalationsregel 3.4 abgebrochen und **nicht abgenommen** (offener Punkt 5 unten); die Aufnahme in die Kette hängt nicht an der Abnahme. Nummer D20, nicht D13 und nicht D19: beide sind vergeben (Fortschreibung 2026-09-01, ADR 0002, Abschnitt 6.8) |
 
 ## Ein Prüflauf verändert den Gegenstand nicht, über den er urteilt
 
@@ -226,6 +270,73 @@ Versionsverwaltung ignoriert. Grund: Sonst hängt das Ergebnis eines Schrittes
 davon ab, welcher Schritt vorher lief — mit D11 seit dieser Fortschreibung
 unmittelbar wirksam, weil D11 über den Arbeitsbaum urteilt. Grundsatz
 aufgenommen mit der Fortschreibung vom 2026-08-30, ADR 0002, Abschnitt 6.1.3.
+
+### Beobachtet, nicht nur zugesichert — die Rahmenprüfung D19
+
+*(Nachgetragen am 2026-09-01. Vergeben hat die Nummer ADR 0002 mit der zweiten
+Fortschreibung vom 2026-08-30, Abschnitt 6.2.1; die Messweise ist in 6.4
+desselben Tages nachgeschärft. Bis heute fehlte D19 in dieser Datei.)*
+
+Der Grundsatz oben war bis dahin beobachtbar, aber von nichts beobachtet. Er
+hängt jetzt an zwei voneinander unabhängigen Massnahmen, von denen keine die
+andere ersetzt: je Schritt vermeidend — kein Kettenschritt ruft ein Werkzeug in
+einer Betriebsart auf, die eine versionierte Datei schreiben kann — und je Lauf
+beobachtend durch D19.
+
+| Nr. | Prüfung | Kriterium |
+|---|---|---|
+| D19 | Unverändertheit des Arbeitsbaums | `make dod` nimmt unmittelbar **vor** dem ersten und unmittelbar **nach** dem letzten ausgeführten Kettenschritt den Bestand auf — die Statusliste `git status --porcelain --untracked-files=all` **und** eine Inhaltsprüfsumme je verfolgter Datei — und vergleicht beide Aufnahmen zeilenweise, einschliesslich der unverfolgten Einträge. Massstab ist vorher gegen nachher, **nicht** gegen einen sauberen Arbeitsbaum: Die Kette läuft vor dem Commit und trifft regelmässig einen bereits veränderten Arbeitsbaum an; das ist zulässig, ihn zu verändern nicht. Bei Abweichung endet `make dod` ungleich 0 und nennt die abweichenden Zeilen. Der Befund **kann einen grünen Lauf rot machen, nie einen roten grün**. Die Nachher-Aufnahme läuft auch dann, wenn die Kette an einem früheren Schritt abgebrochen ist — sonst bliebe gerade der Schritt unbeobachtet, der schreibt und zugleich scheitert |
+
+Drei Eigenschaften gehören zur Kennung dazu:
+
+- **D19 ist kein Schritt der Zielliste und hat kein eigenes `make`-Ziel.** Ein
+  Schritt in der Liste sähe nur seinen eigenen Augenblick und könnte nicht
+  beurteilen, was ein späterer Schritt schreibt; ein Schritt am Ende der Liste
+  liefe bei einem früheren Abbruch gar nicht. Eine Nummer trägt die Prüfung
+  trotzdem, damit Definition of Done, Backlog und Nachweise sie benennen können.
+- **Gemessen wird der Inhalt, nicht die Namensliste.** Die blosse Statusliste
+  sagt, **welche** Dateien abweichen, nicht **wie**: Eine schon vor dem Lauf
+  geänderte Datei trägt vorher wie nachher denselben Eintrag, auch wenn ein
+  Kettenschritt sie während des Laufs erneut ändert. Deshalb die Prüfsumme je
+  verfolgter Datei (ADR 0002, 6.4). Der Preis — zwei Läufe über alle verfolgten
+  Dateien je `make dod` — ist dort benannt und angenommen.
+- **D19 ersetzt die Schalter je Schritt nicht, und umgekehrt.** `--locked`
+  verhindert den häufigsten Fall, bevor er eintritt, und nennt seine Ursache;
+  D19 fängt jeden Fall, an den niemand gedacht hat, kann aber nur feststellen,
+  **dass** geschrieben wurde.
+
+## Was ein grüner Kettenschritt aussagt
+
+*(Aufgenommen am 2026-09-01 aus ADR 0002, 6.8.4. Der Grundsatz gilt dort
+ausdrücklich für alle Schritte und ändert an keinem Schritt das Verhalten.)*
+
+> **Rückgabewert 0 eines Kettenschritts heisst: nichts von dem gefunden, was
+> dieser Schritt sucht. Er heisst nie: nichts vorhanden.** Ein grünes
+> `make dod` ist der Nachweis, dass die Kette gelaufen ist und nichts gefunden
+> hat — nicht der Nachweis, dass die Arbeit richtig ist. Die menschlich
+> bestätigten Bedingungen D13 bis D17 stehen genau deshalb daneben und werden
+> durch keinen grünen Lauf ersetzt.
+
+Jeder Schritt ist eine Negativaussage über seinen eigenen Suchraum: Eine
+Formatprüfung sagt nichts über den Entwurf, eine Abhängigkeitsprüfung sagt
+nicht, dass keine Schwachstelle besteht, sondern dass keine in der verwendeten
+Datenbank steht, und ein Geheimnis-Scanner sagt nicht, dass kein Schlüssel
+vorliegt, sondern dass keiner seinen Mustern entsprach. D20 sagt damit nichts
+Schwächeres als die übrigen Schritte; er ist der einzige, dessen Werkzeug es
+selbst ausspricht.
+
+Zwei Folgen für die Definition of Done:
+
+- Der Punkt "Ein grüner Prüflauf allein" weiter unten ist damit keine Aussage
+  über das Vertrauen in ein einzelnes Werkzeug, sondern eine Eigenschaft der
+  ganzen Kette. Die menschliche Prüfung wird nicht dadurch entbehrlich, dass
+  mehr Schritte hinzukommen.
+- **Kein Kettenschritt belegt, was ein anderer zu belegen hat.** D20 prüft, dass
+  eine Anforderungskennung als Überschrift im Backlog steht; er sagt damit
+  nicht, dass zu dieser Anforderung ein Test existiert — das ist die Aussage von
+  D7 — und nicht, dass das Nachweisverzeichnis stimmt — das ist D12. Ein
+  Abnahmekriterium nach R6 gilt erst mit dem bestandenen Test unter D7 als
+  erfüllt.
 
 ## Ergänzende Bedingungen, die kein Befehl prüft
 
@@ -294,5 +405,9 @@ für den Prototyp.
 |---|---|---|
 | 1 | Bestätigung der Abdeckungsschwelle in D6 | Auftraggeber |
 | 2 | Schwellenwert für Linter-Warnungen (D3) und für Abhängigkeitsschwachstellen (D8) | Auftraggeber mit SecDevOps |
-| 3 | Konkrete Befehle je Kettenschritt: eingesetzt am 2026-08-20 mit ADR 0002, Abschnitt 6 (Einstieg `make dod`), am 2026-08-30 fortgeschrieben (Abschnitt 6.1: D11 auf zwei Gegenstände erweitert, D18 ergänzt, Kettengrundsatz aufgenommen); offen bleibt die technische Bestätigung samt der Befunde zu D10 und D12 sowie der Prüffläche des Arbeitsbaumlaufs in D11 (O-10) | DevOps Engineer und Auftraggeber, mit R3-Q-001 |
+| 3 | Konkrete Befehle je Kettenschritt: eingesetzt am 2026-08-20 mit ADR 0002, Abschnitt 6 (Einstieg `make dod`), am 2026-08-30 fortgeschrieben (Abschnitt 6.1: D11 auf zwei Gegenstände erweitert, D18 ergänzt, Kettengrundsatz aufgenommen); offen bleibt die technische Bestätigung samt der Befunde zu D10 und D12 sowie der Prüffläche des Arbeitsbaumlaufs in D11 (O-10). **Nachgeführt am 2026-09-01:** dazu kommen die Rahmenprüfung D19 (ADR 0002, 6.2 und 6.4) und der Kettenschritt D20 (6.8); beide sind ebenso unbestätigt wie die übrige Kette | DevOps Engineer und Auftraggeber, mit R3-Q-001 |
 | 4 | Bestätigung der Notation der Abnahmekriterien zu R6 (Teil 1): die vier Glieder **samt ihrer dort erstmals gegebenen Bestimmung** — die Namen stammen wörtlich aus Befund F, die Bestimmungen nicht —, die Pflicht zur Gegenprobe und die Geltung nur für neue und ohnehin geänderte Kriterien | Auftraggeber |
+| 5 | **Abnahme des Prüfmittels von D20.** Es ist nach Eskalationsregel 3.4 abgebrochen und nicht abgenommen; seine Selbstauskunft erklärt die Liste der eigenen Grenzen ausdrücklich für unvollständig. Offen ist, welches Abnahmekriterium für ein Werkzeug gilt, das eine Nachweiskette blockiert (ADR 0002, O-15) | Static und Dynamic Software Tester, auf einem anderen Modell als die Umsetzung (3.4); Entscheid über das Abnahmekriterium beim Auftraggeber |
+| 6 | **Aussagekraft von D20 je Arbeitsplatz.** Das Prüfmittel liest ein zweites Repository an einem fest verdrahteten Ort mit; fehlt es dort, zählt es die betroffenen Zeilen als nicht prüfbar, ohne dass diese Zählung in den Rückgabewert eingeht (ADR 0002, O-14) | DevOps Engineer mit Protocol Master |
+| 7 | **Befund aus der Nachführung, ohne Lösungsvorschlag (6.7):** Das Mittel von D19 steht in ADR 0002 und im `Makefile` verschieden. Der ADR nennt in 6.2 und 6.4 Statusliste und Inhaltsprüfsummen; das gelesene Ziel `dod` nimmt zusätzlich die Maskierungsmerkmale des Index auf (`assume-unchanged`, `skip-worktree`) und meldet sie als eigenen Befund. Welche Fassung gilt, ist nicht entschieden. Das Kriterium oben gibt den ADR wieder | Software Architect mit DevOps Engineer |
+| 8 | **Befund aus der Nachführung, ohne Lösungsvorschlag (6.7):** ADR 0002 datiert seine achte Fortschreibung uneinheitlich — Kopfzeile und Abschnitt 6.8 auf den 2026-09-01, das Kriterium K5, die D20-Zeile der Objekttabelle sowie die offenen Punkte O-14 und O-15 auf den 2026-08-31. Diese Datei folgt dem 2026-09-01, weil Abschnitt 6.8 und die zugehörige Übergabedatei dieses Datum tragen | Software Architect |
