@@ -258,6 +258,7 @@ blenden() {
 
 # --- Ausnahmeliste laden ---
 declare -A AUSNAHME_GRUND=()
+AUSNAHME_FORMFEHLER=()
 AUSNAHME_ZEILEN=()
 if [ -f "$AUSNAHMEDATEI" ]; then
   zn=0
@@ -267,18 +268,49 @@ if [ -f "$AUSNAHMEDATEI" ]; then
     case "$wert" in \#*) continue ;; esac
     AUSNAHME_GRUND["$wert"]="${grund:-}"
     AUSNAHME_ZEILEN+=("$zn"$'\t'"$wert"$'\t'"${grund:-}")
+    case "$wert" in
+      *'|'*) : ;;
+      *:[0-9]) : ;;
+      *:[0-9][0-9]) : ;;
+      *:[0-9][0-9][0-9]) : ;;
+      *:[0-9][0-9][0-9][0-9]) : ;;
+      *:[0-9][0-9][0-9][0-9][0-9]) : ;;
+      *) AUSNAHME_FORMFEHLER+=("$zn"$'\t'"$wert") ;;
+    esac
   done < "$AUSNAHMEDATEI"
 fi
 
+# BLOCKIERENDER BEFUND der Nachpruefung vom 2026-08-31, hier behoben:
+# Ausnahmen waren als blosser TEXTWERT eingetragen. Damit unterdrueckte eine
+# einzige Zeile jedes kuenftige Vorkommen desselben Wortlauts im GANZEN
+# Bestand -- auch einen echten neuen Fehler. Ausgefuehrt belegt an zwei
+# eingebauten Faellen ("docs/06" und "R3-C-020" an frischer Stelle: kein Fund).
+# Das Skript kannte das Risiko: Fuer blob/main war der Schluessel bereits
+# ortsgebunden, mit genau dieser Begruendung im Kopfkommentar -- die Loesung
+# war nur auf eine von vier Kategorien angewandt.
+# Damit war die Fehlerklasse, gegen die dieses Skript gebaut ist, in das
+# Skript selbst gewandert: Eine Ausnahme mit richtigem historischem Grund
+# wurde faktisch zu einer Aussage ueber alle kuenftigen Vorkommen.
+# Jetzt ist jeder Schluessel ortsgebunden, und die zu breite Form laesst sich
+# nicht mehr hinschreiben:
+#   "datei:zeile"  -- genau dieser Fundort, jeder Wert dort
+#   "datei|wert"   -- dieser Wert in dieser Datei, zeilenunabhaengig
+# Ein Schluessel in einer anderen Form ist selbst ein Befund
+# (Art "ausnahme-form"). Was bleibt: Ein zweites, echt falsches Vorkommen
+# DESSELBEN Wertes in DERSELBEN Datei wird von einer "datei|wert"-Ausnahme
+# weiterhin gedeckt. Das ist die verbleibende Luecke, und sie steht auch in
+# der Schlussausgabe jedes Laufs.
 ist_ausgenommen() {
-  local wert="$1"
-  [ -n "${AUSNAHME_GRUND[$wert]+x}" ]
+  local datei="$1" zeile="$2" wert="$3"
+  [ -n "${AUSNAHME_GRUND["$datei:$zeile"]+x}" ] && return 0
+  [ -n "${AUSNAHME_GRUND["$datei|$wert"]+x}" ] && return 0
+  return 1
 }
 
 melden() {
-  # datei zeile pruefung wert [ausnahme-schluessel]
-  local datei="$1" zeile="$2" pruefung="$3" wert="$4" schluessel="${5:-$4}"
-  if ist_ausgenommen "$schluessel"; then
+  # datei zeile pruefung wert
+  local datei="$1" zeile="$2" pruefung="$3" wert="$4"
+  if ist_ausgenommen "$datei" "$zeile" "$wert"; then
     return 0
   fi
   FINDINGS_LISTE+=("$datei:$zeile"$'\t'"$pruefung"$'\t'"$wert")
@@ -351,8 +383,18 @@ ist_pfadartig() {
   case "$c" in
     */*)
       erster="${c%%/*}"
+      # Befund der Nachpruefung vom 2026-08-31: Diese drei Namen wurden
+      # unbesehen als Git-Referenz behandelt; ein echter, kaputter Pfad wie
+      # "claude/nicht-vorhanden.md" blieb damit unsichtbar. Jetzt gilt die
+      # Ausnahme nur, wenn das letzte Segment KEINE Dateiendung traegt --
+      # Zweignamen tragen keine.
       case "$erster" in
-        claude|origin|fix) return 1 ;;
+        claude|origin|fix)
+          case "${c##*/}" in
+            *.*) : ;;
+            *) return 1 ;;
+          esac
+          ;;
       esac
       [ "$erster" = "valITino" ] && return 1
       case "$erster" in
@@ -509,7 +551,7 @@ for DATEI in "${DATEIEN[@]}"; do
 
   while IFS=: read -r ZL WERT; do
     [ -z "${ZL:-}" ] && continue
-    melden "$DATEI" "$ZL" "blob-tree-verweis" "$WERT" "$DATEI:$ZL"
+    melden "$DATEI" "$ZL" "blob-tree-verweis" "$WERT"
   done < <(printf '%s\n' "$INHALT" | grep -noE '(blob|tree)/main')
 
   # --- Prüfung 5: Abschnitte des Projektauftrags ---
@@ -603,6 +645,13 @@ for eintrag in "${AUSNAHME_ZEILEN[@]+"${AUSNAHME_ZEILEN[@]}"}"; do
   fi
 done
 
+for eintrag in "${AUSNAHME_FORMFEHLER[@]+"${AUSNAHME_FORMFEHLER[@]}"}"; do
+  ZN="${eintrag%%$'\t'*}"; WERT="${eintrag#*$'\t'}"
+  FINDINGS_LISTE+=("$AUSNAHMEDATEI:$ZN"$'\t'"ausnahme-form"$'\t'"$WERT")
+  ART_ANZAHL["ausnahme-form"]=$(( ${ART_ANZAHL["ausnahme-form"]:-0} + 1 ))
+  BEFUNDE_ANZAHL=$((BEFUNDE_ANZAHL+1))
+done
+
 echo "=== Funde nach Prüfungsart ==="
 if [ "${#ART_ANZAHL[@]}" -gt 0 ]; then
   for art in "${!ART_ANZAHL[@]}"; do
@@ -631,6 +680,12 @@ echo "---"
 echo "belege-pruefen.sh: geprüft sind Fundorte (Datei, Zeile, Abschnitt, Anforderung, Commit)."
 echo "NICHT geprüft: ob der Inhalt an diesem Fundort die Behauptung trägt, die ihm zugeschrieben wird."
 echo "NICHT eingebaut: Prüfung 6 (Skill-Zuordnung im Rollen-Frontmatter), Prüfung 7 (metadata.anforderung)."
+echo "Weitere benannte Grenzen (Einzelheiten im Kopfkommentar):"
+echo "  - Pfade ausserhalb von Rückwärtsakzenten und im Pfadteil von Shell-Befehlen werden nicht erfasst."
+echo "  - Ein zweites, echt falsches Vorkommen desselben Wertes in derselben Datei deckt eine datei|wert-Ausnahme weiterhin."
+echo "  - Ausnahmen der Form datei:zeile werden nicht auf Veraltung zurückgeglichen."
+echo "  - Das Muster <inhaber>/<repository> nimmt auch echte künftige Zwei-Segment-Pfade aus."
+echo "  - Bei der Abschnittsprüfung gilt eine Tabelle ohne Leerzeile als ein Absatz."
 echo "Repo B (r3coscrum) mitgelesen: $([ -n "$R3COSCRUM_ROOT" ] && echo ja || echo nein)"
 echo "Befunde: $BEFUNDE_ANZAHL"
 echo "Nicht prüfbar: $NICHT_PRUEFBAR_ANZAHL"
