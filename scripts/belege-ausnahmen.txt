@@ -11,3 +11,42 @@
 scripts/abnahme-abgleich.sh	Folgt mit dem Grundgerüst (ADR 0002, Abschnitt 5 und D7 in Abschnitt 6); bis dahin existiert die Datei nicht, das ist der geplante Stand, kein Fehler.
 backend/importvertraege.toml	Folgt mit R3-C-007 und dem Grundgerüst (ADR 0002, D18 in Abschnitt 6); bis dahin existiert die Datei nicht, das ist der geplante Stand, kein Fehler.
 R3-C-020	Kennung, die es im Backlog nie gab; der Verweis darauf ist die dokumentierte Beschreibung eines behobenen Fehlers (Befund V-01, docs/08_Freigabe_Schritt_4.md), keine neue Fehlangabe.
+#
+# Commit-Prüfsummen, die auch nach dem Abgleich gegen r3cosint UND r3coscrum
+# offenbleiben: beide verweisen auf ein drittes, lokal nicht vorliegendes
+# Repository. Auf Weisung des Koordinators nach Auszählung des ersten Laufs
+# aufgenommen (2026-09-01).
+882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf	Commit von valITino/claude-skills-fullstack, einem dritten Repository, das hier nicht ausgecheckt ist; weder r3cosint noch r3coscrum kennen dieses Objekt.
+11d5960a326750d5838078e36cf38b85af677262	Gepinnter Drittanbieter-Commit (GitHub Action actions/checkout, Tag v4.4.0); liegt lokal nicht vor, weder in r3cosint noch in r3coscrum.
+#
+# blob/main-Funde, an denen eine Regel die verbotene Form ausdrücklich als
+# abschreckendes Beispiel zitiert (kein Verstoss). Schlüssel ist Datei:Zeile,
+# nicht der blosse Wert — sonst deckte der Eintrag einen künftigen echten
+# Verstoss in derselben Datei mit zu. Geprüft und aufgenommen am 2026-09-01.
+CLAUDE.md:83	Nennt die verbotene Form als Beispiel ("nie über `blob/main/...`"), kein Verstoss.
+.claude/agents/devops-engineer.md:23	Nennt die verbotene Form als Beispiel ("nie über `blob/main`"), kein Verstoss.
+.claude/agents/protocol-master.md:16	Nennt die verbotene Form als Beispiel ("ein Verweis auf `blob/main/...` ist kein Nachweis"), kein Verstoss.
+.claude/rules/dokumentation.md:18	Nennt die verbotene Form als Beispiel ("`blob/main/...` ist kein Nachweis"), kein Verstoss.
+docs/00_Projektauftrag.md:938	Nennt die verbotene Form als Beispiel ("Ein Verweis auf `blob/main/...` ist kein Nachweis"), kein Verstoss.
+docs/08_Freigabe_Schritt_4.md:133	Nennt die verbotene Form als Beispiel ("kein Verweis auf `blob/main`"), kein Verstoss.
+docs/uebergaben/2026-08-25_full-review-konfiguration.md:16	Nennt die verbotene Form als Beispiel (deterministische Prüfung auf `blob/main` als Prüfgegenstand), kein Verstoss.
+
+# Ergaenzt am 2026-08-31 durch den Koordinator, nach dem ersten scharfen Lauf
+# ueber den Bestand. Alle dreizehn Funde des Laufs sind einzeln nachgeschlagen
+# worden; keiner war ein Fehler in einem Dokument. Diese Liste haelt fest,
+# WESHALB der jeweilige Gegenstand absichtlich nicht vorhanden ist -- damit
+# beim naechsten Lauf auffaellt, wenn ein Verweis dazukommt, der es nicht ist.
+
+docs/adr/NNNN-titel.md	Namensschablone in .claude/rules/dokumentation.md, kein Verweis auf eine bestimmte Datei. NNNN steht fuer die Nummer des jeweiligen ADR.
+./.claude/CLAUDE.md	Zitat aus dem Originalauftrag. Der Projektauftrag fuehrt die Stelle an, um die dortige Annahme als falsch zu kennzeichnen; die Datei soll gerade nicht existieren.
+docs/backlog.md	Hypothetischer Name, den ADR 0002 als Gegenbeispiel nennt ("faende er ebenso wenig"). Die Datei soll nicht existieren -- das ist die Aussage.
+docs/06	Kurzform fuer docs/06_Definition_of_Ready_und_Done.md im Fliesstext einer Uebergabe, kein Pfadverweis.
+nachweise/abzug/	Wird erst bei der Abgabe erzeugt, auf ein besonderes Versionsschild hin (Projektauftrag 6.6). Vorher darf das Verzeichnis nicht bestehen -- es ist der einzige zulaessige Fall doppelter Inhalte.
+docs/datenschutz/	Entsteht mit R3-C-012 (Bearbeitungsverzeichnis und Loeschnachweis), Etappe nach dem Grundgeruest.
+docs/konformitaet/	Entsteht mit R3-C-013 (dokumentierte Konformitaetsanalyse).
+scripts/rueckkanal-pruefen.sh	Folgt mit R3-C-004; bis dahin meldet D9 der Kette Lage C, was der belegte und gewollte Zustand ist (ADR 0002, Abschnitt 6).
+scripts/prototyp-trennung-pruefen.sh	Folgt mit dem Grundgeruest; Betriebsart und Form sind als O-8 offen (ADR 0002, Abschnitt 8). Bis dahin meldet D10 Lage C.
+scripts/nachweise-vollstaendig.sh	Folgt mit dem Grundgeruest; die Form ist als O-8 offen (ADR 0002, D12). Bis dahin meldet D12 Lage C.
+.claude/skills/einschleusung-pruefen/	Am 2026-08-25 ausdruecklich zurueckgestellt (docs/uebergaben/2026-08-25_eingangskanal-repariert.md). Der damalige Grund -- sie waere die erste Skill und loeste R3-C-007 halb aus -- ist am 2026-08-31 entfallen, weil R3-C-007 mit den ersten zwei Skills erfuellt ist. Die Skill selbst ist damit wieder baubar; der Eintrag bleibt, bis der Product Owner sie terminiert.
+.claude/rules/fremde-inhalte-im-harness.md	Entsteht mit Einheit E3 der freigegebenen Reihenfolge; am 2026-08-25 so festgehalten.
+spiderfoot/correlation.py	Pfad innerhalb eines fremden Programms, genannt im Werkzeugvorschlag vom 2026-08-29. Kein Gegenstand dieses Repositories.
