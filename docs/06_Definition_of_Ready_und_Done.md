@@ -4,7 +4,7 @@
 |---|---|
 | **Arbeitsprodukt nach** | Projektauftrag 6.5, 6.8, 3.4 |
 | **Verantwortlich** | Scrum Master (Prozess), Requirements Engineer (Ready), Static und Dynamic Software Tester (Done) |
-| **Stand** | 2026-08-20, nachgeführt am 2026-08-30 (ADR 0002, Abschnitt 6.1: D18 ergänzt, D11 auf zwei Gegenstände erweitert, Kettengrundsatz aufgenommen; Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`), ergänzt am 2026-08-31 um die Notation der Abnahmekriterien zu R6 — Vorschlag zur Bestätigung, am selben Tag nach Prüfbefund berichtigt (drittes Glied heisst "Nachbedingung" wie die Quelle; Ermessensanteil der Zählungen offengelegt), nachgeführt am 2026-09-01 (Rahmenprüfung **D19** aus der zweiten und vierten Fortschreibung von ADR 0002 vom 2026-08-30 nachgetragen — diese Nachführung stand seither offen; Kettenschritt **D20** aus der achten Fortschreibung vom 2026-09-01 aufgenommen; Kettengrundsatz zum Rückgabewert 0 übernommen) |
+| **Stand** | 2026-08-20, nachgeführt am 2026-08-30 (ADR 0002, Abschnitt 6.1: D18 ergänzt, D11 auf zwei Gegenstände erweitert, Kettengrundsatz aufgenommen; Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`), ergänzt am 2026-08-31 um die Notation der Abnahmekriterien zu R6 — Vorschlag zur Bestätigung, am selben Tag nach Prüfbefund berichtigt (drittes Glied heisst "Nachbedingung" wie die Quelle; Ermessensanteil der Zählungen offengelegt), nachgeführt am 2026-09-01 (Rahmenprüfung **D19** aus der zweiten und vierten Fortschreibung von ADR 0002 vom 2026-08-30 nachgetragen — diese Nachführung stand seither offen; Kettenschritt **D20** aus der achten Fortschreibung vom 2026-09-01 aufgenommen; Kettengrundsatz zum Rückgabewert 0 übernommen), am selben Tag ein zweites Mal nachgeführt (neunte und zehnte Fortschreibung von ADR 0002: Beobachtbarkeit des Index als zweiter Teil des D19-Prüfmittels, Lage C für **alle** Schritte geschärft, Aussagegrenze der D19-Meldung, O-17 als offener Punkt aufgenommen) |
 
 Beide sind zu unterscheiden: **Ready gilt für den Eingang in den Sprint, Done
 für den Ausgang** (6.8).
@@ -21,16 +21,21 @@ für den Ausgang** (6.8).
 | 2026-09-01 | Diese Datei führte **D19 nicht**, obwohl ADR 0002 die Nummer bereits am 2026-08-30 vergeben hatte (zweite Fortschreibung, Abschnitt 6.2; Messweise nachgeschärft in 6.4). Wer die Freiheit einer D-Nummer an dieser Datei ablesen wollte, hielt D19 für frei | Die Rahmenprüfung **D19** (Unverändertheit des Arbeitsbaums) steht mit eigenem Kriterium unter dem Kettengrundsatz. Dazu die Vergaberegel: **eine D-Nummer ist vergeben, sobald ein ADR sie vergibt**, nicht erst, wenn die Nachführung sie erreicht hat; der gemeinsame Namensraum wird aus beiden Dokumenten gelesen, bei Abweichung gilt der frühere Vergabezeitpunkt | Die Nachführung stand seit dem 2026-08-30 offen (ADR 0002, Abschnitt 9). Beim Vergeben der nächsten Nummer wäre D19 ohne die ausdrückliche Regel ein zweites Mal vergeben worden; der Befund und die Regel stammen aus ADR 0002, 6.8.1 |
 | 2026-09-01 | Die Zielliste von `make dod` führte D1 bis D4, D18, D5 bis D12. Über den Dokumentationsbestand — die einzige Artefaktklasse, die das Repository heute trägt — sagte die Kette nichts | Neuer Kettenschritt **D20** (Belege) als **erster** Schritt, vor D1, **ohne Lage B**. Die Reihe lautet D20, D1 bis D4, D18, D5 bis D12 | Entscheid des Auftraggebers vom 2026-09-01, ausgeführt in der achten Fortschreibung von ADR 0002, Abschnitt 6.8. Am Ende der Kette liefe der Schritt bis auf Weiteres nie, weil die Kette heute bei D7 abbricht, und er würde zum ersten Mal in genau dem Lauf greifen, in dem sich seine schärfste Regel selbst scharf schaltet (6.8.2) |
 | 2026-09-01 | Teil 2 sagte, was jeder Schritt prüft, aber nicht, was ein **bestandener** Schritt behauptet. Unter "Was nicht als erledigt gilt" stand allein, dass ein grüner Prüflauf nicht genügt | Neuer Abschnitt "Was ein grüner Kettenschritt aussagt" mit dem Grundsatz: Rückgabewert 0 heisst, nichts von dem gefunden zu haben, was dieser Schritt sucht — nie, dass nichts vorhanden ist | ADR 0002, 6.8.4 erklärt den Satz ausdrücklich für **alle** Schritte und weist ihn in Abschnitt 9 dieser Datei zu. Er ändert an keinem Schritt das Verhalten, aber den Anspruch eines grünen `make dod`; bei einem Artefakt, dessen Ergebnis nach 5.3 ein Nachweis ist, ist das kein Nebenpunkt |
+| 2026-09-01, zweite Nachführung des Tages | Das Kriterium D19 nannte als Prüfmittel allein die Aufnahme des Bestandes: Statusliste und Inhaltsprüfsummen. Dass ein Kettenschritt das Messmittel selbst stummschalten kann, war als Befund gemeldet und nicht entschieden (offener Punkt 7 unten) | Die **Beobachtbarkeit des Index** ist zweiter Teil des Prüfmittels von D19: Der Bestand der Maskierungsmerkmale verfolgter Dateien wird vor und nach dem Lauf erhoben, ein gesetztes Merkmal ergibt **Lage C**. Dazu zwei Massstäbe — **der Gegenstand wird relativ gemessen, das Instrument absolut verlangt** | Entscheid des Software Architects in ADR 0002, 6.9, auf den gemeldeten Befund hin. Ein Kettenschritt, der ein Maskierungsmerkmal setzt, verändert nicht den Gegenstand, sondern das Messmittel; D19 meldete dann "unverändert" über eine Datei, die es nicht mehr ansehen kann. Das Ergebnis wäre kein falsches Urteil, sondern ein Urteil ohne Grundlage |
+| 2026-09-01, zweite Nachführung des Tages | Lage C hiess "Gegenstand vorhanden, Prüfmittel fehlt" | Lage C heisst: Prüfmittel **fehlt oder trägt die Aussage nicht** — es ist unlesbar, unbrauchbar oder stummgeschaltet. Das gilt für **alle** Kettenschritte, nicht nur für D19, und steht deshalb in einem eigenen Abschnitt in Teil 2 | ADR 0002, 6.9.2. Keine Ausweitung, sondern eine Klarstellung: D18 meldet Lage C bei vorhandener, aber unlesbarer Vertragsdatei, und D7 endet ungleich 0, wenn die gefundene Backlog-Datei keine Abnahmekriterien führt — die Bedingung war bereits weiter als ihr Wortlaut. Sie bestimmt, wann ein Schritt ungleich 0 endet, und gehört damit in das Dokument, das festlegt, was "Done" heisst |
+| 2026-09-01, zweite Nachführung des Tages | Der Ausgang bei stummgeschaltetem Instrument war als "nicht beobachtbar" benannt | Die Meldung nennt, **welche Hälfte** des Instruments stumm ist, für welche Dateien, und was die andere Hälfte gemessen hat; sie behauptet nicht, der Arbeitsbaum sei unbeobachtet | ADR 0002, 6.10.2, gestützt auf einen ausgeführten Lauf des Koordinators zu O-16: Die Statusliste ist für eine maskierte Datei blind, die Inhaltsprüfsumme erfasst die Änderung weiterhin. Nach 5.3 ist die Ausgabe der Kette eine Protokollspur mit zwingenden Negativbefunden; ein Negativbefund, der zu viel behauptet, ist derselbe Mangel wie ein fehlender |
 
 Quelle für die drei Zeilen vom 2026-08-30: ADR 0002, Abschnitt 6.1
 (`docs/adr/0002-architekturentscheid-ziel-stack.md`), Fortschreibung vom
 2026-08-30, Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`. Einzelheiten
 unten unter "Die Befehlskette".
 
-Quelle für die drei Zeilen vom 2026-09-01: derselbe ADR, Abschnitte 6.2 und 6.4
-(D19) sowie 6.8 (D20, Nummernvergabe und Kettengrundsatz). Worauf die Aussagen
-dieser Nachführung im Einzelnen beruhen, steht unten unter "Die Befehlskette",
-Absatz "Woraus die Nachführung vom 2026-09-01 schöpft".
+Quelle für die sechs Zeilen vom 2026-09-01: derselbe ADR — Abschnitte 6.2 und
+6.4 (D19 in seiner ersten Fassung), 6.8 (D20, Nummernvergabe, Kettengrundsatz)
+sowie 6.9 und 6.10 (zweiter Teil des D19-Prüfmittels, geschärfte Lage C,
+Aussagegrenze der Meldung). Worauf die Aussagen dieser Nachführungen im
+Einzelnen beruhen, steht unten unter "Die Befehlskette", Absatz "Woraus die
+Nachführung vom 2026-09-01 schöpft".
 
 ---
 
@@ -244,6 +249,17 @@ eines Teilbaums — ist **Fremdbeleg** aus
 6.8; sie ist hier nicht nachgeprüft und wird nicht als eigene Beobachtung
 geführt.
 
+**Ergänzung für die zweite Nachführung desselben Tages.** Für den zweiten Teil
+des D19-Prüfmittels, die geschärfte Lage C und die Aussagegrenze der Meldung
+sind zusätzlich gelesen: ADR 0002, 6.9 und 6.10 vollständig, die
+D19-Festlegungstabelle und die Lagentabelle in Abschnitt 6 sowie die offenen
+Punkte O-16 und O-17 in Abschnitt 8. Die Messtabelle weiter unten zu O-16 ist
+ein **ausgeführter Lauf des Koordinators** — weder diese Rolle noch der
+Software Architect hat ihn ausgeführt; ADR 0002, 6.10.1 führt ihn ebenfalls als
+Fremdbeleg. Ebenfalls nachgeschlagen und nicht übernommen: dass die vier
+Stellen, die im ADR die achte Fortschreibung uneinheitlich datierten, jetzt
+denselben Tag tragen (offener Punkt 8 unten).
+
 | Nr. | Schritt | Kriterium |
 |---|---|---|
 | D1 | Bau | Der Programmstand baut fehlerfrei — aus der Sperrdatei und **ohne Zwischenspeicher**: jedes Paket wird geladen und dabei gegen `uv.lock` geprüft. Eine Abweichung zwischen `pyproject.toml` und `uv.lock` macht den Schritt rot (Entscheid des Auftraggebers vom 2026-08-31 zu O-13, ADR 0002, 6.7) |
@@ -260,6 +276,32 @@ geführt.
 | D12 | Nachweise | Das Nachweisverzeichnis `docs/NACHWEISE.md` ist neu erzeugt und der Commit-Verweis stimmt |
 | D18 | Architekturverträge | Der Importprüfer findet keinen Verstoss gegen die Modulgrenzen aus ADR 0002, Abschnitt 4.3; läuft in der Zielliste von `make dod` nach D4 und vor D5. Nummer D18, nicht D13: D13 bis D17 sind unten an die menschlich zu bestätigenden Bedingungen vergeben (Fortschreibung 2026-08-30, ADR 0002, Abschnitt 6.1.2) |
 | D20 | Belege | Über die versionierten Markdown-Dateien der Wurzel, unter `docs/` und unter `.claude/` zeigt kein Zeilenverweis, keine Commit-Prüfsumme, keine Anforderungskennung, kein Pfadverweis und keine Abschnittsangabe des Projektauftrags auf etwas Nichtvorhandenes, und keine Stelle verwendet die nach 6.6 unzulässige Zweigform statt der Commit-Prüfsumme. **Ein grüner Lauf sagt, dass keine der geprüften Angaben ins Leere zeigt. Er sagt nicht, dass der Fundort die Behauptung trägt, die ihm zugeschrieben wird — das prüft kein Werkzeug, und es bleibt beim menschlichen Review.** Läuft als **erster** Schritt der Kette, vor D1. **Keine Lage B**: ein leerer Bestand wäre ein Befund und kein leerer Gegenstand; fehlt ein Prüfmittel — `git`, der Arbeitsbaum, `scripts/belege-pruefen.sh`, `scripts/belege-ausnahmen.txt` oder eines der beiden Bezugsdokumente `docs/05_Product_Backlog.md` und `docs/00_Projektauftrag.md` —, ist das Lage C und endet ungleich 0. Das Prüfmittel ist nach Eskalationsregel 3.4 abgebrochen und **nicht abgenommen** (offener Punkt 5 unten); die Aufnahme in die Kette hängt nicht an der Abnahme. Nummer D20, nicht D13 und nicht D19: beide sind vergeben (Fortschreibung 2026-09-01, ADR 0002, Abschnitt 6.8) |
+
+## Wann ein Schritt urteilt, wann er entfällt, wann er ausfällt
+
+*(Aufgenommen am 2026-09-01. Welche Bedingung für welchen Schritt gilt, steht
+abschliessend in der Objekttabelle von ADR 0002, Abschnitt 6; hier steht, was
+die drei Lagen für die Definition of Done bedeuten.)*
+
+Jeder Kettenschritt urteilt über eine Sache, nicht über einen Verzeichnisnamen.
+Jede Lage hat genau einen Ausgang:
+
+| Lage | Bedingung | Ausgang |
+|---|---|---|
+| A | Gegenstand vorhanden, Prüfmittel vorhanden | Der Schritt urteilt: 0 oder ungleich 0 |
+| B | Gegenstand nicht vorhanden | Der Schritt entfällt **mit Meldung**, Rückgabewert 0. Nicht jeder Schritt hat eine Lage B: Nennt die Objekttabelle für ihn keine, gibt es für ihn keine — er läuft immer. So beim zweiten Teil von D7 und bei D20; bei D10 und D12 ist eine Lage B benannt, die nach derselben Tabelle nicht eintritt |
+| C | Gegenstand vorhanden, Prüfmittel **fehlt oder trägt die Aussage nicht** — es ist unlesbar, unbrauchbar oder stummgeschaltet *(geschärft am 2026-09-01, ADR 0002, 6.9.2)* | Rückgabewert **ungleich 0**. Ein fehlendes Prüfmittel ist kein bestandener Schritt, und ein vorhandenes, das nicht messen kann, ebenso wenig |
+
+Die Schärfung von Lage C schafft keine neue Freiheit, sie bringt den Wortlaut
+auf den Stand der bereits getroffenen Entscheidungen: D18 meldet Lage C, wenn
+die Vertragsdatei zwar besteht, aber nicht lesbar ist, und D7 endet ungleich 0,
+wenn die gefundene Backlog-Datei keine Abnahmekriterien führt. In beiden Fällen
+ist das Prüfmittel da und trägt die Aussage nicht.
+
+Für die Definition of Done heisst das: **Eine Aufgabe gilt auch dann nicht als
+erledigt, wenn ein Schritt zwar lief, aber nicht messen konnte.** Und die Lage
+wird ausgegeben, nicht erschlossen — ein Schritt, der mit 0 endet, muss von
+einem unterscheidbar sein, der nichts geprüft hat.
 
 ## Ein Prüflauf verändert den Gegenstand nicht, über den er urteilt
 
@@ -285,9 +327,9 @@ beobachtend durch D19.
 
 | Nr. | Prüfung | Kriterium |
 |---|---|---|
-| D19 | Unverändertheit des Arbeitsbaums | `make dod` nimmt unmittelbar **vor** dem ersten und unmittelbar **nach** dem letzten ausgeführten Kettenschritt den Bestand auf — die Statusliste `git status --porcelain --untracked-files=all` **und** eine Inhaltsprüfsumme je verfolgter Datei — und vergleicht beide Aufnahmen zeilenweise, einschliesslich der unverfolgten Einträge. Massstab ist vorher gegen nachher, **nicht** gegen einen sauberen Arbeitsbaum: Die Kette läuft vor dem Commit und trifft regelmässig einen bereits veränderten Arbeitsbaum an; das ist zulässig, ihn zu verändern nicht. Bei Abweichung endet `make dod` ungleich 0 und nennt die abweichenden Zeilen. Der Befund **kann einen grünen Lauf rot machen, nie einen roten grün**. Die Nachher-Aufnahme läuft auch dann, wenn die Kette an einem früheren Schritt abgebrochen ist — sonst bliebe gerade der Schritt unbeobachtet, der schreibt und zugleich scheitert |
+| D19 | Unverändertheit des Arbeitsbaums | `make dod` nimmt unmittelbar **vor** dem ersten und unmittelbar **nach** dem letzten ausgeführten Kettenschritt den Bestand auf — die Statusliste `git status --porcelain --untracked-files=all` **und** eine Inhaltsprüfsumme je verfolgter Datei — und vergleicht beide Aufnahmen zeilenweise, einschliesslich der unverfolgten Einträge. Massstab ist vorher gegen nachher, **nicht** gegen einen sauberen Arbeitsbaum: Die Kette läuft vor dem Commit und trifft regelmässig einen bereits veränderten Arbeitsbaum an; das ist zulässig, ihn zu verändern nicht. Bei Abweichung endet `make dod` ungleich 0 und nennt die abweichenden Zeilen. Der Befund **kann einen grünen Lauf rot machen, nie einen roten grün**. Die Nachher-Aufnahme läuft auch dann, wenn die Kette an einem früheren Schritt abgebrochen ist — sonst bliebe gerade der Schritt unbeobachtet, der schreibt und zugleich scheitert. **Ergänzt am 2026-09-01 um den zweiten Teil des Prüfmittels (ADR 0002, 6.9): die Beobachtbarkeit des Index.** Vor und nach dem Lauf wird zusätzlich der Bestand der Maskierungsmerkmale verfolgter Dateien erhoben (`assume-unchanged`, `skip-worktree`). Für den **Gegenstand** gilt der relative Massstab oben, für das **Instrument** ein absoluter: Ein gesetztes Maskierungsmerkmal ist ein Befund, **auch wenn es schon vor dem Lauf gesetzt war**. Der Ausgang ist dann **Lage C** mit eigenem Befundtext und ungleich 0 — nicht eine Verletzung des Kettengrundsatzes, denn eine Verletzung ist damit gerade nicht festgestellt. Der Befundtext nennt, **welche Hälfte** des Instruments stumm ist, für welche Dateien, und was die andere Hälfte gemessen hat; er behauptet nicht, der Arbeitsbaum sei unbeobachtet (ADR 0002, 6.10.2) |
 
-Drei Eigenschaften gehören zur Kennung dazu:
+Vier Eigenschaften gehören zur Kennung dazu:
 
 - **D19 ist kein Schritt der Zielliste und hat kein eigenes `make`-Ziel.** Ein
   Schritt in der Liste sähe nur seinen eigenen Augenblick und könnte nicht
@@ -304,6 +346,55 @@ Drei Eigenschaften gehören zur Kennung dazu:
   verhindert den häufigsten Fall, bevor er eintritt, und nennt seine Ursache;
   D19 fängt jeden Fall, an den niemand gedacht hat, kann aber nur feststellen,
   **dass** geschrieben wurde.
+- **Der Arbeitsbaum wird über die Versionsverwaltung festgestellt, nicht über
+  einen Verzeichnisnamen.** Ist die Versionsverwaltung nicht ausführbar, gilt
+  hilfsweise die Anwesenheit von `.git` — als Datei **oder** als Verzeichnis,
+  weil es in einem zusätzlichen Arbeitsbaum und in einem Untermodul eine Datei
+  ist (ADR 0002, 6.9.3).
+
+### Zwei Massstäbe, und weshalb sie sich nicht widersprechen
+
+Ein bereits veränderter Arbeitsbaum ist der normale Betriebszustand vor einem
+Commit und beeinträchtigt die Messung nicht — deshalb wird der **Gegenstand**
+relativ gemessen, vorher gegen nachher. Ein maskierter Index beeinträchtigt die
+Messung dagegen für die ganze Dauer des Laufs — deshalb wird das **Instrument**
+absolut verlangt. Ein stummgeschaltetes Messmittel wird nicht dadurch
+verlässlich, dass es schon vor dem Lauf stummgeschaltet war. Der Massstab kostet
+im Normalfall nichts: Ein Maskierungsmerkmal entsteht nicht versehentlich, es
+wird gesetzt; wo keines gesetzt ist, meldet der Schritt nichts (ADR 0002,
+6.9.2 und 6.10.3).
+
+### Was die Befundmeldung sagen darf
+
+Wie weit die Maskierung die Messung beeinträchtigt, ist gemessen worden:
+
+| Instrumententeil | Verhalten bei gesetztem `skip-worktree` und angehängter Zeile |
+|---|---|
+| Statusliste (`git status --porcelain --untracked-files=all`) | **blind** — die Änderung erscheint nicht |
+| Inhaltsprüfsumme je verfolgter Datei | **erfasst die Änderung** — die Prüfsumme weicht vorher gegen nachher ab |
+
+**Herkunft dieser Tabelle: ein ausgeführter Lauf des Koordinators vom
+2026-09-01** (Wegwerf-Klon, Maskierung mit `git update-index --skip-worktree`
+auf eine verfolgte Datei, danach eine Zeile angehängt, beide Hälften des
+Instruments vorher und nachher aufgenommen). Übernommen als **Fremdbeleg** über
+ADR 0002, 6.10.1; weder der Requirements Engineer noch der Software Architect
+hat ihn ausgeführt.
+
+Damit trägt für einen Lauf mit gesetzter Maskierung und ohne Abweichung der
+Prüfsummen genau diese Aussage: *Der Inhalt der verfolgten Dateien ist
+unverändert. Für die maskierten Dateien trägt allein die Inhaltsprüfsumme;
+alles, was nur die Statusliste sieht, ist für sie nicht beurteilt.* Das ist
+schwächer als "unbeobachtet" und schwächer als "unverändert" — und die einzige
+der drei Aussagen, die belegt ist. Der Lauf deckt die Inhaltsänderung einer
+vorhandenen, maskierten Datei ab; er sagt nichts über ihre Löschung (offener
+Punkt 9 unten), nichts über Rechte- und Typwechsel und nichts über Einträge,
+die allein die Statusliste sieht.
+
+Weshalb die Genauigkeit hier mehr ist als Wortklauberei: Nach 5.3 ist die
+Ausgabe der Kette eine Protokollspur, und Negativbefunde sind darin zwingend
+enthalten. Wer später liest, der Arbeitsbaum sei unbeobachtet gewesen,
+schliesst daraus, über den Inhalt sei nichts bekannt gewesen — obwohl er
+gemessen wurde.
 
 ## Was ein grüner Kettenschritt aussagt
 
@@ -405,9 +496,10 @@ für den Prototyp.
 |---|---|---|
 | 1 | Bestätigung der Abdeckungsschwelle in D6 | Auftraggeber |
 | 2 | Schwellenwert für Linter-Warnungen (D3) und für Abhängigkeitsschwachstellen (D8) | Auftraggeber mit SecDevOps |
-| 3 | Konkrete Befehle je Kettenschritt: eingesetzt am 2026-08-20 mit ADR 0002, Abschnitt 6 (Einstieg `make dod`), am 2026-08-30 fortgeschrieben (Abschnitt 6.1: D11 auf zwei Gegenstände erweitert, D18 ergänzt, Kettengrundsatz aufgenommen); offen bleibt die technische Bestätigung samt der Befunde zu D10 und D12 sowie der Prüffläche des Arbeitsbaumlaufs in D11 (O-10). **Nachgeführt am 2026-09-01:** dazu kommen die Rahmenprüfung D19 (ADR 0002, 6.2 und 6.4) und der Kettenschritt D20 (6.8); beide sind ebenso unbestätigt wie die übrige Kette | DevOps Engineer und Auftraggeber, mit R3-Q-001 |
+| 3 | Konkrete Befehle je Kettenschritt: eingesetzt am 2026-08-20 mit ADR 0002, Abschnitt 6 (Einstieg `make dod`), am 2026-08-30 fortgeschrieben (Abschnitt 6.1: D11 auf zwei Gegenstände erweitert, D18 ergänzt, Kettengrundsatz aufgenommen); offen bleibt die technische Bestätigung samt der Befunde zu D10 und D12 sowie der Prüffläche des Arbeitsbaumlaufs in D11 (O-10). **Nachgeführt am 2026-09-01:** dazu kommen die Rahmenprüfung D19 (ADR 0002, 6.2 und 6.4) und der Kettenschritt D20 (6.8); beide sind ebenso unbestätigt wie die übrige Kette. Dasselbe gilt für die Ergänzungen der neunten und zehnten Fortschreibung desselben Tages — zweiter Teil des D19-Prüfmittels, geschärfte Lage C, Aussagegrenze der Meldung | DevOps Engineer und Auftraggeber, mit R3-Q-001 |
 | 4 | Bestätigung der Notation der Abnahmekriterien zu R6 (Teil 1): die vier Glieder **samt ihrer dort erstmals gegebenen Bestimmung** — die Namen stammen wörtlich aus Befund F, die Bestimmungen nicht —, die Pflicht zur Gegenprobe und die Geltung nur für neue und ohnehin geänderte Kriterien | Auftraggeber |
 | 5 | **Abnahme des Prüfmittels von D20.** Es ist nach Eskalationsregel 3.4 abgebrochen und nicht abgenommen; seine Selbstauskunft erklärt die Liste der eigenen Grenzen ausdrücklich für unvollständig. Offen ist, welches Abnahmekriterium für ein Werkzeug gilt, das eine Nachweiskette blockiert (ADR 0002, O-15) | Static und Dynamic Software Tester, auf einem anderen Modell als die Umsetzung (3.4); Entscheid über das Abnahmekriterium beim Auftraggeber |
 | 6 | **Aussagekraft von D20 je Arbeitsplatz.** Das Prüfmittel liest ein zweites Repository an einem fest verdrahteten Ort mit; fehlt es dort, zählt es die betroffenen Zeilen als nicht prüfbar, ohne dass diese Zählung in den Rückgabewert eingeht (ADR 0002, O-14) | DevOps Engineer mit Protocol Master |
-| 7 | **Befund aus der Nachführung, ohne Lösungsvorschlag (6.7):** Das Mittel von D19 steht in ADR 0002 und im `Makefile` verschieden. Der ADR nennt in 6.2 und 6.4 Statusliste und Inhaltsprüfsummen; das gelesene Ziel `dod` nimmt zusätzlich die Maskierungsmerkmale des Index auf (`assume-unchanged`, `skip-worktree`) und meldet sie als eigenen Befund. Welche Fassung gilt, ist nicht entschieden. Das Kriterium oben gibt den ADR wieder | Software Architect mit DevOps Engineer |
-| 8 | **Befund aus der Nachführung, ohne Lösungsvorschlag (6.7):** ADR 0002 datiert seine achte Fortschreibung uneinheitlich — Kopfzeile und Abschnitt 6.8 auf den 2026-09-01, das Kriterium K5, die D20-Zeile der Objekttabelle sowie die offenen Punkte O-14 und O-15 auf den 2026-08-31. Diese Datei folgt dem 2026-09-01, weil Abschnitt 6.8 und die zugehörige Übergabedatei dieses Datum tragen | Software Architect |
+| 7 | **Erledigt am 2026-09-01.** Befund der ersten Nachführung desselben Tages: Das Mittel von D19 stand in ADR 0002 und im `Makefile` verschieden — dort Statusliste und Inhaltsprüfsummen, hier zusätzlich die Maskierungsmerkmale des Index. Entschieden in ADR 0002, 6.9: Die Beobachtbarkeit des Index **ist** zweiter Teil des Prüfmittels, ein gesetztes Merkmal ergibt Lage C. Das Kriterium D19 oben ist entsprechend ergänzt | entschieden durch den Software Architect |
+| 8 | **Erledigt am 2026-09-01.** Befund der ersten Nachführung desselben Tages: ADR 0002 datierte seine achte Fortschreibung uneinheitlich. Die vier abweichenden Stellen — Kriterium K5, D20-Zeile der Objekttabelle, offene Punkte O-14 und O-15 — tragen jetzt ebenfalls den 2026-09-01; am 2026-09-01 einzeln nachgeschlagen | erledigt durch den Software Architect |
+| 9 | **Löschung einer maskierten, verfolgten Datei (ADR 0002, O-17).** Die Aufzählung der verfolgten Dateien führt sie weiter, weil sie im Index steht; die Prüfsummenbildung findet die Datei dann nicht vor. Ob die Aufnahme dadurch abweicht — die Löschung also trotz Maskierung sichtbar wird — oder unverändert bleibt, ist **nicht gemessen**. Am Ausgang ändert die Antwort nichts, die Maskierung bleibt Lage C; sie bestimmt allein, wie weit die Meldung sagen darf, der Inhalt sei beurteilt | DevOps Engineer mit einem ausgeführten Lauf, Verifikation Static und Dynamic Software Tester (3.4) |
