@@ -1,0 +1,13 @@
+# Ausnahmeliste für scripts/belege-pruefen.sh
+#
+# Aufbau je Zeile: der Wert, ein Tabulator, der Grund. Leerzeilen und Zeilen
+# mit # am Anfang werden übergangen. Ein Eintrag ohne Grund ist selbst ein
+# Befund. Ein Eintrag, dessen Gegenstand inzwischen existiert, ist ebenfalls
+# ein Befund — dann gehört die Zeile hier weg, nicht stehen gelassen.
+#
+# Diese drei Einträge sind auf ausdrückliche Weisung aufgenommen (siehe
+# Auftrag dieser Arbeitseinheit); es sind absichtlich noch nicht vorhandene
+# Gegenstände, nicht Fehler in den Dokumenten, die sie nennen.
+scripts/abnahme-abgleich.sh	Folgt mit dem Grundgerüst (ADR 0002, Abschnitt 5 und D7 in Abschnitt 6); bis dahin existiert die Datei nicht, das ist der geplante Stand, kein Fehler.
+backend/importvertraege.toml	Folgt mit R3-C-007 und dem Grundgerüst (ADR 0002, D18 in Abschnitt 6); bis dahin existiert die Datei nicht, das ist der geplante Stand, kein Fehler.
+R3-C-020	Kennung, die es im Backlog nie gab; der Verweis darauf ist die dokumentierte Beschreibung eines behobenen Fehlers (Befund V-01, docs/08_Freigabe_Schritt_4.md), keine neue Fehlangabe.
