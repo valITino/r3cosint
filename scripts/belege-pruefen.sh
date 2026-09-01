@@ -268,15 +268,15 @@ if [ -f "$AUSNAHMEDATEI" ]; then
     case "$wert" in \#*) continue ;; esac
     AUSNAHME_GRUND["$wert"]="${grund:-}"
     AUSNAHME_ZEILEN+=("$zn"$'\t'"$wert"$'\t'"${grund:-}")
-    case "$wert" in
-      *'|'*) : ;;
-      *:[0-9]) : ;;
-      *:[0-9][0-9]) : ;;
-      *:[0-9][0-9][0-9]) : ;;
-      *:[0-9][0-9][0-9][0-9]) : ;;
-      *:[0-9][0-9][0-9][0-9][0-9]) : ;;
-      *) AUSNAHME_FORMFEHLER+=("$zn"$'\t'"$wert") ;;
-    esac
+    # Befund der Nachpruefung vom 2026-08-31: Die frueher hier stehende
+    # case-Kette liess nur bis zu fuenfstellige Zeilennummern zu und wies
+    # einen gueltigen Schluessel mit sechs Stellen faelschlich ab. Eine
+    # Obergrenze, die niemand gewaehlt hat, ist ein Fehler und keine Regel.
+    if [[ "$wert" == *'|'* ]] || [[ "$wert" =~ ^[^|]+:[0-9]+$ ]]; then
+      :
+    else
+      AUSNAHME_FORMFEHLER+=("$zn"$'\t'"$wert")
+    fi
   done < "$AUSNAHMEDATEI"
 fi
 
@@ -634,12 +634,26 @@ for eintrag in "${AUSNAHME_ZEILEN[@]+"${AUSNAHME_ZEILEN[@]}"}"; do
     BEFUNDE_ANZAHL=$((BEFUNDE_ANZAHL+1))
     continue
   fi
+  # BLOCKIERENDER BEFUND der Nachpruefung vom 2026-08-31, hier behoben:
+  # Seit der Umstellung auf ortsgebundene Schluessel steht im Feld WERT der
+  # ganze Schluessel, also "datei|wert" oder "datei:zeile". Der Rueckgleich
+  # pruefte diesen ganzen String auf Existenz -- und ein String mit einem
+  # senkrechten Strich kann als Pfad nie existieren. Damit konnte
+  # "ausnahme-veraltet" fuer die Form "datei|wert" STRUKTURELL nie ausloesen,
+  # und das betraf 23 der 30 Eintraege. Die Umstellung hatte eine der beiden
+  # Selbstpruefungen der Liste stillgelegt, ohne dass es jemandem auffiel --
+  # und die Luecke war, anders als ihr Zwilling bei "datei:zeile", nirgends
+  # benannt. Jetzt wird der Wertanteil herausgeloest und geprueft.
+  GEGENSTAND="$WERT"
+  case "$WERT" in
+    *'|'*) GEGENSTAND="${WERT#*|}" ;;
+  esac
   set +e
-  wert_existiert_bereits "$WERT"
+  wert_existiert_bereits "$GEGENSTAND"
   RC=$?
   set -e 2>/dev/null || true
   if [ "$RC" -eq 0 ]; then
-    FINDINGS_LISTE+=("$AUSNAHMEDATEI:$ZN"$'\t'"ausnahme-veraltet"$'\t'"$WERT")
+    FINDINGS_LISTE+=("$AUSNAHMEDATEI:$ZN"$'\t'"ausnahme-veraltet"$'\t'"$GEGENSTAND")
     ART_ANZAHL["ausnahme-veraltet"]=$(( ${ART_ANZAHL["ausnahme-veraltet"]:-0} + 1 ))
     BEFUNDE_ANZAHL=$((BEFUNDE_ANZAHL+1))
   fi
@@ -683,7 +697,7 @@ echo "NICHT eingebaut: Prüfung 6 (Skill-Zuordnung im Rollen-Frontmatter), Prüf
 echo "Weitere benannte Grenzen (Einzelheiten im Kopfkommentar):"
 echo "  - Pfade ausserhalb von Rückwärtsakzenten und im Pfadteil von Shell-Befehlen werden nicht erfasst."
 echo "  - Ein zweites, echt falsches Vorkommen desselben Wertes in derselben Datei deckt eine datei|wert-Ausnahme weiterhin."
-echo "  - Ausnahmen der Form datei:zeile werden nicht auf Veraltung zurückgeglichen."
+echo "  - Nur Ausnahmen der Form datei:zeile werden nicht auf Veraltung zurückgeglichen; die Form datei|wert wird zurückgeglichen."
 echo "  - Das Muster <inhaber>/<repository> nimmt auch echte künftige Zwei-Segment-Pfade aus."
 echo "  - Bei der Abschnittsprüfung gilt eine Tabelle ohne Leerzeile als ein Absatz."
 echo "Repo B (r3coscrum) mitgelesen: $([ -n "$R3COSCRUM_ROOT" ] && echo ja || echo nein)"
