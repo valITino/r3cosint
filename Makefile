@@ -17,8 +17,11 @@
 # bereits an die menschlich zu bestaetigenden Bedingungen aus
 # docs/06_Definition_of_Ready_und_Done.md, Teil 2, vergeben; D18 ist die
 # naechste freie Nummer. Die AUSFUEHRUNGSREIHENFOLGE steht ausschliesslich in
-# der Zielliste von "dod" weiter unten: D1, D2, D3, D4, D18, D5, D6, D7, D8,
-# D9, D10, D11, D12.
+# der Zielliste von "dod" weiter unten und wird hier bewusst NICHT wiederholt.
+# Bis zum 2026-09-01 stand sie hier als zweite Aufzaehlung -- und war veraltet,
+# weil die Aufnahme von D20 sie nicht erreicht hatte (Befund der statischen
+# Pruefung vom 2026-09-01). Eine Aufzaehlung, die nichts steuert, kann nur
+# falsch werden; sie ist deshalb gestrichen und nicht nachgefuehrt.
 #
 # -----------------------------------------------------------------------------
 # Drei Lagen je Schritt, nicht zwei
@@ -73,7 +76,8 @@
 # beim naechsten Lauf zwingend, ohne dass dieses Makefile geaendert wird.
 #
 # -----------------------------------------------------------------------------
-# Zuordnung D1 bis D12 und D18 zu einer Lage — Stand des Bestands am 2026-08-30
+# Zuordnung der Kettenschritte zu einer Lage — Stand des Bestands am
+# 2026-08-30, um D20 ergaenzt am 2026-09-01
 # -----------------------------------------------------------------------------
 #
 # Am heutigen Bestand existieren: kein backend/, kein frontend/package.json,
@@ -82,8 +86,16 @@
 # Verweise und ohne Importe, geprueft) und scripts/nachweise-erzeugen.sh.
 # gitleaks fehlt. Die ausfuehrliche Begruendung je Schritt steht als Kommentar
 # ueber dem jeweiligen Ziel; diese Tabelle ist nur die Kurzuebersicht.
-# Reihenfolge hier wie in "dod": D1 bis D4, dann D18, dann D5 bis D12.
+# Reihenfolge hier wie in der Zielliste von "dod"; die Liste selbst steht
+# ausschliesslich dort.
 #
+#   D20 belege               Lage A  — die versionierten Markdown-Dateien
+#                                       bestehen; der Schritt urteilt und
+#                                       kennt keine Lage B (ADR 0002,
+#                                       Abschnitt 6.8.3). Zeile ergaenzt am
+#                                       2026-09-01; die Tabelle hatte D20
+#                                       nicht gefuehrt, obwohl er seit dem
+#                                       2026-09-01 als erster Schritt laeuft
 #   D1  bau                 Lage B  — nichts zu bauen (kein Teilbaum vorhanden)
 #   D2  format-pruefen      Lage B  — nichts zu formatieren
 #   D3  linter               Lage B  — nichts zu pruefen
@@ -664,8 +676,28 @@ belege:
 	elif ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 		echo "[D20 belege] LAGE C: kein Git-Arbeitsbaum. Die Dokumente bestehen, aber die Pruefflaeche laesst sich nicht abgrenzen." >&2
 		hat_lage_c=1
+	elif [ ! -f scripts/belege-ausnahmen.txt ]; then
+		echo "[D20 belege] LAGE C: scripts/belege-ausnahmen.txt fehlt. Ohne sie faellt jede begruendete Ausnahme stumm weg; der Lauf waere rot mit falscher Begruendung." >&2
+		hat_lage_c=1
+	elif [ ! -f docs/05_Product_Backlog.md ]; then
+		echo "[D20 belege] LAGE C: docs/05_Product_Backlog.md fehlt. Aus ihm bildet der Pruefer die Menge der gueltigen Anforderungskennungen; ohne ihn wird jede Kennung im Bestand zum Scheinfund." >&2
+		hat_lage_c=1
+	elif [ ! -f docs/00_Projektauftrag.md ]; then
+		echo "[D20 belege] LAGE C: docs/00_Projektauftrag.md fehlt. Aus ihm bildet der Pruefer die Menge der gueltigen Abschnittsnummern; ohne ihn wird jede Abschnittsangabe im Bestand zum Scheinfund." >&2
+		hat_lage_c=1
 	else
-		bash scripts/belege-pruefen.sh || fehlgeschlagen=1
+		# Rueckgabewert getrennt auswerten (ADR 0002, Abschnitt 6.11): 3 heisst
+		# "Pruefmittel ausgefallen" und ist Lage C, jeder andere Wert ungleich 0
+		# heisst "am Bestand etwas gefunden" und ist A_FAIL. Beides mit
+		# "|| fehlgeschlagen=1" in einen Topf zu werfen, hiesse einen
+		# ausgefallenen Messvorgang als Messergebnis auszugeben.
+		bash scripts/belege-pruefen.sh; belege_rc=$$?
+		if [ "$$belege_rc" = 3 ]; then
+			echo "[D20 belege] LAGE C: der Belegpruefer meldet ein ausgefallenes Pruefmittel (Rueckgabewert 3). Seine Meldung steht darueber." >&2
+			hat_lage_c=1
+		elif [ "$$belege_rc" != 0 ]; then
+			fehlgeschlagen=1
+		fi
 	fi
 	$(call KLASSIFIZIEREN,D20,belege,tritt nicht ein -- D20 hat nach ADR 0002 6.8.3 keine Lage B.)
 
@@ -1095,8 +1127,11 @@ abnahme:
 		echo "[D7 abnahme] LAGE C: kein Backlog gefunden (Muster docs/05_Product_Backlog*.md). Der Backlog besteht seit der Freigabe von Schritt 3 dauerhaft; sein Fehlen ist ein Befund, nicht ein leerer Gegenstand (ADR 0002, 6.3.2)." >&2
 		hat_lage_c=1
 	else
-		backlog_liste=$$(printf '%s' "$$backlog_treffer" | tr '\n' ' ')
-		mit_kriterien=$$(grep -l -- '\*\*Abnahme:\*\*' $$backlog_treffer 2>/dev/null | tr '\n' ' ' || true)
+		# "tr" macht auch aus dem abschliessenden Umbruch ein Leerzeichen; ohne
+		# das nachfolgende "sed" stand in der Meldung ein doppeltes Leerzeichen
+		# (Befund der dynamischen Pruefung vom 2026-09-01).
+		backlog_liste=$$(printf '%s' "$$backlog_treffer" | tr '\n' ' ' | sed 's/[[:space:]]*$$//')
+		mit_kriterien=$$(grep -l -- '\*\*Abnahme:\*\*' $$backlog_treffer 2>/dev/null | tr '\n' ' ' | sed 's/[[:space:]]*$$//' || true)
 		if [ -z "$$mit_kriterien" ]; then
 			echo "[D7 abnahme] LAGE C: gefunden wurde $$backlog_liste, aber keine dieser Dateien fuehrt Abnahmekriterien (Muster '**Abnahme:**')." >&2
 			hat_lage_c=1
@@ -1357,14 +1392,18 @@ nachweise:
 # er war -- das ist der eigentliche Wert fuer den spaeteren Hook aus
 # R3-Q-001.
 #
-# Reihenfolge (ADR 0002, Abschnitt 6, "Ein Einstieg fuer den Hook",
-# Fortschreibung vom 2026-08-30): D1 bis D4, dann D18, dann D5 bis D12. Bis
-# zur Fortschreibung war die Aufzaehlung "D1 bis D12" zugleich die
-# Reihenfolge; mit D18 gilt das nicht mehr (ADR 0002, Abschnitt 6.1.2: die
-# Nummer eines Kettenschritts ist eine Kennung, keine Reihenfolge). Die
-# tatsaechliche Reihenfolge steht ausschliesslich in "schritte_liste" unten
-# -- an genau EINER Stelle, nicht zusaetzlich hier als Aufzaehlung, die bei
-# der naechsten Fortschreibung erneut veralten koennte.
+# Reihenfolge: Bis zur Fortschreibung vom 2026-08-30 war die Aufzaehlung
+# "D1 bis D12" zugleich die Reihenfolge; mit D18 gilt das nicht mehr (ADR 0002,
+# Abschnitt 6.1.2: die Nummer eines Kettenschritts ist eine Kennung, keine
+# Reihenfolge). Die tatsaechliche Reihenfolge steht ausschliesslich in
+# "schritte_liste" unten -- an genau EINER Stelle, nicht zusaetzlich hier als
+# Aufzaehlung, die bei der naechsten Fortschreibung erneut veralten koennte.
+#
+# Dieser Absatz fuehrte bis zum 2026-09-01 selbst eine solche Aufzaehlung, und
+# sie war genau so veraltet, wie er es vorhersagt: D20 fehlte darin. Die
+# Warnung stand da und wurde von ihrem eigenen Absatz nicht befolgt. Die
+# Aufzaehlung ist gestrichen, nicht nachgefuehrt -- eine nachgefuehrte
+# Aufzaehlung waere beim naechsten Schritt wieder falsch.
 #
 # Zwei Kriterien entscheiden je Schritt, nicht nur eines:
 #   1. Der Unterschritt selbst endet mit Rueckgabewert 0.
@@ -1653,6 +1692,17 @@ endif
 				echo "make dod: Ausgefuehrt belegt am 2026-09-01 (O-16): Die Statusliste meldet eine Aenderung an einer so markierten Datei NICHT mehr; die Inhaltspruefsumme erfasst sie weiterhin. Der Befund bleibt trotzdem einer -- die Kette ruht nicht auf der Annahme, die andere Haelfte fange es schon auf." >&2
 				d19_befund="LAGE C, nicht beobachtbar -- assume-unchanged/skip-worktree gesetzt"
 				printf '%s\n' "$$d19_masken_nachher" >&2
+				# ADR 0002, Abschnitt 6.10.2 sagt zu, dass die Meldung nennt,
+				# WAS DIE ANDERE HAELFTE GEMESSEN HAT. Bis zum 2026-09-01 tat
+				# sie das nicht: sie gab den allgemeinen O-16-Befund aus und
+				# schwieg ueber diesen Lauf. Schweigen ist keine Messung
+				# (Befund der Dokumentenpruefung vom 2026-09-01, ausgefuehrt
+				# nachgestellt). Die folgende Zeile sagt es laufbezogen.
+				if [ "$$d19_status_vorher" = "$$d19_status_nachher" ]; then
+					echo "make dod: Die andere Haelfte hat in DIESEM Lauf gemessen: Statusliste und Inhaltspruefsummen sind vorher und nachher gleich. Das entlastet den Lauf nicht -- fuer die oben genannten Dateien ist die Statusliste blind, und diese Gleichheit kann nicht ausschliessen, was sie gar nicht meldet." >&2
+				else
+					echo "make dod: Die andere Haelfte hat in DIESEM Lauf eine Abweichung gemessen; die Differenz steht weiter unten." >&2
+				fi
 				if [ "$$gesamt_rc" -eq 0 ]; then gesamt_rc=2; fi
 			fi
 			if [ "$$d19_status_vorher" != "$$d19_status_nachher" ]; then

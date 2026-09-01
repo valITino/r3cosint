@@ -234,9 +234,14 @@
 # Bestand ab, auch einen echten Verstoss in dann dieser oder anderen Dateien.
 #
 # RÜCKGABEWERT
-# 0 — keine Beanstandung. 2 — mindestens ein Befund. "Nicht prüfbar"-Zeilen
-# zählen nicht als Befund. Das Skript schreibt nichts: kein Schreibzugriff,
-# keine Zwischendatei im Arbeitsbaum.
+# 0 — keine Beanstandung. 2 — mindestens ein Befund. 3 — Lage C: ein Prüfmittel
+# fehlt oder trägt die Aussage nicht; dann urteilt der Lauf über den Bestand
+# gar nicht. Die Trennung von 2 und 3 ist der Grund, weshalb 3 überhaupt
+# existiert: "rot, weil etwas gefunden wurde" und "rot, weil nicht gemessen
+# werden konnte" sind verschiedene Aussagen, und das Makefile führt sie als
+# A_FAIL beziehungsweise Lage C getrennt weiter (ADR 0002, Abschnitt 6.11).
+# "Nicht prüfbar"-Zeilen zählen nicht als Befund. Das Skript schreibt nichts:
+# kein Schreibzugriff, keine Zwischendatei im Arbeitsbaum.
 #
 # WERKZEUGE
 # Nur git, grep, sed, awk und Standard-Shell (bash). Kein Python.
@@ -252,6 +257,41 @@ cd "$REPO_ROOT" || exit 2
 BACKLOG="docs/05_Product_Backlog.md"
 PROJEKTAUFTRAG="docs/00_Projektauftrag.md"
 AUSNAHMEDATEI="scripts/belege-ausnahmen.txt"
+
+# --- Pruefmittel, die keine Werkzeuge sind: Lage C vor jeder Verwendung -------
+# Befund der unabhaengigen Pruefung vom 2026-09-01 (Protocol Master auf einem
+# anderen Modell als die Umsetzung), vom Koordinator gegen die Dateien und
+# gegen einen isolierten Lauf nachgeprueft:
+#
+# ADR 0002 Abschnitt 6.8.3, die D20-Zeile der Objekttabelle und das
+# D20-Kriterium in docs/06 nannten diese drei Dateien als Pruefmittel, deren
+# Fehlen Lage C ergibt. Geprueft hat es niemand — weder dieses Skript noch das
+# Makefile-Ziel "belege". Gemessen: "set -uo pipefail" ohne "-e" laesst
+# "mapfile" ueber eine fehlende Datei mit Rueckgabewert 0 laufen; die
+# Referenzmenge bleibt leer, und danach gilt jede gueltige Anforderungskennung
+# im ganzen Bestand als ungueltig. Der Schritt waere rot mit hunderten
+# Scheinfunden statt der einen richtigen Aussage "das Pruefmittel fehlt" —
+# genau der Fehlermodus, den 6.8.3 als vermieden beschreibt.
+#
+# Der Massstab ist die geschaerfte Lage C (ADR 0002, Abschnitt 6.9): ein
+# Pruefmittel fehlt ODER traegt die Aussage nicht. Fuer die beiden
+# Bezugsdokumente gilt beides — die Datei muss lesbar sein UND eine nicht
+# leere Referenzmenge hergeben; eine vorhandene, aber aussagelose Datei ist
+# derselbe Ausfall wie eine fehlende. Fuer die Ausnahmeliste gilt nur der
+# erste Teil: eine vorhandene Liste ohne Eintraege ist ein zulaessiger Zustand
+# (es gibt dann keine Ausnahmen), eine fehlende dagegen laesst jede begruendete
+# Ausnahme stumm wegfallen und faelscht das Ergebnis in die andere Richtung.
+lage_c() {
+  echo "belege-pruefen.sh: LAGE C -- $1" >&2
+  echo "Der Bestand besteht fort, die Pruefung faellt aus. Rueckgabewert 3 und" >&2
+  echo "nicht 2: ein ausgefallenes Pruefmittel ist kein Befund am Bestand." >&2
+  exit 3
+}
+
+for pruefmittel in "$BACKLOG" "$PROJEKTAUFTRAG" "$AUSNAHMEDATEI"; do
+  [ -f "$pruefmittel" ] || lage_c "Pruefmittel fehlt: $pruefmittel"
+  [ -r "$pruefmittel" ] || lage_c "Pruefmittel nicht lesbar: $pruefmittel"
+done
 
 # Zweiter Arbeitsbaum (Repo B), fest verdrahteter Ort, siehe Kopfkommentar.
 R3COSCRUM_ROOT=""
@@ -357,6 +397,14 @@ ist_backlog_id() {
 }
 
 mapfile -t PA_ABSCHNITTE < <(grep -oE '^#{1,6}[[:space:]]+[0-9]+\.[0-9]+' "$PROJEKTAUFTRAG" | grep -oE '[0-9]+\.[0-9]+' | sort -u)
+
+# Zweiter Teil der geschaerften Lage C: die Datei ist da, aber sie traegt die
+# Aussage nicht. Ein Backlog ohne eine einzige Anforderungskennung und ein
+# Projektauftrag ohne eine einzige Abschnittsnummer sind als Referenzmenge
+# unbrauchbar; jeder gepruefte Wert wuerde zum Scheinfund. Das ist Lage C und
+# nicht ein roter Lauf.
+[ "${#BACKLOG_IDS[@]}" -gt 0 ] || lage_c "$BACKLOG traegt keine einzige Anforderungskennung als Ueberschrift."
+[ "${#PA_ABSCHNITTE[@]}" -gt 0 ] || lage_c "$PROJEKTAUFTRAG traegt keine einzige Abschnittsnummer als Ueberschrift."
 ist_pa_abschnitt() {
   local a="$1" k
   for k in "${PA_ABSCHNITTE[@]}"; do [ "$k" = "$a" ] && return 0; done
@@ -544,7 +592,14 @@ for DATEI in "${DATEIEN[@]}"; do
 
     if AUFGELOEST=$(pfad_aufloesen "$PFADTEIL" "$BEZUGDIR"); then
       if [ -n "$ANHANG_N" ] && [ -f "$REPO_ROOT/$AUFGELOEST" ]; then
-        ZEILEN_IST=$(wc -l < "$REPO_ROOT/$AUFGELOEST")
+        # "wc -l" zaehlt Zeilenumbrueche, nicht Zeilen: einer Datei ohne
+        # abschliessenden Umbruch fehlt in der Zaehlung genau die letzte
+        # Zeile, und ein richtiger Verweis auf sie waere faelschlich ein Fund
+        # gewesen. Befund der statischen Pruefung vom 2026-09-01; im damaligen
+        # Bestand latent, weil alle erfassten Dateien mit einem Umbruch enden.
+        # "awk END{print NR+0}" zaehlt die letzte Zeile mit und liefert 0 fuer
+        # die leere Datei.
+        ZEILEN_IST=$(awk 'END{print NR+0}' "$REPO_ROOT/$AUFGELOEST")
         GRENZE="$ANHANG_N"
         [ -n "$ANHANG_M" ] && GRENZE="$ANHANG_M"
         if [ "$GRENZE" -gt "$ZEILEN_IST" ]; then
