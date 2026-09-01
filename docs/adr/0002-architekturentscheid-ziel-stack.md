@@ -4,7 +4,7 @@
 |---|---|
 | **Titel** | Ziel-Stack, Modulschnitt, Datenzugriff und Grundgerüst für R3cOSINT |
 | **Status** | **angenommen** — Freigabe des Auftraggebers am 2026-08-20, Abschnitt 10 |
-| **Fortschreibung** | 2026-08-21 — O-4 entfallen: TheHive und Cortex mit der Neufassung von Projektauftrag 5.17 gestrichen; Abschnitte 8 und 9 nachgeführt. Der Optionenvergleich der Sprachwahl in Abschnitt 3.1 bleibt als damalige Entscheidungsgrundlage unverändert. — 2026-08-30 — Abschnitt 6 in drei Punkten fortgeschrieben: D11 prüft zwei Gegenstände (Arbeitsbaum und Git-Historie) statt nur der Historie; neuer Kettenschritt D18 für die Architekturverträge des Importprüfers, den Abschnitt 3.5 seit dem 2026-08-20 verlangt, ohne dass die Tabelle ihn führte; Kettengrundsatz "ein Prüflauf verändert den Gegenstand nicht, über den er urteilt" samt Folge für D12. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.1; als Verweis berührt sind zusätzlich 1.3 (K5), 3.5, 3.12 sowie 8 (O-8, neu O-10) und 9. — 2026-08-30, **zweite Fortschreibung desselben Tages** nach einer abschliessenden adversarischen Prüfung: Die Kette schreibt keine Sperrdatei mehr (`uv sync --locked` und `uv run --locked` statt `--frozen`), die Unverändertheit des Arbeitsbaums wird als Rahmenprüfung **D19** tatsächlich beobachtet statt nur behauptet, die Objektbestimmung aller Kettenschritte steht neu einmal und einheitlich in einer eigenen Tabelle (löst den Widerspruch bei D18 und die fehlende Bedingung bei D10 auf), und die Prüffläche des Arbeitsbaumlaufs aus D11 ist festgelegt. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.2; berührt sind zusätzlich 1.3 (K5), 3.11 und 8 (O-10 neu gefasst) sowie 9. — 2026-08-30, **dritte Fortschreibung desselben Tages** nach vier vom DevOps Engineer gemeldeten Abweichungen zwischen diesem ADR und dem Makefile: Jeder `uv`-Aufruf der Kette trägt `--project backend`, ohne das `--locked` wirkungslos bleibt (belegter Lauf); D7 erkennt seinen Gegenstand am Backlog statt am Dateinamen und hat keine Lage B mehr; `git` ist bei D11 Prüfmittel des Historienlaufs, sein Fehlen ist Lage C; der Abgleich der Wurzelpakete für D18 ist als O-11 terminiert. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.3; berührt sind zusätzlich 8 (O-11 neu) und 9. — 2026-08-30, **vierte Fortschreibung desselben Tages**: D19 misst den Inhalt des Arbeitsbaums (Prüfsummen aller versionierten Dateien und die Maskierungsmerkmale des Index) statt nur der Statusliste; eine Änderung an einer bereits geänderten Datei blieb sonst unsichtbar. Belege in Abschnitt 6.4. — 2026-08-31, **fünfte Fortschreibung**: Die Reichweite der Kette ist entschieden statt offengelassen — sie schützt gegen Bequemlichkeit und Abkürzung, nicht gegen einen Aufrufer, der die Umgebung beherrscht; die harte Zusicherung liegt in einem Lauf auf der Gegenseite, neu als O-12 terminiert. Belege in Abschnitt 6.5. — 2026-08-31, **sechste Fortschreibung desselben Tages** nach einer eng gefassten Nachprüfung auf einem anderen Modell, die beide Änderungen der fünften Fortschreibung blockierend beanstandet hat: Die Positivliste um `$(UV)` gibt `UV_CACHE_DIR`, `XDG_CACHE_HOME` und `TMPDIR` nicht mehr frei (ein präparierter Zwischenspeicher erzeugte damit ein falsches `A_OK`, weil `--locked` ein bereits entpacktes Archiv nicht erneut prüft), und die Projektbestimmung fällt nicht mehr auf das Arbeitsverzeichnis zurück (die Kette prüfte sonst still ein fremdes Repository). Belege in Abschnitt 6.6; berührt ist zusätzlich 8 (O-13 neu). — 2026-08-31, **siebte Fortschreibung desselben Tages**: O-13 ist vom Auftraggeber entschieden — die Kette benutzt den Zwischenspeicher von `uv` nicht, `$(UV)` setzt `UV_NO_CACHE=1`. Damit ist der letzte Weg zu einem falschen `A_OK` über den Zwischenspeicher geschlossen statt nur abgegrenzt. Belege in Abschnitt 6.7; berührt ist zusätzlich 8 (O-13 entschieden). — 2026-09-01, **achte Fortschreibung** auf Entscheid des Auftraggebers: Der Belegprüfer `scripts/belege-pruefen.sh` wird als Kettenschritt **D20** aufgenommen und läuft **als erster Schritt, vor D1** — nicht am Ende, weil die Kette heute bei D7 abbricht und ein Schritt hinter D7 bis auf Weiteres nie liefe. D20 hat **keine Lage B**. Weil das Werkzeug seine eigene Unvollständigkeit einräumt, hält diese Fortschreibung fest, was ein grüner Lauf aussagt und was nicht, und verallgemeinert die Aussage auf die ganze Kette. Belege in Abschnitt 6.8; berührt sind zusätzlich 1.3 (K5), 8 (O-14 und O-15 neu) und 9 |
+| **Fortschreibung** | 2026-08-21 — O-4 entfallen: TheHive und Cortex mit der Neufassung von Projektauftrag 5.17 gestrichen; Abschnitte 8 und 9 nachgeführt. Der Optionenvergleich der Sprachwahl in Abschnitt 3.1 bleibt als damalige Entscheidungsgrundlage unverändert. — 2026-08-30 — Abschnitt 6 in drei Punkten fortgeschrieben: D11 prüft zwei Gegenstände (Arbeitsbaum und Git-Historie) statt nur der Historie; neuer Kettenschritt D18 für die Architekturverträge des Importprüfers, den Abschnitt 3.5 seit dem 2026-08-20 verlangt, ohne dass die Tabelle ihn führte; Kettengrundsatz "ein Prüflauf verändert den Gegenstand nicht, über den er urteilt" samt Folge für D12. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.1; als Verweis berührt sind zusätzlich 1.3 (K5), 3.5, 3.12 sowie 8 (O-8, neu O-10) und 9. — 2026-08-30, **zweite Fortschreibung desselben Tages** nach einer abschliessenden adversarischen Prüfung: Die Kette schreibt keine Sperrdatei mehr (`uv sync --locked` und `uv run --locked` statt `--frozen`), die Unverändertheit des Arbeitsbaums wird als Rahmenprüfung **D19** tatsächlich beobachtet statt nur behauptet, die Objektbestimmung aller Kettenschritte steht neu einmal und einheitlich in einer eigenen Tabelle (löst den Widerspruch bei D18 und die fehlende Bedingung bei D10 auf), und die Prüffläche des Arbeitsbaumlaufs aus D11 ist festgelegt. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.2; berührt sind zusätzlich 1.3 (K5), 3.11 und 8 (O-10 neu gefasst) sowie 9. — 2026-08-30, **dritte Fortschreibung desselben Tages** nach vier vom DevOps Engineer gemeldeten Abweichungen zwischen diesem ADR und dem Makefile: Jeder `uv`-Aufruf der Kette trägt `--project backend`, ohne das `--locked` wirkungslos bleibt (belegter Lauf); D7 erkennt seinen Gegenstand am Backlog statt am Dateinamen und hat keine Lage B mehr; `git` ist bei D11 Prüfmittel des Historienlaufs, sein Fehlen ist Lage C; der Abgleich der Wurzelpakete für D18 ist als O-11 terminiert. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.3; berührt sind zusätzlich 8 (O-11 neu) und 9. — 2026-08-30, **vierte Fortschreibung desselben Tages**: D19 misst den Inhalt des Arbeitsbaums (Prüfsummen aller versionierten Dateien und die Maskierungsmerkmale des Index) statt nur der Statusliste; eine Änderung an einer bereits geänderten Datei blieb sonst unsichtbar. Belege in Abschnitt 6.4. — 2026-08-31, **fünfte Fortschreibung**: Die Reichweite der Kette ist entschieden statt offengelassen — sie schützt gegen Bequemlichkeit und Abkürzung, nicht gegen einen Aufrufer, der die Umgebung beherrscht; die harte Zusicherung liegt in einem Lauf auf der Gegenseite, neu als O-12 terminiert. Belege in Abschnitt 6.5. — 2026-08-31, **sechste Fortschreibung desselben Tages** nach einer eng gefassten Nachprüfung auf einem anderen Modell, die beide Änderungen der fünften Fortschreibung blockierend beanstandet hat: Die Positivliste um `$(UV)` gibt `UV_CACHE_DIR`, `XDG_CACHE_HOME` und `TMPDIR` nicht mehr frei (ein präparierter Zwischenspeicher erzeugte damit ein falsches `A_OK`, weil `--locked` ein bereits entpacktes Archiv nicht erneut prüft), und die Projektbestimmung fällt nicht mehr auf das Arbeitsverzeichnis zurück (die Kette prüfte sonst still ein fremdes Repository). Belege in Abschnitt 6.6; berührt ist zusätzlich 8 (O-13 neu). — 2026-08-31, **siebte Fortschreibung desselben Tages**: O-13 ist vom Auftraggeber entschieden — die Kette benutzt den Zwischenspeicher von `uv` nicht, `$(UV)` setzt `UV_NO_CACHE=1`. Damit ist der letzte Weg zu einem falschen `A_OK` über den Zwischenspeicher geschlossen statt nur abgegrenzt. Belege in Abschnitt 6.7; berührt ist zusätzlich 8 (O-13 entschieden). — 2026-09-01, **achte Fortschreibung** auf Entscheid des Auftraggebers: Der Belegprüfer `scripts/belege-pruefen.sh` wird als Kettenschritt **D20** aufgenommen und läuft **als erster Schritt, vor D1** — nicht am Ende, weil die Kette heute bei D7 abbricht und ein Schritt hinter D7 bis auf Weiteres nie liefe. D20 hat **keine Lage B**. Weil das Werkzeug seine eigene Unvollständigkeit einräumt, hält diese Fortschreibung fest, was ein grüner Lauf aussagt und was nicht, und verallgemeinert die Aussage auf die ganze Kette. Belege in Abschnitt 6.8; berührt sind zusätzlich 1.3 (K5), 8 (O-14 und O-15 neu) und 9. — 2026-09-01, **neunte Fortschreibung** nach einem vom Requirements Engineer gemeldeten Auseinanderlaufen von Festlegung und Umsetzung bei D19: Die **Beobachtbarkeit des Index** — `assume-unchanged` und `skip-worktree` — wird als Bestandteil des Prüfmittels aufgenommen, weil sie im Makefile beobachtet wird und im ADR nirgends vorkam. Der Ausgang "nicht beobachtbar" ist **Lage C**; dafür wird Lage C allgemein geschärft: ein Prüfmittel, das vorhanden ist, die Aussage aber nicht trägt, steht einem fehlenden gleich. Dazu die Unterscheidung, dass der **Gegenstand** relativ gemessen wird (vorher gegen nachher) und das **Instrument** absolut verlangt wird. Belege in Abschnitt 6.9; berührt sind zusätzlich 8 (O-16 neu) und 9. — 2026-09-01, **zehnte Fortschreibung desselben Tages**: O-16 ist mit einem ausgeführten Lauf beantwortet — die Maskierung schaltet **eine** Hälfte des D19-Instruments stumm, nicht beide; die Inhaltsprüfsumme misst weiter. Der Entscheid aus 6.9 bleibt unverändert, **eine Begründungszeile daraus wird berichtigt**, weil sie für beide Hälften behauptete, was nur für eine gilt, und die Befundmeldung wird auf die schwächere, richtige Aussage festgelegt. Der nicht gemessene Fall — Löschung einer maskierten Datei — ist als O-17 benannt statt vermutet. Belege in Abschnitt 6.10; berührt sind zusätzlich 8 (O-16 beantwortet, O-17 neu) und 9 |
 | **Datum** | 2026-08-20 |
 | **Kennung** | R3-C-001 |
 | **Grundlage** | Projektauftrag 3.1, 3.4, 5.1 bis 5.18, 9.1; `docs/05_Product_Backlog.md` (Etappen 0 und 1); `docs/06_Definition_of_Ready_und_Done.md`; `docs/04_Kontextmodell.md`; `docs/adr/0001-rollenmodell.md` |
@@ -533,8 +533,9 @@ Die Einhaltung ist beobachtbar und braucht keine Zusicherung: Der Bestand der ve
 | Gegenstand | Festlegung |
 |---|---|
 | Mittel | `git status --porcelain --untracked-files=all` **und** eine Inhaltsprüfsumme je verfolgter Datei (`git ls-files -z \| xargs -0 sha256sum`), unmittelbar vor dem ersten und unmittelbar nach dem letzten ausgeführten Kettenschritt; verglichen wird die vollständige Aufnahme zeilenweise, einschliesslich der unverfolgten Einträge (`??`). Fortgeschrieben am 2026-08-30, siehe 6.4 |
-| Massstab | Vorher gegen Nachher, **nicht** gegen einen sauberen Arbeitsbaum. Die Kette läuft vor dem Commit und trifft regelmässig einen veränderten Arbeitsbaum an; das ist zulässig — ihn zu verändern ist es nicht |
-| Ausgang | Bei Abweichung endet `make dod` ungleich 0 und nennt die abweichenden Zeilen. Der Befund kann einen grünen Lauf rot machen, nie einen roten grün |
+| Instrument, zweiter Teil | **Die Beobachtbarkeit des Index.** Erhoben wird zusätzlich der Bestand der Maskierungsmerkmale verfolgter Dateien (`git ls-files -v`, Statuszeichen `assume-unchanged` und `skip-worktree`), ebenfalls vor und nach dem Lauf. *(Neunte Fortschreibung 2026-09-01, Begründung in 6.9.)* |
+| Massstab | **Zwei verschiedene Massstäbe, je nachdem, was gemessen wird.** Für den **Gegenstand** — den Bestand der Dateien — gilt: Vorher gegen Nachher, **nicht** gegen einen sauberen Arbeitsbaum. Die Kette läuft vor dem Commit und trifft regelmässig einen veränderten Arbeitsbaum an; das ist zulässig — ihn zu verändern ist es nicht. Für das **Instrument** gilt dagegen ein absoluter Massstab: Ein gesetztes Maskierungsmerkmal ist ein Befund, **auch wenn es schon vor dem Lauf gesetzt war**. Ein stummgeschaltetes Messmittel wird nicht dadurch verlässlich, dass es bereits vorher stummgeschaltet war. *(Neunte Fortschreibung 2026-09-01, 6.9.)* |
+| Ausgang | Bei Abweichung des Gegenstands endet `make dod` ungleich 0 und nennt die abweichenden Zeilen. Ist das Instrument stummgeschaltet, endet `make dod` ebenfalls ungleich 0, mit **eigenem Befundtext** und als **Lage C** — nicht als Verletzung des Kettengrundsatzes, denn eine Verletzung ist damit gerade nicht festgestellt. Der Befundtext nennt, **welche Hälfte** des Instruments stumm ist und was die andere gemessen hat; er behauptet nicht, der Arbeitsbaum sei unbeobachtet. In beiden Fällen gilt: Der Befund kann einen grünen Lauf rot machen, nie einen roten grün. *(Neunte Fortschreibung 2026-09-01, 6.9; Genauigkeit der Meldung festgelegt mit der zehnten Fortschreibung desselben Tages, 6.10.2.)* |
 | Auch bei Abbruch | Die Nachher-Aufnahme läuft auch dann, wenn die Kette an einem Schritt vorher abgebrochen ist. Sonst bliebe gerade der Schritt unbeobachtet, der schreibt und zugleich scheitert |
 | Kennung | D19, die nächste freie Nummer im gemeinsamen D-Namensraum. Sie erhält **kein** eigenes `make`-Ziel, weil sie den Lauf einklammert; sie trägt trotzdem eine Nummer, damit Definition of Done, Backlog und Nachweise sie benennen können |
 
@@ -548,7 +549,7 @@ Die Einhaltung ist beobachtbar und braucht keine Zusicherung: Der Bestand der ve
 |---|---|---|
 | A | Gegenstand vorhanden, Prüfmittel vorhanden | Der Schritt urteilt: 0 oder ungleich 0 |
 | B | Gegenstand nicht vorhanden | Der Schritt entfällt **mit Meldung**, Rückgabewert 0 |
-| C | Gegenstand vorhanden, Prüfmittel fehlt | Rückgabewert **ungleich 0**. Ein fehlendes Prüfmittel ist kein bestandener Schritt |
+| C | Gegenstand vorhanden, Prüfmittel fehlt **oder trägt die Aussage nicht** — es ist unlesbar, unbrauchbar oder stummgeschaltet *(geschärft mit der neunten Fortschreibung vom 2026-09-01, 6.9.2)* | Rückgabewert **ungleich 0**. Ein fehlendes Prüfmittel ist kein bestandener Schritt, und ein vorhandenes, das nicht messen kann, ebenso wenig |
 
 Dazu vier Regeln:
 
@@ -568,7 +569,7 @@ Dazu vier Regeln:
 | D11 | Arbeitsbaum und Git-Historie des Repositories | `.git/` vorhanden | kein `.git/` | `gitleaks`; für den Historienlauf zusätzlich `git` *(dritte Fortschreibung 2026-08-30, 6.3.3; vorher stand hier allein `gitleaks`)* |
 | D12 | Die nachweispflichtigen Artefakte nach 6.6 | `docs/` vorhanden — Bestandteil des Repositories, der Schritt läuft immer | tritt nicht ein | `scripts/nachweise-erzeugen.sh`, `scripts/nachweise-vollstaendig.sh` |
 | D18 | **Python-Produktionscode unterhalb `backend/src/`, unabhängig davon, wie das Paket heisst** | mindestens eine `*.py`-Datei unterhalb `backend/src/` | keine `*.py`-Datei unterhalb `backend/src/` | `backend/importvertraege.toml`; `lint-imports` |
-| D19 | Der Bestand der versionierten Dateien über die Dauer eines Laufs von `make dod` | `.git/` vorhanden | kein `.git/` | `git` |
+| D19 | Der Bestand der versionierten Dateien über die Dauer eines Laufs von `make dod` | Die Versionsverwaltung meldet einen Arbeitsbaum; ist `git` nicht ausführbar, hilfsweise die blosse Anwesenheit von `.git` — **als Datei oder als Verzeichnis**, weil `.git` in einem zusätzlichen Arbeitsbaum und in einem Untermodul eine Datei ist *(neunte Fortschreibung 2026-09-01, 6.9.3; vorher stand hier "`.git/` vorhanden")* | kein Arbeitsbaum und kein `.git` | `git`; dazu die **Beobachtbarkeit des Index**: Ist für eine verfolgte Datei `assume-unchanged` oder `skip-worktree` gesetzt, ist das Prüfmittel stummgeschaltet, und das ist Lage C *(neunte Fortschreibung 2026-09-01, 6.9.2)* |
 | D20 | **Die Herkunfts- und Fundortangaben in den versionierten Markdown-Dateien des Repositories** — Wurzel, `docs/` und `.claude/` | Mindestens eine versionierte Markdown-Datei dieser Prüffläche, festgestellt über die Versionsverwaltung und nicht über einen Verzeichnisnamen | **keine** — der Bestand kann nicht leer sein, und ein leerer Bestand wäre ein Befund und kein leerer Gegenstand *(achte Fortschreibung 2026-09-01, 6.8.3)* | `scripts/belege-pruefen.sh` und `scripts/belege-ausnahmen.txt`; `bash`, `git`, `grep`, `sed`, `awk`; dazu die beiden Bezugsdokumente `docs/05_Product_Backlog.md` und `docs/00_Projektauftrag.md`, aus denen der Prüfer seine Referenzmengen bildet. Fehlt eines davon, ist das Lage C — nicht ein bestandener Schritt (6.8.3) |
 
 Zwei Anmerkungen zu dieser Tabelle:
@@ -1437,6 +1438,318 @@ Umsetzung im Makefile und die Nachführung von
 `docs/06_Definition_of_Ready_und_Done.md` stehen in Abschnitt 9 und liegen bei
 anderen Rollen.
 
+### 6.9 Neunte Fortschreibung vom 2026-09-01 — die Beobachtbarkeit des Index gehört zum Prüfmittel von D19
+
+**Anlass.** Der Requirements Engineer hat beim Nachtragen von D19 und D20 in
+`docs/06_Definition_of_Ready_und_Done.md` gemeldet, dass das Prüfmittel von D19
+an zwei Stellen verschieden steht, und hat den Befund ausdrücklich **nicht**
+selbst gelöst. Das ist der vorgesehene Weg (CLAUDE.md: Abweichungen von diesem
+ADR nur als Fortschreibung) und dasselbe Vorgehen, das schon der dritten
+Fortschreibung vom 2026-08-30 zugrunde lag: melden statt stillschweigend
+entscheiden.
+
+**Beleglage dieser Fortschreibung.** Wie in 6.8 wird getrennt, worauf welche
+Aussage beruht. Diese Rolle hat den D19-Teil des Ziels `dod` im Makefile
+gelesen; sie hat **nichts ausgeführt**. Aussagen über den *Aufbau* der Umsetzung
+— welche Grössen vor und nach dem Lauf erhoben werden, welcher Vergleich zu
+welchem Ausgang führt, dass der Rückgabewert nur von 0 auf ungleich 0 angehoben
+wird — stammen aus dem gelesenen Quelltext. Die Aussage, dass sich die
+Beobachtung durch `git update-index --assume-unchanged` beziehungsweise
+`--skip-worktree` tatsächlich abschalten lässt, ist **nicht** eigene
+Beobachtung: Der Kommentar E5 an der betreffenden Stelle des Makefiles führt
+dafür einen ausgeführten Beleg an, und diese Fortschreibung übernimmt ihn als
+Fremdbeleg. Was dieser Beleg **nicht** abdeckt, ist in 6.9.4 als offener Punkt
+festgehalten, statt es zu vermuten.
+
+#### 6.9.1 Der Befund
+
+| | |
+|---|---|
+| **Vorher galt** | Als Mittel von D19 nannten die Tabelle in Abschnitt 6 und die vierte Fortschreibung (6.4) die Statusliste `git status --porcelain --untracked-files=all` und eine Inhaltsprüfsumme je verfolgter Datei. Von den Maskierungsmerkmalen des Index stand in diesem ADR nichts |
+| **Jetzt gilt** | Die Beobachtbarkeit des Index ist zweiter Teil des Prüfmittels: Der Bestand der Merkmale `assume-unchanged` und `skip-worktree` wird vor und nach dem Lauf erhoben. Ein gesetztes Merkmal ergibt Lage C mit eigenem Befundtext |
+
+Die Umsetzung war der Festlegung also voraus. Das ist die unangenehmere der
+beiden Richtungen — eine Umsetzung, die weniger tut als der ADR, ist ein
+gewöhnlicher Mangel; eine, die mehr tut, ist eine Entscheidung, die niemand
+getroffen hat. Beide Male gilt derselbe Satz aus 6.3: Der Befund wird
+entschieden, nicht angeglichen.
+
+**Zwei Wege standen offen.** Entweder die Beobachtung aus dem Makefile
+entfernen, weil sie dort nichts zu suchen hat, oder sie in das Prüfmittel
+aufnehmen. Entschieden wird: **aufnehmen.**
+
+**Weshalb aufnehmen und nicht entfernen.** D19 sagt: Der Bestand der
+versionierten Dateien ist vor und nach dem Lauf derselbe. Diese Aussage ruht auf
+einem Messmittel, und ein Teil dieses Messmittels — `git status` — richtet sich
+nach dem Index. Ein Kettenschritt, der ein Maskierungsmerkmal setzt, verändert
+damit nicht den Gegenstand, sondern **das Messmittel**. Das Ergebnis wäre nicht
+ein falsches Urteil, sondern ein Urteil ohne Grundlage: D19 meldete "unverändert"
+über eine Datei, die es nicht mehr ansehen kann. Genau diese Falschaussage ist
+der Grund, aus dem D19 überhaupt existiert — die zweite Fortschreibung hat sie
+mit dem Satz eingeführt, beobachtbar genüge nicht, beobachtet werde verlangt.
+Eine Beobachtung zu entfernen, die feststellt, ob überhaupt noch beobachtet
+werden kann, hiesse, diesen Satz zurückzunehmen.
+
+**Einordnung in das Muster.** Es ist zum dritten Mal derselbe Fehler auf einer
+neuen Ebene. Die Schlussprüfung vom 2026-08-30 hat ihn benannt: *gemessen wird
+die Verfügbarkeit eines Namens statt die Anwesenheit des Gegenstands.* 6.4 hat
+ihn eine Ebene höher geschlossen: die Statusliste misst eine Liste von Namen
+statt den Inhalt. Diese Fortschreibung schliesst ihn eine Ebene darüber: **Es
+genügt nicht, den Gegenstand zu messen; es muss auch feststehen, dass das
+Messmittel misst.** Damit ist die Reihe an ihrem Ende angelangt — was das
+Messmittel des Messmittels prüft, ist keine Eigenschaft der Kette mehr, sondern
+der Lauf auf der Gegenseite aus O-12.
+
+#### 6.9.2 Der Ausgang "nicht beobachtbar" ist Lage C — und Lage C wird dafür geschärft
+
+Der gemeldete Punkt trifft zu: Der Ausgang war bisher keine der drei Lagen. Das
+ist selbst eine Festlegung, und sie wird hier getroffen.
+
+**Optionen.**
+
+| Option | Bewertung |
+|---|---|
+| (a) Eine vierte Lage D "Gegenstand vorhanden, Prüfmittel vorhanden, aber stummgeschaltet" | Beschreibt den Fall genau. Dagegen: Das Lagenschema gilt für **alle** Kettenschritte; eine vierte Lage müsste für jeden von ihnen bestimmt werden, obwohl sie nur bei D19 auftritt. Ein Schema um eines Einzelfalls willen zu erweitern, macht es für die anderen fünfzehn Fälle ungenauer |
+| (b) Unter Lage C fassen und Lage C schärfen | Der Ausgang ist bereits derselbe: ungleich 0, kein bestandener Schritt. Der tragende Satz von Lage C — ein Schritt, der nicht urteilen kann, meldet nicht "bestanden" — passt wörtlich. Verlangt eine Präzisierung der C-Bedingung, die ohnehin fällig ist |
+| (c) Als Verletzung des Kettengrundsatzes behandeln (wie eine Abweichung des Bestandes) | Abgelehnt. Das behauptete, der Arbeitsbaum sei verändert worden. Bekannt ist aber gerade das Gegenteil: Es ist **nicht bekannt**, ob er verändert wurde. Ein Nachweis, der Ungewissheit als Feststellung ausgibt, ist als Nachweis untauglich (5.3) — dieselbe Begründung, mit der die Schlusszeile schon einmal getrennt werden musste |
+| (d) Nur melden, nicht blockieren | Abgelehnt, aus dem in 6.2.3 bereits entschiedenen Grund: Eine Meldung, die nicht blockiert, wird in einem Stop-Hook nicht gelesen; eine abgestufte Wirkung ist eine Abschaltung mit besserem Namen (5.4) |
+
+**Entscheid: (b).** Lage C lautet neu — Gegenstand vorhanden, Prüfmittel fehlt
+**oder trägt die Aussage nicht**: es ist unlesbar, unbrauchbar oder
+stummgeschaltet. Der Ausgang bleibt unverändert ungleich 0.
+
+**Weshalb das keine Ausweitung, sondern eine Klarstellung ist.** Die Umsetzung
+behandelt einen vorhandenen, aber unbrauchbaren Prüfgegenstand schon heute als
+Lage C, und dieser ADR trägt es an zwei Stellen mit: D18 meldet Lage C, wenn
+`backend/importvertraege.toml` zwar existiert, aber nicht lesbar ist, und D7
+endet nach 6.3.2 ungleich 0, wenn die gefundene Backlog-Datei keine
+Abnahmekriterien führt — in beiden Fällen ist das Prüfmittel da und trägt die
+Aussage nicht. Die C-Bedingung war also bereits weiter, als ihr Wortlaut sagte.
+Diese Fortschreibung bringt den Wortlaut auf den Stand der bereits getroffenen
+Entscheidungen, statt eine neue Freiheit zu schaffen.
+
+**Der eigene Befundtext bleibt.** Lage C ist die Lage, nicht die Meldung. Ein
+Lauf muss unterscheidbar machen, **welcher** C-Fall eingetreten ist — `git`
+fehlt, oder `git` ist da und der Index ist maskiert. Das Makefile trennt beide
+Texte bereits, und der Grund steht dort ausdrücklich als Anmerkung zur
+Nachweiszeile nach 5.3: Eine Schlusszeile, die "beobachtet und in Ordnung" mit
+"gar nicht beobachtet" verschmilzt, ist als Nachweis untauglich. Dieselbe
+Trennung gilt jetzt auch begrifflich.
+
+**Der absolute Massstab für das Instrument, und weshalb er dem Massstab für den
+Gegenstand nicht widerspricht.** Für den Gegenstand gilt seit der zweiten
+Fortschreibung: vorher gegen nachher, nicht gegen einen sauberen Arbeitsbaum —
+ein bereits veränderter Arbeitsbaum ist zulässig. Für das Instrument gilt das
+**nicht**: Ein Maskierungsmerkmal, das schon vor dem Lauf gesetzt war, ist
+ebenso ein Befund wie eines, das während des Laufs gesetzt wurde. Der
+Unterschied hat einen Grund, und es ist nicht Strenge um ihrer selbst willen:
+Ein veränderter Arbeitsbaum ist der normale Betriebszustand vor einem Commit
+und beeinträchtigt die Messung nicht. Ein maskierter Index beeinträchtigt sie
+für die ganze Dauer des Laufs — die Vorher-Aufnahme ist dann bereits blind, und
+ein Vergleich zweier blinder Aufnahmen ergibt zuverlässig "keine Abweichung".
+Das ist dieselbe Unterscheidung, die 6.2.3 für D11 getroffen hat: Ein Fund im
+Arbeitsbaum ist immer ein Befund und nie ein Betriebszustand. **Der Gegenstand
+wird relativ gemessen, das Instrument absolut verlangt.**
+
+#### 6.9.3 Ein zweiter, kleinerer Unterschied derselben Art in derselben Zeile
+
+Beim Lesen des D19-Teils ist ein zweiter Punkt aufgefallen, den der gemeldete
+Befund nicht nennt; er wird hier mitentschieden, weil er dieselbe Tabellenzeile
+betrifft und dieselbe Ursache hat.
+
+| | |
+|---|---|
+| **Vorher galt** | Die Objekttabelle nannte als Erkennungsmerkmal von D19 "`.git/` vorhanden" — ein Verzeichnisname |
+| **Jetzt gilt** | Erkennungsmerkmal ist, dass die Versionsverwaltung einen Arbeitsbaum meldet; ist `git` nicht ausführbar, hilfsweise die Anwesenheit von `.git` als **Datei oder** Verzeichnis |
+
+Der Grund steht als Anmerkung B2 im Makefile und ist dort als blockierender
+Befund der Schlussprüfung vom 2026-08-30 vermerkt: In einem zusätzlichen
+Arbeitsbaum und in einem Untermodul ist `.git` eine **Datei**, kein Verzeichnis.
+Eine Prüfung auf ein Verzeichnis meldete dort Lage B und beobachtete nichts,
+obwohl der Baum voll versioniert war — und der Betrieb auf einem Arbeitszweig
+nach CLAUDE.md macht zusätzliche Arbeitsbäume zu einer naheliegenden
+Arbeitsform. Das ist wörtlich Regel 1 aus 6.2.2: Die Lage wird an einem
+Pfadnamen festgemacht statt am Gegenstand. Die Umsetzung hatte den Fehler
+bereits behoben; nur die Tabelle, die nach Regel 2 allein massgeblich ist, trug
+ihn noch.
+
+#### 6.9.4 Was diese Fortschreibung offenlässt — O-16
+
+Nicht entschieden, weil nicht ohne einen ausgeführten Lauf entscheidbar: **wie
+weit die Maskierungsmerkmale die Messung tatsächlich beeinträchtigen.** Das
+Instrument hat zwei Teile. Die Statusliste richtet sich nach dem Index; für sie
+ist die Beeinträchtigung belegt. Die Inhaltsprüfsumme je verfolgter Datei liest
+dagegen den Dateiinhalt über den Pfad. Ob sie eine Änderung an einer maskierten
+Datei weiterhin erfasst — und damit, ob die Maskierung D19 halb oder ganz blind
+macht —, ist eine Frage über das Verhalten eines Werkzeugs und wird hier
+**nicht behauptet**, in keine der beiden Richtungen. Sie ist als **O-16**
+terminiert und mit einem ausgeführten Lauf zu beantworten.
+
+**Am Entscheid ändert die Antwort nichts, und das ist Absicht.** Fällt sie so
+aus, dass die Prüfsumme weiterhin greift, bleibt die Maskierung trotzdem ein
+Befund: Ein Instrument, dessen eine Hälfte stummgeschaltet ist, trägt die
+Aussage von D19 nicht mehr vollständig, und die Kette soll nicht auf der
+stillschweigenden Annahme beruhen, die andere Hälfte fange es schon auf. Die
+Antwort bestimmt also nicht, **ob** gemeldet wird, sondern **wie genau** die
+Befundmeldung sagen darf, was ungewiss geworden ist. Genau deshalb steht sie als
+offener Punkt und nicht als Vermutung im Entscheid.
+
+#### 6.9.5 Was diese Fortschreibung nicht ändert
+
+Der Gegenstand von D19 bleibt unverändert der Bestand der versionierten Dateien
+über die Dauer eines Laufs; die Aufnahme aus Statusliste und Inhaltsprüfsumme
+aus 6.4 bleibt unverändert und wird ergänzt, nicht ersetzt. D19 bleibt
+Rahmenprüfung ohne eigenes `make`-Ziel und ohne Platz in der Zielliste. Die
+Eigenschaft "kann einen grünen Lauf rot machen, nie einen roten grün" bleibt.
+Kein Kettenschritt D1 bis D12, D18 oder D20 ändert sich in Befehl,
+Objektbedingung oder Prüfmitteln; die Schärfung von Lage C beschreibt für sie,
+was bei D7 und D18 ohnehin schon galt. Der Kettengrundsatz aus 6.1.3, die
+Nummernregel aus 6.1.2 und der Grundsatz aus 6.8.4 zur Aussagekraft eines
+Rückgabewerts 0 bleiben in Kraft. Die offenen Punkte O-7, O-8, O-10, O-12, O-14
+und O-15 bleiben offen. Nicht entschieden wird O-16.
+
+**Erledigt und hier nur vermerkt:** Die in 6.8.1 festgestellte
+Nachführungslücke — `docs/06_Definition_of_Ready_und_Done.md` führte D19 nicht,
+weshalb die Nummer dort als frei erschien — ist geschlossen; D19 und D20 stehen
+jetzt dort. Der Satz aus 6.8.1 bleibt als Regel bestehen: Eine D-Nummer ist
+vergeben, sobald ein ADR sie vergibt.
+
+### 6.10 Zehnte Fortschreibung vom 2026-09-01 — O-16 beantwortet: eine Hälfte des Instruments ist stumm, nicht beide
+
+**Anlass.** O-16 ist am selben Tag beantwortet worden, an dem er entstanden ist,
+und zwar mit dem Mittel, das dieser ADR dafür verlangt: einem ausgeführten Lauf
+statt einer Vermutung. 6.9.4 hatte die Frage ausdrücklich in keine Richtung
+behauptet. Sie ist jetzt gemessen.
+
+**Beleglage — Fremdbeleg, kein eigener Lauf.** Die Zahlen unten stammen aus
+einem Lauf des Koordinators, nicht aus einer eigenen Beobachtung dieser Rolle;
+diese Rolle hat auch für diese Fortschreibung nichts ausgeführt. Übernommen wird
+das Ergebnis als Fremdbeleg mit Angabe des Versuchsaufbaus, damit nachprüfbar
+ist, was gemessen wurde — und, ebenso wichtig, was nicht.
+
+#### 6.10.1 Das Messergebnis
+
+**Versuchsaufbau** (Fremdbeleg): Wegwerf-Klon des Repositories,
+`git update-index --skip-worktree CLAUDE.md`, danach eine Zeile an die Datei
+angehängt; beide Hälften des Instruments jeweils vorher und nachher aufgenommen.
+
+| Instrumententeil | vorher | nachher | Ergebnis |
+|---|---|---|---|
+| Statusliste (`git status --porcelain --untracked-files=all`) | 0 Zeilen | 0 Zeilen | **blind** — meldet die Änderung nicht |
+| Inhaltsprüfsumme je verfolgter Datei | `36ef1067b2eaf772…` | `b58f937bac3b839e…` | **erfasst die Änderung** |
+
+**Was das feststellt.** Die Maskierung schaltet **eine** Hälfte des Instruments
+stumm, nicht beide. Die Inhaltsprüfsumme liest über den Pfad und sieht die
+Änderung weiterhin.
+
+**Was das nicht feststellt.** Der Versuch deckt die Änderung des Inhalts einer
+vorhandenen, maskierten Datei ab. Er sagt nichts über die Löschung einer
+maskierten Datei (6.10.4), nichts über Rechte- und Typwechsel und nichts über
+Einträge, die allein die Statusliste sieht — unverfolgte Dateien und den
+Zustand des Index. Diese Aufzählung ist die Grenze des Belegs, nicht die Grenze
+des Instruments; sie wird hier genannt, weil ein Beleg, dessen Reichweite
+unausgesprochen bleibt, wieder zu der Aussage würde, die stärker ist als ihre
+Quelle.
+
+#### 6.10.2 Was die Befundmeldung sagen darf — und was nicht mehr
+
+| | |
+|---|---|
+| **Vorher galt** | Der Ausgang war als "nicht beobachtbar" benannt; die Tabelle in Abschnitt 6 sagte, ob der Kettengrundsatz verletzt sei, lasse sich "gerade nicht sagen" |
+| **Jetzt gilt** | Die Meldung nennt, **welche Hälfte** des Instruments stumm ist, für **welche Dateien**, und was die andere Hälfte gemessen hat. Sie behauptet nicht mehr, der Arbeitsbaum sei unbeobachtet |
+
+Der Koordinator hat den Befundtext im Makefile bereits so benannt — er nennt
+ausdrücklich Lage C und führt das Messergebnis mit. Diese Fortschreibung deckt
+das und legt den Massstab dafür fest.
+
+**Die Aussage, die nach dem Messergebnis noch trägt**, lautet für einen Lauf mit
+gesetzter Maskierung und ohne Abweichung der Prüfsummen: *Der Inhalt der
+verfolgten Dateien ist unverändert. Für die maskierten Dateien trägt allein die
+Inhaltsprüfsumme; alles, was nur die Statusliste sieht, ist für sie nicht
+beurteilt.* Das ist schwächer als "unbeobachtet" und schwächer als "unverändert"
+— und es ist die einzige der drei Aussagen, die belegt ist.
+
+**Weshalb die Genauigkeit hier mehr ist als Wortklauberei.** Nach 5.3 ist die
+Ausgabe der Kette eine Protokollspur, und Negativbefunde sind darin zwingend
+enthalten. Ein Negativbefund, der zu viel behauptet, ist derselbe Mangel wie ein
+fehlender: Wer später liest, "der Arbeitsbaum war unbeobachtet", schliesst
+daraus, dass über den Inhalt nichts bekannt war — obwohl er gemessen wurde. Der
+Protokolleintrag wäre dann in der einen Richtung falsch, in der er nicht falsch
+sein darf. Dieselbe Überlegung hat im Makefile bereits dazu geführt, "beobachtet
+und in Ordnung" von "gar nicht beobachtet" zu trennen; sie wird hier eine Stufe
+feiner fortgesetzt.
+
+#### 6.10.3 Der absolute Massstab bleibt — eine Zeile seiner Begründung wird berichtigt
+
+**Der Entscheid aus 6.9.2 bleibt unverändert:** Ein gesetztes
+Maskierungsmerkmal ist ein Befund, auch wenn es schon vor dem Lauf gesetzt war,
+und der Ausgang ist Lage C.
+
+**Berichtigt wird eine Begründungszeile.** 6.9.2 stützte den absoluten Massstab
+unter anderem auf den Satz, die Vorher-Aufnahme sei dann bereits blind und ein
+Vergleich zweier blinder Aufnahmen ergebe zuverlässig "keine Abweichung". Das
+gilt nach dem Messergebnis **nur für die Statusliste**, nicht für das Instrument
+als Ganzes. Der Satz war für beide Hälften formuliert und behauptete damit mehr,
+als er trug. Er wird hier nicht gelöscht — 6.9 bleibt als früherer Stand stehen,
+wie jede vorangegangene Fortschreibung —, sondern an dieser Stelle berichtigt.
+Das ist genau der Vorgang, den dieser ADR von allen Beteiligten verlangt, und er
+gilt auch für die Rolle, die ihn schreibt.
+
+**Weshalb der Entscheid die Berichtigung übersteht — drei Gründe, die vom
+Messergebnis unabhängig sind.**
+
+1. **Ein Instrument mit einer stummen Hälfte ist kein vollständiges
+   Instrument.** D19 hat zwei Teile, weil ein Teil nicht genügte; das war der
+   Inhalt der vierten Fortschreibung. Wenn einer davon ausfällt, ist die
+   Zusicherung von D19 nicht mehr die, die entschieden wurde. Ob der Rest
+   "wahrscheinlich reicht", ist keine Kategorie einer Bauvorschrift (5.4).
+2. **Die Reichweite des Rests ist selbst nicht vollständig gemessen.** Der
+   Löschfall steht offen (6.10.4). Den absoluten Massstab auf eine Deckung zu
+   stützen, deren Umfang unbekannt ist, wäre dieselbe Annahme, gegen die 6.9
+   entschieden hat — nur eine Ebene versetzt.
+3. **Der Massstab kostet im Normalfall nichts.** Ein Maskierungsmerkmal
+   entsteht nicht versehentlich; es wird gesetzt. Wo keines gesetzt ist, meldet
+   der Schritt nichts. Der absolute Massstab verlangt also niemandem etwas ab
+   ausser dem, der das Messmittel stummgeschaltet hat — und dass genau das
+   sichtbar wird, ist der Zweck.
+
+**Was sich durch die Berichtigung tatsächlich ändert**, ist nicht die Farbe des
+Laufs, sondern der Satz, mit dem er begründet wird: Der Befund heisst nicht mehr
+"es konnte nichts beobachtet werden", sondern "das Instrument war unvollständig,
+und zwar in diesem benannten Teil".
+
+#### 6.10.4 Der nicht gemessene Fall — O-17
+
+Ausdrücklich als Restpunkt geführt und nicht vermutet: **Was geschieht, wenn
+eine maskierte, verfolgte Datei gelöscht wird?** Die Aufzählung der verfolgten
+Dateien führt sie weiter, weil sie im Index steht; die Prüfsummenbildung findet
+die Datei dann nicht vor. Ob die Aufnahme dadurch abweicht — und die Löschung
+damit trotz Maskierung sichtbar wird — oder ob sie unverändert bleibt, ist
+**nicht gemessen worden**. Dieser ADR behauptet dazu nichts und führt die Frage
+als **O-17**.
+
+Auch hier gilt, was schon für O-16 galt: Am Entscheid ändert die Antwort nichts.
+Eine gesetzte Maskierung bleibt ein Befund, und der Ausgang bleibt Lage C. Die
+Antwort bestimmt allein, wie weit die Meldung nach 6.10.2 sagen darf, dass der
+Inhalt beurteilt sei. Fällt sie ungünstig aus, ist die Aussage über die
+maskierten Dateien enger zu fassen — eine Fortschreibung der Meldung, nicht des
+Entscheids.
+
+#### 6.10.5 Was diese Fortschreibung nicht ändert
+
+Der Entscheid aus 6.9 bleibt in allen Teilen: Die Beobachtbarkeit des Index ist
+zweiter Teil des Prüfmittels von D19, ein gesetztes Maskierungsmerkmal ergibt
+Lage C, der Gegenstand wird relativ gemessen und das Instrument absolut
+verlangt, und die geschärfte Lage C gilt für alle Kettenschritte. Gegenstand,
+Mittel und Massstab von D19 bleiben unverändert; geändert wird ausschliesslich,
+was die **Meldung** behaupten darf. Kein Kettenschritt D1 bis D12, D18 oder D20
+ändert sich. Der Kettengrundsatz aus 6.1.3, die Nummernregel aus 6.1.2 und der
+Grundsatz aus 6.8.4 bleiben in Kraft — letzterer erhält mit diesem Fall sein
+genauestes Beispiel: Ein Rückgabewert sagt, was der Schritt gefunden hat, und
+eine Befundmeldung darf nicht mehr behaupten, als der Schritt messen konnte. Die
+offenen Punkte O-7, O-8, O-10, O-12, O-14 und O-15 bleiben offen; O-16 ist
+geschlossen, O-17 ist neu.
+
 
 ## 7. Konsequenzen
 
@@ -1479,6 +1792,9 @@ anderen Rollen.
 | O-14 | Der Belegprüfer liest das Methodik-Repository an einem **fest verdrahteten, nicht konfigurierbaren Ort ausserhalb dieses Repositories** mit. Offen ist, wie der Ort bestimmt wird, ohne die Aussage des Kettenschrittes an einen einzelnen Arbeitsplatz zu binden | **Neu am 2026-09-01 (6.8.3).** Auf einer Maschine ohne diesen Arbeitsbaum zählt das Skript die betroffenen Zeilen als "nicht prüfbar"; die Zählung geht nicht in den Rückgabewert ein. D20 wird dadurch nicht falsch, aber schwächer — und wie viel schwächer, hängt an der Maschine. `.claude/rules/dokumentation.md` untersagt absolute Pfade der Arbeitsumgebung ausdrücklich für Architecture Decision Records; für ein Skript sagt die Regel nichts, weshalb dieser Punkt eine Abwägung ist und kein Regelverstoss. Die Behebung ist Umsetzung (Umgebungsvariable, Suchpfad oder ausdrückliche Lage-Meldung), nicht Architektur | DevOps Engineer mit dem Protocol Master (Verfolgbarkeit über beide Repositories, 6.6) | mit R3-Q-001 |
 | O-15 | **Abnahme des Belegprüfers.** Das Werkzeug ist nach Eskalationsregel 3.4 abgebrochen und nicht abgenommen; seine Selbstauskunft erklärt die Liste ihrer Grenzen ausdrücklich für unvollständig. Offen ist, welches Abnahmekriterium für ein Werkzeug gilt, das eine Nachweiskette blockiert | **Neu am 2026-09-01 (6.8.4).** Die Aufnahme in die Kette hängt nicht an der Abnahme — ein Schritt, der nur Funde hinzufügt und nichts darüber hinaus behauptet, macht die Kette nicht schwächer. Die Abnahme selbst ist damit nicht erledigt: Sie verlangt eine Prüfung auf einem anderen Modell als die Umsetzung (3.4) und eine Entscheidung darüber, ob "die Liste der Grenzen ist unvollständig" als Abnahmekriterium ausreicht. Dazu gehören die beiden benannten, nicht gebauten Prüfungen | Static und Dynamic Software Tester, Entscheid über das Abnahmekriterium beim Auftraggeber | vor der Freigabe des Grundgerüsts |
 
+| O-16 — **beantwortet am 2026-09-01, siehe 6.10** | Reichweite der Index-Maskierung gegenüber dem zweiten Teil des D19-Instruments: Macht die Maskierung D19 halb oder ganz blind? **Antwort, mit ausgeführtem Lauf belegt: halb.** Die Statusliste ist für die maskierte Datei blind, die Inhaltsprüfsumme erfasst die Änderung weiterhin | **Neu und geschlossen am 2026-09-01 (6.9.4, 6.10.1).** Die Frage war nur durch einen Lauf zu beantworten und ist in diesem ADR bis dahin in keine Richtung behauptet worden. Folge: Der Entscheid bleibt unverändert, eine Begründungszeile aus 6.9.2 ist berichtigt (6.10.3), und die Befundmeldung ist auf die schwächere, richtige Aussage festgelegt (6.10.2) | beantwortet durch den Koordinator, übernommen als Fremdbeleg | erledigt |
+| O-17 | **Löschung einer maskierten, verfolgten Datei.** Die Aufzählung der verfolgten Dateien führt sie weiter, weil sie im Index steht; die Prüfsummenbildung findet die Datei nicht vor. Ob die Aufnahme dadurch abweicht — die Löschung also trotz Maskierung sichtbar wird — oder nicht, ist offen | **Neu am 2026-09-01 (6.10.4).** Der Versuch zu O-16 deckt die Inhaltsänderung einer vorhandenen Datei ab, nicht die Löschung. Dieser ADR behauptet dazu nichts. Am Entscheid ändert die Antwort nichts — die Maskierung bleibt ein Befund, der Ausgang Lage C; sie bestimmt allein, wie weit die Meldung nach 6.10.2 sagen darf, der Inhalt sei beurteilt | DevOps Engineer, Verifikation Static und Dynamic Software Tester (3.4) | mit R3-Q-001 |
+
 Nicht offen, sondern entschieden und hier nur zur Klarstellung: `pgvector` (A4), Suchindex (A3), Orchestrierung (A11). Nicht offen, weil gestrichen: VirusTotal, Gesichtserkennung samt biometrischer Vektoren, Open WebUI, CASE/UCO, Fernsteuerung von Maltego; seit der Fortschreibung vom 2026-08-21 auch TheHive und Cortex (5.17).
 
 ---
@@ -1512,6 +1828,12 @@ Nicht offen, sondern entschieden und hier nur zur Klarstellung: `pgvector` (A4),
 | **Dritte Fortschreibung 2026-08-30:** Nachweis mit ausgeführtem Lauf, dass `--locked --project backend` nicht mehr mit "has no effect" antwortet, und Feststellung, welchen Gegenstand `pytest` in D5 und D6 ohne Pfadangabe aus der Repository-Wurzel einsammelt (6.3.1) | ausgeführter Lauf, Ergebnis in die Übergabedatei | DevOps Engineer, Verifikation Static und Dynamic Software Tester (3.4) |
 | **Achte Fortschreibung 2026-09-01:** neues Ziel `belege` für D20 (`bash scripts/belege-pruefen.sh`), eingehängt als **erster** Eintrag der Zielliste von `make dod` vor D1; `D20` in die eigenständige Liste der erwarteten Kettenschritte aufnehmen, sonst bricht die Kette an ihrer eigenen Vorprüfung ab; Lage-Marke des Schrittes nach der Objekttabelle — **keine Lage B**, fehlendes Prüfmittel und leerer Bestand ergeben Lage C; die Zahl der nicht prüfbaren Zeilen gehört in die Lage-Meldung (6.8.3); die Schlusszeile "D1 bis D12 plus D18" ist unvollständig geworden | `Makefile` | DevOps Engineer |
 | **Achte Fortschreibung 2026-09-01:** Kriterienzeile für den Kettenschritt **D20** (Belege) in Teil 2, samt der Aussage, was ein grüner Lauf trägt und was nicht (6.8.4); der neue Kettengrundsatz "Rückgabewert 0 heisst: nichts von dem gefunden, was dieser Schritt sucht" gilt für alle Schritte und gehört in denselben Teil; die Wendung "Kette D1 bis D12" ist ein zweites Mal unvollständig geworden. Zusammen mit der noch offenen Nachführung von D19 aus der zweiten Fortschreibung vom 2026-08-30 nachzuführen — solange D19 dort fehlt, liest sich D19 als freie Nummer (6.8.1) | `docs/06_Definition_of_Ready_und_Done.md` | DevOps Engineer mit Product Owner, Bestätigung Auftraggeber mit R3-Q-001 |
+| **Neunte Fortschreibung 2026-09-01:** Die Beobachtung der Index-Maskierung ist bereits umgesetzt und hiermit gedeckt — zu ändern ist allein die **Benennung** des Ausgangs: Der Befundtext "D19 nicht beobachtbar" nennt neu ausdrücklich **Lage C**, damit Marke und Nachweiszeile dieselbe Sprache sprechen wie die übrigen Schritte. Kein Verhaltenswechsel, keine Änderung am Rückgabewert. Ebenfalls gedeckt, nicht zu ändern: die Bestimmung des Arbeitsbaums über `git` statt über einen Verzeichnisnamen (6.9.3) | `Makefile` | DevOps Engineer |
+| **Neunte Fortschreibung 2026-09-01:** Kriterium D19 um den zweiten Teil des Prüfmittels ergänzen (Beobachtbarkeit des Index; ein gesetztes `assume-unchanged` oder `skip-worktree` ist Lage C, auch wenn es schon vor dem Lauf gesetzt war) und um die Unterscheidung der beiden Massstäbe — Gegenstand relativ, Instrument absolut; die geschärfte Lage C gilt für **alle** Schritte und gehört in denselben Teil | `docs/06_Definition_of_Ready_und_Done.md` | Requirements Engineer mit DevOps Engineer, Bestätigung Auftraggeber mit R3-Q-001 |
+| **Neunte Fortschreibung 2026-09-01 — erledigt am selben Tag:** ausgeführter Lauf zur Beantwortung von O-16. Ergebnis in 6.10.1; die Befundmeldung ist daraufhin in 6.10.2 festgelegt und im Makefile bereits so benannt worden | ausgeführter Lauf | erledigt durch den Koordinator |
+| **Zehnte Fortschreibung 2026-09-01:** Die Benennung des Befundtextes (Lage C, mitgeführtes Messergebnis) ist umgesetzt und hiermit gedeckt. Zu prüfen bleibt allein, dass die Meldung nicht mehr behauptet, der Arbeitsbaum sei unbeobachtet, sondern nennt, **welche Hälfte** des Instruments stumm ist und was die andere gemessen hat (6.10.2) | `Makefile` | DevOps Engineer, Verifikation Static und Dynamic Software Tester (3.4) |
+| **Zehnte Fortschreibung 2026-09-01:** ausgeführter Lauf zur Beantwortung von **O-17** — weicht die Aufnahme ab, wenn eine maskierte, verfolgte Datei gelöscht wird? Ergebnis in die Übergabedatei; fällt es ungünstig aus, ist die Aussage über maskierte Dateien in der Meldung enger zu fassen | ausgeführter Lauf | DevOps Engineer, Verifikation Static und Dynamic Software Tester (3.4) |
+| **Zehnte Fortschreibung 2026-09-01:** Kriterium D19 — die Meldung bei stummgeschaltetem Instrument nennt die betroffene Hälfte und das Ergebnis der anderen; sie behauptet nicht, der Arbeitsbaum sei unbeobachtet | `docs/06_Definition_of_Ready_und_Done.md` | Requirements Engineer mit DevOps Engineer, Bestätigung Auftraggeber mit R3-Q-001 |
 | Backlog-Eintrag für TheHive/Cortex (O-4) — **entfallen am 2026-08-21**, O-4 gestrichen (5.17 neu); bleibt: Formulierung der Abnahme von R3-C-001 gegenüber 5.6 (O-1) | `docs/05_Product_Backlog.md` | Product Owner |
 | Zeile für diesen ADR in der Artefaktliste des Erzeugers; Neuerzeugung des Nachweisverzeichnisses; Changelog | `scripts/nachweise-erzeugen.sh`, `docs/NACHWEISE.md`, `CHANGELOG.md` | Protocol Master (4.2, 6.6) |
 | Statustabelle und Verweis auf den Ziel-Stack | `CLAUDE.md` | Protocol Master |
