@@ -3,8 +3,8 @@
 | | |
 |---|---|
 | **Arbeitsprodukt nach** | Projektauftrag 3.3 (Übergabedatei), 3.4 (Eskalation) |
-| **Einheit** | Prüfregel für Herkunftsangaben, auf Freigabe des Auftraggebers vom 2026-08-31 |
-| **Datum** | 2026-08-31 |
+| **Einheit** | Prüfregel für Herkunftsangaben, auf Freigabe des Auftraggebers vom 2026-09-01 |
+| **Datum** | 2026-09-01 |
 | **Zweig** | `claude/next-step-g8slnq` |
 | **Ergebnis** | **Gebaut und wirksam, aber nicht abgenommen.** Drei Prüfrunden, drei blockierende Befunde, jedes Mal am gleichen Kriterium |
 

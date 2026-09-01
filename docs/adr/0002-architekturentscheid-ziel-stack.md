@@ -4,7 +4,7 @@
 |---|---|
 | **Titel** | Ziel-Stack, Modulschnitt, Datenzugriff und Grundgerüst für R3cOSINT |
 | **Status** | **angenommen** — Freigabe des Auftraggebers am 2026-08-20, Abschnitt 10 |
-| **Fortschreibung** | 2026-08-21 — O-4 entfallen: TheHive und Cortex mit der Neufassung von Projektauftrag 5.17 gestrichen; Abschnitte 8 und 9 nachgeführt. Der Optionenvergleich der Sprachwahl in Abschnitt 3.1 bleibt als damalige Entscheidungsgrundlage unverändert. — 2026-08-30 — Abschnitt 6 in drei Punkten fortgeschrieben: D11 prüft zwei Gegenstände (Arbeitsbaum und Git-Historie) statt nur der Historie; neuer Kettenschritt D18 für die Architekturverträge des Importprüfers, den Abschnitt 3.5 seit dem 2026-08-20 verlangt, ohne dass die Tabelle ihn führte; Kettengrundsatz "ein Prüflauf verändert den Gegenstand nicht, über den er urteilt" samt Folge für D12. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.1; als Verweis berührt sind zusätzlich 1.3 (K5), 3.5, 3.12 sowie 8 (O-8, neu O-10) und 9. — 2026-08-30, **zweite Fortschreibung desselben Tages** nach einer abschliessenden adversarischen Prüfung: Die Kette schreibt keine Sperrdatei mehr (`uv sync --locked` und `uv run --locked` statt `--frozen`), die Unverändertheit des Arbeitsbaums wird als Rahmenprüfung **D19** tatsächlich beobachtet statt nur behauptet, die Objektbestimmung aller Kettenschritte steht neu einmal und einheitlich in einer eigenen Tabelle (löst den Widerspruch bei D18 und die fehlende Bedingung bei D10 auf), und die Prüffläche des Arbeitsbaumlaufs aus D11 ist festgelegt. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.2; berührt sind zusätzlich 1.3 (K5), 3.11 und 8 (O-10 neu gefasst) sowie 9. — 2026-08-30, **dritte Fortschreibung desselben Tages** nach vier vom DevOps Engineer gemeldeten Abweichungen zwischen diesem ADR und dem Makefile: Jeder `uv`-Aufruf der Kette trägt `--project backend`, ohne das `--locked` wirkungslos bleibt (belegter Lauf); D7 erkennt seinen Gegenstand am Backlog statt am Dateinamen und hat keine Lage B mehr; `git` ist bei D11 Prüfmittel des Historienlaufs, sein Fehlen ist Lage C; der Abgleich der Wurzelpakete für D18 ist als O-11 terminiert. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.3; berührt sind zusätzlich 8 (O-11 neu) und 9. — 2026-08-30, **vierte Fortschreibung desselben Tages**: D19 misst den Inhalt des Arbeitsbaums (Prüfsummen aller versionierten Dateien und die Maskierungsmerkmale des Index) statt nur der Statusliste; eine Änderung an einer bereits geänderten Datei blieb sonst unsichtbar. Belege in Abschnitt 6.4. — 2026-08-31, **fünfte Fortschreibung**: Die Reichweite der Kette ist entschieden statt offengelassen — sie schützt gegen Bequemlichkeit und Abkürzung, nicht gegen einen Aufrufer, der die Umgebung beherrscht; die harte Zusicherung liegt in einem Lauf auf der Gegenseite, neu als O-12 terminiert. Belege in Abschnitt 6.5. — 2026-08-31, **sechste Fortschreibung desselben Tages** nach einer eng gefassten Nachprüfung auf einem anderen Modell, die beide Änderungen der fünften Fortschreibung blockierend beanstandet hat: Die Positivliste um `$(UV)` gibt `UV_CACHE_DIR`, `XDG_CACHE_HOME` und `TMPDIR` nicht mehr frei (ein präparierter Zwischenspeicher erzeugte damit ein falsches `A_OK`, weil `--locked` ein bereits entpacktes Archiv nicht erneut prüft), und die Projektbestimmung fällt nicht mehr auf das Arbeitsverzeichnis zurück (die Kette prüfte sonst still ein fremdes Repository). Belege in Abschnitt 6.6; berührt ist zusätzlich 8 (O-13 neu). — 2026-08-31, **siebte Fortschreibung desselben Tages**: O-13 ist vom Auftraggeber entschieden — die Kette benutzt den Zwischenspeicher von `uv` nicht, `$(UV)` setzt `UV_NO_CACHE=1`. Damit ist der letzte Weg zu einem falschen `A_OK` über den Zwischenspeicher geschlossen statt nur abgegrenzt. Belege in Abschnitt 6.7; berührt ist zusätzlich 8 (O-13 entschieden) |
+| **Fortschreibung** | 2026-08-21 — O-4 entfallen: TheHive und Cortex mit der Neufassung von Projektauftrag 5.17 gestrichen; Abschnitte 8 und 9 nachgeführt. Der Optionenvergleich der Sprachwahl in Abschnitt 3.1 bleibt als damalige Entscheidungsgrundlage unverändert. — 2026-08-30 — Abschnitt 6 in drei Punkten fortgeschrieben: D11 prüft zwei Gegenstände (Arbeitsbaum und Git-Historie) statt nur der Historie; neuer Kettenschritt D18 für die Architekturverträge des Importprüfers, den Abschnitt 3.5 seit dem 2026-08-20 verlangt, ohne dass die Tabelle ihn führte; Kettengrundsatz "ein Prüflauf verändert den Gegenstand nicht, über den er urteilt" samt Folge für D12. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.1; als Verweis berührt sind zusätzlich 1.3 (K5), 3.5, 3.12 sowie 8 (O-8, neu O-10) und 9. — 2026-08-30, **zweite Fortschreibung desselben Tages** nach einer abschliessenden adversarischen Prüfung: Die Kette schreibt keine Sperrdatei mehr (`uv sync --locked` und `uv run --locked` statt `--frozen`), die Unverändertheit des Arbeitsbaums wird als Rahmenprüfung **D19** tatsächlich beobachtet statt nur behauptet, die Objektbestimmung aller Kettenschritte steht neu einmal und einheitlich in einer eigenen Tabelle (löst den Widerspruch bei D18 und die fehlende Bedingung bei D10 auf), und die Prüffläche des Arbeitsbaumlaufs aus D11 ist festgelegt. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.2; berührt sind zusätzlich 1.3 (K5), 3.11 und 8 (O-10 neu gefasst) sowie 9. — 2026-08-30, **dritte Fortschreibung desselben Tages** nach vier vom DevOps Engineer gemeldeten Abweichungen zwischen diesem ADR und dem Makefile: Jeder `uv`-Aufruf der Kette trägt `--project backend`, ohne das `--locked` wirkungslos bleibt (belegter Lauf); D7 erkennt seinen Gegenstand am Backlog statt am Dateinamen und hat keine Lage B mehr; `git` ist bei D11 Prüfmittel des Historienlaufs, sein Fehlen ist Lage C; der Abgleich der Wurzelpakete für D18 ist als O-11 terminiert. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.3; berührt sind zusätzlich 8 (O-11 neu) und 9. — 2026-08-30, **vierte Fortschreibung desselben Tages**: D19 misst den Inhalt des Arbeitsbaums (Prüfsummen aller versionierten Dateien und die Maskierungsmerkmale des Index) statt nur der Statusliste; eine Änderung an einer bereits geänderten Datei blieb sonst unsichtbar. Belege in Abschnitt 6.4. — 2026-08-31, **fünfte Fortschreibung**: Die Reichweite der Kette ist entschieden statt offengelassen — sie schützt gegen Bequemlichkeit und Abkürzung, nicht gegen einen Aufrufer, der die Umgebung beherrscht; die harte Zusicherung liegt in einem Lauf auf der Gegenseite, neu als O-12 terminiert. Belege in Abschnitt 6.5. — 2026-08-31, **sechste Fortschreibung desselben Tages** nach einer eng gefassten Nachprüfung auf einem anderen Modell, die beide Änderungen der fünften Fortschreibung blockierend beanstandet hat: Die Positivliste um `$(UV)` gibt `UV_CACHE_DIR`, `XDG_CACHE_HOME` und `TMPDIR` nicht mehr frei (ein präparierter Zwischenspeicher erzeugte damit ein falsches `A_OK`, weil `--locked` ein bereits entpacktes Archiv nicht erneut prüft), und die Projektbestimmung fällt nicht mehr auf das Arbeitsverzeichnis zurück (die Kette prüfte sonst still ein fremdes Repository). Belege in Abschnitt 6.6; berührt ist zusätzlich 8 (O-13 neu). — 2026-08-31, **siebte Fortschreibung desselben Tages**: O-13 ist vom Auftraggeber entschieden — die Kette benutzt den Zwischenspeicher von `uv` nicht, `$(UV)` setzt `UV_NO_CACHE=1`. Damit ist der letzte Weg zu einem falschen `A_OK` über den Zwischenspeicher geschlossen statt nur abgegrenzt. Belege in Abschnitt 6.7; berührt ist zusätzlich 8 (O-13 entschieden). — 2026-09-01, **achte Fortschreibung** auf Entscheid des Auftraggebers: Der Belegprüfer `scripts/belege-pruefen.sh` wird als Kettenschritt **D20** aufgenommen und läuft **als erster Schritt, vor D1** — nicht am Ende, weil die Kette heute bei D7 abbricht und ein Schritt hinter D7 bis auf Weiteres nie liefe. D20 hat **keine Lage B**. Weil das Werkzeug seine eigene Unvollständigkeit einräumt, hält diese Fortschreibung fest, was ein grüner Lauf aussagt und was nicht, und verallgemeinert die Aussage auf die ganze Kette. Belege in Abschnitt 6.8; berührt sind zusätzlich 1.3 (K5), 8 (O-14 und O-15 neu) und 9 |
 | **Datum** | 2026-08-20 |
 | **Kennung** | R3-C-001 |
 | **Grundlage** | Projektauftrag 3.1, 3.4, 5.1 bis 5.18, 9.1; `docs/05_Product_Backlog.md` (Etappen 0 und 1); `docs/06_Definition_of_Ready_und_Done.md`; `docs/04_Kontextmodell.md`; `docs/adr/0001-rollenmodell.md` |
@@ -58,7 +58,7 @@ Jeder Entscheid in Abschnitt 3 wird gegen dieselben acht Kriterien geprüft. Sie
 | K2 | Erlaubt, die Verfahrensgarantien **strukturell** zu verankern statt als Prüfung im Aufrufer | 5.4 |
 | K3 | Vollständig offline betreibbar, ohne Rückkanal, ohne Aktualisierungsabfrage | 5.17, R3-C-004, R3-F-021 |
 | K4 | Reproduzierbar: feste Programmstände, gleiche Eingabe gleiche Ausgabe, ein Jahr später wiederholbar | 5.4, R3-Q-002 |
-| K5 | Maschinell prüfbar über eine Befehlskette mit Rückgabewert 0 | 3.4, DoD-Befehlskette nach Abschnitt 6 (bis zur Fortschreibung vom 2026-08-30 hier als "D1 bis D12" bezeichnet; die Kette umfasst seither zusätzlich D18, seit der zweiten Fortschreibung desselben Tages zusätzlich die Rahmenprüfung D19) |
+| K5 | Maschinell prüfbar über eine Befehlskette mit Rückgabewert 0 | 3.4, DoD-Befehlskette nach Abschnitt 6 (bis zur Fortschreibung vom 2026-08-30 hier als "D1 bis D12" bezeichnet; die Kette umfasst seither zusätzlich D18, seit der zweiten Fortschreibung desselben Tages zusätzlich die Rahmenprüfung D19; seit der achten Fortschreibung vom 2026-08-31 zusätzlich D20, den ersten Schritt der Kette) |
 | K6 | Nachweisbar: Herkunft, Versionen und Modulstand sind bei jedem Export benennbar | 5.10, 6.6 |
 | K7 | Betreibbar von einer kleinen Dienststelle: Setup vom Klonen bis zum Start, Fehlermeldung statt Stacktrace | 5.5, R3-F-019 |
 | K8 | Übersteht einen Modell-, Anbieter- und Mandantenwechsel als Konfigurationsänderung | 5.7, 5.15 |
@@ -513,6 +513,7 @@ Dies löst den offenen Punkt 3 der Definition of Ready und Done. **Vorschlag des
 | D11 | Geheimnisse | `make geheimnisse` → **zwei Läufe, beide zwingend, jeder mit eigenem Rückgabewert.** (1) Arbeitsbaum: `gitleaks detect --no-git --redact --exit-code 1 --source .` (2) Git-Historie: `gitleaks detect --redact --exit-code 1`. Der Schritt endet ungleich 0, sobald einer der beiden Läufe ungleich 0 endet; kein Lauf schneidet den anderen ab, beide Befunde erscheinen | **Fortschreibung 2026-08-30**, frühere Fassung und Beleg in 6.1. `gitleaks detect` ohne `--no-git` durchsucht ausschliesslich die Git-Historie. Der Gegenstand, über den die Kette zur Laufzeit des Hooks aus R3-Q-001 urteilt, ist der Arbeitsbaum vor dem Commit — genau den sah die frühere Fassung nicht. **Zweite Fortschreibung 2026-08-30:** Die Prüffläche des Arbeitsbaumlaufs ist in 6.2.3 festgelegt — `.gitignore` wirkt auf `--no-git` nicht; deshalb liegen Zugangsdaten nicht im Arbeitsbaum, und ausgeschlossen werden ausschliesslich namentlich genannte Abhängigkeits- und Bauverzeichnisse. O-10 ist in seinem ersten Teil beantwortet und in Abschnitt 8 neu gefasst |
 | D12 | Nachweise | `make nachweise` → `bash scripts/nachweise-erzeugen.sh` · `bash scripts/nachweise-vollstaendig.sh` | **Befund:** Ein Abgleich über `git diff --exit-code docs/NACHWEISE.md` kann nicht funktionieren. Die erzeugte Datei trägt den Stand des Repositories (`git rev-parse HEAD`); der ändert sich mit dem Commit, der die Datei enthält, weshalb der nächste Lauf immer eine Abweichung erzeugt. D12 prüft deshalb den Rückgabewert des Erzeugers — er endet mit 1, wenn ein Artefakt fehlt oder nicht committet ist — und zusätzlich, dass kein nachweispflichtiges Artefakt in der Liste fehlt. Zu klären mit Protocol Master und DevOps. **Fortschreibung 2026-08-30:** Der Schritt ruft den Erzeuger ausschliesslich in einer Betriebsart auf, die **nicht** in den Arbeitsbaum schreibt — er prüft und meldet, er erzeugt nicht. Grund ist der Kettengrundsatz unterhalb dieser Tabelle; das Erzeugen von `docs/NACHWEISE.md` bleibt Sache der Automatik (6.6, `.claude/rules/dokumentation.md`). Welche Form diese Betriebsart erhält — eigener Schalter am Erzeuger oder Lauf gegen ein temporäres Ziel mit Vergleich —, bleibt bei O-8 |
 | D18 | Architekturverträge | `make architekturvertraege` → `uv run --locked --project backend lint-imports --config backend/importvertraege.toml`. Läuft in der Reihenfolge **nach D4 und vor D5** | **Fortschreibung 2026-08-30**, Begründung in 6.1. Abschnitt 3.5 verlangt diesen Schritt seit dem 2026-08-20 ausdrücklich, die Tabelle führte ihn nicht; Abschnitt 3.12 führt den Importprüfer als eigene Prüfstufe. Er belegt die Verträge aus 4.3 und damit R3-F-014 und R3-F-018. Die Nummer ist die nächste freie im gemeinsamen D-Namensraum — D13 bis D17 sind in `docs/06_Definition_of_Ready_und_Done.md`, Teil 2, an die menschlich bestätigten Bedingungen vergeben. **Zweite Fortschreibung 2026-08-30:** Hier stand die Objektbedingung "Existiert `backend/src/r3cosint/` ohne `backend/importvertraege.toml`, endet der Schritt ungleich 0: dann fehlt das Prüfmittel bei vorhandenem Gegenstand" — und im Absatz "Umgang mit noch nicht vorhandenen Teilbäumen" stand sie ein zweites Mal und anders. Sie steht jetzt einmal, in der Objekttabelle unterhalb dieser Tabelle; Beleg der entstandenen Lücke und Begründung in 6.2.2 |
+| D20 | Belege | `make belege` → `bash scripts/belege-pruefen.sh`. Läuft in der Reihenfolge **als erster Schritt, vor D1** | **Achte Fortschreibung 2026-08-31**, Entscheid und Begründung in 6.8. Der Schritt prüft über die versionierten Markdown-Dateien der Wurzel, unter `docs/` und unter `.claude/`, ob Zeilenverweise, Commit-Prüfsummen, Anforderungskennungen, Pfadverweise und Abschnittsangaben des Projektauftrags auf etwas Vorhandenes zeigen, und ob ein Verweis die nach 6.6 unzulässige Zweigform statt der Commit-Prüfsumme verwendet. Er prüft **nicht**, ob der Inhalt am Fundort die Behauptung trägt (6.8.4). Er hat **keine Lage B** (6.8.3). `scripts/belege-ausnahmen.txt` ist Teil des Prüfmittels und trägt ausschliesslich ortsgebundene Schlüssel mit geschriebenem Grund (6.8.5). Das Werkzeug ist nach Eskalationsregel 3.4 abgebrochen und **nicht abgenommen**; die Abnahme ist als O-15 terminiert, die Aufnahme in die Kette hängt nicht an ihr (6.8.4) |
 
 **Ein Prüflauf verändert den Gegenstand nicht, über den er urteilt.** *(Kettengrundsatz, aufgenommen mit der Fortschreibung vom 2026-08-30.)* Kein Kettenschritt ändert eine versionierte Datei des Arbeitsbaums — weder erzeugend noch formatierend noch nebenbei ein Verzeichnis neu schreibend. Erzeugnisse eines Bauschritts (D1) liegen ausschliesslich in Pfaden, die die Versionsverwaltung ignoriert. Drei Gründe, jeder für sich tragend:
 
@@ -568,6 +569,7 @@ Dazu vier Regeln:
 | D12 | Die nachweispflichtigen Artefakte nach 6.6 | `docs/` vorhanden — Bestandteil des Repositories, der Schritt läuft immer | tritt nicht ein | `scripts/nachweise-erzeugen.sh`, `scripts/nachweise-vollstaendig.sh` |
 | D18 | **Python-Produktionscode unterhalb `backend/src/`, unabhängig davon, wie das Paket heisst** | mindestens eine `*.py`-Datei unterhalb `backend/src/` | keine `*.py`-Datei unterhalb `backend/src/` | `backend/importvertraege.toml`; `lint-imports` |
 | D19 | Der Bestand der versionierten Dateien über die Dauer eines Laufs von `make dod` | `.git/` vorhanden | kein `.git/` | `git` |
+| D20 | **Die Herkunfts- und Fundortangaben in den versionierten Markdown-Dateien des Repositories** — Wurzel, `docs/` und `.claude/` | Mindestens eine versionierte Markdown-Datei dieser Prüffläche, festgestellt über die Versionsverwaltung und nicht über einen Verzeichnisnamen | **keine** — der Bestand kann nicht leer sein, und ein leerer Bestand wäre ein Befund und kein leerer Gegenstand *(achte Fortschreibung 2026-08-31, 6.8.3)* | `scripts/belege-pruefen.sh` und `scripts/belege-ausnahmen.txt`; `bash`, `git`, `grep`, `sed`, `awk`; dazu die beiden Bezugsdokumente `docs/05_Product_Backlog.md` und `docs/00_Projektauftrag.md`, aus denen der Prüfer seine Referenzmengen bildet. Fehlt eines davon, ist das Lage C — nicht ein bestandener Schritt (6.8.3) |
 
 Zwei Anmerkungen zu dieser Tabelle:
 
@@ -576,7 +578,7 @@ Zwei Anmerkungen zu dieser Tabelle:
 
 **Zwei Ebenen der Namensbindung.** Die Backend-Befehle stehen unmittelbar im Makefile, die Oberflächenbefehle laufen über Skripte in `frontend/package.json`. Damit steht jeder Werkzeugname genau einmal und an der Stelle, an der er hingehört; die Kette selbst bleibt unverändert, wenn ein Werkzeug ausgetauscht wird.
 
-**Ein Einstieg für den Hook.** `make dod` ruft **alle Kettenschritte dieser Tabelle** in der festgelegten Reihenfolge auf — D1 bis D4, dann D18, dann D5 bis D12 — und endet bei der ersten Abweichung ungleich 0. *(Bis zur Fortschreibung vom 2026-08-30 lautete dieser Satz: "ruft D1 bis D12 der Reihe nach auf". Die Aufzählung war dort zugleich die Reihenfolge; mit D18 gilt das nicht mehr.)* Der Hook aus R3-Q-001 ruft **diesen einen Befehl** auf. Damit hängt R3-Q-001 nur noch am Vorhandensein des Makefiles und nicht mehr an einzelnen Werkzeugnamen; ändert sich ein Werkzeug, ändert sich das Makefile, nicht der Hook. Für den Hook gelten unverändert: nur Rückgabewert 2 blockiert, Reentranz-Schutz über `stop_hook_active`, Eskalation nach dreimaligem Scheitern am gleichen Kriterium (3.4). *(Zweite Fortschreibung 2026-08-30: Die Rahmenprüfung D19 gehört zu `make dod`, steht aber nicht in der Zielliste. Sie nimmt vor dem ersten Schritt auf, vergleicht nach dem letzten ausgeführten Schritt und läuft auch dann, wenn die Kette vorher abgebrochen ist.)*
+**Ein Einstieg für den Hook.** `make dod` ruft **alle Kettenschritte dieser Tabelle** in der festgelegten Reihenfolge auf — D1 bis D4, dann D18, dann D5 bis D12 — und endet bei der ersten Abweichung ungleich 0. *(Achte Fortschreibung 2026-08-31: Die Reihenfolge beginnt neu mit **D20**, also D20, D1 bis D4, D18, D5 bis D12. Begründung in 6.8.2.)* *(Bis zur Fortschreibung vom 2026-08-30 lautete dieser Satz: "ruft D1 bis D12 der Reihe nach auf". Die Aufzählung war dort zugleich die Reihenfolge; mit D18 gilt das nicht mehr.)* Der Hook aus R3-Q-001 ruft **diesen einen Befehl** auf. Damit hängt R3-Q-001 nur noch am Vorhandensein des Makefiles und nicht mehr an einzelnen Werkzeugnamen; ändert sich ein Werkzeug, ändert sich das Makefile, nicht der Hook. Für den Hook gelten unverändert: nur Rückgabewert 2 blockiert, Reentranz-Schutz über `stop_hook_active`, Eskalation nach dreimaligem Scheitern am gleichen Kriterium (3.4). *(Zweite Fortschreibung 2026-08-30: Die Rahmenprüfung D19 gehört zu `make dod`, steht aber nicht in der Zielliste. Sie nimmt vor dem ersten Schritt auf, vergleicht nach dem letzten ausgeführten Schritt und läuft auch dann, wenn die Kette vorher abgebrochen ist.)*
 
 **Umgang mit noch nicht vorhandenen Teilbäumen.** *(Überholt durch die Objekttabelle oben, zweite Fortschreibung vom 2026-08-30. Der Absatz bleibt als frühere Fassung stehen. Seine Aussage zu `frontend/package.json` ist in die Tabelle übernommen; seine Aussage zu D18 ist durch sie ersetzt, weil sie der D18-Zeile derselben Tabelle widersprach — Beleg in 6.2.2. Der Satz zur auskommentierten Prüfung gilt unverändert und für alle Schritte.)* Solange `frontend/package.json` fehlt, entfallen die Oberflächenschritte und der Kettenschritt endet mit 0 und einer Meldung. Sobald die Datei existiert, laufen sie zwingend. Das ist als Bedingung im Makefile zu prüfen und nicht als auskommentierte Zeile abzubilden — eine auskommentierte Prüfung bleibt still liegen, nachdem sie gebraucht würde. Dasselbe gilt für D18 gegenüber dem Backend-Teilbaum, mit der Verschärfung aus der Tabelle: Fehlt `backend/` ganz, entfällt der Schritt mit Meldung; existiert `backend/src/r3cosint/` ohne `backend/importvertraege.toml`, endet er ungleich 0.
 
@@ -1066,6 +1068,375 @@ lässt, wird geschlossen; abgegrenzt wird nur, was sich im Makefile nicht
 schliessen lässt. Fall 1 (`BASH_ENV`) und Fall 2 (gefälschtes `uv` im `PATH`)
 bleiben genau das, und für sie bleibt O-12 die Antwort.
 
+### 6.8 Achte Fortschreibung vom 2026-09-01 — der Belegprüfer wird Kettenschritt D20 und läuft als erster
+
+**Anlass.** Der Auftraggeber hat am 2026-09-01 entschieden, den Belegprüfer in
+die Definition-of-Done-Kette einzubinden. Ein zusätzlicher Kettenschritt ist
+nach diesem Abschnitt eine Fortschreibung und keine stillschweigende Ergänzung;
+die Übergabe des Werkzeugs hat die Entscheidung ausdrücklich dem Auftraggeber
+vorgelegt statt sie vorwegzunehmen
+(`docs/uebergaben/2026-09-01_belegpruefer-abbruch-nach-3-4.md`). Zu entscheiden
+sind vier Dinge: die Kennung, die Stelle in der Kette, die Lage-Bedingung und
+der Umgang damit, dass das Werkzeug nach Eskalationsregel 3.4 abgebrochen und
+**nicht abgenommen** ist.
+
+**Beleglage dieser Fortschreibung — was worauf beruht.** Diese Rolle hat den
+Quelltext von `scripts/belege-pruefen.sh` und den Inhalt von
+`scripts/belege-ausnahmen.txt` vollständig gelesen; sie hat das Skript **nicht
+selbst ausgeführt**. Jede Aussage unten über die *Struktur* des Werkzeugs —
+Prüffläche, Rückgabewerte, Zählweise, Ausnahmeformen, Regel für noch nicht
+gebaute Bäume, Schlussausgabe — stammt aus dem gelesenen Quelltext und ist dort
+nachprüfbar. Jede Aussage über einen *ausgeführten Lauf* — neun eingebaute
+Fehlerklassen in drei Runden gefangen, null Funde über den heutigen Bestand bei
+30 Ausnahmen, der Lauf verändert nichts, das Umschlagen von null auf 46 Funde
+beim Entstehen eines Teilbaums — ist als Fremdbeleg aus der genannten Übergabe
+übernommen und hier als solcher gekennzeichnet, nicht als eigene Beobachtung.
+Diese Trennung steht hier, weil genau ihre Verletzung — *eine Aussage über die
+Herkunft ist stärker, als die Quelle sie trägt* — die Fehlerklasse ist, an der
+die vorangegangene Arbeitseinheit dreimal gescheitert ist und gegen die das
+Werkzeug gebaut wurde.
+
+#### 6.8.1 Die Kennung — D20
+
+| | |
+|---|---|
+| **Vorher galt** | Der gemeinsame D-Namensraum führte D1 bis D12 (Kette), D13 bis D17 (menschlich bestätigte Bedingungen), D18 (Architekturverträge) und D19 (Rahmenprüfung) |
+| **Jetzt gilt** | Der neue Kettenschritt heisst **D20** |
+
+**Weshalb D20 und keine kleinere Nummer.** Die Nummernregel aus 6.1.2 gilt
+unverändert: Nummern sind Kennungen, keine Reihenfolge; es wird nie
+umnummeriert und nie wiederverwendet, weil die Nummern in Dokumenten stehen,
+die einen vergangenen Stand belegen und deshalb nicht geändert werden dürfen.
+D13 bis D17 sind in `docs/06_Definition_of_Ready_und_Done.md`, Teil 2, an die
+menschlich bestätigten Bedingungen vergeben, D18 und D19 sind in diesem ADR
+vergeben. Die nächste freie Nummer ist damit D20.
+
+**Ein Punkt, der ohne ausdrückliche Entscheidung zu einer zweiten Vergabe
+derselben Nummer geführt hätte.** `docs/06_Definition_of_Ready_und_Done.md`
+führt D19 heute **noch nicht** — die Nachführung steht in Abschnitt 9 offen.
+Wer die Freiheit einer Nummer an dieser Datei ablesen wollte, hielte D19 für
+frei und vergäbe sie ein zweites Mal. Deshalb gilt hier ausdrücklich: **Eine
+D-Nummer ist vergeben, sobald ein ADR sie vergibt**, nicht erst, wenn die
+Nachführung sie erreicht hat. Der gemeinsame Namensraum wird aus der Vereinigung
+beider Dokumente gelesen, und bei Abweichung gilt der frühere Vergabezeitpunkt.
+
+#### 6.8.2 Die Stelle in der Kette — als erster Schritt, vor D1
+
+| | |
+|---|---|
+| **Vorher galt** | `make dod` rief D1 bis D4, dann D18, dann D5 bis D12 auf |
+| **Jetzt gilt** | `make dod` ruft **D20**, dann D1 bis D4, dann D18, dann D5 bis D12 auf. D20 ist der erste Schritt der Kette |
+
+Das ist die eigentliche Entscheidung dieser Fortschreibung, und beide
+Richtungen hatten ein Argument. Für das Ende sprach: Der Gegenstand von D20 ist
+die Dokumentation, nicht die Software; die Kette ist bisher von der billigsten
+strukturellen Prüfung zur teuersten geordnet, und ein Dokumentationsbefund darf
+nicht wie ein Baufehler wirken. Für den Anfang sprachen vier Punkte, und sie
+wiegen zusammen schwerer.
+
+1. **Ein Schritt hinter D7 liefe bis auf Weiteres nie.** Die Kette bricht beim
+   ersten Schritt ab, der ungleich 0 endet, und heute ist das D7: Der Backlog
+   besteht und führt Abnahmekriterien, `scripts/abnahme-abgleich.sh` fehlt und
+   entsteht erst mit dem Grundgerüst — nach der Objekttabelle oben ist das
+   Lage C, und Lage C endet ungleich 0. Ein Kettenschritt, der nie läuft, ist
+   dasselbe wie die auskommentierte Prüfung, die dieser Abschnitt bereits
+   zweimal verworfen hat: *Er bleibt still liegen, nachdem er gebraucht würde.*
+   Ein ADR-Eintrag, der ein Jahr lang keine Wirkung hat, ist keine Entscheidung,
+   sondern eine Absichtserklärung.
+2. **Sein Gegenstand ist der einzige, an dem heute tatsächlich gearbeitet
+   wird.** Es besteht kein `backend/`, kein `frontend/`, kein `deploy/`; die
+   Bau-, Prüf- und Testschritte finden dafür nach der Objekttabelle oben keinen
+   Gegenstand. Was das Repository heute trägt, sind Texte:
+   Projektauftrag, Backlog, Definition of Done, Regeln, Rollen, ADR,
+   Übergaben. Eine Definition-of-Done-Kette, die über die einzige heute
+   vorhandene Artefaktklasse **nichts** aussagt, ist für den heutigen Stand
+   keine Kette.
+3. **Er ist der billigste Schritt der Kette und hängt von keinem anderen
+   ab.** Er braucht kein `uv`, kein `node`, kein `docker`, keinen
+   Netzzugang und keinen Bau; nach dem Kopfkommentar des Skripts benutzt er
+   `bash`, `git`, `grep`, `sed` und `awk` und kein Python. Damit gilt für ihn
+   dieselbe Überlegung wie in 6.1.2 für die Stellung von D18: Ein Verstoss, der
+   billig und früh feststellbar ist, soll vor den teuren Schritten fallen und
+   nicht nach ihnen.
+4. **Am Ende würde er in dem Augenblick scharf, in dem er am meisten
+   Schaden anrichtet.** Das Skript behandelt Pfadverweise unter `backend/`,
+   `frontend/`, `deploy/` und `prototype/` **nicht** als Fund, solange das
+   oberste Verzeichnis fehlt (Regel b im Kopfkommentar, im Quelltext an der
+   Prüfung der Pfadverweise umgesetzt); es schaltet sich von selbst scharf,
+   sobald das Verzeichnis entsteht. D7 verlässt seine Lage C erst, wenn
+   `scripts/abnahme-abgleich.sh` existiert — und dieses Skript entsteht nach
+   der begründeten Ausnahme in `scripts/belege-ausnahmen.txt` mit **demselben**
+   Grundgerüst wie `backend/`. Ein am Ende eingehängter D20 liefe also zum
+   ersten Mal genau in dem Lauf, in dem sich zugleich seine schärfste Regel
+   scharf schaltet. Die Übergabe nennt dafür einen ausgeführten Beleg: aus
+   null Funden werden in diesem Augenblick 46. Das ist der stille
+   Zustandswechsel, den 6.2.2 bei D18 und D10 bereits als Muster verworfen hat
+   — *ein Zustandswechsel, den niemand beobachtet*. Vorn eingehängt, läuft der
+   Schritt ab heute, wächst mit dem Bestand mit, und der Sprung findet nicht
+   statt.
+
+**Der Preis, benannt und angenommen.** Ein Fund in einem Dokument blockiert ab
+sofort auch eine Arbeitseinheit, die mit Dokumentation nichts zu tun hat. Das
+ist gewollt und nicht bloss hingenommen: Nach 5.3 ist das Ergebnis dieser Kette
+ein Nachweis, und ein Nachweis, dessen Verweise ins Leere zeigen, ist als
+Nachweis untauglich. Die Rückkopplung bleibt kurz, weil D20 der schnellste
+Schritt ist, und jeder Fund ist ortsgebunden: Er ist entweder ein echter Fehler
+oder er wird zur Ausnahme mit geschriebenem Grund (6.8.5). Scheitert dieselbe
+Prüfung dreimal am gleichen Kriterium, gilt unverändert die Eskalation aus 3.4.
+
+**Nicht entschieden wird hier**, ob D20 später an eine andere Stelle wandert.
+Sollte die Kette einmal durchgehend grün laufen, ist die Stellung neu zu
+bewerten — als Fortschreibung, nicht nebenbei. Die Kennung bleibt davon
+unberührt; die Reihenfolge steht in der Zielliste von `make dod`, nicht in der
+Zahl (6.1.2).
+
+#### 6.8.3 Die Lage-Bedingung — und weshalb es für D20 keine Lage B geben kann
+
+Die Objektbestimmung folgt der Regel aus 6.2.2: Der Gegenstand wird als Sache
+benannt, das Erkennungsmerkmal als Beobachtung, die Bedingung steht einmal, und
+zwar in der Objekttabelle in Abschnitt 6.
+
+| Lage | Für D20 |
+|---|---|
+| **A** | Es besteht ein Git-Arbeitsbaum mit mindestens einer versionierten Markdown-Datei in der Prüffläche, und alle Prüfmittel sind vorhanden. Der Schritt urteilt: 0 oder ungleich 0 |
+| **B** | **Gibt es nicht.** Siehe unten |
+| **C** | Der Bestand besteht, aber ein Prüfmittel fehlt: kein `git` oder kein Git-Arbeitsbaum, `scripts/belege-pruefen.sh` oder `scripts/belege-ausnahmen.txt` fehlt oder ist nicht lesbar, oder eines der beiden Bezugsdokumente `docs/05_Product_Backlog.md` und `docs/00_Projektauftrag.md` fehlt. Rückgabewert ungleich 0 |
+
+**Weshalb es keine Lage B geben kann — zwei voneinander unabhängige Gründe.**
+
+1. **Der Bestand kann nicht leer sein.** Die Prüffläche umfasst die
+   versionierten Markdown-Dateien der Wurzel, unter `docs/` und unter
+   `.claude/`. `CLAUDE.md` und `docs/00_Projektauftrag.md` liegen darin und
+   sind nach CLAUDE.md die verbindliche Grundlage des Projekts; ein Repository
+   ohne sie ist nicht dieses Repository. Das ist dieselbe Begründung, mit der
+   die dritte Fortschreibung vom 2026-08-30 (6.3.2) für D7 die Lage B
+   gestrichen hat: Ein Gegenstand, der seit einer
+   Freigabe dauerhaft besteht, wird nicht sinnvoll als "nicht vorhanden"
+   behandelt — sein Fehlen ist ein Befund.
+2. **Das Werkzeug könnte "leer" und "sauber" gar nicht unterscheiden.** Nach
+   dem gelesenen Quelltext zählt das Skript Funde und endet bei null Funden mit
+   Rückgabewert 0. Ein leerer Bestand ergibt ebenfalls null Funde. Die
+   Unterscheidung zwischen *nichts gefunden* und *nichts geprüft* kann das
+   Skript also nicht treffen — sie gehört deshalb in die Lage-Bestimmung des
+   Kettenschritts und nicht in das Skript. Eine Lage B einzurichten hiesse,
+   einen grünen Schritt zu erlauben, der über nichts geurteilt hat; das ist
+   genau der Ausgang, den Regel 4 aus 6.2.2 untersagt.
+
+**Weshalb ein fehlender Git-Arbeitsbaum Lage C ergibt und nicht Lage B.** Bei
+D11 und D19 ist der Gegenstand selbst das Repository; ohne Repository gibt es
+dort nichts zu beurteilen, also Lage B. Bei D20 ist der Gegenstand die
+**Dokumentation**; sie besteht als Dateien unabhängig davon, ob eine
+Versionsverwaltung läuft. `git` ist hier nur das Mittel, mit dem der Bestand
+abgegrenzt wird. Fehlt es, besteht der Gegenstand fort und die Prüfung fällt
+aus — das ist die Definition von Lage C. Der gelesene Quelltext verhält sich
+bereits so: Findet das Skript am Arbeitsverzeichnis kein Git-Repository, endet
+es mit einer Meldung und Rückgabewert 2 statt mit 0.
+
+**Die beiden Bezugsdokumente sind Prüfmittel, nicht Beiwerk.** Das Skript
+bildet seine Referenzmengen aus den Überschriften von
+`docs/05_Product_Backlog.md` (gültige Anforderungskennungen) und
+`docs/00_Projektauftrag.md` (gültige Abschnittsnummern). Fehlt eines davon,
+bleibt die zugehörige Referenzmenge leer, und **jede** geprüfte Kennung
+beziehungsweise Abschnittsangabe im ganzen Bestand wird zum Fund. Der Schritt
+wäre dann zwar rot, aber mit einer falschen Begründung — hunderte Scheinfunde
+statt der einen richtigen Aussage "das Prüfmittel fehlt". Deshalb stehen beide
+Dateien in der Prüfmittelspalte: Lage C sagt, was los ist.
+
+**Der zweite Arbeitsbaum ist kein Prüfmittel im Sinne von Lage C.** Das Skript
+liest das Methodik-Repository an einem fest verdrahteten Ort ausserhalb dieses
+Repositories mit, für Commit-Prüfsummen und für Pfade unter `methodik/`,
+`nachweise/` und `sprints/`. Fehlt dieser Arbeitsbaum, zählt es die betroffenen
+Zeilen nach dem gelesenen Quelltext als **nicht prüfbar**; diese Zählung geht
+nicht in den Rückgabewert ein. Entschieden wird: Das ergibt **keine** Lage C —
+der Schritt urteilt weiterhin über seinen eigenen Bestand, und ein Mitlesen,
+das nur an einem Arbeitsplatz möglich ist, darf die Kette nicht an diesen
+Arbeitsplatz binden. Aber nach Regel 4 aus 6.2.2 gilt: **Die Zahl der nicht
+prüfbaren Zeilen gehört in die Lage-Meldung des Schrittes.** Ein Lauf, der
+weniger prüfen konnte, muss von einem unterscheidbar sein, der alles geprüft
+hat. Dass der Ort fest verdrahtet und nicht konfigurierbar ist, macht die
+Aussage des Schrittes maschinenabhängig; das ist keine Architekturfrage, aber
+es darf nicht unbemerkt bleiben und ist deshalb als **O-14** terminiert.
+
+#### 6.8.4 Was ein grüner D20 aussagt — und was nicht
+
+Dies ist der architektonisch erhebliche Teil. Das Werkzeug ist nach
+Eskalationsregel 3.4 abgebrochen: Dreimal in Folge hat eine unabhängige Prüfung
+eine reale Grenze gefunden, die in seiner Selbstauskunft fehlte, und jedes Mal
+in der Schicht, welche die vorangegangene Behebung erst erreichbar gemacht
+hatte. Die abgelieferte Fassung behauptet deshalb nicht mehr, die Liste ihrer
+Grenzen sei vollständig; ihre Schlussausgabe sagt das ausdrücklich und schliesst
+nach dem gelesenen Quelltext mit dem Satz, dass Rückgabewert 0 heisse, nichts
+von dem gefunden zu haben, was dort aufgezählt ist — nicht, dass nichts
+vorhanden sei.
+
+**Was ein grüner D20 aussagt.** Kein Verweis der geprüften Klassen — Zeile,
+Commit-Prüfsumme, Anforderungskennung, Pfad, Abschnitt des Projektauftrags,
+Zweigform statt Commit-Prüfsumme — zeigt in der Prüffläche auf etwas, das es
+nicht gibt, soweit die eingebauten Prüfungen reichen; und die Ausnahmeliste ist
+formgerecht, begründet und nicht veraltet.
+
+**Was ein grüner D20 nicht aussagt.** Erstens und vor allem nicht, dass der
+Inhalt am genannten Fundort die Behauptung trägt, die ihm zugeschrieben wird —
+das bleibt Sache des menschlichen Reviews, und das Skript sagt es selbst.
+Zweitens nicht, dass alle Verweisformen erfasst sind: Pfade ausserhalb von
+Rückwärtsakzenten und im Pfadteil von Shell-Befehlen werden nicht erfasst, das
+Muster Inhaber/Repository nimmt auch echte künftige Zwei-Segment-Pfade aus, bei
+der Abschnittsprüfung gilt eine Tabelle ohne Leerzeile als ein Absatz, und zwei
+vorgesehene Prüfungen — Skill-Zuordnung im Rollen-Frontmatter und
+Anforderungskennung im Skill-Frontmatter — sind nicht gebaut. Drittens und
+entscheidend: **nicht, dass diese Aufzählung vollständig ist.**
+
+**Schadet das der Kette oder tut es ihr gut? Es tut ihr gut, aus drei
+Gründen.**
+
+1. **Der Zusatz ist einseitig.** D20 teilt mit keinem anderen Schritt einen
+   Gegenstand und kein Prüfmittel, und er kann nach dem gelesenen Quelltext
+   nichts unterdrücken, was ein anderer Schritt meldet — er schreibt nichts,
+   jede Ausgabe geht auf die Standard- oder die Fehlerausgabe, und die
+   Übergabe belegt zusätzlich mit einem ausgeführten Lauf, dass er in keinem
+   der beiden Arbeitsbäume etwas verändert. Für eine Zusicherung genügt das
+   ohnehin nicht: Die Einhaltung des Kettengrundsatzes ist bei D20 wie bei
+   jedem anderen Schritt **beobachtet**, nämlich durch D19. Ein Schritt, der
+   nur Funde hinzufügen kann, macht die Aussage der Kette nie schwächer, als
+   sie ohne ihn wäre. Ihn wegzulassen wäre nicht die vorsichtigere Wahl, es
+   wäre die schwächere.
+2. **Ein grüner Kettenschritt ist ohnehin nie eine positive Aussage.** `ruff
+   format --check` sagt nicht, dass der Code gut entworfen ist; `pip-audit`
+   sagt nicht, dass keine Schwachstelle besteht, sondern dass keine in der
+   verwendeten Datenbank steht; `gitleaks` sagt nicht, dass kein Geheimnis
+   vorliegt, sondern dass keines seinen Mustern entsprach. **Jeder** Schritt
+   dieser Kette ist eine Negativaussage über den eigenen Suchraum. D20 sagt
+   damit nichts Schwächeres als die übrigen — er ist der einzige, dessen
+   Werkzeug es laut sagt. Daraus folgt kein Ausschluss, sondern ein
+   Kettengrundsatz, der ab hier für alle Schritte gilt:
+
+   > **Rückgabewert 0 eines Kettenschritts heisst: nichts von dem gefunden,
+   > was dieser Schritt sucht. Er heisst nie: nichts vorhanden.** Ein grünes
+   > `make dod` ist der Nachweis, dass die Kette gelaufen ist und nichts
+   > gefunden hat — nicht der Nachweis, dass die Arbeit richtig ist. Die
+   > menschlich bestätigten Bedingungen D13 bis D17 stehen genau deshalb
+   > daneben und werden durch keinen grünen Lauf ersetzt.
+
+   Dieser Grundsatz ändert an keinem Schritt das Verhalten. Er ändert, was die
+   Kette zu behaupten beansprucht — und das ist bei einem Artefakt, dessen
+   Ergebnis nach 5.3 ein Nachweis ist, kein Nebenpunkt.
+3. **Die gefährliche Richtung ist abgedeckt.** Ein Kettenschritt kann falsch
+   grün oder falsch rot sein. Falsch rot ist sichtbar, ortsgebunden behandelbar
+   und unterliegt der Eskalation aus 3.4. Falsch grün ist die gefährliche
+   Richtung — aber ohne D20 ist die Kette in dieser Dimension **immer** falsch
+   grün, weil sie überhaupt nicht hinsieht. Ein Werkzeug, das einen Teil findet
+   und den Rest nicht behauptet, ist jeder Lage überlegen, in der niemand
+   sucht.
+
+**Zwei Bedingungen, unter denen das gilt.**
+
+- **D20 ist blockierend, nicht meldend.** Die naheliegende Milderung — der
+  Schritt warnt, blockiert aber nicht, weil das Werkzeug nicht abgenommen ist —
+  ist in diesem ADR bereits entschieden, und zwar gegen sie: 6.2.3 verwirft die
+  Abstufung mit der Begründung, eine Meldung, die nicht blockiert, werde in
+  einem Stop-Hook nicht gelesen, und eine abgestufte Wirkung sei eine
+  Abschaltung mit besserem Namen (5.4). Für D20 gilt dasselbe. Wer dem Werkzeug
+  nicht genug traut, um es blockieren zu lassen, nimmt es nicht in die Kette
+  auf; ein sichtbar wirkungsloser Schritt ist die schlechteste der drei
+  Möglichkeiten.
+- **D20 belegt nichts, was ein anderer Schritt zu belegen hat.** Er prüft, dass
+  eine Anforderungskennung als Überschrift im Backlog steht. Er sagt damit
+  **nicht**, dass zu dieser Anforderung ein Test existiert — das ist die Aussage
+  von D7 — und nicht, dass das Nachweisverzeichnis stimmt — das ist D12. Die
+  Aussagen werden nicht vermischt, und ein grüner D20 ersetzt keinen der beiden.
+
+**Die fehlende Abnahme wird nicht durch diese Fortschreibung geheilt.** Sie ist
+als **O-15** terminiert: Ein Werkzeug, das eine Nachweiskette blockiert,
+braucht eine Abnahme durch Static und Dynamic Software Tester auf einem anderen
+Modell als die Umsetzung (3.4). Die Aufnahme in die Kette hängt nicht daran —
+ein nicht abgenommenes Werkzeug, das Funde meldet und nichts darüber hinaus
+behauptet, ist besser als kein Werkzeug —, aber der Zustand wird geführt und
+nicht vergessen. Bis zur Abnahme gilt der Satz aus der Übergabe unverändert:
+Was das Skript findet, ist unabhängig belegt; was es über sich selbst sagt, ist
+es nicht.
+
+#### 6.8.5 Die Ausnahmeliste ist Teil des Prüfmittels, nicht seine Umgehung
+
+`scripts/belege-ausnahmen.txt` entscheidet, was ein Fund ist und was nicht. Sie
+ist damit die einzige Stelle, an der sich D20 abschalten liesse, und deshalb
+ein architektonischer Gegenstand.
+
+**Was im ADR steht und was nicht.** Entschieden wird: Die **Regeln** der Liste
+gehören in diesen ADR, die **Einträge** nicht. Die Einträge sind ein Inventar
+des Bestandes; sie ändern sich mit jedem Dokument. Eine Liste, die
+wöchentlich wechselt, in einem ADR zu führen, machte den ADR zum
+Pflegegegenstand und seine Fortschreibungen bedeutungslos — dieselbe
+Überlegung, mit der Abschnitt 2 keine Versionsnummern nennt. Die Liste liegt
+versioniert neben dem Skript und wird dort gelesen.
+
+**Vier Eigenschaften, die dieser ADR festlegt.** Sie sind im gelesenen
+Quelltext bereits umgesetzt; sie stehen hier, weil sie sonst durch eine
+Änderung am Skript stillschweigend wegfallen könnten.
+
+1. **Jeder Schlüssel ist ortsgebunden.** Zulässig sind genau zwei Formen: die
+   Bindung an einen Fundort aus Datei und Zeilennummer und die Bindung an einen
+   Wert innerhalb einer bestimmten Datei. Eine dritte Form gibt es nicht; ein
+   blosser Wert ohne Datei ist selbst ein Befund. Grund: Eine wertgebundene
+   Ausnahme unterdrückt jedes künftige Vorkommen desselben Wortlauts im ganzen
+   Bestand — auch einen echten neuen Fehler. Damit wäre die Fehlerklasse, gegen
+   die das Werkzeug gebaut ist, in das Werkzeug selbst gewandert: eine Ausnahme
+   mit richtigem historischem Grund würde zur Aussage über alle künftigen
+   Vorkommen.
+2. **Jeder Eintrag trägt einen geschriebenen Grund.** Ein Eintrag ohne Grund ist
+   ein Befund. Eine Ausnahme ohne Begründung ist eine Lücke mit Deckmantel.
+3. **Ein Eintrag, dessen Gegenstand entstanden ist, ist ein Befund.** Sonst
+   deckt die Zeile beim nächsten Mal etwas Echtes zu. Die benannte Grenze dieses
+   Rückgleichs — Schlüssel der Fundortform und nicht pfadförmige Werte werden
+   nicht zurückgeglichen — bleibt eine benannte Grenze und wird nicht durch eine
+   Neuformulierung überdeckt; die dritte Prüfrunde ist genau daran gescheitert,
+   und die Behebung war eine Streichung, weil eine Streichung keinen neuen
+   Fehlalarm einführen kann.
+4. **Die Liste wird geschrieben, nicht abgeleitet.** Sie wird nicht zur Laufzeit
+   erzeugt und nicht aus `.gitignore` oder einer anderen Quelle abgeleitet. Das
+   ist derselbe Massstab wie in 6.2.3 für den Ausschluss bei D11: namentlich
+   aufgezählt und versioniert abgelegt. Sie ist damit ausdrücklich **kein**
+   erzeugtes Artefakt und fällt nicht unter die Regel für `docs/NACHWEISE.md`
+   und den Ordner der Nachweise, die von Hand nie bearbeitet werden.
+
+**Wer sie pflegen darf.** Auch das ist bereits entschieden, für die
+Ausnahmeliste von D11 in 6.2.3, und wird übernommen statt neu erfunden: Eine
+Ausnahme entsteht ausschliesslich zu einem **belegten** Fehlalarm, je Eintrag
+mit Fundstelle und Begründung; eine pauschale Ausnahme ist unzulässig, weil sie
+das Gate stillschweigend abschaltet. Daraus folgt für D20:
+
+| Vorgang | Wer | Bedingung |
+|---|---|---|
+| Einen ortsgebundenen Eintrag hinzufügen oder entfernen | Die Rolle, deren Dokument den Fund ausgelöst hat | Nur zu einem belegten Fehlalarm, mit Fundstelle und geschriebenem Grund, der die **Tatsache** nennt und nicht die Absicht. Der Eintrag unterliegt der Verifikation wie jede andere Änderung; die schreibende Rolle prüft ihn nicht selbst (3.4) |
+| Eine ganze Fallgruppe von der Prüfung ausnehmen | Niemand über die Ausnahmeliste | Das ist keine Ausnahme, sondern eine Änderung der Prüfung. Sie geht über eine Fortschreibung dieses ADR und eine Änderung am Skript, nicht über eine Zeile in der Liste |
+| Die Form der Schlüssel, die beiden Selbstprüfungen oder die Prüffläche ändern | Software Architect, als Fortschreibung dieses ADR | Es sind die vier Eigenschaften oben |
+
+**Die Grenze zwischen Ausnahme und Regel ist die tragende Unterscheidung.** Ein
+Eintrag in der Liste sagt: *An dieser einen Stelle ist der Fund kein Fehler.*
+Eine neue Regel im Skript sagt: *Diese Art von Stelle wird nicht mehr geprüft.*
+Das Zweite ist eine Architekturentscheidung und darf nicht die Form des Ersten
+annehmen. Genau diese Verwechslung — eine ortsungebundene Ausnahme, die
+faktisch eine Regel war — ist der Befund der ersten der drei gescheiterten
+Prüfrunden.
+
+#### 6.8.6 Was diese Fortschreibung nicht ändert
+
+D1 bis D12, D18 und D19 bleiben in Befehl, Objektbedingung und Prüfmitteln
+unverändert; hinzu kommt allein D20 und seine Stellung vor D1. Die
+Werkzeugwahl aus 3.12 bleibt unverändert — D20 ist kein Teststack, sondern eine
+Prüfung über den Dokumentationsbestand. Der Kettengrundsatz aus 6.1.3 und seine
+Beobachtung durch D19 aus 6.2.2 gelten für D20 unverändert und ohne Ausnahme.
+Die Nummernregel aus 6.1.2 bleibt in Kraft und wird um den Satz ergänzt, dass
+eine Nummer mit ihrer Vergabe in einem ADR vergeben ist (6.8.1). Die offenen
+Schwellenwerte (O-7), die offenen Formfragen zu D10 und D12 (O-8), die
+Restfragen aus O-10 und der Lauf auf der Gegenseite (O-12) bleiben offen. Der
+Befund zum untauglichen Abgleich über einen Verzeichnisvergleich in D12 bleibt
+bestehen. Nicht entschieden wird die Abnahme des Werkzeugs (O-15) und nicht der
+fest verdrahtete Ort des zweiten Arbeitsbaums (O-14); beides ist terminiert,
+nicht erledigt. Diese Fortschreibung legt keine Datei an ausser dieser: Die
+Umsetzung im Makefile und die Nachführung von
+`docs/06_Definition_of_Ready_und_Done.md` stehen in Abschnitt 9 und liegen bei
+anderen Rollen.
+
 
 ## 7. Konsequenzen
 
@@ -1105,6 +1476,9 @@ bleiben genau das, und für sie bleibt O-12 die Antwort.
 
 | O-13 — **entschieden am 2026-08-31, siehe 6.7** | Ob die Kette den Zwischenspeicher von `uv` benutzen darf oder ob D1 ohne ihn läuft. **Entscheid des Auftraggebers: ohne.** Umgesetzt mit `UV_NO_CACHE=1` in `$(UV)`, wirksam für jeden `uv`-Aufruf der Kette und von aussen nicht abschaltbar | **Neu am 2026-08-31 (6.6.1).** `--locked` prüft die Prüfsumme beim Herunterladen, nicht noch einmal für ein bereits entpacktes Archiv im Zwischenspeicher; ausgeführt belegt. Wer `HOME` setzen oder in `~/.cache/uv` schreiben kann, erhält damit ein falsches `A_OK` in D1. `--no-cache` schliesst das, kostet aber je Lauf einen vollständigen Ladevorgang und macht die Kette netzabhängig — eine Abwägung zwischen Laufzeit und Beweiskraft, die der Auftraggeber trifft, nicht die Umsetzung | Auftraggeber mit SecDevOps und DevOps Engineer | mit R3-Q-001; spätestens mit dem Lauf auf der Gegenseite (O-12), der denselben Punkt betrifft |
 
+| O-14 | Der Belegprüfer liest das Methodik-Repository an einem **fest verdrahteten, nicht konfigurierbaren Ort ausserhalb dieses Repositories** mit. Offen ist, wie der Ort bestimmt wird, ohne die Aussage des Kettenschrittes an einen einzelnen Arbeitsplatz zu binden | **Neu am 2026-08-31 (6.8.3).** Auf einer Maschine ohne diesen Arbeitsbaum zählt das Skript die betroffenen Zeilen als "nicht prüfbar"; die Zählung geht nicht in den Rückgabewert ein. D20 wird dadurch nicht falsch, aber schwächer — und wie viel schwächer, hängt an der Maschine. `.claude/rules/dokumentation.md` untersagt absolute Pfade der Arbeitsumgebung ausdrücklich für Architecture Decision Records; für ein Skript sagt die Regel nichts, weshalb dieser Punkt eine Abwägung ist und kein Regelverstoss. Die Behebung ist Umsetzung (Umgebungsvariable, Suchpfad oder ausdrückliche Lage-Meldung), nicht Architektur | DevOps Engineer mit dem Protocol Master (Verfolgbarkeit über beide Repositories, 6.6) | mit R3-Q-001 |
+| O-15 | **Abnahme des Belegprüfers.** Das Werkzeug ist nach Eskalationsregel 3.4 abgebrochen und nicht abgenommen; seine Selbstauskunft erklärt die Liste ihrer Grenzen ausdrücklich für unvollständig. Offen ist, welches Abnahmekriterium für ein Werkzeug gilt, das eine Nachweiskette blockiert | **Neu am 2026-08-31 (6.8.4).** Die Aufnahme in die Kette hängt nicht an der Abnahme — ein Schritt, der nur Funde hinzufügt und nichts darüber hinaus behauptet, macht die Kette nicht schwächer. Die Abnahme selbst ist damit nicht erledigt: Sie verlangt eine Prüfung auf einem anderen Modell als die Umsetzung (3.4) und eine Entscheidung darüber, ob "die Liste der Grenzen ist unvollständig" als Abnahmekriterium ausreicht. Dazu gehören die beiden benannten, nicht gebauten Prüfungen | Static und Dynamic Software Tester, Entscheid über das Abnahmekriterium beim Auftraggeber | vor der Freigabe des Grundgerüsts |
+
 Nicht offen, sondern entschieden und hier nur zur Klarstellung: `pgvector` (A4), Suchindex (A3), Orchestrierung (A11). Nicht offen, weil gestrichen: VirusTotal, Gesichtserkennung samt biometrischer Vektoren, Open WebUI, CASE/UCO, Fernsteuerung von Maltego; seit der Fortschreibung vom 2026-08-21 auch TheHive und Cortex (5.17).
 
 ---
@@ -1136,6 +1510,8 @@ Nicht offen, sondern entschieden und hier nur zur Klarstellung: `pgvector` (A4),
 | **Dritte Fortschreibung 2026-08-30:** `--project backend` an jedem `uv`-Aufruf (bereits umgesetzt, hiermit gedeckt); Suchmuster und **Wegfall der Lage B** bei D7 — ein Nichtfinden des Backlogs endet ungleich 0 statt mit 0; `git` als Prüfmittel des Historienlaufs in D11, sein Fehlen ergibt Lage C bei vorhandenem `.git/` (bereits umgesetzt, hiermit gedeckt) | `Makefile` | DevOps Engineer |
 | **Dritte Fortschreibung 2026-08-30:** Kriterium D7 — der Schritt hat keine Lage B; Kriterium D11 um `git` als Prüfmittel des Historienlaufs ergänzt; die `uv`-Aufrufe der Kette tragen `--project backend` | `docs/06_Definition_of_Ready_und_Done.md` | DevOps Engineer mit Product Owner, Bestätigung Auftraggeber mit R3-Q-001 |
 | **Dritte Fortschreibung 2026-08-30:** Nachweis mit ausgeführtem Lauf, dass `--locked --project backend` nicht mehr mit "has no effect" antwortet, und Feststellung, welchen Gegenstand `pytest` in D5 und D6 ohne Pfadangabe aus der Repository-Wurzel einsammelt (6.3.1) | ausgeführter Lauf, Ergebnis in die Übergabedatei | DevOps Engineer, Verifikation Static und Dynamic Software Tester (3.4) |
+| **Achte Fortschreibung 2026-09-01:** neues Ziel `belege` für D20 (`bash scripts/belege-pruefen.sh`), eingehängt als **erster** Eintrag der Zielliste von `make dod` vor D1; `D20` in die eigenständige Liste der erwarteten Kettenschritte aufnehmen, sonst bricht die Kette an ihrer eigenen Vorprüfung ab; Lage-Marke des Schrittes nach der Objekttabelle — **keine Lage B**, fehlendes Prüfmittel und leerer Bestand ergeben Lage C; die Zahl der nicht prüfbaren Zeilen gehört in die Lage-Meldung (6.8.3); die Schlusszeile "D1 bis D12 plus D18" ist unvollständig geworden | `Makefile` | DevOps Engineer |
+| **Achte Fortschreibung 2026-09-01:** Kriterienzeile für den Kettenschritt **D20** (Belege) in Teil 2, samt der Aussage, was ein grüner Lauf trägt und was nicht (6.8.4); der neue Kettengrundsatz "Rückgabewert 0 heisst: nichts von dem gefunden, was dieser Schritt sucht" gilt für alle Schritte und gehört in denselben Teil; die Wendung "Kette D1 bis D12" ist ein zweites Mal unvollständig geworden. Zusammen mit der noch offenen Nachführung von D19 aus der zweiten Fortschreibung vom 2026-08-30 nachzuführen — solange D19 dort fehlt, liest sich D19 als freie Nummer (6.8.1) | `docs/06_Definition_of_Ready_und_Done.md` | DevOps Engineer mit Product Owner, Bestätigung Auftraggeber mit R3-Q-001 |
 | Backlog-Eintrag für TheHive/Cortex (O-4) — **entfallen am 2026-08-21**, O-4 gestrichen (5.17 neu); bleibt: Formulierung der Abnahme von R3-C-001 gegenüber 5.6 (O-1) | `docs/05_Product_Backlog.md` | Product Owner |
 | Zeile für diesen ADR in der Artefaktliste des Erzeugers; Neuerzeugung des Nachweisverzeichnisses; Changelog | `scripts/nachweise-erzeugen.sh`, `docs/NACHWEISE.md`, `CHANGELOG.md` | Protocol Master (4.2, 6.6) |
 | Statustabelle und Verweis auf den Ziel-Stack | `CLAUDE.md` | Protocol Master |

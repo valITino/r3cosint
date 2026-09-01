@@ -9,9 +9,9 @@ metadata:
 
 # Die Definition-of-Done-Kette belegen
 
-> **Stand 2026-08-31.** Die drei Herkunftsangaben, die staerker waren als
+> **Stand 2026-09-01.** Die drei Herkunftsangaben, die staerker waren als
 > ihre Quelle, sind entfernt. Der maschinell pruefbare Teil dieser Klasse
-> wird seit dem 2026-08-31 von `scripts/belege-pruefen.sh` geprueft; dieser
+> wird seit dem 2026-09-01 von `scripts/belege-pruefen.sh` geprueft; dieser
 > Skill laeuft dort ohne Befund. Was **nicht** maschinell pruefbar ist —
 > ob der Inhalt am genannten Fundort die Behauptung auch traegt —, benennt
 > das Skript selbst und bleibt Sache des menschlichen Reviews.

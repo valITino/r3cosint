@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # ============================================================================
-# NICHT ABGENOMMEN (Stand 2026-08-31) -- Abbruch nach Eskalationsregel 3.4
+# NICHT ABGENOMMEN (Stand 2026-09-01) -- Abbruch nach Eskalationsregel 3.4
 # ============================================================================
 # Was dieses Skript FINDET, ist unabhaengig belegt: neun eingebaute
 # Fehlerklassen wurden in drei Pruefrunden je gefangen, die Unterscheidung
@@ -20,7 +20,7 @@
 # nach drei Runden noch belegbar war.
 #
 # Einzelheiten und was zu entscheiden ist:
-# docs/uebergaben/2026-08-31_belegpruefer-abbruch-nach-3-4.md
+# docs/uebergaben/2026-09-01_belegpruefer-abbruch-nach-3-4.md
 # ============================================================================
 #
 # belege-pruefen.sh — Herkunftsangaben gegen ihren Fundort prüfen
@@ -291,7 +291,7 @@ if [ -f "$AUSNAHMEDATEI" ]; then
     case "$wert" in \#*) continue ;; esac
     AUSNAHME_GRUND["$wert"]="${grund:-}"
     AUSNAHME_ZEILEN+=("$zn"$'\t'"$wert"$'\t'"${grund:-}")
-    # Befund der Nachpruefung vom 2026-08-31: Die frueher hier stehende
+    # Befund der Nachpruefung vom 2026-09-01: Die frueher hier stehende
     # case-Kette liess nur bis zu fuenfstellige Zeilennummern zu und wies
     # einen gueltigen Schluessel mit sechs Stellen faelschlich ab. Eine
     # Obergrenze, die niemand gewaehlt hat, ist ein Fehler und keine Regel.
@@ -303,7 +303,7 @@ if [ -f "$AUSNAHMEDATEI" ]; then
   done < "$AUSNAHMEDATEI"
 fi
 
-# BLOCKIERENDER BEFUND der Nachpruefung vom 2026-08-31, hier behoben:
+# BLOCKIERENDER BEFUND der Nachpruefung vom 2026-09-01, hier behoben:
 # Ausnahmen waren als blosser TEXTWERT eingetragen. Damit unterdrueckte eine
 # einzige Zeile jedes kuenftige Vorkommen desselben Wortlauts im GANZEN
 # Bestand -- auch einen echten neuen Fehler. Ausgefuehrt belegt an zwei
@@ -406,7 +406,7 @@ ist_pfadartig() {
   case "$c" in
     */*)
       erster="${c%%/*}"
-      # Befund der Nachpruefung vom 2026-08-31: Diese drei Namen wurden
+      # Befund der Nachpruefung vom 2026-09-01: Diese drei Namen wurden
       # unbesehen als Git-Referenz behandelt; ein echter, kaputter Pfad wie
       # "claude/nicht-vorhanden.md" blieb damit unsichtbar. Jetzt gilt die
       # Ausnahme nur, wenn das letzte Segment KEINE Dateiendung traegt --
@@ -644,7 +644,7 @@ wert_existiert_bereits() {
   elif [[ "$w" == *:*  ]]; then
     return 2  # Datei:Zeile-Schlüssel (Regel 7) -> nicht klassifizierbar
   elif ist_pfadartig "$w"; then
-    # BEFUND der dritten Nachpruefung vom 2026-08-31, hier durch STREICHUNG
+    # BEFUND der dritten Nachpruefung vom 2026-09-01, hier durch STREICHUNG
     # behoben: Hier stand zusaetzlich "|| [ -f "$REPO_ROOT/$w" ] || [ -d ... ]".
     # Damit loeste die Veraltungspruefung fuer JEDEN Wert aus, der zufaellig
     # auf einen Datei- oder Verzeichnisnamen an der Wurzel passt -- auch fuer
@@ -665,7 +665,7 @@ for eintrag in "${AUSNAHME_ZEILEN[@]+"${AUSNAHME_ZEILEN[@]}"}"; do
     BEFUNDE_ANZAHL=$((BEFUNDE_ANZAHL+1))
     continue
   fi
-  # BLOCKIERENDER BEFUND der Nachpruefung vom 2026-08-31, hier behoben:
+  # BLOCKIERENDER BEFUND der Nachpruefung vom 2026-09-01, hier behoben:
   # Seit der Umstellung auf ortsgebundene Schluessel steht im Feld WERT der
   # ganze Schluessel, also "datei|wert" oder "datei:zeile". Der Rueckgleich
   # pruefte diesen ganzen String auf Existenz -- und ein String mit einem

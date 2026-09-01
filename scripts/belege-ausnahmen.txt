@@ -9,7 +9,7 @@
 # Eine dritte Form gibt es nicht; ein blosser Wert ohne Datei ist selbst ein
 # Befund (Art "ausnahme-form"). Grund: Eine wertgebundene Ausnahme
 # unterdrückte jedes künftige Vorkommen desselben Wortlauts im ganzen
-# Bestand — auch einen echten neuen Fehler. Die Nachprüfung vom 2026-08-31
+# Bestand — auch einen echten neuen Fehler. Die Nachprüfung vom 2026-09-01
 # hat das an zwei eingebauten Fällen belegt.
 #
 # Zwei weitere Prüfungen greifen an dieser Datei selbst:
@@ -19,7 +19,7 @@
 #     Dann gehört die Zeile hier weg, nicht stehen gelassen — sonst deckt sie
 #     beim nächsten Mal etwas Echtes zu.
 #
-# Alle Einträge sind am 2026-08-31 einzeln am Bestand nachgeschlagen worden.
+# Alle Einträge sind am 2026-09-01 einzeln am Bestand nachgeschlagen worden.
 # Keiner der Funde war ein Fehler in einem Dokument.
 
 # --- Namensschablonen, Zitate und Gegenbeispiele ---------------------------

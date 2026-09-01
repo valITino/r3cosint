@@ -48,7 +48,7 @@ ARTEFAKTE=(
   "Skill DoD-Kette belegen|.claude/skills/dod-kette-belegen/SKILL.md|Zweite Skill des Projekts, Prozedur fuer Fertigmeldungen: Befehl frisch ausfuehren, Lage je Schritt benennen"
   "Arbeitsablauf Nachweisfluss|.github/workflows/nachweise-uebertragen.yml|Erzeugt und uebertraegt das Nachweisverzeichnis nach Repo B (6.6)"
   "Arbeitsablauf Meilenstein|.github/workflows/meilenstein-tag.yml|Versionsschild und Release bei Meilenstein-Merge (6.6)"
-  "Belegpruefer|scripts/belege-pruefen.sh|Prueft Herkunftsangaben in der Dokumentation gegen ihren Fundort; nicht abgenommen, Abbruch nach 3.4 (docs/uebergaben/2026-08-31_belegpruefer-abbruch-nach-3-4.md)"
+  "Belegpruefer|scripts/belege-pruefen.sh|Prueft Herkunftsangaben in der Dokumentation gegen ihren Fundort; nicht abgenommen, Abbruch nach 3.4 (docs/uebergaben/2026-09-01_belegpruefer-abbruch-nach-3-4.md)"
   "Belegpruefer Ausnahmeliste|scripts/belege-ausnahmen.txt|Ortsgebundene Ausnahmeliste zum Belegpruefer, Teil der Pruefung und nicht Beiwerk"
   "Erzeuger Nachweisverzeichnis|scripts/nachweise-erzeugen.sh|Erzeugt docs/NACHWEISE.md; Artefaktliste ist hier massgebend"
   "Rolle backend-engineer|.claude/agents/backend-engineer.md|Rollendatei nach ADR 0001: Ausloesefall, Rechte, Modell, maxTurns"
