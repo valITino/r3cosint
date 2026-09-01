@@ -33,7 +33,7 @@ ARTEFAKTE=(
   "Werkzeugvorschlag CAS-Blockwoche|docs/vorlagen/2026-08-29_werkzeugvorschlag-cas-blockwoche.md|Entscheidungsvorlage und Freigabe, Begruendung fuer den Makefile-Zwischenschritt vor R3-Q-001 in der Lieferreihenfolge"
   "Prototyp Demo|prototype/OSINT_Plattform_Demo.html|Interaktiver Prototyp, Wegwerf"
   "Projektregeln|CLAUDE.md|Immer geltende Regeln, unter 200 Zeilen"
-  "Befehlskette Definition of Done|Makefile|Traegt die Definition-of-Done-Befehlskette D1 bis D12 und D18 samt Rahmenpruefung D19; der Hook aus R3-Q-001 stuetzt sich auf den einen Befehl make dod"
+  "Befehlskette Definition of Done|Makefile|Traegt die Definition-of-Done-Befehlskette samt der Rahmenpruefung, die den Lauf einklammert; welche Schritte dazugehoeren und in welcher Reihenfolge, steht ausschliesslich in der Zielliste des Makefiles selbst (methodischer Entscheid V13 vom 2026-09-01: eine Aufzaehlung, die nichts steuert, veraltet nur). Der Hook aus R3-Q-001 stuetzt sich auf den einen Befehl make dod"
   "Regel Prototyp|.claude/rules/prototyp.md|Wegwerf-Prototyp, synthetische Daten, Definition of Done"
   "Regel Produktionscode|.claude/rules/produktionscode.md|Verfahrensgarantien, Protokollspuren, Klassifizierung"
   "Regel Dokumentation|.claude/rules/dokumentation.md|Feste Verweise, Nachweisverzeichnis, Verfolgbarkeit"
