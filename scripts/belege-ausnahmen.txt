@@ -62,3 +62,10 @@ docs/00_Projektauftrag.md:938	Nennt die verbotene Form als Beispiel ("Ein Verwei
 docs/08_Freigabe_Schritt_4.md:133	Nennt die verbotene Form als Beispiel ("kein Verweis auf `blob/main`"), kein Verstoss.
 docs/uebergaben/2026-08-25_full-review-konfiguration.md:16	Nennt die verbotene Form als Beispiel (deterministische Prüfung auf `blob/main` als Prüfgegenstand), kein Verstoss.
 docs/uebergaben/2026-09-01_belegpruefer-abbruch-nach-3-4.md:28	Nennt die beiden verbotenen Formen als Beschreibung dessen, was der Pruefer sucht -- kein Verstoss, sondern seine Fundstellenliste.
+
+# --- Lokale Zweig-Refs als Herkunftsangabe eines Arbeitsplatzes ---------
+docs/uebergaben/2026-08-30_dod-nachfuehrung-adr0002-abschnitt6-1.md|.git/refs/heads/claude/next-step-g8slnq	Pfad eines lokalen Zweig-Refs, aus dem der Protocol Master ohne Bash-Werkzeug die Commit-Pruefsumme abgelesen hat. Er beschreibt die Herkunft der Angabe auf dem damaligen Arbeitsplatz, nicht ein Artefakt des Repositories, und besteht in keinem frischen Klon (am 2026-09-02 in einem frischen Klon als einziger D20-Fund gemessen). Die dort genannte Pruefsumme 84450a71569120e8deb30ecb0349ea8a92f6d736 prueft Pruefung 2 weiterhin.
+
+# --- Artefakte, die erst mit dem Bau des DoD-Gates entstehen (R3-Q-001) --
+docs/adr/0002-architekturentscheid-ziel-stack.md|.claude/hooks/dod-gate.sh	Hook-Skript aus der zwoelften Fortschreibung (ADR 0002, 6.12.2 und Abschnitt 9). Entsteht erst nach der Freigabe von 6.12 mit der Umsetzung von R3-Q-001; bis dahin ist der Pfad ein terminiertes Artefakt. Sobald die Datei besteht, meldet die Selbstpruefung diesen Eintrag als veraltet -- dann gehoert er weg.
+docs/adr/0002-architekturentscheid-ziel-stack.md|.claude/hooks/dod-gate-terminierte-lagen.txt	Liste der terminierten Lagen C aus der zwoelften Fortschreibung (ADR 0002, 6.12.5 und Abschnitt 9). Entsteht erst nach der Freigabe von 6.12 mit der Umsetzung von R3-Q-001; bis dahin ist der Pfad ein terminiertes Artefakt. Sobald die Datei besteht, meldet die Selbstpruefung diesen Eintrag als veraltet -- dann gehoert er weg.
