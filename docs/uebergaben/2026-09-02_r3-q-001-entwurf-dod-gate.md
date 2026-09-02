@@ -53,7 +53,7 @@ Settings-Dateien werden "normally picked up automatically by the file watcher"
 
 ## Was fertig ist
 
-**Der Entwurf.** `docs/adr/0002-architekturentscheid-ziel-stack.md`,
+**Der Entwurf.** ADR 0002 (`docs/adr/0002-architekturentscheid-ziel-stack.md`),
 Abschnitt 6.12 mit den Unterabschnitten 6.12.1 bis 6.12.22, Status "Entwurf,
 dem Auftraggeber am 2026-09-02 zur Freigabe vorgelegt, nicht freigegeben".
 Siebzehn Entscheide G1 bis G17, darunter die Antworten auf die vier Fragen des
@@ -145,7 +145,7 @@ von Abschnitt 8 ist dabei als Formberichtigung ohne Inhaltsänderung
 geschlossen worden.
 
 **Belege am Entwurf.** Der Belegprüfer fand am Entwurf neun Pfadfunde: viermal
-die Kurzform `docs/06` in Rückwärtsakzenten (durch den vollen Dateinamen
+die Kurzform "docs/06" in Rückwärtsakzenten (durch den vollen Dateinamen
 ersetzt) und fünfmal die zwei Dateien, die erst mit dem Bau entstehen
 (Hook-Skript und Liste der terminierten Lagen; dafür zwei ortsgebundene
 Ausnahmen der Form `datei|wert` mit dem Grund "entsteht mit der Umsetzung nach
