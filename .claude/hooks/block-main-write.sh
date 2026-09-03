@@ -20,12 +20,24 @@
 # Interpreter mit Inline-Code, das Anlegen eines Arbeitsbaums auf main und
 # Mirror-/Wildcard-Pushes (Befunde der statischen Pruefung vom 2026-08-25).
 #
+# VORAUSSETZUNG git: Fehlt git selbst, kann das Gate nicht pruefen und
+# blockiert (Rueckgabewert 2), analog zur jq-Wache. Ist git vorhanden, aber es
+# gibt keinen Arbeitsbaum -- etwa ausserhalb eines Repositories --, bleibt
+# Rueckgabewert 0: eine bewusste Grenze, denn ohne Repository gibt es keinen
+# Zweig, der main/master sein und geschuetzt werden koennte.
+#
 # Rueckgabewert 2 blockiert. Rueckgabewert 1 blockiert NICHT (3.4).
 set -uo pipefail
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "Gate main-schutz: jq ist nicht installiert; das Gate kann nicht pruefen." >&2
   echo "Installieren (z.B. 'apt-get install -y jq') oder das Gate bewusst entfernen." >&2
+  exit 2
+fi
+
+if ! command -v git >/dev/null 2>&1; then
+  echo "Gate main-schutz: git ist nicht installiert; das Gate kann nicht pruefen." >&2
+  echo "Installieren (z.B. 'apt-get install -y git') oder das Gate bewusst entfernen." >&2
   exit 2
 fi
 
@@ -51,7 +63,7 @@ if [ "$tool" = "Bash" ]; then
   # zulaessig und darf nicht blockieren (Falsch-Positiv-Befund 2026-08-25).
   if printf '%s' "$cmd" | grep -Eq 'git[[:space:]]+([^|;&]*[[:space:]])?worktree[[:space:]]+add([[:space:]]|$)' \
       && ! printf '%s' "$cmd" | grep -Eq 'worktree[[:space:]]+add[^|;&]*[[:space:]]-[bB]([[:space:]]|=)' \
-      && { printf '%s' "$cmd" | grep -Eq '(^|[[:space:]])(main|master)([[:space:]]|$|["'\''])' \
+      && { printf '%s' "$cmd" | grep -Eq '(^|[[:space:]"'\''(])(main|master)([[:space:]]|$|["'\'';&|)])' \
            || printf '%s' "$cmd" | grep -Eq 'refs/(heads|for)/(main|master)'; }; then
     echo "BLOCKIERT (Projektauftrag 3.2 c): Arbeitsbaum auf main/master anlegen." >&2
     echo "Ein zweiter Arbeitsbaum auf main umgeht den Schutz. Einen neuen Zweig abzweigen:" >&2
@@ -109,8 +121,8 @@ if [ "$tool" = "Bash" ]; then
       echo "Nur den Arbeitszweig ausdruecklich pushen: git push -u origin <zweig>" >&2
       exit 2
     fi
-    if printf '%s' "$cmd" | grep -Eq '(^|[[:space:]:+])(main|master)([[:space:]]|$|["'\''])' \
-        || printf '%s' "$cmd" | grep -Eq 'refs/(heads|for)/(main|master)([[:space:]]|$|["'\''])'; then
+    if printf '%s' "$cmd" | grep -Eq '(^|[[:space:]:+"'\''(])(main|master)([[:space:]]|$|["'\'';&|)])' \
+        || printf '%s' "$cmd" | grep -Eq 'refs/(heads|for)/(main|master)([[:space:]]|$|["'\'';&|)])'; then
       echo "BLOCKIERT (Projektauftrag 3.2 c): Push nach main/master." >&2
       echo "Auf den Arbeitszweig pushen und die Aenderung ueber einen Pull Request fuehren." >&2
       echo "Aktueller Zweig: $branch" >&2
