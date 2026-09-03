@@ -37,6 +37,51 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/dod-gate.sh"
+            ],
+            "timeout": 900,
+            "statusMessage": "Prueft die Definition-of-Done-Kette (make dod, ADR 0002 6.12)"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/dod-gate.sh"
+            ],
+            "timeout": 900,
+            "statusMessage": "Prueft die Definition-of-Done-Kette (make dod, ADR 0002 6.12)"
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/dod-gate.sh"
+            ],
+            "timeout": 900,
+            "statusMessage": "Prueft die Definition-of-Done-Kette (make dod, ADR 0002 6.12)"
+          }
+        ]
+      }
     ]
   }
 }

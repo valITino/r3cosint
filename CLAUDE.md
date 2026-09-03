@@ -21,7 +21,7 @@ vorherige freigegeben ist.
 | 2 CLAUDE.md, Rules, Hooks | erledigt |
 | 3 Requirements Engineering und Planung | erledigt |
 | 4 **Freigabe-Gate durch den Auftraggeber** | erledigt — Freigabe 2026-08-20, Commit `5c5ecde6c6f1b2eba67cd22e24b40b6439aebac4` (`docs/08_Freigabe_Schritt_4.md`) |
-| 5 Umsetzung | läuft — R3-C-001 abgenommen (ADR 0002, 2026-08-20). Freigegebene Reihenfolge vom 2026-08-25: C-Fix ✓, E1 ✓, E2 ✓, D2 ✓, E5 ✓ (D2 und E5 im Full-Review vom 2026-08-25 vorgezogen), Befund F ✓ (2026-08-26, `docs/uebergaben/2026-08-26_befund-f-abnahmekriterien.md`); **Zwischenschritt auf Weisung vom 2026-08-29:** Makefile mit `make dod` vor R3-Q-001, weil ADR 0002 Abschnitt 6 den Hook auf diesen einen Befehl stützt und das Makefile fehlt (`docs/vorlagen/2026-08-29_werkzeugvorschlag-cas-blockwoche.md`) — Makefile ✓ (2026-08-31, `docs/uebergaben/2026-08-31_makefile-dod-drei-befunde-behoben.md`); **Zwischenschritt auf Weisung vom 2026-09-01:** Belegprüfer als Kettenschritt D20 ✓ (`docs/uebergaben/2026-09-01_belegpruefer-abbruch-nach-3-4.md`, `docs/uebergaben/2026-09-01_d20-pruefmittel-und-sechs-befunde.md`; das Werkzeug ist nicht abgenommen, ADR 0002 O-15); **R3-Q-001: Entwurf des Gates am 2026-09-02 vorgelegt, nicht freigegeben** (ADR 0002 Abschnitt 6.12, `docs/uebergaben/2026-09-02_r3-q-001-entwurf-dod-gate.md`); nach der Freigabe Bau von R3-Q-001, danach E4, E3, dann Grundgerüst |
+| 5 Umsetzung | läuft — R3-C-001 abgenommen (ADR 0002, 2026-08-20). Freigegebene Reihenfolge vom 2026-08-25: C-Fix ✓, E1 ✓, E2 ✓, D2 ✓, E5 ✓ (D2 und E5 im Full-Review vom 2026-08-25 vorgezogen), Befund F ✓ (2026-08-26, `docs/uebergaben/2026-08-26_befund-f-abnahmekriterien.md`); **Zwischenschritt auf Weisung vom 2026-08-29:** Makefile mit `make dod` vor R3-Q-001, weil ADR 0002 Abschnitt 6 den Hook auf diesen einen Befehl stützt und das Makefile fehlt (`docs/vorlagen/2026-08-29_werkzeugvorschlag-cas-blockwoche.md`) — Makefile ✓ (2026-08-31, `docs/uebergaben/2026-08-31_makefile-dod-drei-befunde-behoben.md`); **Zwischenschritt auf Weisung vom 2026-09-01:** Belegprüfer als Kettenschritt D20 ✓ (`docs/uebergaben/2026-09-01_belegpruefer-abbruch-nach-3-4.md`, `docs/uebergaben/2026-09-01_d20-pruefmittel-und-sechs-befunde.md`; das Werkzeug ist nicht abgenommen, ADR 0002 O-15); **R3-Q-001: Entwurf am 2026-09-02 vorgelegt, Gate auf Weisung vom selben Tag gebaut und in drei Runden auf einem anderen Modell geprüft; am 2026-09-03 nach 3.4 abgebrochen, weil dieselbe Fehlerklasse im Selbsttest zum dritten Mal auftrat — förmliche Freigabe der Entscheidpunkte E-A bis E-K, Entscheid O-24 und Abnahme stehen aus** (ADR 0002 Abschnitt 6.12 mit 6.12.24 und Abschnitt 10; `docs/uebergaben/2026-09-02_r3-q-001-entwurf-dod-gate.md`, `docs/uebergaben/2026-09-02_r3-q-001-gate-gebaut.md`); danach E4, E3, dann Grundgerüst |
 
 - **Freigabe-Gate Schritt 4 erteilt, Architekturentscheid angenommen**
   (beides 2026-08-20). Gebaut wird entlang ADR 0002; Abweichungen davon nur
@@ -39,6 +39,11 @@ vorherige freigegeben ist.
 3. Den geplanten Umfang benennen. Passt er erkennbar nicht in eine Session, ihn
    zuerst zerlegen und die Zerlegung vorlegen (3.3).
 4. Eine begonnene Arbeitseinheit zu Ende führen, bevor die nächste beginnt (3.1).
+5. Jede Arbeitseinheit als Aufgabe führen: beim Beginn mit dem Aufgabenwerkzeug
+   anlegen, beim Abschluss auf erledigt setzen. Nur dann feuert
+   `TaskCompleted`, das einzige Ereignis, das die Definition of Done hart
+   erzwingt; ohne Aufgabe mahnt das Gate nur an (ADR 0002, 6.12.2, O-23,
+   Entscheid E-H).
 
 Am Ende jeder Einheit den Stand in eine Übergabedatei schreiben: was fertig ist,
 was offen ist, welche Entscheidungen getroffen wurden (3.3).
@@ -125,22 +130,28 @@ Rückgabewert 2 blockiert; Rückgabewert 1 blockiert nicht (3.4).
 |---|---|
 | `block-prototype-import.sh` | Blockiert Importe zwischen `prototype/` und Produktionscode in beide Richtungen (5.6) |
 | `block-main-write.sh` | Blockiert Dateiänderungen auf `main` sowie Commit, Merge und Push nach `main` (3.2 c) |
+| `dod-gate.sh` | Lässt eine Antwort (`Stop`), einen Subagenten (`SubagentStop`) und eine Aufgabe (`TaskCompleted`) erst enden, wenn `make dod` im geprüften Arbeitsbaum nachweisbar gelaufen ist und nichts gefunden hat. Lagen C, die in `dod-gate-terminierte-lagen.txt` mit Grund eingetragen sind, werden mit Meldung geduldet; die Liste prüft sich selbst. Dreimaliges Scheitern am gleichen Kriterium verlangt die Übergabedatei (3.4). Rollen ohne `Edit`, `Write` oder `NotebookEdit` prüft es nicht (ADR 0002, 6.12; gebaut 2026-09-02 auf Weisung; drei Prüfrunden, Einheit am 2026-09-03 nach 3.4 abgebrochen, förmliche Freigabe und Abnahme ausstehend; Selbsttest `scripts/dod-gate-selbsttest.sh`, 81 Fälle; offene Befunde in `docs/uebergaben/2026-09-02_r3-q-001-gate-gebaut.md`) |
 
 Daneben läuft ein `SessionStart`-Hook (`session-start-eingang.sh`): er gibt den
 Eingang aus dem Methodik-Repository als Kontext mit (6.6) und blockiert nie —
 ein Kanal, kein Gate.
 
-Beide setzen `jq` voraus. Fehlt es, blockieren sie mit einer Meldung, statt
-stillschweigend durchzulassen.
+Alle drei Gates setzen `jq` voraus, das main-Gate und das DoD-Gate auch `git`.
+Fehlt eines, blockieren sie mit einer Meldung, statt stillschweigend
+durchzulassen. Ein Hook, der die Zeitgrenze aus `settings.json` reisst, wird
+abgebrochen und lässt durch; das DoD-Gate zieht deshalb im Skript eine eigene,
+kürzere Grenze (ADR 0002, 6.12.12). Das DoD-Gate stützt sich auf die ganze
+Kette und damit auf den nicht abgenommenen Belegprüfer (D20, O-15); die harte
+Zusicherung trägt allein `TaskCompleted`, und das nur, wenn die Arbeitseinheit
+als Aufgabe geführt wird (O-23).
 
-**Noch nicht vorhanden:** die Gates für die Definition-of-Done-Befehlskette
-(`Stop`, `SubagentStop`, `TaskCompleted`) und die harte Durchsetzung der
-Rollen-Schreibgrenzen. Der Backlog terminiert beides in Etappe 0: R3-Q-001
-braucht die konkreten Befehle der Kette und damit den Ziel-Stack aus R3-C-001,
-R3-Q-005 ist stackunabhängig. Diese Terminierung ist auf Weisung vom
-2026-08-20 in ADR 0001 fortgeschrieben und bleibt am Freigabe-Gate als
-Entscheid E-02 überprüfbar (`docs/08_Freigabe_Schritt_4.md`). Bis die Gates
-stehen, prüft das menschliche Review die Befehlskette.
+**Noch nicht vorhanden:** die harte Durchsetzung der Rollen-Schreibgrenzen
+(R3-Q-005, stackunabhängig, Etappe 0). Das DoD-Gate misst über das
+`tools`-Feld das Recht einer Rolle, nicht ihre Fähigkeit: Eine Rolle mit `Bash`
+und ohne `Edit`/`Write` könnte schreiben und darf es nicht (ADR 0002,
+6.12.14). Die Terminierung von R3-Q-005 ist auf Weisung vom 2026-08-20 in
+ADR 0001 fortgeschrieben und bleibt am Freigabe-Gate als Entscheid E-02
+überprüfbar (`docs/08_Freigabe_Schritt_4.md`).
 
 ## Wo steht was
 
@@ -153,6 +164,7 @@ stehen, prüft das menschliche Review die Befehlskette.
 | ADR, Nachweise, Verfolgbarkeit, Glossar | `.claude/rules/dokumentation.md` |
 | Rechtsregime, Aufbewahrung, Belegpflicht | `.claude/rules/recht-und-datenschutz.md` |
 | Rollendateien, Hooks, Mechanismen | `.claude/rules/claude-konfiguration.md` |
+| DoD-Gate, terminierte Lagen C, Selbsttest | `.claude/hooks/dod-gate.sh`, `.claude/hooks/dod-gate-terminierte-lagen.txt`, `scripts/dod-gate-selbsttest.sh`; Entwurf und Nachträge in ADR 0002, 6.12 |
 | Versionsschilder, Meilensteine, Nachweisfluss | `.claude/rules/versionierung-und-nachweisfluss.md` |
 | Rechte je Rolle | `docs/adr/0001-rollenmodell.md` |
 
