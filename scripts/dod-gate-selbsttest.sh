@@ -37,6 +37,27 @@
 
 set -uo pipefail
 
+# -----------------------------------------------------------------------------
+# 6.12.25 j (Befund S4-03): der Selbsttest ist gegen Nebenlaeufigkeit gesperrt.
+# Die Faelle Z-104..Z-108 verschieben das feste Ausweichverzeichnis
+# /tmp/r3cosint-dod-gate beiseite und zurueck; zwei gleichzeitig laufende
+# Selbsttests stoeren sich dabei (Scheinbefund, ausgefuehrt belegt: 144 von
+# 145 im gestoerten Lauf). Dieser Prozess haelt deshalb fuer seine GESAMTE
+# Laufzeit eine exklusive, NICHT wartende Sperre (flock -n) auf einer festen
+# Datei UNTER /tmp -- nicht im Arbeitsbaum (6.1.3), unter einem ANDEREN Namen
+# als das Ausweichverzeichnis des Gates, damit die Faelle Z-104..Z-108 sie
+# nicht mitverschieben. Gelingt das nicht, hat der Lauf NICHT stattgefunden:
+# Rueckgabewert 3 (weder 0 noch 2), Meldung auf stderr, sofortiges Ende VOR
+# jeder weiteren Handlung -- es ist noch nichts angelegt, ein "trap
+# aufraeumen" ist an dieser Stelle nicht noetig. Die Sperre loest sich beim
+# Beenden dieses Skripts von selbst (Dateideskriptor schliesst).
+# -----------------------------------------------------------------------------
+SELBSTTEST_SPERRDATEI="/tmp/r3cosint-dod-gate-selbsttest.lock"
+if ! exec {SELBSTTEST_SPERRE_FD}>"$SELBSTTEST_SPERRDATEI" || ! flock -n "$SELBSTTEST_SPERRE_FD"; then
+  echo "Selbsttest laeuft bereits" >&2
+  exit 3
+fi
+
 SKRIPT_VERZEICHNIS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_WURZEL="$(cd "$SKRIPT_VERZEICHNIS/.." && pwd)"
 GATE="$REPO_WURZEL/.claude/hooks/dod-gate.sh"
@@ -59,6 +80,7 @@ trap aufraeumen EXIT
 bestanden=0
 gesamt=0
 fehlgeschlagene_faelle=()
+GEMELDETE_KENNUNGEN=()
 
 # -----------------------------------------------------------------------------
 # neu_verzeichnis: registriert ein mktemp-Verzeichnis zum Aufraeumen und gibt
@@ -191,33 +213,160 @@ rufe_gate_ohne_home() {
 }
 
 # -----------------------------------------------------------------------------
-# pruefe <beschreibung> <erwarteter-rc> [muster-stdout] [muster-stderr]
-# Wertet G_RC/G_STDOUT/G_STDERR aus (von rufe_gate gesetzt) und zaehlt.
-# Ein leeres Muster wird nicht geprueft.
+# ZUSICHERUNGEN NACH KENNUNG (ADR 0002, 6.12.25 a)
+#
+# Je Kennung Z-nnn genau EINE Pruefung, je Pruefung genau EINE Kennung. Die
+# Kennungen und ihr Wortlaut stehen ausschliesslich in der Tabelle 6.12.19
+# dieses ADR -- dieses Skript wiederholt sie nicht, es LIEST sie am Ende
+# (Abschnitt "Deckung") und vergleicht sie mechanisch mit dem, was unten
+# tatsaechlich geprueft wurde.
+#
+# _melde ist der einzige Ort, der eine Zeile "BESTANDEN Z-nnn ..." oder
+# "FEHLGESCHLAGEN Z-nnn ..." schreibt und eine Kennung als "gemeldet"
+# registriert. Alle pruefe_*-Funktionen darunter sind duenne Wrapper, die je
+# EINE der folgenden Messarten auf $G_RC/$G_STDOUT/$G_STDERR anwenden
+# (Auftrag, Punkt 4): den tatsaechlichen Rueckgabewert, grep -F auf stderr
+# oder stdout, eine Dateipruefung, eine JSON-Strukturpruefung mit jq, oder das
+# Lesen einer Zaehlerdatei. Fuer "keine Datei im Baum waehrend des Laufs"
+# gibt es keinen Wrapper -- das braucht einen Beobachter ohne Wartezeit
+# WAEHREND des Gate-Aufrufs und steht deshalb bei den betroffenen Faellen
+# selbst (DT3-B1, DT2-B2).
 # -----------------------------------------------------------------------------
-pruefe() {
-  local beschreibung="$1" erwarteter_rc="$2" muster_stdout="${3:-}" muster_stderr="${4:-}"
+_kuerzen() { printf '%s' "$1" | head -c 300; }
+
+_melde() {
+  # $1=Kennung $2=Fall $3=Zusicherung $4=ok(0/1) $5=erwartet $6=erhalten
+  local kennung="$1" fall="$2" zusicherung="$3" ok="$4" erwartet="$5" erhalten="$6"
   gesamt=$((gesamt + 1))
-  local ok=1
-  if [ "$G_RC" != "$erwarteter_rc" ]; then
-    ok=0
-  fi
-  if [ -n "$muster_stdout" ] && ! printf '%s' "$G_STDOUT" | grep -qE "$muster_stdout"; then
-    ok=0
-  fi
-  if [ -n "$muster_stderr" ] && ! printf '%s' "$G_STDERR" | grep -qE "$muster_stderr"; then
-    ok=0
-  fi
+  GEMELDETE_KENNUNGEN+=("$kennung")
   if [ "$ok" -eq 1 ]; then
     bestanden=$((bestanden + 1))
-    printf 'BESTANDEN  %s\n' "$beschreibung"
+    printf 'BESTANDEN %s %s: %s\n' "$kennung" "$fall" "$zusicherung"
   else
-    fehlgeschlagene_faelle+=("$beschreibung")
-    printf 'FEHLGESCHLAGEN  %s (rc=%s, erwartet %s)\n' "$beschreibung" "$G_RC" "$erwarteter_rc"
-    printf '  stdout: %s\n' "$G_STDOUT" | head -c 500
-    printf '\n  stderr: %s\n' "$G_STDERR" | head -c 500
-    printf '\n'
+    fehlgeschlagene_faelle+=("$kennung $fall: $zusicherung")
+    printf 'FEHLGESCHLAGEN %s %s: %s: erwartet %s, erhalten %s\n' \
+      "$kennung" "$fall" "$zusicherung" "$erwartet" "$erhalten"
   fi
+}
+
+# pruefe_rc <kennung> <fall> <erwarteter_rc> -- misst den TATSAECHLICHEN
+# Rueckgabewert des zuletzt ausgefuehrten rufe_gate/lauf-Aufrufs.
+pruefe_rc() {
+  local kennung="$1" fall="$2" erwartet_rc="$3"
+  local ok=0
+  [ "$G_RC" = "$erwartet_rc" ] && ok=1
+  _melde "$kennung" "$fall" "Rueckgabewert $erwartet_rc" "$ok" "rc=$erwartet_rc" "rc=$G_RC"
+}
+
+# pruefe_rc_wert <kennung> <fall> <zusicherung> <erwartet> <erhalten_wert> --
+# wie pruefe_rc, aber fuer einen ausserhalb von G_RC gelesenen Rueckgabewert
+# (z. B. eines direkten "make"-Aufrufs statt des Gates).
+pruefe_rc_wert() {
+  local kennung="$1" fall="$2" zusicherung="$3" erwartet="$4" erhalten="$5"
+  local ok=0
+  [ "$erhalten" = "$erwartet" ] && ok=1
+  _melde "$kennung" "$fall" "$zusicherung" "$ok" "rc=$erwartet" "rc=$erhalten"
+}
+
+pruefe_stdout_leer() {
+  local kennung="$1" fall="$2"
+  local ok=0
+  [ -z "$G_STDOUT" ] && ok=1
+  _melde "$kennung" "$fall" "Standardausgabe leer" "$ok" "leer" "'$(_kuerzen "$G_STDOUT")'"
+}
+
+pruefe_stderr_leer() {
+  local kennung="$1" fall="$2"
+  local ok=0
+  [ -z "$G_STDERR" ] && ok=1
+  _melde "$kennung" "$fall" "Fehlerausgabe leer" "$ok" "leer" "'$(_kuerzen "$G_STDERR")'"
+}
+
+# pruefe_stdout_enthaelt/pruefe_stderr_enthaelt <kennung> <fall> <zusicherung>
+# <text> -- grep -F (fester String, kein Muster) auf G_STDOUT/G_STDERR.
+pruefe_stdout_enthaelt() {
+  local kennung="$1" fall="$2" zusicherung="$3" text="$4"
+  local ok=0
+  printf '%s' "$G_STDOUT" | grep -qF -- "$text" && ok=1
+  _melde "$kennung" "$fall" "$zusicherung" "$ok" "stdout enthaelt '$text'" "stdout='$(_kuerzen "$G_STDOUT")'"
+}
+
+pruefe_stderr_enthaelt() {
+  local kennung="$1" fall="$2" zusicherung="$3" text="$4"
+  local ok=0
+  printf '%s' "$G_STDERR" | grep -qF -- "$text" && ok=1
+  _melde "$kennung" "$fall" "$zusicherung" "$ok" "stderr enthaelt '$text'" "stderr='$(_kuerzen "$G_STDERR")'"
+}
+
+pruefe_stderr_fehlt() {
+  local kennung="$1" fall="$2" zusicherung="$3" text="$4"
+  local ok=0
+  printf '%s' "$G_STDERR" | grep -qF -- "$text" || ok=1
+  _melde "$kennung" "$fall" "$zusicherung" "$ok" "stderr OHNE '$text'" "stderr='$(_kuerzen "$G_STDERR")'"
+}
+
+# pruefe_datei <kennung> <fall> <zusicherung> <pfad> <soll: existiert|fehlt>
+pruefe_datei() {
+  local kennung="$1" fall="$2" zusicherung="$3" pfad="$4" soll="$5"
+  local ok=0 ist
+  if [ -f "$pfad" ]; then ist="existiert"; else ist="fehlt"; fi
+  [ "$ist" = "$soll" ] && ok=1
+  _melde "$kennung" "$fall" "$zusicherung" "$ok" "$pfad $soll" "$pfad $ist"
+}
+
+# pruefe_json_einzelfeld <kennung> <fall> <feld> -- G_STDOUT ist GENAU EIN
+# JSON-Objekt mit GENAU diesem einen Feld (jq, nicht grep -- eine
+# Strukturaussage ist keine Textaussage).
+pruefe_json_einzelfeld() {
+  local kennung="$1" fall="$2" feld="$3"
+  local ok=0
+  if printf '%s' "$G_STDOUT" | jq -e --arg f "$feld" \
+       'type == "object" and (keys == [$f])' >/dev/null 2>&1; then
+    ok=1
+  fi
+  _melde "$kennung" "$fall" "Standardausgabe ist genau ein JSON-Objekt mit einzigem Feld $feld" \
+    "$ok" "{\"$feld\": ...}" "stdout='$(_kuerzen "$G_STDOUT")'"
+}
+
+# pruefe_zaehler <kennung> <fall> <zaehlerdatei> <erwarteter_stand> -- liest
+# die ZWEITE Zeile der Zaehlerdatei (der Zaehlerstand, siehe dod-gate.sh).
+pruefe_zaehler() {
+  local kennung="$1" fall="$2" datei="$3" erwartet="$4"
+  local ok=0 erhalten
+  erhalten=$(sed -n '2p' "$datei" 2>/dev/null || true)
+  [ "$erhalten" = "$erwartet" ] && ok=1
+  _melde "$kennung" "$fall" "Zaehlerstand $erwartet" "$ok" "$erwartet" "'$erhalten' (Datei: $datei)"
+}
+
+# pruefe_zaehler_schluessel <kennung> <fall> <zaehlerdatei> <erwarteter_schluessel>
+# -- liest die ERSTE Zeile der Zaehlerdatei (der gezaehlte Schluessel; siehe
+# dod-gate.sh, blockieren_mit_zaehlung: "printf '%s\n%s\n' "$primaer_schluessel"
+# "$neue_zahl" > "$zaehler_datei""). 6.12.25 f (Kanal "Zaehlerdatei"): mehrere
+# Zeilen der Tabelle 6.12.19 nannten diesen Kanal ausdruecklich, wurden aber
+# ueber die Fehlerausgabe geprueft -- dieselbe Meldung traegt den Schluessel
+# zwar auch, das belegt aber nicht, dass er PERSISTIERT wurde. Diese Funktion
+# misst den genannten Kanal.
+pruefe_zaehler_schluessel() {
+  local kennung="$1" fall="$2" datei="$3" erwartet="$4"
+  local ok=0 erhalten
+  erhalten=$(sed -n '1p' "$datei" 2>/dev/null || true)
+  [ "$erhalten" = "$erwartet" ] && ok=1
+  _melde "$kennung" "$fall" "Zaehlerdatei traegt Schluessel $erwartet" "$ok" "$erwartet" "'$erhalten' (Datei: $datei)"
+}
+
+# zaehler_pfad <zustand> <fallkey> -- baut den Pfad der Zaehlerdatei aus dem
+# Zustandsverzeichnis und dem Session-Schluessel (fallkey), genau wie
+# dod-gate.sh ihn selbst bildet (sha256sum des session_id-Feldes).
+zaehler_pfad() {
+  printf '%s/r3cosint/dod-gate/zaehler-%s' "$1" "$(printf '%s' "$2" | sha256sum | cut -d' ' -f1)"
+}
+
+# pruefe_wahr <kennung> <fall> <zusicherung> <ok:0|1> <erwartet> <erhalten> --
+# fuer Faelle, die ihre eigene Bedingung (Datei-Existenz, Beobachterergebnis
+# u. Ae.) bereits vorher gebildet haben.
+pruefe_wahr() {
+  local kennung="$1" fall="$2" zusicherung="$3" ok="$4" erwartet="$5" erhalten="$6"
+  _melde "$kennung" "$fall" "$zusicherung" "$ok" "$erwartet" "$erhalten"
 }
 
 WERKZEUGKASTEN_VOLL=$(neu_verzeichnis)
@@ -288,6 +437,29 @@ mkdir -p "\$FAKE_MKTEMP_ZIEL"
 exec "$REAL_MKTEMP" -p "\$FAKE_MKTEMP_ZIEL"
 MKTEMPEOF
 chmod +x "$WERKZEUGKASTEN_FAKE_MKTEMP/mktemp"
+
+# -----------------------------------------------------------------------------
+# Werkzeugkasten mit einer ATTRAPPE fuer "mktemp", NUR fuer S3-05 (6.12.25 d):
+# JEDER Aufruf (unabhaengig von "-p ...") gibt einen Pfad in einem
+# Verzeichnis aus, das es GAR NICHT gibt -- "cd" darauf schlaegt fehl, "pwd
+# -P" liefert leer, genau die Lage "physisch nicht aufloesbar". Eine echte
+# fehlende Ausfuehrungsberechtigung liesse sich hier nicht herstellen: dieses
+# Skript laeuft (wie Fall N-04 vermerkt) im Selbsttest als root, und root
+# umgeht Dateimodus-Rechte einschliesslich des Ausfuehrungsbits fuer die
+# Verzeichnisdurchquerung. Ein NICHT EXISTIERENDES Verzeichnis ist die
+# andere, hier tatsaechlich herstellbare Lage aus 6.12.25 d ("oder ueber eine
+# andere herstellbare Lage") und liefert dieselbe Beobachtung (leeres "cd &&
+# pwd -P").
+# -----------------------------------------------------------------------------
+WERKZEUGKASTEN_FAKE_MKTEMP_UNAUFLOESBAR=$(neu_verzeichnis)
+baue_werkzeugkasten "$WERKZEUGKASTEN_FAKE_MKTEMP_UNAUFLOESBAR"
+rm -f "$WERKZEUGKASTEN_FAKE_MKTEMP_UNAUFLOESBAR/mktemp"
+cat > "$WERKZEUGKASTEN_FAKE_MKTEMP_UNAUFLOESBAR/mktemp" <<'MKTEMPUNAUFEOF'
+#!/bin/sh
+echo "/dod-gate-selbsttest-s3-05-nicht-vorhanden-$$/tmp.attrappe"
+exit 0
+MKTEMPUNAUFEOF
+chmod +x "$WERKZEUGKASTEN_FAKE_MKTEMP_UNAUFLOESBAR/mktemp"
 
 # -----------------------------------------------------------------------------
 # baue_eingabe <ereignis> <cwd> <session_id> [stop_hook_active] [agent_id]
@@ -383,7 +555,7 @@ m2=$(marken_zeile K1 D3 linter A_FAIL "" "" 2)
 ausgabe=$(bauen_ausgabe "$baum" "$m1
 $m2" "$D19_OK" "make dod: abgebrochen bei D3 linter, Rueckgabewert 2.")
 lauf "$baum" Stop "fall01" "$ausgabe" 2
-pruefe "01 Kette mit A_FAIL -> 2" 2 "" "D3 linter A_FAIL"
+pruefe_rc Z-001 "Kette mit A_FAIL" 2
 
 # --- Fall 2: sauberes Gruen, keine Ausgabe ----------------------------------
 baum=$(neuer_mock_baum)
@@ -392,13 +564,9 @@ m2=$(marken_zeile K1 D1 bau B "" "" 0)
 ausgabe=$(bauen_ausgabe "$baum" "$m1
 $m2" "$D19_OK" "make dod: alle 2 Kettenschritte durchlaufen, keiner ungleich 0, 2 gueltige Marken gezaehlt.")
 lauf "$baum" Stop "fall02" "$ausgabe" 0
-gesamt=$((gesamt + 1))
-if [ "$G_RC" = "0" ] && [ -z "$G_STDOUT" ] && [ -z "$G_STDERR" ]; then
-  bestanden=$((bestanden + 1)); echo "BESTANDEN  02 Kette gruen ohne Lage C -> 0, keine Ausgabe"
-else
-  fehlgeschlagene_faelle+=("02 Kette gruen ohne Lage C")
-  echo "FEHLGESCHLAGEN  02 Kette gruen ohne Lage C (rc=$G_RC, stdout='$G_STDOUT', stderr='$G_STDERR')"
-fi
+pruefe_rc Z-002 "Kette gruen, ohne Lage C" 0
+pruefe_stdout_leer Z-003 "Kette gruen, ohne Lage C"
+pruefe_stderr_leer Z-004 "Kette gruen, ohne Lage C"
 
 # --- Fall 3: terminierte Lage C, Eintrag gueltig -> 0 mit systemMessage ----
 baum=$(neuer_mock_baum)
@@ -408,7 +576,10 @@ m2=$(marken_zeile K1 D7 abnahme C scripts/abnahme-abgleich.sh "" 2)
 ausgabe=$(bauen_ausgabe "$baum" "$m1
 $m2" "$D19_OK" "make dod: alle 2 Kettenschritte durchlaufen, 1 davon ohne Urteil (Lage C): D7 abnahme FEHLT=scripts/abnahme-abgleich.sh, Rueckgabewert 2.")
 lauf "$baum" Stop "fall03" "$ausgabe" 2
-pruefe "03 Terminierte Lage C, Eintrag gueltig -> 0 mit systemMessage" 0 '"systemMessage".*D7 abnahme'
+pruefe_rc Z-005 "Terminierte Lage C, Eintrag gueltig" 0
+pruefe_json_einzelfeld Z-006 "Terminierte Lage C, Eintrag gueltig" systemMessage
+pruefe_stdout_enthaelt Z-007 "Terminierte Lage C, Eintrag gueltig" \
+  "die Kennung des Kettenschritts, der nicht geurteilt hat" "D7 abnahme"
 
 # --- Fall 4: Lage C ohne Eintrag -> 2 ---------------------------------------
 baum=$(neuer_mock_baum)
@@ -417,7 +588,7 @@ m2=$(marken_zeile K1 D7 abnahme C scripts/abnahme-abgleich.sh "" 2)
 ausgabe=$(bauen_ausgabe "$baum" "$m1
 $m2" "$D19_OK" "make dod: alle 2 Kettenschritte durchlaufen, 1 davon ohne Urteil (Lage C): D7 abnahme FEHLT=scripts/abnahme-abgleich.sh, Rueckgabewert 2.")
 lauf "$baum" Stop "fall04" "$ausgabe" 2
-pruefe "04 Lage C ohne Eintrag -> 2" 2 "" "D7 abnahme C"
+pruefe_rc Z-008 "Lage C ohne Eintrag" 2
 
 # --- Fall 5: Eintrag vorhanden, Pruefmittel existiert inzwischen (veraltet) -
 baum=$(neuer_mock_baum)
@@ -430,7 +601,9 @@ m2=$(marken_zeile K1 D7 abnahme C scripts/abnahme-abgleich.sh "" 2)
 ausgabe=$(bauen_ausgabe "$baum" "$m1
 $m2" "$D19_OK" "make dod: alle 2 Kettenschritte durchlaufen, 1 davon ohne Urteil (Lage C): D7 abnahme FEHLT=scripts/abnahme-abgleich.sh, Rueckgabewert 2.")
 lauf "$baum" Stop "fall05" "$ausgabe" 2
-pruefe "05 Eintrag vorhanden, Pruefmittel existiert inzwischen -> 2 (veraltet, LISTE 2)" 2 "" "LISTE 2 D7 abnahme"
+pruefe_rc Z-009 "Eintrag vorhanden, Pruefmittel existiert inzwischen" 2
+pruefe_stderr_enthaelt Z-010 "Eintrag vorhanden, Pruefmittel existiert inzwischen" \
+  "Meldung fuehrt den beanstandeten Eintrag im Wortlaut auf" "scripts/abnahme-abgleich.sh"
 
 # --- Fall 6: Eintrag vorhanden, Schritt meldet A_OK (veraltet) -------------
 baum=$(neuer_mock_baum)
@@ -440,7 +613,9 @@ m2=$(marken_zeile K1 D7 abnahme A_OK "" "" 0)
 ausgabe=$(bauen_ausgabe "$baum" "$m1
 $m2" "$D19_OK" "make dod: alle 2 Kettenschritte durchlaufen, keiner ungleich 0, 2 gueltige Marken gezaehlt.")
 lauf "$baum" Stop "fall06" "$ausgabe" 0
-pruefe "06 Eintrag vorhanden, Schritt meldet A_OK -> 2 (veraltet, LISTE 3)" 2 "" "LISTE 3 D7 abnahme"
+pruefe_rc Z-011 "Eintrag vorhanden, Schritt meldet A_OK" 2
+pruefe_stderr_enthaelt Z-012 "Eintrag vorhanden, Schritt meldet A_OK" \
+  "Meldung fuehrt den beanstandeten Eintrag im Wortlaut auf" "D7 abnahme"
 
 # --- Fall 7a: Eintrag ohne Grund --------------------------------------------
 baum=$(neuer_mock_baum)
@@ -448,7 +623,7 @@ printf 'D7 abnahme|scripts/abnahme-abgleich.sh\t\n' > "$baum/.claude/hooks/dod-g
 m1=$(marken_zeile K1 D7 abnahme C scripts/abnahme-abgleich.sh "" 2)
 ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, 1 davon ohne Urteil (Lage C): D7 abnahme FEHLT=scripts/abnahme-abgleich.sh, Rueckgabewert 2.")
 lauf "$baum" Stop "fall07a" "$ausgabe" 2
-pruefe "07a Eintrag ohne Grund -> 2 (LISTE 4 1)" 2 "" "LISTE 4 1"
+pruefe_rc Z-013 "Eintrag ohne Grund" 2
 
 # --- Fall 7b: Eintrag mit nicht terminierbarem Pruefmittel (blosser Name) --
 baum=$(neuer_mock_baum)
@@ -456,7 +631,7 @@ printf 'D11 geheimnisse|gitleaks\tADR 0002, 6.12.5, Selbsttest.\n' > "$baum/.cla
 m1=$(marken_zeile K1 D11 geheimnisse C gitleaks "" 2)
 ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, 1 davon ohne Urteil (Lage C): D11 geheimnisse FEHLT=gitleaks, Rueckgabewert 2.")
 lauf "$baum" Stop "fall07b" "$ausgabe" 2
-pruefe "07b Eintrag mit nicht terminierbarem Pruefmittel -> 2 (LISTE 6 1)" 2 "" "LISTE 6 1"
+pruefe_rc Z-014 "Eintrag mit nicht terminierbarem Pruefmittel" 2
 
 # --- Fall 7c: Eintrag mit absolutem Pfad ------------------------------------
 baum=$(neuer_mock_baum)
@@ -464,7 +639,7 @@ printf 'D7 abnahme|/scripts/abnahme-abgleich.sh\tADR 0002, 6.12.5, Selbsttest.\n
 m1=$(marken_zeile K1 D7 abnahme C /scripts/abnahme-abgleich.sh "" 2)
 ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, 1 davon ohne Urteil (Lage C): D7 abnahme FEHLT=/scripts/abnahme-abgleich.sh, Rueckgabewert 2.")
 lauf "$baum" Stop "fall07c" "$ausgabe" 2
-pruefe "07c Eintrag mit absolutem Pfad -> 2 (LISTE 6 1)" 2 "" "LISTE 6 1"
+pruefe_rc Z-015 "Eintrag mit absolutem Pfad" 2
 
 # --- Fall 8: Marke nennt anderes Pruefmittel als der Schluessel ------------
 baum=$(neuer_mock_baum)
@@ -472,21 +647,19 @@ printf 'D7 abnahme|scripts/abnahme-abgleich.sh\tADR 0002, 6.12.5, Selbsttest.\n'
 m1=$(marken_zeile K1 D7 abnahme C ein-anderer-wert "" 2)
 ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, 1 davon ohne Urteil (Lage C): D7 abnahme FEHLT=ein-anderer-wert, Rueckgabewert 2.")
 lauf "$baum" Stop "fall08" "$ausgabe" 2
-pruefe "08 Marke nennt anderes Pruefmittel als Schluessel -> 2 (LISTE 5 D7 abnahme)" 2 "" "LISTE 5 D7 abnahme"
+pruefe_rc Z-016 "Marke nennt anderes Pruefmittel als der Schluessel" 2
 
 # --- Fall 9: stop_hook_active wahr bei roter Kette -> 0, Zaehler unveraendert
 baum=$(neuer_mock_baum)
 zustand9=$(neu_verzeichnis)
 eingabe9=$(baue_eingabe "Stop" "$baum" "fall09" "true")
 rufe_gate "$eingabe9" "$zustand9" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=roter Muell" "MOCK_RC=2"
-gesamt=$((gesamt + 1))
+pruefe_rc Z-017 "stop_hook_active wahr bei roter Kette" 0
 zaehlerdateien9=$(find "$zustand9" -name 'zaehler-*' 2>/dev/null | wc -l | tr -d ' ')
-if [ "$G_RC" = "0" ] && printf '%s' "$G_STDOUT" | grep -q "stop_hook_active" && [ "$zaehlerdateien9" = "0" ]; then
-  bestanden=$((bestanden + 1)); echo "BESTANDEN  09 stop_hook_active wahr bei roter Kette -> 0, Zaehler unveraendert"
-else
-  fehlgeschlagene_faelle+=("09 stop_hook_active")
-  echo "FEHLGESCHLAGEN  09 stop_hook_active (rc=$G_RC, zaehlerdateien=$zaehlerdateien9)"
-fi
+pruefe_wahr Z-018 "stop_hook_active wahr bei roter Kette" \
+  "Zaehlerstand nach dem Aufruf derselbe wie davor" \
+  "$([ "$zaehlerdateien9" = "0" ] && echo 1 || echo 0)" \
+  "keine Zaehlerdatei (davor: keine)" "Zaehlerdateien=$zaehlerdateien9"
 
 # --- Fall 10a (6.12.23 a, vierte Form): alle Schritte gruen, D19 VERLETZT,
 # rc 2 -> Gate blockiert mit Schluessel "D19 VERLETZT".
@@ -494,50 +667,87 @@ baum=$(neuer_mock_baum)
 m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
 ausgabe_10a=$(bauen_ausgabe "$baum" "$m1" "VERLETZT -- versionierter Bestand veraendert." "make dod: alle 1 Kettenschritte durchlaufen, Rahmenpruefung D19 VERLETZT, Rueckgabewert 2.")
 lauf "$baum" Stop "fall10a" "$ausgabe_10a" 2
-pruefe "10a D19 VERLETZT, Form 4 -> 2" 2 "" "D19 VERLETZT"
-
-# --- Fall 10a-widerspruch: DIESELBE Attrappe UND DERSELBE Baum wie 10a
-# (Form-4-Text, D19 VERLETZT), aber MOCK_RC=0 -> Parse-Regel "Rueckgabewert 0
-# nur mit Form 1" (6.12.23 a) verletzt -> Schluessel
-# "KETTE schlusszeile-widerspruch". Ein NEUER Baum waere hier falsch: die
-# Ausgabe nennt den Baum von 10a woertlich in ihrer ersten Zeile, ein anderer
-# CLAUDE_PROJECT_DIR ergaebe stattdessen "KETTE baum-widerspruch".
-lauf "$baum" Stop "fall10a-widerspruch" "$ausgabe_10a" 0
-pruefe "10a-widerspruch dieselbe Attrappe mit rc 0 -> KETTE schlusszeile-widerspruch" 2 "" "KETTE schlusszeile-widerspruch"
+pruefe_rc Z-019 "D19 VERLETZT, Form 4" 2
 
 # --- Fall 10b: D19 Lage C, Form 4 -------------------------------------------
 baum=$(neuer_mock_baum)
 m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
 ausgabe=$(bauen_ausgabe "$baum" "$m1" "C -- git fehlt, nicht beobachtet." "make dod: alle 1 Kettenschritte durchlaufen, Rahmenpruefung D19 C, Rueckgabewert 2.")
 lauf "$baum" Stop "fall10b" "$ausgabe" 2
-pruefe "10b D19 Lage C, Form 4 -> 2" 2 "" "D19 C"
+pruefe_rc Z-020 "D19 Lage C, Form 4" 2
 
-# --- Fall 11: fehlende Pruefmittel (G10) ------------------------------------
+echo
+echo "--- Fehlende Pruefmittel (G10, 6.12.11) --------------------------------"
+echo
+
+# --- Z-021/022, Z-023/024, Z-025/026, Z-029/030, Z-031/032: jq, git, make,
+#     timeout, flock einzeln aus dem Werkzeugkasten entfernt ---------------
 baum=$(neuer_mock_baum)
-for werkzeug in jq git make timeout flock sha256sum mktemp; do
+for eintrag in \
+  "jq|Z-021|Z-022" \
+  "git|Z-023|Z-024" \
+  "make|Z-025|Z-026" \
+  "timeout|Z-029|Z-030" \
+  "flock|Z-031|Z-032"; do
+  werkzeug="${eintrag%%|*}"
+  rest="${eintrag#*|}"
+  z_rc="${rest%%|*}"
+  z_msg="${rest#*|}"
   wzk=$(neu_verzeichnis)
   baue_werkzeugkasten "$wzk" "$werkzeug"
   zustand=$(neu_verzeichnis)
   eingabe=$(baue_eingabe "Stop" "$baum" "fall11-$werkzeug")
   rufe_gate "$eingabe" "$zustand" "$wzk" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=x" "MOCK_RC=0"
-  pruefe "11 fehlendes $werkzeug -> 2, mit Nennung" 2 "" "GATE $werkzeug"
+  pruefe_rc "$z_rc" "Fehlendes $werkzeug" 2
+  pruefe_stderr_enthaelt "$z_msg" "Fehlendes $werkzeug" "Meldung nennt $werkzeug" "GATE $werkzeug"
 done
-# fehlende Liste der terminierten Lagen
-baum_ohne_liste=$(neuer_mock_baum)
-rm -f "$baum_ohne_liste/.claude/hooks/dod-gate-terminierte-lagen.txt"
-lauf "$baum_ohne_liste" Stop "fall11-liste" "x" 0
-pruefe "11 fehlende Liste der terminierten Lagen -> 2, mit Nennung" 2 "" "GATE dod-gate-terminierte-lagen.txt"
-# fehlendes Makefile
+
+# --- Z-027/028: fehlendes Makefile -----------------------------------------
 baum_ohne_makefile=$(neu_verzeichnis)
 git -C "$baum_ohne_makefile" init -q
+git -C "$baum_ohne_makefile" config user.email "selbsttest@example.invalid"
+git -C "$baum_ohne_makefile" config user.name "Selbsttest"
 mkdir -p "$baum_ohne_makefile/.claude/hooks"
 : > "$baum_ohne_makefile/.claude/hooks/dod-gate-terminierte-lagen.txt"
 git -C "$baum_ohne_makefile" add -A
-git -C "$baum_ohne_makefile" -c user.email=t@example.invalid -c user.name=t commit -q -m init --allow-empty
+git -C "$baum_ohne_makefile" commit -q -m init --allow-empty
 lauf "$baum_ohne_makefile" Stop "fall11-makefile" "x" 0
-pruefe "11 fehlendes Makefile -> 2, mit Nennung" 2 "" "GATE Makefile"
+pruefe_rc Z-027 "Fehlendes Makefile" 2
+pruefe_stderr_enthaelt Z-028 "Fehlendes Makefile" "Meldung nennt Makefile" "GATE Makefile"
 
-# --- Fall 12: nicht beschreibbares Zustandsverzeichnis bei roter Kette -----
+# --- Z-033/034: fehlende Liste der terminierten Lagen ----------------------
+baum_ohne_liste=$(neuer_mock_baum)
+rm -f "$baum_ohne_liste/.claude/hooks/dod-gate-terminierte-lagen.txt"
+lauf "$baum_ohne_liste" Stop "fall11-liste" "x" 0
+pruefe_rc Z-033 "Fehlende Liste der terminierten Lagen" 2
+pruefe_stderr_enthaelt Z-034 "Fehlende Liste der terminierten Lagen" "Meldung nennt den Pfad der Liste" ".claude/hooks/dod-gate-terminierte-lagen.txt"
+
+# --- Z-116..Z-121 (Entscheid g): sha256sum und mktemp fehlend, je drei -----
+for eintrag in \
+  "sha256sum|Z-116|Z-117|Z-118" \
+  "mktemp|Z-119|Z-120|Z-121"; do
+  werkzeug="${eintrag%%|*}"
+  rest="${eintrag#*|}"
+  z_rc="${rest%%|*}"
+  rest="${rest#*|}"
+  z_msg="${rest%%|*}"
+  z_weg="${rest#*|}"
+  wzk=$(neu_verzeichnis)
+  baue_werkzeugkasten "$wzk" "$werkzeug"
+  zustand=$(neu_verzeichnis)
+  eingabe=$(baue_eingabe "Stop" "$baum" "fall11-$werkzeug")
+  rufe_gate "$eingabe" "$zustand" "$wzk" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=x" "MOCK_RC=0"
+  pruefe_rc "$z_rc" "Fehlendes $werkzeug" 2
+  pruefe_stderr_enthaelt "$z_msg" "Fehlendes $werkzeug" "Meldung nennt $werkzeug" "GATE $werkzeug"
+  pruefe_stderr_enthaelt "$z_weg" "Fehlendes $werkzeug" "Meldung nennt den Beschaffungsweg" "naechster Schritt: coreutils installieren"
+done
+
+echo
+echo "--- Zustandsverzeichnis nicht beschreibbar (6.12.9, Entscheid e) ------"
+echo
+
+# --- Z-035/036, Z-104/105: nicht beschreibbares Zustandsverzeichnis, /tmp
+#     bleibt als Ausweich erreichbar -----------------------------------------
 baum=$(neuer_mock_baum)
 m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
 m2=$(marken_zeile K1 D3 linter A_FAIL "" "" 2)
@@ -545,407 +755,42 @@ ausgabe=$(bauen_ausgabe "$baum" "$m1
 $m2" "$D19_OK" "make dod: abgebrochen bei D3 linter, Rueckgabewert 2.")
 zustand12_basis=$(neu_verzeichnis)
 # chmod-basierte Schreibsperren wirken nicht, wenn dieser Selbsttest als root
-# laeuft (root umgeht Dateimodus-Rechte). Stattdessen ein Pfad, der
-# STRUKTURELL nicht anlegbar ist: "hindernis" ist eine gewoehnliche DATEI,
-# "mkdir -p .../hindernis/darunter" schlaegt damit unabhaengig vom Benutzer
-# mit ENOTDIR fehl.
+# laeuft (root umgeht Dateimodus-Rechte). "hindernis" ist eine gewoehnliche
+# DATEI, "mkdir -p .../hindernis/darunter" schlaegt damit STRUKTURELL fehl,
+# unabhaengig vom Benutzer.
 : > "$zustand12_basis/hindernis"
 zustand12="$zustand12_basis/hindernis/darunter"
 eingabe12=$(baue_eingabe "Stop" "$baum" "fall12")
+sperre_fest="/tmp/r3cosint-dod-gate"
+sperre_fest_war_verzeichnis=0
+sperre_fest_sicherung=$(neu_verzeichnis)
+if [ -d "$sperre_fest" ]; then
+  sperre_fest_war_verzeichnis=1
+  mv "$sperre_fest" "$sperre_fest_sicherung/verzeichnis"
+fi
 rufe_gate "$eingabe12" "$zustand12" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe" "MOCK_RC=2"
-pruefe "12 nicht beschreibbares Zustandsverzeichnis bei roter Kette -> 2, mit Zusatz" 2 "" "nicht zaehlen"
-# S-07: N-04s Ausweich muss TATSAECHLICH unter dem festen Pfad entstehen,
-# nicht nur behauptet werden.
+pruefe_rc Z-035 "Nicht beschreibbares Zustandsverzeichnis bei roter Kette" 2
+pruefe_stderr_enthaelt Z-036 "Nicht beschreibbares Zustandsverzeichnis bei roter Kette" \
+  "Zusatz, dass nicht gezaehlt werden kann" "nicht zaehlen"
 baum_hash12=$(printf '%s' "$baum" | sha256sum | cut -d' ' -f1)
 sperre_datei12="/tmp/r3cosint-dod-gate/sperre-$baum_hash12.lock"
-gesamt=$((gesamt + 1))
-if [ -f "$sperre_datei12" ]; then
-  bestanden=$((bestanden + 1)); echo "BESTANDEN  S-07 Ausweich-Sperrdatei unter /tmp/r3cosint-dod-gate/ entstanden"
-  rm -f "$sperre_datei12"
-else
-  fehlgeschlagene_faelle+=("S-07 Ausweich-Sperrdatei unter /tmp/r3cosint-dod-gate/")
-  echo "FEHLGESCHLAGEN  S-07 Ausweich-Sperrdatei erwartet unter $sperre_datei12, nicht gefunden"
+pruefe_datei Z-104 "Zustandsverzeichnis nicht beschreibbar" \
+  "Sperrdatei besteht waehrend des Laufs unter /tmp" "$sperre_datei12" existiert
+pruefe_rc Z-105 "Zustandsverzeichnis nicht beschreibbar" 2
+rm -f "$sperre_datei12"
+if [ "$sperre_fest_war_verzeichnis" -eq 1 ]; then
+  mv "$sperre_fest_sicherung/verzeichnis" "$sperre_fest"
 fi
 
-# --- Fall 13: innere Zeitueberschreitung ------------------------------------
-baum=$(neuer_mock_baum)
-lauf "$baum" Stop "fall13" "wird nie gedruckt" 0 "" "" "" "$WERKZEUGKASTEN_SCHNELLER_TIMEOUT" 5
-pruefe "13 innere Zeitueberschreitung -> 2" 2 "" "zeitueberschreitung"
-
-# --- Fall 13b: Rueckgabewert weder 0 noch 2 --------------------------------
-# Mit einem ECHTEN GNU Make ist dieser Fall nicht herstellbar: jede
-# fehlgeschlagene Rezeptzeile wird von GNU Make selbst IMMER zu dessen
-# eigenem Rueckgabewert 2 (empirisch geprueft, Uebergabe dieser
-# Arbeitseinheit) -- ein "exit 7" im Rezept liefert am Ende trotzdem 2. Die
-# Attrappe fuer "make" selbst (WERKZEUGKASTEN_FAKE_MAKE) umgeht NUR diese
-# Umwandlung und liefert MOCK_RC unveraendert.
-baum=$(neuer_mock_baum)
-lauf "$baum" Stop "fall13b" "irgendeine unlesbare Ausgabe" 7 "" "" "" "$WERKZEUGKASTEN_FAKE_MAKE"
-pruefe "13b Rueckgabewert weder 0 noch 2 -> 2, mit Nennung" 2 "" "rueckgabewert=7"
-
 echo
-echo "--- Eskalation (G8, 6.12.9) ---"
+echo "--- Zustandsverzeichnis UND /tmp nicht beschreibbar (N-04, Entscheid e)"
 echo
 
-# --- Faelle 14-18: dreimal derselbe Schluessel, viertes Mal Uebergabedatei --
-baum=$(neuer_mock_baum)
-zustand_esk=$(neu_verzeichnis)
-m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
-m2=$(marken_zeile K1 D3 linter A_FAIL "" "" 2)
-ausgabe_esk=$(bauen_ausgabe "$baum" "$m1
-$m2" "$D19_OK" "make dod: abgebrochen bei D3 linter, Rueckgabewert 2.")
-
-lauf_mit_zustand "$zustand_esk" "$baum" Stop "fall14" "$ausgabe_esk" 2
-pruefe "14a erstes Mal -> 2, keine Eskalationsforderung" 2 "" "1\. Mal in Folge"
-lauf_mit_zustand "$zustand_esk" "$baum" Stop "fall14" "$ausgabe_esk" 2
-pruefe "14b zweites Mal -> 2, keine Eskalationsforderung" 2 "" "2\. Mal in Folge"
-lauf_mit_zustand "$zustand_esk" "$baum" Stop "fall14" "$ausgabe_esk" 2
-pruefe "14c drittes Mal -> verlangt Uebergabedatei (3.4)" 2 "" "Eskalation 3\.4: D3 linter A_FAIL"
-
-lauf_mit_zustand "$zustand_esk" "$baum" Stop "fall14" "$ausgabe_esk" 2
-pruefe "14d viertes Mal ohne Uebergabedatei -> weiterhin 2" 2 "" "erwartet eine Datei"
-
-# Uebergabedatei anlegen, NEU/GEAENDERT nach git status (nicht committet)
-mkdir -p "$baum/docs/uebergaben"
-printf 'Uebergabe\n\nEskalation 3.4: D3 linter A_FAIL\n' > "$baum/docs/uebergaben/2026-09-02_selbsttest-eskalation.md"
-lauf_mit_zustand "$zustand_esk" "$baum" Stop "fall14" "$ausgabe_esk" 2
-pruefe "15 Uebergabedatei neu/geaendert -> Durchlass ab dem vierten Mal" 0 '"systemMessage".*Eskalation 3\.4'
-
-# committen -> weiterhin Durchlass (jetzt ueber "im juengsten Commit enthalten")
-git -C "$baum" add -A
-git -C "$baum" commit -q -m "Eskalationsuebergabe"
-lauf_mit_zustand "$zustand_esk" "$baum" Stop "fall14" "$ausgabe_esk" 2
-pruefe "16 Uebergabedatei committet und in HEAD -> Durchlass" 0 '"systemMessage".*Eskalation 3\.4'
-
-# ein WEITERER Commit danach -> Uebergabedatei nur noch in einem AELTEREN Commit
-printf 'spaeter\n' > "$baum/docs/uebergaben/2026-09-02_noch-eine-datei.md"
-git -C "$baum" add -A
-git -C "$baum" commit -q -m "weiterer Commit, Eskalationsuebergabe nicht mehr HEAD"
-lauf_mit_zustand "$zustand_esk" "$baum" Stop "fall14" "$ausgabe_esk" 2
-pruefe "17 Uebergabedatei nur in aelterem Commit -> weiterhin 2" 2 "" "erwartet eine Datei"
-
-# TaskCompleted blockiert trotz derselben (jetzt wieder aktuellen) Uebergabe
-# DT-B4: Der Inhalt MUSS sich gegenueber dem letzten Commit aendern -- sonst
-# committet git nichts ("nothing to commit"), HEAD bleibt der Commit aus
-# Fall 17 (der die Datei NICHT enthaelt), und der Fall bloeckte auch OHNE die
-# TaskCompleted-Sonderregel, belegte also nichts. Eine zusaetzliche Zeile
-# macht den Inhalt neu; der Commit und seine Wirkung werden selbst geprueft
-# statt stillschweigend vorausgesetzt.
-printf 'Uebergabe\n\nEskalation 3.4: D3 linter A_FAIL\n\nErneut fuer Fall 18 (TaskCompleted), DT-B4.\n' > "$baum/docs/uebergaben/2026-09-02_selbsttest-eskalation.md"
-git -C "$baum" add -A
-if ! git -C "$baum" commit -q -m "Eskalationsuebergabe wieder aktuell (Fall 18)"; then
-  fehlgeschlagene_faelle+=("18 Vorbereitung: git commit fand keine Aenderung")
-  echo "FEHLGESCHLAGEN  18 Vorbereitung: git commit fand keine Aenderung -- die Uebergabedatei war nicht neu genug."
-  gesamt=$((gesamt + 1))
-elif ! git -C "$baum" diff-tree --no-commit-id --name-only -r HEAD | grep -qF "docs/uebergaben/2026-09-02_selbsttest-eskalation.md"; then
-  fehlgeschlagene_faelle+=("18 Vorbereitung: Uebergabedatei nicht in HEAD")
-  echo "FEHLGESCHLAGEN  18 Vorbereitung: die Uebergabedatei steht nicht im juengsten Commit (HEAD)."
-  gesamt=$((gesamt + 1))
-fi
-lauf_mit_zustand "$zustand_esk" "$baum" TaskCompleted "fall14" "$ausgabe_esk" 2
-pruefe "18 dieselbe Eskalation (echt in HEAD) auf TaskCompleted -> weiterhin 2" 2 "" "TaskCompleted blockiert"
-
-# --- S-04 (Entscheid d): ein weiterer Stop-Lauf am selben Schluessel ------
-# Der Zaehler wird bei einem Eskalations-Durchlass NICHT geloescht, sondern
-# zaehlt WEITER -- "unveraendert" waere die falsche Beschreibung. Die Zeilen
-# 14-18 haben den Zaehler bereits mehrfach erhoeht (auch bei einem Durchlass
-# schreibt blockieren_mit_zaehlung die neue Zahl VOR der Fallunterscheidung);
-# der erwartete Wert wird deshalb aus dem VORHER gelesenen Bestand berechnet,
-# nicht als feste Zahl geraten (dieselbe Lehre wie DT-B4/S-01: die Behauptung
-# muss die Zaehlerdatei selbst lesen, nicht nur den Rueckgabewert).
-zaehler_datei_s04="$zustand_esk/r3cosint/dod-gate/zaehler-$(printf '%s' 'fall14' | sha256sum | cut -d' ' -f1)"
-alter_wert_s04=$(sed -n '2p' "$zaehler_datei_s04" 2>/dev/null || echo 0)
-case "$alter_wert_s04" in ''|*[!0-9]*) alter_wert_s04=0 ;; esac
-lauf_mit_zustand "$zustand_esk" "$baum" Stop "fall14" "$ausgabe_esk" 2
-erwarteter_wert_s04=$((alter_wert_s04 + 1))
-pruefe "S-04a weiterer Stop-Lauf am selben Schluessel -> Durchlass, ${erwarteter_wert_s04}. Mal in Folge" 0 "\"systemMessage\".*${erwarteter_wert_s04}\\. Mal in Folge"
-gesamt=$((gesamt + 1))
-if [ -f "$zaehler_datei_s04" ] && [ "$(sed -n '2p' "$zaehler_datei_s04" 2>/dev/null)" = "$erwarteter_wert_s04" ]; then
-  bestanden=$((bestanden + 1)); echo "BESTANDEN  S-04b Zaehlerdatei zaehlt weiter (Inhalt: $erwarteter_wert_s04), wird NICHT geloescht"
-else
-  fehlgeschlagene_faelle+=("S-04b Zaehlerdatei zaehlt weiter")
-  echo "FEHLGESCHLAGEN  S-04b Zaehlerdatei (Datei='$zaehler_datei_s04', 2. Zeile='$(sed -n '2p' "$zaehler_datei_s04" 2>/dev/null)', erwartet='$erwarteter_wert_s04')"
-fi
-lauf_mit_zustand "$zustand_esk" "$baum" TaskCompleted "fall14" "$ausgabe_esk" 2
-pruefe "S-04c TaskCompleted nach weiterem Durchlass -> weiterhin 2" 2 "" "TaskCompleted blockiert"
-
-echo
-echo "--- Weitere Formfaelle ---"
-echo
-
-# --- Fall 19: mehrere ungedeckte Lagen C + D19-Befund -----------------------
-baum=$(neuer_mock_baum)
-m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
-m2=$(marken_zeile K1 D7 abnahme C scripts/abnahme-abgleich.sh "" 2)
-m3=$(marken_zeile K1 D10 prototyp-trennung C scripts/prototyp-trennung-pruefen.sh "" 2)
-ausgabe=$(bauen_ausgabe "$baum" "$m1
-$m2
-$m3" "VERLETZT -- versionierter Bestand veraendert." "make dod: alle 3 Kettenschritte durchlaufen, 2 davon ohne Urteil (Lage C): D7 abnahme FEHLT=scripts/abnahme-abgleich.sh, D10 prototyp-trennung FEHLT=scripts/prototyp-trennung-pruefen.sh, Rueckgabewert 2.")
-lauf "$baum" Stop "fall19" "$ausgabe" 2
-pruefe "19 mehrere ungedeckte Lagen C + D19-Befund -> erste Abweichung (D7)" 2 "" "Schluessel: D7 abnahme C"
-
-# --- Fall 20: Marke mit FEHLT= und SCHWELLE= zugleich -----------------------
-baum=$(neuer_mock_baum)
-printf 'D3 linter|scripts/nicht-vorhanden.sh\tADR 0002, 6.12.5, Selbsttest.\n' > "$baum/.claude/hooks/dod-gate-terminierte-lagen.txt"
-m1=$(marken_zeile K1 D3 linter C scripts/nicht-vorhanden.sh OHNE_SCHWELLE 2)
-ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, 1 davon ohne Urteil (Lage C): D3 linter FEHLT=scripts/nicht-vorhanden.sh, Rueckgabewert 2.")
-lauf "$baum" Stop "fall20" "$ausgabe" 2
-pruefe "20 FEHLT= und SCHWELLE= zugleich -> richtig zerlegt, gedeckt" 0 '"systemMessage".*D3 linter'
-
-# --- Fall 21: D19-Zeile in allen vier Schluesselwortformen -----------------
-# Jede Form gepaart mit der Schlusszeile, die "make dod" nach 6.12.23 a
-# tatsaechlich dazu ausgeben wuerde: OHNE_BEFUND/B -> Form 1 (rc 0 AUF DER
-# KETTENSEITE, D19 Lage B hebt gesamt_rc nicht), VERLETZT/C -> Form 4 (rc 2).
-# ERWARTET ist der Rueckgabewert des GATES, nicht der Kette -- bei "B" weichen
-# beide voneinander ab: die Kette meldet sauber (Form 1, rc 0), das Gate
-# blockiert trotzdem, weil es selbst einen echten Arbeitsbaum bestimmt hat und
-# D19 "kein Git-Arbeitsbaum" dem widerspricht (6.12.4, "D19 B-widerspruch").
-# N-02 (6.12.19): ALLE VIER Schluesselwoerter je MIT und OHNE Zusatztext --
-# vorher deckten nur 5 von 8 Kombinationen ab (VERLETZT./B./C. ohne Zusatz
-# fehlten). Das Schluesselwort steht jetzt als EIGENES Feld (nicht mehr aus
-# "form" abgeleitet) -- "${form%% *}" liefert bei "VERLETZT." (kein
-# Leerzeichen) faelschlich "VERLETZT." samt Punkt und haette eine unlesbare
-# D19-Zeile gebaut.
-# S-01: jeder Fall prueft jetzt zusaetzlich zum Rueckgabewert den ZAEHL-
-# SCHLUESSEL selbst (fuenftes Feld) -- vor allem fuer "B" den Schluessel
-# "D19 B-widerspruch"; eine Pruefung, die nur den Rueckgabewert liest, kann
-# einen richtigen Rueckgabewert aus dem falschen Schluessel nicht von einem
-# richtigen aus dem richtigen Schluessel unterscheiden (dieselbe Fehlerklasse
-# wie DT-B4).
-baum=$(neuer_mock_baum)
-m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
-for eintrag in \
-  "OHNE_BEFUND|OHNE_BEFUND -- Text.|erfolg|0|0|" \
-  "OHNE_BEFUND|OHNE_BEFUND.|erfolg|0|0|" \
-  "VERLETZT|VERLETZT -- Text.|d19|2|2|D19 VERLETZT" \
-  "VERLETZT|VERLETZT.|d19|2|2|D19 VERLETZT" \
-  "B|B -- Text.|erfolg|0|2|D19 B-widerspruch" \
-  "B|B.|erfolg|0|2|D19 B-widerspruch" \
-  "C|C -- Text.|d19|2|2|D19 C" \
-  "C|C.|d19|2|2|D19 C"; do
-  schluesselwort="${eintrag%%|*}"
-  rest0="${eintrag#*|}"
-  form="${rest0%%|*}"
-  rest="${rest0#*|}"
-  art="${rest%%|*}"
-  rest2="${rest#*|}"
-  mock_rc="${rest2%%|*}"
-  rest3="${rest2#*|}"
-  erwartet="${rest3%%|*}"
-  erwarteter_schluessel="${rest3#*|}"
-  if [ "$art" = "erfolg" ]; then
-    schluss="make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt."
-  else
-    schluss="make dod: alle 1 Kettenschritte durchlaufen, Rahmenpruefung D19 ${schluesselwort}, Rueckgabewert 2."
-  fi
-  ausgabe=$(bauen_ausgabe "$baum" "$m1" "$form" "$schluss")
-  lauf "$baum" Stop "fall21-$form" "$ausgabe" "$mock_rc"
-  if [ -n "$erwarteter_schluessel" ]; then
-    pruefe "21 D19-Form '$form' richtig zugeordnet (Schluessel $erwarteter_schluessel)" "$erwartet" "" "Schluessel: $erwarteter_schluessel"
-  else
-    pruefe "21 D19-Form '$form' richtig zugeordnet" "$erwartet"
-  fi
-done
-
-# --- Fall 21b (6.12.23 b): LISTE vor der ersten Kettenabweichung -----------
-# D3 linter meldet A_FAIL als ERSTE Uebersichtszeile; D7 abnahme traegt einen
-# von der Liste abweichenden FEHLT-Wert (Selbstpruefung 5) als SPAETERE Zeile.
-# Trotz der frueheren Position von A_FAIL in der Uebersicht muss der
-# LISTE-Schluessel gewinnen (Rangfolge GATE -> LISTE -> erste
-# Kettenabweichung -> D19, 6.12.23 b).
-baum=$(neuer_mock_baum)
-printf 'D7 abnahme|scripts/abnahme-abgleich.sh\tADR 0002, 6.12.5, Selbsttest.\n' > "$baum/.claude/hooks/dod-gate-terminierte-lagen.txt"
-m1=$(marken_zeile K1 D3 linter A_FAIL "" "" 2)
-m2=$(marken_zeile K1 D7 abnahme C ein-anderer-wert "" 2)
-ausgabe=$(bauen_ausgabe "$baum" "$m1
-$m2" "$D19_OK" "make dod: abgebrochen bei D3 linter, Rueckgabewert 2.")
-lauf "$baum" Stop "fall-reihenfolge" "$ausgabe" 2
-pruefe "21b Reihenfolge: LISTE 5 vor frueherer Kettenabweichung (A_FAIL)" 2 "" "Schluessel: LISTE 5 D7 abnahme"
-
-# --- Fall 22: TaskCompleted bei roter Kette ---------------------------------
+# --- Z-106/107/108: beide Auswege fuer die Sperre versperrt, ROTE Kette ----
 baum=$(neuer_mock_baum)
 m1=$(marken_zeile K1 D3 linter A_FAIL "" "" 2)
 ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: abgebrochen bei D3 linter, Rueckgabewert 2.")
-lauf "$baum" TaskCompleted "fall22" "$ausgabe" 2
-pruefe "22 TaskCompleted bei roter Kette -> 2" 2
-
-echo
-echo "--- SubagentStop und Rollenaufloesung (G13, 6.12.14) ---"
-echo
-
-# --- Fall 23: Rolle mit Bash, ohne Edit/Write/NotebookEdit -----------------
-baum=$(neuer_mock_baum)
-zustand23=$(neu_verzeichnis)
-eingabe23=$(baue_eingabe "SubagentStop" "$baum" "fall23" "false" "a1" "attrappe-pruefer")
-rufe_gate "$eingabe23" "$zustand23" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=roter Muell, duerfte nie gelesen werden" "MOCK_RC=2"
-pruefe "23 SubagentStop Rolle ohne Schreibrecht -> 0, kein Lauf" 0 '"systemMessage".*kein Werkzeug mit Schreibrecht'
-
-# --- Fall 24: Rolle mit Edit/Write -> Kette laeuft --------------------------
-baum=$(neuer_mock_baum)
-m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
-ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
-lauf "$baum" SubagentStop "fall24" "$ausgabe" 0 "false" "a1" "attrappe-schreiber"
-pruefe "24 SubagentStop Rolle mit Edit/Write -> Kette laeuft, sauberes Gruen" 0
-
-# --- Fall 25: agent_type ueber name: aufgeloest, nicht ueber Dateinamen ----
-# "anders-benannt.md" traegt "name: attrappe-pruefer" -- Datei- und Rollenname
-# weichen absichtlich voneinander ab (siehe neuer_mock_baum).
-baum=$(neuer_mock_baum)
-zustand25=$(neu_verzeichnis)
-eingabe25=$(baue_eingabe "SubagentStop" "$baum" "fall25" "false" "a1" "attrappe-pruefer")
-rufe_gate "$eingabe25" "$zustand25" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=roter Muell" "MOCK_RC=2"
-pruefe "25 agent_type ueber name: aufgeloest (nicht Dateiname) -> kein Lauf" 0 '"systemMessage".*kein Werkzeug mit Schreibrecht'
-
-# --- Fall 26: unbekannter/leerer/mehrdeutiger agent_type -> Kette laeuft ---
-baum=$(neuer_mock_baum)
-m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
-ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
-lauf "$baum" SubagentStop "fall26a" "$ausgabe" 0 "false" "a1" "voellig-unbekannte-rolle"
-pruefe "26a unbekannter agent_type -> Kette laeuft" 0
-lauf "$baum" SubagentStop "fall26b" "$ausgabe" 0 "false" "a1" ""
-pruefe "26b leerer agent_type -> Kette laeuft" 0
-# Mehrdeutig: zweite Rolle mit demselben name: anlegen.
-cp "$baum/.claude/agents/attrappe-schreiber.md" "$baum/.claude/agents/zweite-kopie.md"
-git -C "$baum" add -A
-git -C "$baum" commit -q -m "mehrdeutiger agent_type"
-lauf "$baum" SubagentStop "fall26c" "$ausgabe" 0 "false" "a1" "attrappe-schreiber"
-pruefe "26c mehrdeutiger agent_type (zwei Treffer) -> Kette laeuft" 0
-
-echo
-echo "--- N-03 (G13, 6.12.14): ECHTE Rollendateien, nicht die Attrappe ------"
-echo
-
-# --- Fall N-03a: echte Rolle static-software-tester (kein Edit/Write) ------
-baum=$(neuer_mock_baum)
-cp "$REPO_WURZEL/.claude/agents/static-software-tester.md" "$baum/.claude/agents/static-software-tester.md"
-zustand_sst=$(neu_verzeichnis)
-eingabe_sst=$(baue_eingabe "SubagentStop" "$baum" "fall-sst" "false" "a1" "static-software-tester")
-rufe_gate "$eingabe_sst" "$zustand_sst" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=roter Muell, duerfte nie gelesen werden" "MOCK_RC=2"
-pruefe "N-03a echte Rolle static-software-tester (kein Edit/Write) -> 0, kein Lauf" 0 '"systemMessage".*kein Werkzeug mit Schreibrecht'
-
-# --- Fall N-03b: echte Rolle pentester (kein Edit/Write) -------------------
-baum=$(neuer_mock_baum)
-cp "$REPO_WURZEL/.claude/agents/pentester.md" "$baum/.claude/agents/pentester.md"
-zustand_pt=$(neu_verzeichnis)
-eingabe_pt=$(baue_eingabe "SubagentStop" "$baum" "fall-pt" "false" "a1" "pentester")
-rufe_gate "$eingabe_pt" "$zustand_pt" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=roter Muell, duerfte nie gelesen werden" "MOCK_RC=2"
-pruefe "N-03b echte Rolle pentester (kein Edit/Write) -> 0, kein Lauf" 0 '"systemMessage".*kein Werkzeug mit Schreibrecht'
-
-# --- Fall N-03c (Gegenfall): echte Rolle devops-engineer (Edit/Write) ------
-baum=$(neuer_mock_baum)
-cp "$REPO_WURZEL/.claude/agents/devops-engineer.md" "$baum/.claude/agents/devops-engineer.md"
-m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
-ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
-lauf "$baum" SubagentStop "fall-devops" "$ausgabe" 0 "false" "a1" "devops-engineer"
-pruefe "N-03c echte Rolle devops-engineer (Edit/Write) -> Kette laeuft, sauberes Gruen" 0
-
-echo
-echo "--- N-05 (6.12.23 b): LISTE-Reihenfolge bei mehreren fehlerhaften Zeilen"
-echo
-
-# --- Fall N-05: Verstoss gegen Selbstpruefung 6 in Zeile 1, gegen 4 in Zeile 2
-# Erwartet: die FRUEHERE Zeile (6) gewinnt, unabhaengig von der Pruefungsart.
-baum=$(neuer_mock_baum)
-printf 'D11 geheimnisse|gitleaks\tADR 0002, 6.12.5, Selbsttest.\nD7 abnahme|scripts/abnahme-abgleich.sh\tGrund ohne die Wendung.\n' > "$baum/.claude/hooks/dod-gate-terminierte-lagen.txt"
-m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
-ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
-lauf "$baum" Stop "fall-n05" "$ausgabe" 0
-pruefe "N-05 Verstoss 6 (Zeile 1) vor Verstoss 4 (Zeile 2) -> LISTE 6 1" 2 "" "Schluessel: LISTE 6 1"
-
-echo
-echo "--- B-01 (set -u): HOME und XDG_STATE_HOME fehlen beide -------------"
-echo
-
-# --- Fall B-01: kein HOME, kein XDG_STATE_HOME -> KEIN Abbruch mit rc=1 ----
-baum=$(neuer_mock_baum)
-m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
-ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
-eingabe_b01=$(baue_eingabe "Stop" "$baum" "fall-b01")
-rufe_gate_ohne_home "$eingabe_b01" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe" "MOCK_RC=0"
-# S-02/S-13: seit dem Nachtrag meldet ein sonst sauberes Gruen den Ausfall
-# des Zaehlwerks -- B-01s Lage (weder XDG_STATE_HOME noch HOME gesetzt) ist
-# GENAU dieser Fall, die Meldung muss "nicht bestimmbar" nennen (nicht
-# "nicht beschreibbar", das waere der ANDERE Fall, S-13).
-pruefe "B-01 weder HOME noch XDG_STATE_HOME gesetzt -> 0, kein Absturz (set -u), meldet 'nicht bestimmbar'" 0 '"systemMessage".*nicht bestimmbar.*weder XDG_STATE_HOME noch HOME gesetzt'
-if [ -n "$G_STDERR" ]; then
-  fehlgeschlagene_faelle+=("B-01 stderr sollte bei rc=0 leer sein")
-  gesamt=$((gesamt + 1))
-  echo "FEHLGESCHLAGEN  B-01 stderr sollte bei rc=0 leer sein (stderr='$G_STDERR')"
-fi
-
-echo
-echo "--- B-02/B-03/DT-B5 (6.12.13): Baumbestimmung ueber show-toplevel ----"
-echo
-
-# Gemeinsame gruene Kettenausgabe fuer alle fuenf G12-Faelle; "geprueft wird"
-# nennt jeweils die vom Test selbst als korrekt erwartete, physisch
-# aufgeloeste Wurzel -- weicht das Gate davon ab, meldet es
-# "KETTE baum-widerspruch" und der Fall wird nicht mit 0/leer enden.
-g12_pruefen() {
-  local beschreibung="$1" cwd_wert="$2" proj_wert="$3" erwartete_wurzel="$4"
-  local m1 ausgabe zustand eingabe
-  m1=$(marke K1 D20 belege A_OK)
-  ausgabe=$(bauen_ausgabe "$erwartete_wurzel" "$m1 (rueckgabewert=0)" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
-  zustand=$(neu_verzeichnis)
-  eingabe=$(baue_eingabe "Stop" "$cwd_wert" "fall-g12-$beschreibung")
-  rufe_gate "$eingabe" "$zustand" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$proj_wert" "MOCK_AUSGABE=$ausgabe" "MOCK_RC=0"
-  echo "MELDUNG  $beschreibung: aufgeloeste Wurzel (vom Test erwartet) = $erwartete_wurzel"
-  gesamt=$((gesamt + 1))
-  if [ "$G_RC" = "0" ] && [ -z "$G_STDOUT" ] && [ -z "$G_STDERR" ]; then
-    bestanden=$((bestanden + 1)); echo "BESTANDEN  $beschreibung -> 0, sauberes Gruen (Wurzel richtig aufgeloest)"
-  else
-    fehlgeschlagene_faelle+=("$beschreibung")
-    echo "FEHLGESCHLAGEN  $beschreibung (rc=$G_RC, stdout='$G_STDOUT', stderr='$G_STDERR')"
-  fi
-}
-
-# --- B-02: cwd MIT Schraegstrich am Ende ------------------------------------
-baum=$(neuer_mock_baum)
-g12_pruefen "B-02-schraegstrich" "$baum/" "$baum/" "$baum"
-
-# --- B-03: cwd UEBER EINEN SYMLINK ------------------------------------------
-baum=$(neuer_mock_baum)
-symlink_verz=$(neu_verzeichnis)
-ln -s "$baum" "$symlink_verz/verweis"
-g12_pruefen "B-03-symlink" "$symlink_verz/verweis" "$symlink_verz/verweis" "$baum"
-
-# --- B-03: cwd in einem UNTERVERZEICHNIS, CLAUDE_PROJECT_DIR = Wurzel ------
-baum=$(neuer_mock_baum)
-mkdir -p "$baum/ein/unterverzeichnis"
-g12_pruefen "B-03-unterverzeichnis" "$baum/ein/unterverzeichnis" "$baum" "$baum"
-
-# --- DT-B5a: cwd AUSSERHALB jedes Repositories -> Rueckfall auf PROJECT_DIR
-baum=$(neuer_mock_baum)
-ausserhalb=$(neu_verzeichnis)
-g12_pruefen "DT-B5-ausserhalb-repo" "$ausserhalb" "$baum" "$baum"
-
-# --- DT-B5b: cwd in einem ZWEITEN Arbeitsbaum (git worktree add) -----------
-baum=$(neuer_mock_baum)
-worktree_verz=$(neu_verzeichnis)
-rm -rf "$worktree_verz"
-if git -C "$baum" worktree add -q -b fall-worktree "$worktree_verz" >/dev/null 2>&1; then
-  AUFRAEUM_VERZEICHNISSE+=("$worktree_verz")
-  worktree_wurzel=$(cd "$worktree_verz" && pwd -P)
-  g12_pruefen "DT-B5-worktree" "$worktree_wurzel" "$baum" "$worktree_wurzel"
-else
-  fehlgeschlagene_faelle+=("DT-B5-worktree Vorbereitung: git worktree add fehlgeschlagen")
-  echo "FEHLGESCHLAGEN  DT-B5-worktree Vorbereitung: git worktree add fehlgeschlagen"
-  gesamt=$((gesamt + 1))
-fi
-
-echo
-echo "--- N-04: Sperre entfaellt nicht still, wenn Zustandsverzeichnis und"
-echo "    /tmp-Ausweich beide nicht moeglich sind ----------------------------"
-echo
-
-# --- Fall N-04: weder Zustandsverzeichnis noch fester /tmp-Ausweich moeglich
-baum=$(neuer_mock_baum)
-m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
-ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
 zustand_n04_basis=$(neu_verzeichnis)
-# Wie Fall 12: "hindernis" ist eine DATEI, "mkdir -p .../hindernis/darunter"
-# schlaegt damit strukturell fehl, unabhaengig vom Benutzer (root umgeht
-# Dateimodus-Rechte, aber nicht ENOTDIR).
 : > "$zustand_n04_basis/hindernis"
 zustand_n04="$zustand_n04_basis/hindernis/darunter"
 sperre_fest="/tmp/r3cosint-dod-gate"
@@ -957,372 +802,852 @@ if [ -d "$sperre_fest" ]; then
 fi
 : > "$sperre_fest"
 eingabe_n04=$(baue_eingabe "Stop" "$baum" "fall-n04")
-rufe_gate "$eingabe_n04" "$zustand_n04" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe" "MOCK_RC=0"
+rufe_gate "$eingabe_n04" "$zustand_n04" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe" "MOCK_RC=2"
+sperre_entstand_n04=$(find "$zustand_n04" -name 'sperre-*' 2>/dev/null | wc -l | tr -d ' ')
+[ -n "$sperre_entstand_n04" ] || sperre_entstand_n04=0
 rm -f "$sperre_fest"
 if [ "$sperre_fest_war_verzeichnis" -eq 1 ]; then
   mv "$sperre_fest_sicherung/verzeichnis" "$sperre_fest"
 fi
-pruefe "N-04 weder Zustandsverzeichnis noch /tmp-Ausweich moeglich -> 0, meldet fehlende Sperre" 0 '"systemMessage".*Sperre nicht aktiv'
+pruefe_wahr Z-106 "Zustandsverzeichnis und /tmp nicht beschreibbar" \
+  "an keinem der beiden Orte entsteht eine Sperrdatei" \
+  "$([ "$sperre_entstand_n04" = "0" ] && echo 1 || echo 0)" \
+  "keine Sperrdatei" "sperre_entstand=$sperre_entstand_n04"
+pruefe_rc Z-107 "Zustandsverzeichnis und /tmp nicht beschreibbar" 2
+pruefe_stderr_enthaelt Z-108 "Zustandsverzeichnis und /tmp nicht beschreibbar" \
+  "Meldung nennt den Ausfall der Sperre" "Sperre nicht aktiv"
 
 echo
-echo "--- N-06: TMPDIR zeigt in den Baum -- Wegwerfdatei darf nicht dort landen"
+echo "--- Innere Zeitueberschreitung (6.12.12) -------------------------------"
 echo
 
-# --- Fall N-06: TMPDIR im Scheinbaum ----------------------------------------
 baum=$(neuer_mock_baum)
-tmp_im_baum="$baum/.tmp-im-baum"
-mkdir -p "$tmp_im_baum"
+lauf "$baum" Stop "fall13" "wird nie gedruckt" 0 "" "" "" "$WERKZEUGKASTEN_SCHNELLER_TIMEOUT" 5
+pruefe_rc Z-037 "Innere Zeitueberschreitung" 2
+
+echo
+echo "--- Eskalation (G8, 6.12.9) --------------------------------------------"
+echo
+
+baum=$(neuer_mock_baum)
+zustand_esk=$(neu_verzeichnis)
 m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
-ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
-zustand_n06=$(neu_verzeichnis)
-eingabe_n06=$(baue_eingabe "Stop" "$baum" "fall-n06")
-rufe_gate "$eingabe_n06" "$zustand_n06" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe" "MOCK_RC=0" "TMPDIR=$tmp_im_baum"
-dateien_im_tmp=$(find "$tmp_im_baum" -type f 2>/dev/null | wc -l | tr -d ' ')
-gesamt=$((gesamt + 1))
-if [ "$G_RC" = "0" ] && [ -z "$G_STDOUT" ] && [ -z "$G_STDERR" ] && [ "$dateien_im_tmp" = "0" ]; then
-  bestanden=$((bestanden + 1)); echo "BESTANDEN  N-06 TMPDIR im Baum -> 0, sauberes Gruen, keine Datei im Baum"
+m2=$(marken_zeile K1 D3 linter A_FAIL "" "" 2)
+ausgabe_esk=$(bauen_ausgabe "$baum" "$m1
+$m2" "$D19_OK" "make dod: abgebrochen bei D3 linter, Rueckgabewert 2.")
+zaehler_datei_esk="$zustand_esk/r3cosint/dod-gate/zaehler-$(printf '%s' 'fall14' | sha256sum | cut -d' ' -f1)"
+
+# 1. und 2. Mal: nur Zustand aufbauen, keine Tabellenzeile bindet daran.
+lauf_mit_zustand "$zustand_esk" "$baum" Stop "fall14" "$ausgabe_esk" 2
+lauf_mit_zustand "$zustand_esk" "$baum" Stop "fall14" "$ausgabe_esk" 2
+
+# 3. Mal: Z-038/039/040.
+lauf_mit_zustand "$zustand_esk" "$baum" Stop "fall14" "$ausgabe_esk" 2
+pruefe_zaehler Z-038 "Dreimal derselbe Schluessel" "$zaehler_datei_esk" 3
+pruefe_rc Z-039 "Dreimal derselbe Schluessel" 2
+pruefe_stderr_enthaelt Z-040 "Dreimal derselbe Schluessel" \
+  "die Meldung enthaelt die Zeile Eskalation 3.4: <Schluessel> woertlich" "Eskalation 3.4: D3 linter A_FAIL"
+
+# Uebergabedatei anlegen (uncommittet) -- 4. Mal muss durchlassen.
+mkdir -p "$baum/docs/uebergaben"
+printf 'Uebergabe\n\nEskalation 3.4: D3 linter A_FAIL\n' > "$baum/docs/uebergaben/2026-09-02_selbsttest-eskalation.md"
+lauf_mit_zustand "$zustand_esk" "$baum" Stop "fall14" "$ausgabe_esk" 2
+pruefe_rc Z-041 "Uebergabedatei mit der geforderten Zeile, neu oder geaendert" 0
+pruefe_zaehler Z-042 "Uebergabedatei mit der geforderten Zeile, neu oder geaendert" "$zaehler_datei_esk" 4
+
+# Committen -> weiterhin Durchlass, jetzt ueber HEAD (Z-043/044, Befund DT-B4).
+git -C "$baum" add -A
+git -C "$baum" commit -q -m "Eskalationsuebergabe"
+head_hat_datei43=0
+git -C "$baum" ls-tree -r HEAD --name-only 2>/dev/null | \
+  grep -qF "docs/uebergaben/2026-09-02_selbsttest-eskalation.md" && head_hat_datei43=1
+pruefe_wahr Z-043 "Uebergabedatei mit der geforderten Zeile, committet" \
+  "vor dem Aufruf des Gates fuehrt 'git ls-tree -r HEAD' die Datei -- sie ist wirklich in HEAD" \
+  "$head_hat_datei43" "1 (Datei in HEAD)" "$head_hat_datei43"
+lauf_mit_zustand "$zustand_esk" "$baum" Stop "fall14" "$ausgabe_esk" 2
+pruefe_rc Z-044 "Uebergabedatei mit der geforderten Zeile, committet" 0
+
+# Ein WEITERER Commit danach -- die Uebergabedatei wird ENTFERNT, damit sie
+# aus "git ls-tree -r HEAD" wirklich verschwindet (ein blosser weiterer
+# Commit daneben liesse sie dort stehen, "ls-tree -r HEAD" listet den
+# gesamten Baum, nicht nur die zuletzt geaenderten Dateien -- ausgefuehrt
+# belegt in einer frueheren Fassung dieses Falls).
+git -C "$baum" rm -q "docs/uebergaben/2026-09-02_selbsttest-eskalation.md"
+git -C "$baum" commit -q -m "weiterer Commit, Eskalationsuebergabe entfernt (nicht mehr HEAD)"
+head_ohne_datei45=1
+git -C "$baum" ls-tree -r HEAD --name-only 2>/dev/null | \
+  grep -qF "docs/uebergaben/2026-09-02_selbsttest-eskalation.md" && head_ohne_datei45=0
+aelterer_commit_hat_datei45=0
+[ -n "$(git -C "$baum" log --all --format=%H -- "docs/uebergaben/2026-09-02_selbsttest-eskalation.md" 2>/dev/null)" ] && aelterer_commit_hat_datei45=1
+pruefe_wahr Z-045 "Uebergabedatei nur in einem aelteren Commit" \
+  "vor dem Aufruf fuehrt 'git ls-tree -r HEAD' die Datei NICHT, ein aelterer Commit dagegen schon" \
+  "$([ "$head_ohne_datei45" -eq 1 ] && [ "$aelterer_commit_hat_datei45" -eq 1 ] && echo 1 || echo 0)" \
+  "HEAD ohne, aelterer Commit mit Datei" "head_ohne=$head_ohne_datei45, aelterer_hat=$aelterer_commit_hat_datei45"
+lauf_mit_zustand "$zustand_esk" "$baum" Stop "fall14" "$ausgabe_esk" 2
+pruefe_rc Z-046 "Uebergabedatei nur in einem aelteren Commit" 2
+
+# Dieselbe Eskalation (Datei wieder aktuell UND in HEAD) auf TaskCompleted
+# (Z-047/048). "git rm" oben hat das nun leere Verzeichnis mit entfernt
+# (Git raeumt leere Elternverzeichnisse beim Entfernen der letzten
+# verfolgten Datei mit auf) -- deshalb hier erneut angelegt.
+mkdir -p "$baum/docs/uebergaben"
+printf 'Uebergabe\n\nEskalation 3.4: D3 linter A_FAIL\n\nErneut fuer Z-048 (TaskCompleted), DT-B4.\n' \
+  > "$baum/docs/uebergaben/2026-09-02_selbsttest-eskalation.md"
+git -C "$baum" add -A
+git -C "$baum" commit -q -m "Eskalationsuebergabe wieder aktuell" || true
+head_hat_datei48=0
+git -C "$baum" diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null | \
+  grep -qF "docs/uebergaben/2026-09-02_selbsttest-eskalation.md" && head_hat_datei48=1
+grund48_ok=0
+if [ "$head_hat_datei48" -eq 1 ] && grep -qF "Eskalation 3.4: D3 linter A_FAIL" \
+     "$baum/docs/uebergaben/2026-09-02_selbsttest-eskalation.md"; then
+  grund48_ok=1
+fi
+pruefe_wahr Z-048 "Dieselbe Eskalation auf TaskCompleted" \
+  "die Uebergabedatei mit der geforderten Zeile liegt vor und ist in HEAD enthalten" \
+  "$grund48_ok" "1 (Datei mit Zeile in HEAD)" "$grund48_ok"
+lauf_mit_zustand "$zustand_esk" "$baum" TaskCompleted "fall14" "$ausgabe_esk" 2
+pruefe_rc Z-047 "Dieselbe Eskalation auf TaskCompleted" 2
+
+echo
+echo "--- Vierter Durchlass, danach erneut Blocks (6.12.24 d, DT2-B1; S3-07) -"
+echo
+
+# --- Z-125..Z-129: eigene, isolierte Sequenz, Uebergabedatei liegt von
+#     Anfang an vor (die Datei muss bereits beim VIERTEN Aufruf bestehen,
+#     damit der Zaehlerstand bei diesem Durchlass genau 4 ist). -------------
+baum_v4=$(neuer_mock_baum)
+zustand_v4=$(neu_verzeichnis)
+m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
+m2=$(marken_zeile K1 D3 linter A_FAIL "" "" 2)
+ausgabe_v4=$(bauen_ausgabe "$baum_v4" "$m1
+$m2" "$D19_OK" "make dod: abgebrochen bei D3 linter, Rueckgabewert 2.")
+mkdir -p "$baum_v4/docs/uebergaben"
+printf 'Uebergabe\n\nEskalation 3.4: D3 linter A_FAIL\n' > "$baum_v4/docs/uebergaben/2026-09-02_v4-uebergabe.md"
+git -C "$baum_v4" add -A
+git -C "$baum_v4" commit -q -m "Uebergabe von Anfang an vorhanden"
+zaehler_datei_v4="$zustand_v4/r3cosint/dod-gate/zaehler-$(printf '%s' 'fall-v4' | sha256sum | cut -d' ' -f1)"
+
+lauf_mit_zustand "$zustand_v4" "$baum_v4" Stop "fall-v4" "$ausgabe_v4" 2
+lauf_mit_zustand "$zustand_v4" "$baum_v4" Stop "fall-v4" "$ausgabe_v4" 2
+lauf_mit_zustand "$zustand_v4" "$baum_v4" Stop "fall-v4" "$ausgabe_v4" 2
+
+# 4. Mal: Durchlass.
+lauf_mit_zustand "$zustand_v4" "$baum_v4" Stop "fall-v4" "$ausgabe_v4" 2
+pruefe_zaehler Z-125 "Vierter Durchlass nach der Eskalation, danach erneut Blocks" "$zaehler_datei_v4" 4
+
+# 5. Mal: weiterer Durchlass, Zaehler 5, Meldung nennt "5. Mal in Folge".
+lauf_mit_zustand "$zustand_v4" "$baum_v4" Stop "fall-v4" "$ausgabe_v4" 2
+pruefe_zaehler Z-126 "Vierter Durchlass, danach erneut Blocks" "$zaehler_datei_v4" 5
+pruefe_stdout_enthaelt Z-128 "Vierter Durchlass, danach erneut Blocks" \
+  "die Meldung des fuenften Ereignisses nennt das fuenfte Mal" "5. Mal in Folge"
+# 6.12.25 g (Befund S4-01/DT4-02): Z-129 misst NICHT die Abwesenheit des
+# woertlichen Zitats "Eskalation 3.4: <Schluessel>" -- das Zitat traegt die
+# Begruendung des Durchlasses und ist auf stdout jedes weiteren Durchlasses
+# ZULAESSIG (dod-gate.sh Zeile ~519). Gemessen wird die FORDERUNG selbst,
+# Zeichenfolge "verlangt die Uebergabedatei" (dod-gate.sh Zeile ~538, nur im
+# BLOCK bei genau drittem Mal ausgegeben) -- auf KEINEM der beiden Kanaele,
+# am fuenften Ereignis (dieser Stop-Aufruf) UND an einem TaskCompleted im
+# selben Zustand (gleicher Zaehlerschluessel).
+gefunden129_stop=0
+printf '%s%s' "$G_STDOUT" "$G_STDERR" | grep -qF "verlangt die Uebergabedatei" && gefunden129_stop=1
+
+# 6. Mal: weiterer Durchlass, Zaehler 6.
+lauf_mit_zustand "$zustand_v4" "$baum_v4" Stop "fall-v4" "$ausgabe_v4" 2
+pruefe_zaehler Z-127 "Vierter Durchlass, danach erneut Blocks" "$zaehler_datei_v4" 6
+
+# 7. Mal, als TaskCompleted im selben Zustand (zweiter Messpunkt fuer Z-129).
+lauf_mit_zustand "$zustand_v4" "$baum_v4" TaskCompleted "fall-v4" "$ausgabe_v4" 2
+gefunden129_tc=0
+printf '%s%s' "$G_STDOUT" "$G_STDERR" | grep -qF "verlangt die Uebergabedatei" && gefunden129_tc=1
+
+pruefe_wahr Z-129 "Vierter Durchlass, danach erneut Blocks" \
+  "bei jedem Ereignis nach dem vierten Durchlass -- geprueft am fuenften Ereignis (Stop) und an einem TaskCompleted im selben Zustand -- enthaelt weder stdout noch stderr die Zeichenfolge 'verlangt die Uebergabedatei'" \
+  "$([ "$gefunden129_stop" -eq 0 ] && [ "$gefunden129_tc" -eq 0 ] && echo 1 || echo 0)" \
+  "keine Forderung auf beiden Kanaelen bei beiden Ereignissen" \
+  "stop_gefunden=$gefunden129_stop, taskcompleted_gefunden=$gefunden129_tc"
+
+echo
+echo "--- Mehrere Abweichungen zugleich (6.12.25 b, Befund S3-01) -----------"
+echo
+
+# --- Z-049..Z-053: A_FAIL, zwei ungedeckte Lagen C, D19 VERLETZT zugleich --
+baum=$(neuer_mock_baum)
+m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
+m2=$(marken_zeile K1 D7 abnahme C scripts/abnahme-abgleich.sh "" 2)
+m3=$(marken_zeile K1 D10 prototyp-trennung C scripts/prototyp-trennung-pruefen.sh "" 2)
+m4=$(marken_zeile K1 D3 linter A_FAIL "" "" 2)
+ausgabe_s301=$(bauen_ausgabe "$baum" "$m1
+$m2
+$m3
+$m4" "VERLETZT -- versionierter Bestand veraendert." "make dod: alle 4 Kettenschritte durchlaufen, 2 davon ohne Urteil (Lage C): D7 abnahme FEHLT=scripts/abnahme-abgleich.sh, D10 prototyp-trennung FEHLT=scripts/prototyp-trennung-pruefen.sh, Rueckgabewert 2.")
+zustand_s301=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand_s301" "$baum" Stop "fall-s3-01" "$ausgabe_s301" 2
+pruefe_rc Z-049 "Lauf mit A_FAIL, zwei ungedeckten Lagen C und D19 VERLETZT zugleich" 2
+# 6.12.4 definiert den Schluessel einer ungedeckten Lage C VOLLSTAENDIG als
+# "<D> <ziel> C <fehlendes Pruefmittel>" -- nicht als blosses Praefix. Die
+# erste Abweichung in Kettenreihenfolge ist hier D7 abnahme mit
+# FEHLT=scripts/abnahme-abgleich.sh (siehe m2 oben), der Schluessel traegt
+# diesen Wert mit.
+pruefe_zaehler_schluessel Z-050 "Lauf mit A_FAIL, zwei ungedeckten Lagen C und D19 VERLETZT zugleich" \
+  "$(zaehler_pfad "$zustand_s301" "fall-s3-01")" "D7 abnahme C scripts/abnahme-abgleich.sh"
+pruefe_stderr_enthaelt Z-051 "Lauf mit A_FAIL, zwei ungedeckten Lagen C und D19 VERLETZT zugleich" \
+  "die Blockmeldung nennt jede A_FAIL-Marke" "weitere Abweichung: Schritt D3 linter meldet Lage A_FAIL"
+pruefe_stderr_enthaelt Z-052 "Lauf mit A_FAIL, zwei ungedeckten Lagen C und D19 VERLETZT zugleich" \
+  "die Blockmeldung nennt jede ungedeckte Lage C mit ihrem FEHLT=-Wert" \
+  "weitere Abweichung: Schritt D10 prototyp-trennung meldet Lage C mit FEHLT=scripts/prototyp-trennung-pruefen.sh"
+pruefe_stderr_enthaelt Z-053 "Lauf mit A_FAIL, zwei ungedeckten Lagen C und D19 VERLETZT zugleich" \
+  "die Blockmeldung nennt den D19-Befund" "weitere Abweichung: D19 meldet VERLETZT"
+
+echo
+echo "--- FEHLT= und SCHWELLE= zugleich (6.12.4) ------------------------------"
+echo
+
+# --- Z-054/055 ---------------------------------------------------------------
+baum=$(neuer_mock_baum)
+printf 'D3 linter|scripts/nicht-vorhanden.sh\tADR 0002, 6.12.5, Selbsttest.\n' > "$baum/.claude/hooks/dod-gate-terminierte-lagen.txt"
+m1=$(marken_zeile K1 D3 linter C scripts/nicht-vorhanden.sh OHNE_SCHWELLE 2)
+ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, 1 davon ohne Urteil (Lage C): D3 linter FEHLT=scripts/nicht-vorhanden.sh, Rueckgabewert 2.")
+lauf "$baum" Stop "fall20" "$ausgabe" 2
+enthaelt_richtig54=0
+printf '%s' "$G_STDOUT" | grep -qF "D3 linter FEHLT=scripts/nicht-vorhanden.sh" && enthaelt_richtig54=1
+enthaelt_ohne_schwelle54=0
+printf '%s' "$G_STDOUT" | grep -qF "OHNE_SCHWELLE" && enthaelt_ohne_schwelle54=1
+pruefe_wahr Z-054 "Marke mit FEHLT= und SCHWELLE= zugleich" \
+  "der gelesene FEHLT=-Wert ist genau der Pfad, ohne den SCHWELLE=-Teil" \
+  "$([ "$enthaelt_richtig54" -eq 1 ] && [ "$enthaelt_ohne_schwelle54" -eq 0 ] && echo 1 || echo 0)" \
+  "'D3 linter FEHLT=scripts/nicht-vorhanden.sh' ohne 'OHNE_SCHWELLE'" "stdout='$(_kuerzen "$G_STDOUT")'"
+pruefe_rc Z-055 "Marke mit FEHLT= und SCHWELLE= zugleich" 0
+
+echo
+echo "--- D19-Formen (G7, N-02) ------------------------------------------------"
+echo
+
+# --- Z-056..Z-063: acht Kombinationen, je mit und ohne Zusatztext ----------
+baum=$(neuer_mock_baum)
+m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
+for eintrag in \
+  "OHNE_BEFUND.|erfolg|0|Z-056" \
+  "OHNE_BEFUND -- Text.|erfolg|0|Z-057" \
+  "VERLETZT.|d19|2|Z-058" \
+  "VERLETZT -- Text.|d19|2|Z-059" \
+  "B.|erfolg|2|Z-060" \
+  "B -- Text.|erfolg|2|Z-061" \
+  "C.|d19|2|Z-062" \
+  "C -- Text.|d19|2|Z-063"; do
+  form="${eintrag%%|*}"
+  rest="${eintrag#*|}"
+  art="${rest%%|*}"
+  rest="${rest#*|}"
+  mock_rc="${rest%%|*}"
+  kennung="${rest#*|}"
+  schluesselwort="${form%%[ .]*}"
+  if [ "$art" = "erfolg" ]; then
+    schluss="make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt."
+  else
+    schluss="make dod: alle 1 Kettenschritte durchlaufen, Rahmenpruefung D19 ${schluesselwort}, Rueckgabewert 2."
+  fi
+  ausgabe=$(bauen_ausgabe "$baum" "$m1" "$form" "$schluss")
+  lauf "$baum" Stop "fall-d19-$kennung" "$ausgabe" "$mock_rc"
+  case "$schluesselwort" in
+    OHNE_BEFUND)
+      pruefe_rc "$kennung" "D19-Zeile $form" 0
+      ;;
+    VERLETZT)
+      pruefe_stderr_enthaelt "$kennung" "D19-Zeile $form" "die Auswertung ordnet der Zeile VERLETZT zu" "Schluessel: D19 VERLETZT"
+      ;;
+    B)
+      pruefe_stderr_enthaelt "$kennung" "D19-Zeile $form" "die Auswertung ordnet der Zeile Lage B zu" "Schluessel: D19 B-widerspruch"
+      ;;
+    C)
+      pruefe_stderr_enthaelt "$kennung" "D19-Zeile $form" "die Auswertung ordnet der Zeile Lage C zu" "Schluessel: D19 C"
+      ;;
+  esac
+done
+
+echo
+echo "--- D19 Lage B bei rc0, obwohl das Gate einen Arbeitsbaum bestimmt hat"
+echo "    (S-01) -----------------------------------------------------------"
+echo
+
+# --- Z-142/143 ----------------------------------------------------------------
+baum=$(neuer_mock_baum)
+m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
+ausgabe_s01=$(bauen_ausgabe "$baum" "$m1" "B -- kein Git-Arbeitsbaum." "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
+lauf "$baum" Stop "fall-s01" "$ausgabe_s01" 0
+pruefe_rc Z-142 "D19-Zeile meldet Lage B bei Rueckgabewert 0, obwohl das Gate einen Arbeitsbaum bestimmt hat" 2
+pruefe_stderr_enthaelt Z-143 "D19-Zeile meldet Lage B bei Rueckgabewert 0" \
+  "der gezaehlte Schluessel ist genau D19 B-widerspruch und nicht KETTE ausgabe-unlesbar" "Schluessel: D19 B-widerspruch"
+
+echo
+echo "--- TaskCompleted bei roter Kette ----------------------------------------"
+echo
+
+# --- Z-064 ---------------------------------------------------------------
+baum=$(neuer_mock_baum)
+m1=$(marken_zeile K1 D3 linter A_FAIL "" "" 2)
+ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: abgebrochen bei D3 linter, Rueckgabewert 2.")
+lauf "$baum" TaskCompleted "fall22" "$ausgabe" 2
+pruefe_rc Z-064 "TaskCompleted bei roter Kette" 2
+
+echo
+echo "--- SubagentStop und echte Rollendateien (G13, 6.12.14; N-03) ---------"
+echo
+
+# --- Z-065/067/068: echte Rolle static-software-tester (kein Edit/Write) --
+baum_sst=$(neuer_mock_baum)
+cp "$REPO_WURZEL/.claude/agents/static-software-tester.md" "$baum_sst/.claude/agents/static-software-tester.md"
+summe_quelle68=$(sha256sum "$REPO_WURZEL/.claude/agents/static-software-tester.md" | cut -d' ' -f1)
+summe_kopie68=$(sha256sum "$baum_sst/.claude/agents/static-software-tester.md" | cut -d' ' -f1)
+pruefe_wahr Z-068 "N-03: echte Rollendatei im Scheinbaum" \
+  "die im Scheinbaum verwendete Rollendatei ist pruefsummengleich mit der aus .claude/agents/" \
+  "$([ "$summe_quelle68" = "$summe_kopie68" ] && echo 1 || echo 0)" \
+  "$summe_quelle68" "$summe_kopie68"
+zustand_sst=$(neu_verzeichnis)
+marker_sst=$(neu_verzeichnis)/marker
+eingabe_sst=$(baue_eingabe "SubagentStop" "$baum_sst" "fall-sst" "false" "a1" "static-software-tester")
+rufe_gate "$eingabe_sst" "$zustand_sst" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum_sst" "MOCK_AUSGABE=roter Muell, duerfte nie gelesen werden" "MOCK_RC=2" "MOCK_MARKER=$marker_sst"
+pruefe_rc Z-065 "SubagentStop echte Rolle static-software-tester" 0
+pruefe_wahr Z-067 "SubagentStop einer Rolle ohne veraenderndes Werkzeug" \
+  "die Attrappe von make dod verzeichnet keinen Aufruf" \
+  "$([ ! -e "$marker_sst" ] && echo 1 || echo 0)" \
+  "keine Markerdatei" "$([ -e "$marker_sst" ] && echo "Markerdatei besteht" || echo "keine Markerdatei")"
+
+# --- Z-066: echte Rolle pentester (kein Edit/Write) ------------------------
+baum_pt=$(neuer_mock_baum)
+cp "$REPO_WURZEL/.claude/agents/pentester.md" "$baum_pt/.claude/agents/pentester.md"
+zustand_pt=$(neu_verzeichnis)
+eingabe_pt=$(baue_eingabe "SubagentStop" "$baum_pt" "fall-pt" "false" "a1" "pentester")
+rufe_gate "$eingabe_pt" "$zustand_pt" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum_pt" "MOCK_AUSGABE=roter Muell, duerfte nie gelesen werden" "MOCK_RC=2"
+pruefe_rc Z-066 "SubagentStop echte Rolle pentester" 0
+
+# --- Z-069/070: echte Rolle devops-engineer (mit Edit/Write), ROTE Kette --
+baum_dev=$(neuer_mock_baum)
+cp "$REPO_WURZEL/.claude/agents/devops-engineer.md" "$baum_dev/.claude/agents/devops-engineer.md"
+m1=$(marken_zeile K1 D3 linter A_FAIL "" "" 2)
+ausgabe_dev=$(bauen_ausgabe "$baum_dev" "$m1" "$D19_OK" "make dod: abgebrochen bei D3 linter, Rueckgabewert 2.")
+zustand_dev=$(neu_verzeichnis)
+marker_dev=$(neu_verzeichnis)/marker
+eingabe_dev=$(baue_eingabe "SubagentStop" "$baum_dev" "fall-devops" "false" "a1" "devops-engineer")
+rufe_gate "$eingabe_dev" "$zustand_dev" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum_dev" "MOCK_AUSGABE=$ausgabe_dev" "MOCK_RC=2" "MOCK_MARKER=$marker_dev"
+pruefe_wahr Z-069 "SubagentStop echte Rolle devops-engineer" \
+  "die Attrappe von make dod verzeichnet einen Aufruf" \
+  "$([ -e "$marker_dev" ] && echo 1 || echo 0)" \
+  "Markerdatei besteht" "$([ -e "$marker_dev" ] && echo "Markerdatei besteht" || echo "keine Markerdatei")"
+pruefe_rc Z-070 "SubagentStop echte Rolle devops-engineer" 2
+
+echo
+echo "--- agent_type: Aufloesung ueber name:, nicht ueber den Dateinamen (G13)"
+echo
+
+# --- Z-071/072: agent_type ueber name: aufgeloest (anders-benannt.md) -----
+baum=$(neuer_mock_baum)
+zustand25=$(neu_verzeichnis)
+marker25=$(neu_verzeichnis)/marker
+eingabe25=$(baue_eingabe "SubagentStop" "$baum" "fall25" "false" "a1" "attrappe-pruefer")
+rufe_gate "$eingabe25" "$zustand25" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=roter Muell" "MOCK_RC=2" "MOCK_MARKER=$marker25"
+pruefe_wahr Z-071 "agent_type, der ueber name: aufzuloesen ist und nicht ueber den Dateinamen" \
+  "die Attrappe von make dod verzeichnet keinen Aufruf" \
+  "$([ ! -e "$marker25" ] && echo 1 || echo 0)" \
+  "keine Markerdatei" "$([ -e "$marker25" ] && echo "Markerdatei besteht" || echo "keine Markerdatei")"
+pruefe_rc Z-072 "agent_type, der ueber name: aufzuloesen ist" 0
+
+# --- Z-073/074: unbekannter agent_type -> Kette laeuft (roter Lauf) -------
+baum=$(neuer_mock_baum)
+m1=$(marken_zeile K1 D3 linter A_FAIL "" "" 2)
+ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: abgebrochen bei D3 linter, Rueckgabewert 2.")
+zustand26a=$(neu_verzeichnis)
+marker26a=$(neu_verzeichnis)/marker
+eingabe26a=$(baue_eingabe "SubagentStop" "$baum" "fall26a" "false" "a1" "voellig-unbekannte-rolle")
+rufe_gate "$eingabe26a" "$zustand26a" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe" "MOCK_RC=2" "MOCK_MARKER=$marker26a"
+pruefe_wahr Z-073 "SubagentStop mit unbekanntem agent_type" \
+  "die Attrappe von make dod verzeichnet einen Aufruf" \
+  "$([ -e "$marker26a" ] && echo 1 || echo 0)" \
+  "Markerdatei besteht" "$([ -e "$marker26a" ] && echo "Markerdatei besteht" || echo "keine Markerdatei")"
+pruefe_rc Z-074 "SubagentStop mit unbekanntem agent_type" 2
+
+# --- Z-075/076: leerer agent_type -> Kette laeuft (roter Lauf) ------------
+zustand26b=$(neu_verzeichnis)
+marker26b=$(neu_verzeichnis)/marker
+eingabe26b=$(baue_eingabe "SubagentStop" "$baum" "fall26b" "false" "a1" "")
+rufe_gate "$eingabe26b" "$zustand26b" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe" "MOCK_RC=2" "MOCK_MARKER=$marker26b"
+pruefe_wahr Z-075 "SubagentStop mit leerem agent_type" \
+  "die Attrappe von make dod verzeichnet einen Aufruf" \
+  "$([ -e "$marker26b" ] && echo 1 || echo 0)" \
+  "Markerdatei besteht" "$([ -e "$marker26b" ] && echo "Markerdatei besteht" || echo "keine Markerdatei")"
+pruefe_rc Z-076 "SubagentStop mit leerem agent_type" 2
+
+# --- Z-077/078: mehrdeutiger agent_type (zwei Treffer) -> roter Lauf -----
+cp "$baum/.claude/agents/attrappe-schreiber.md" "$baum/.claude/agents/zweite-kopie.md"
+git -C "$baum" add -A
+git -C "$baum" commit -q -m "mehrdeutiger agent_type"
+zustand26c=$(neu_verzeichnis)
+marker26c=$(neu_verzeichnis)/marker
+eingabe26c=$(baue_eingabe "SubagentStop" "$baum" "fall26c" "false" "a1" "attrappe-schreiber")
+rufe_gate "$eingabe26c" "$zustand26c" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe" "MOCK_RC=2" "MOCK_MARKER=$marker26c"
+pruefe_wahr Z-077 "SubagentStop mit mehrdeutigem agent_type" \
+  "die Attrappe von make dod verzeichnet einen Aufruf" \
+  "$([ -e "$marker26c" ] && echo 1 || echo 0)" \
+  "Markerdatei besteht" "$([ -e "$marker26c" ] && echo "Markerdatei besteht" || echo "keine Markerdatei")"
+pruefe_rc Z-078 "SubagentStop mit mehrdeutigem agent_type" 2
+
+echo
+echo "--- Flacher Klon (G16) -----------------------------------------------"
+echo
+
+# --- Z-079/080: ein .git/shallow im Scheinbaum, kein echter Netz-Klon -----
+scheinbaum_klon=$(neu_verzeichnis)
+git -C "$scheinbaum_klon" init -q
+git -C "$scheinbaum_klon" config user.email "selbsttest@example.invalid"
+git -C "$scheinbaum_klon" config user.name "Selbsttest"
+cp "$ECHTES_MAKEFILE" "$scheinbaum_klon/Makefile"
+mkdir -p "$scheinbaum_klon/scripts"
+cp "$ECHTER_BELEGPRUEFER" "$scheinbaum_klon/scripts/belege-pruefen.sh"
+git -C "$scheinbaum_klon" add -A
+git -C "$scheinbaum_klon" commit -q -m init
+kopf_sha_klon=$(git -C "$scheinbaum_klon" rev-parse HEAD)
+printf '%s\n' "$kopf_sha_klon" > "$scheinbaum_klon/.git/shallow"
+ausgabe79=$(make -s -C "$scheinbaum_klon" belege 2>&1)
+rc79=$?
+pruefe_rc_wert Z-079 "Flacher Klon" "Rueckgabewert 2" 2 "$rc79"
+gehalt80=0
+printf '%s' "$ausgabe79" | grep -qF "git fetch --unshallow" && gehalt80=1
+pruefe_wahr Z-080 "Flacher Klon" "die Meldung nennt 'git fetch --unshallow'" \
+  "$gehalt80" "1 (enthalten)" "$gehalt80"
+
+echo
+echo "--- Baumbestimmung ueber show-toplevel (6.12.13, B-02/B-03/DT-B5) -----"
+echo
+
+# --- Z-081..Z-095: fuenf Varianten von cwd, je rc0/stdout-leer/Baumzeile --
+g12_pruefen() {
+  local beschreibung="$1" cwd_wert="$2" proj_wert="$3" erwartete_wurzel="$4"
+  local z_baum="$5" z_rc="$6" z_stdout="$7"
+  local m1 ausgabe zustand eingabe
+  m1=$(marke K1 D20 belege A_OK)
+  ausgabe=$(bauen_ausgabe "$erwartete_wurzel" "$m1 (rueckgabewert=0)" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
+  zustand=$(neu_verzeichnis)
+  eingabe=$(baue_eingabe "Stop" "$cwd_wert" "fall-g12-$beschreibung")
+  rufe_gate "$eingabe" "$zustand" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$proj_wert" "MOCK_AUSGABE=$ausgabe" "MOCK_RC=0"
+  # Das Gate gibt bei sauberem Gruen NICHTS aus (6.12.15); die einzige
+  # verfuegbare Bestaetigung, dass es DIE gebaute (und damit die erwartete)
+  # Wurzel akzeptiert hat, ist die Abwesenheit eines Widerspruchs auf stderr
+  # -- ein falsch aufgeloester Baum haette "KETTE baum-widerspruch" ausgeloest.
+  pruefe_wahr "$z_baum" "$beschreibung" \
+    "Baumzeile nennt die erwartete Wurzel (indirekt: sauberes Gruen ohne Baum-Widerspruch)" \
+    "$([ "$G_RC" = "0" ] && [ -z "$G_STDERR" ] && echo 1 || echo 0)" \
+    "rc=0, stderr leer" "rc=$G_RC, stderr='$(_kuerzen "$G_STDERR")'"
+  pruefe_rc "$z_rc" "$beschreibung" 0
+  pruefe_stdout_leer "$z_stdout" "$beschreibung"
+}
+
+baum=$(neuer_mock_baum)
+mkdir -p "$baum/ein/unterverzeichnis"
+g12_pruefen "cwd in einem Unterverzeichnis des Baums, gruener Scheinbaum" "$baum/ein/unterverzeichnis" "$baum" "$baum" Z-083 Z-081 Z-082
+
+baum=$(neuer_mock_baum)
+g12_pruefen "cwd mit Schraegstrich am Ende, gruener Scheinbaum" "$baum/" "$baum/" "$baum" Z-086 Z-084 Z-085
+
+baum=$(neuer_mock_baum)
+symlink_verz=$(neu_verzeichnis)
+ln -s "$baum" "$symlink_verz/verweis"
+g12_pruefen "cwd ueber einen Symlink auf den Baum, gruener Scheinbaum" "$symlink_verz/verweis" "$symlink_verz/verweis" "$baum" Z-089 Z-087 Z-088
+
+baum=$(neuer_mock_baum)
+ausserhalb=$(neu_verzeichnis)
+g12_pruefen "cwd ausserhalb jedes Arbeitsbaums dieses Repositories" "$ausserhalb" "$baum" "$baum" Z-092 Z-090 Z-091
+
+baum=$(neuer_mock_baum)
+worktree_verz=$(neu_verzeichnis)
+rm -rf "$worktree_verz"
+if git -C "$baum" worktree add -q -b fall-worktree "$worktree_verz" >/dev/null 2>&1; then
+  AUFRAEUM_VERZEICHNISSE+=("$worktree_verz")
+  worktree_wurzel=$(cd "$worktree_verz" && pwd -P)
+  m1=$(marke K1 D20 belege A_OK)
+  ausgabe=$(bauen_ausgabe "$worktree_wurzel" "$m1 (rueckgabewert=0)" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
+  zustand=$(neu_verzeichnis)
+  eingabe=$(baue_eingabe "Stop" "$worktree_wurzel" "fall-worktree")
+  rufe_gate "$eingabe" "$zustand" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe" "MOCK_RC=0"
+  pruefe_wahr Z-093 "Zweiter Arbeitsbaum (git worktree), cwd darin" \
+    "die Baumzeile nennt den zweiten Baum, nicht den Hauptbaum" \
+    "$([ "$worktree_wurzel" != "$baum" ] && [ "$G_RC" = "0" ] && [ -z "$G_STDERR" ] && echo 1 || echo 0)" \
+    "worktree != baum, rc=0, stderr leer" "worktree=$worktree_wurzel, baum=$baum, rc=$G_RC, stderr='$(_kuerzen "$G_STDERR")'"
+  pruefe_rc Z-094 "Zweiter Arbeitsbaum (git worktree), cwd darin" 0
+  pruefe_stdout_leer Z-095 "Zweiter Arbeitsbaum (git worktree), cwd darin"
 else
-  fehlgeschlagene_faelle+=("N-06 TMPDIR im Baum")
-  echo "FEHLGESCHLAGEN  N-06 TMPDIR im Baum (rc=$G_RC, stdout='$G_STDOUT', stderr='$G_STDERR', dateien=$dateien_im_tmp)"
+  echo "HINWEIS  Zweiter Arbeitsbaum (worktree): 'git worktree add' ist in dieser Umgebung fehlgeschlagen -- Z-093 bis Z-095 bleiben ungemessen und werden von der Deckungspruefung genannt."
 fi
 
 echo
-echo "--- S-07/N-06b: beide Auswege fuer die eigene Wegwerfdatei versperrt -"
+echo "--- Baumzeile falsch bzw. fehlend (S-03/S-10) --------------------------"
 echo
 
-# --- Fall S-07/N-06b: mktemp-Attrappe -- erster Aufruf liefert einen Pfad
-#     IM Baum, "-p /tmp" (der Ausweich) schlaegt an --------------------------
+# --- Z-096/097: Baumzeile nennt einen ANDEREN Baum ------------------------
+baum=$(neuer_mock_baum)
+anderer_baum_s03=$(neu_verzeichnis)
+m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
+ausgabe_s03=$(bauen_ausgabe "$anderer_baum_s03" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
+zustand_s03=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand_s03" "$baum" Stop "fall-s03" "$ausgabe_s03" 0
+pruefe_rc Z-096 "Baumzeile nennt einen anderen Baum" 2
+pruefe_zaehler_schluessel Z-097 "Baumzeile nennt einen anderen Baum" \
+  "$(zaehler_pfad "$zustand_s03" "fall-s03")" "KETTE baum-widerspruch"
+
+# --- Z-144/145: Baumzeile fehlt GANZ ---------------------------------------
+baum=$(neuer_mock_baum)
+m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
+ausgabe_s10=$(printf '=== Uebersicht Definition-of-Done-Kette (make dod) ===\n%s\n\nmake dod: D19: %s\n%s\n' \
+  "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
+zustand_s10=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand_s10" "$baum" Stop "fall-s10" "$ausgabe_s10" 0
+pruefe_rc Z-144 "Baumzeile fehlt ganz" 2
+pruefe_zaehler_schluessel Z-145 "Baumzeile fehlt ganz" \
+  "$(zaehler_pfad "$zustand_s10" "fall-s10")" "KETTE ausgabe-unlesbar"
+
+echo
+echo "--- Weder XDG_STATE_HOME noch HOME gesetzt (set -u) --------------------"
+echo
+
+# --- Z-098..Z-100: rote Kette ----------------------------------------------
+baum=$(neuer_mock_baum)
+m1=$(marken_zeile K1 D3 linter A_FAIL "" "" 2)
+ausgabe_b01r=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: abgebrochen bei D3 linter, Rueckgabewert 2.")
+eingabe_b01r=$(baue_eingabe "Stop" "$baum" "fall-b01-rot")
+rufe_gate_ohne_home "$eingabe_b01r" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe_b01r" "MOCK_RC=2"
+pruefe_rc Z-098 "Weder XDG_STATE_HOME noch HOME gesetzt, rote Kette" 2
+pruefe_stderr_enthaelt Z-099 "Weder XDG_STATE_HOME noch HOME gesetzt, rote Kette" \
+  "Zusatz, dass nicht gezaehlt werden kann" "nicht zaehlen"
+enthaelt_bestimmbar100=0
+printf '%s' "$G_STDERR" | grep -qF "nicht bestimmbar" && enthaelt_bestimmbar100=1
+enthaelt_beschreibbar100=0
+printf '%s' "$G_STDERR" | grep -qF "nicht beschreibbar" && enthaelt_beschreibbar100=1
+pruefe_wahr Z-100 "Weder XDG_STATE_HOME noch HOME gesetzt, rote Kette" \
+  "der Zusatz sagt 'nicht bestimmbar' und nicht 'nicht beschreibbar'" \
+  "$([ "$enthaelt_bestimmbar100" -eq 1 ] && [ "$enthaelt_beschreibbar100" -eq 0 ] && echo 1 || echo 0)" \
+  "'nicht bestimmbar' vorhanden, 'nicht beschreibbar' nicht" "bestimmbar=$enthaelt_bestimmbar100, beschreibbar=$enthaelt_beschreibbar100"
+
+# --- Z-101..Z-103: gruene Kette ---------------------------------------------
+baum=$(neuer_mock_baum)
+m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
+ausgabe_b01g=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
+eingabe_b01g=$(baue_eingabe "Stop" "$baum" "fall-b01-gruen")
+rufe_gate_ohne_home "$eingabe_b01g" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe_b01g" "MOCK_RC=0"
+pruefe_wahr Z-101 "Weder XDG_STATE_HOME noch HOME gesetzt, gruene Kette" \
+  "Rueckgabewert 0 -- nie 1" "$([ "$G_RC" = "0" ] && echo 1 || echo 0)" "rc=0" "rc=$G_RC"
+pruefe_json_einzelfeld Z-102 "Weder XDG_STATE_HOME noch HOME gesetzt, gruene Kette" systemMessage
+enthaelt_bestimmbar103=0
+printf '%s' "$G_STDOUT" | grep -qF "nicht bestimmbar" && enthaelt_bestimmbar103=1
+pruefe_wahr Z-103 "Weder XDG_STATE_HOME noch HOME gesetzt, gruene Kette" \
+  "der Zusatz sagt 'nicht bestimmbar'" "$enthaelt_bestimmbar103" "1 (enthalten)" "$enthaelt_bestimmbar103"
+
+echo
+echo "--- TMPDIR zeigt in den geprueften Baum (6.12.25 c, DT3-B1) -----------"
+echo
+
+# --- Z-109/110/111: eigene Wegwerfdatei ausserhalb, D19 bleibt sauber, kein
+#     Beobachtungsfenster im Baum -------------------------------------------
+baum=$(neuer_mock_baum)
+# 6.12.25-Nachbelegung (Koordinator, Vorlauf-Selbsttest 2026-09-03): das
+# Zielverzeichnis von TMPDIR darf selbst NICHT dem Muster "tmp.*" folgen --
+# sonst zaehlt der Beobachter (der genau dieses Muster sucht) sein eigenes,
+# vom Selbsttest angelegtes Verzeichnis mit und meldet einen Scheinbefund
+# (112 Treffer bei der vorherigen Benennung ueber "mktemp -d -p"). Das
+# Verzeichnis besteht ueber die gesamte Laufzeit des Falls, ist aber vom
+# Selbsttest selbst angelegt, nicht vom Gate oder der Kette -- es gehoert
+# nicht zur Beobachtungsflaeche.
+tmp_im_baum="$baum/tmpdir-im-baum"
+mkdir -p "$tmp_im_baum"
+m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
+ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
+zustand_tmp=$(neu_verzeichnis)
+spur_tmp=$(neu_verzeichnis)/spur
+eingabe_tmp=$(baue_eingabe "Stop" "$baum" "fall-tmp-in-baum")
+beobachter_stopp=$(neu_verzeichnis)/stopp
+beobachter_treffer=$(neu_verzeichnis)/treffer
+: > "$beobachter_treffer"
+# 6.12.25 h (Befund DT4-01): der Beobachter beobachtet den GANZEN gepruef-
+# ten Baum (alle Verzeichnisse ausser .git), nicht nur das Verzeichnis, auf
+# das TMPDIR zeigt -- die Zusicherung Z-111 nennt "im Baum", nicht "im
+# TMPDIR-Verzeichnis".
+(
+  while [ ! -e "$beobachter_stopp" ]; do
+    find "$baum" -mindepth 1 -path "$baum/.git" -prune -o -name 'tmp.*' -print 2>/dev/null >> "$beobachter_treffer"
+  done
+) &
+beobachter_pid=$!
+rufe_gate "$eingabe_tmp" "$zustand_tmp" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe" "MOCK_RC=0" "TMPDIR=$tmp_im_baum" "MOCK_TMP_SPUR=$spur_tmp"
+: > "$beobachter_stopp"
+wait "$beobachter_pid" 2>/dev/null
+treffer_anzahl=$(wc -l < "$beobachter_treffer" | tr -d ' ')
+kette_eigene_tmp=$(cat "$spur_tmp" 2>/dev/null || true)
+ausserhalb109=0
+case "$kette_eigene_tmp" in
+  "$baum"|"$baum"/*) ausserhalb109=0 ;;
+  *) [ -n "$kette_eigene_tmp" ] && ausserhalb109=1 ;;
+esac
+pruefe_wahr Z-109 "TMPDIR zeigt in den geprueften Baum" \
+  "der physisch aufgeloeste Pfad der Wegwerfdatei liegt ausserhalb des geprueften Baums" \
+  "$ausserhalb109" "ausserhalb von $baum" "kette_eigene_tmp=$kette_eigene_tmp"
+# Z-110 ist am 2026-09-03 zurueckgezogen (6.12.25 h, Befund S4-02): im
+# Attrappenaufbau ist "D19 meldet OHNE_BEFUND" nicht messbar, weil die
+# D19-Zeile aus der vom Selbsttest selbst geschriebenen Attrappenausgabe
+# stammt -- gemessen wuerde die eigene Vorgabe. Keine Pruefung mehr; die
+# Deckungspruefung nimmt die Kennung als zurueckgezogen aus.
+pruefe_wahr Z-111 "TMPDIR zeigt in den geprueften Baum" \
+  "ein Beobachter ohne Wartezeit findet waehrend des gesamten Laufs im ganzen geprueften Baum (alle Verzeichnisse ausser .git) keine Datei mit dem Muster tmp.*" \
+  "$([ "$treffer_anzahl" = "0" ] && echo 1 || echo 0)" "0 Treffer" "$treffer_anzahl Treffer"
+
+echo
+echo "--- Wegwerfdatei ausserhalb des Baums nicht anlegbar (Entscheid f) -----"
+echo
+
+# --- Z-112/113: erster mktemp-Aufruf im Baum, "-p /tmp" schlaegt fehl -----
 baum=$(neuer_mock_baum)
 m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
 ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
 zustand_mktemp=$(neu_verzeichnis)
 eingabe_mktemp=$(baue_eingabe "Stop" "$baum" "fall-mktemp-gate")
 rufe_gate "$eingabe_mktemp" "$zustand_mktemp" "$WERKZEUGKASTEN_FAKE_MKTEMP" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe" "MOCK_RC=0" "FAKE_MKTEMP_ZIEL=$baum"
-pruefe "S-07/N-06b eigene Wegwerfdatei im Baum, /tmp-Ausweich schlaegt fehl -> GATE mktemp" 2 "" "GATE mktemp"
+pruefe_rc Z-112 "Wegwerfdatei ausserhalb des Baums nicht anlegbar" 2
+pruefe_zaehler_schluessel Z-113 "Wegwerfdatei ausserhalb des Baums nicht anlegbar" \
+  "$(zaehler_pfad "$zustand_mktemp" "fall-mktemp-gate")" "GATE mktemp"
 
 echo
-echo "--- DT2-B2: TMPDIR wird an die Kette SELBST weitergereicht -----------"
+echo "--- Verzeichnis der Wegwerfdatei physisch nicht aufloesbar (6.12.25 d) -"
 echo
 
-# --- Fall DT2-B2: die Kette ruft SELBST mktemp auf (wie D6/D12 im echten
-#     Makefile) -- ihre eigene Wegwerfdatei darf trotz TMPDIR=Baum nicht im
-#     Baum entstehen, weil das Gate TMPDIR fuer den Kettenlauf auf das
-#     (bereits sicher aufgeloeste) Verzeichnis der EIGENEN Wegwerfdatei setzt.
+# --- Z-114/115 (Runde 3, S3-05) --------------------------------------------
+baum=$(neuer_mock_baum)
+m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
+ausgabe_s305=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
+zustand_s305=$(neu_verzeichnis)
+eingabe_s305=$(baue_eingabe "Stop" "$baum" "fall-s3-05")
+rufe_gate "$eingabe_s305" "$zustand_s305" "$WERKZEUGKASTEN_FAKE_MKTEMP_UNAUFLOESBAR" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe_s305" "MOCK_RC=0"
+pruefe_rc Z-114 "Das Verzeichnis der Wegwerfdatei ist physisch nicht aufloesbar" 2
+pruefe_zaehler_schluessel Z-115 "Das Verzeichnis der Wegwerfdatei ist physisch nicht aufloesbar" \
+  "$(zaehler_pfad "$zustand_s305" "fall-s3-05")" "GATE mktemp"
+
+echo
+echo "--- Liste mit drei Verletzungen (2, 4, 6) in verschiedenen Zeilen -----"
+echo
+
+# --- Z-122/123/124 (Entscheid h) --------------------------------------------
+baum=$(neuer_mock_baum)
+mkdir -p "$baum/scripts"
+: > "$baum/scripts/abnahme-abgleich.sh"
+git -C "$baum" add -A
+git -C "$baum" commit -q -m "artefakt entstanden"
+printf 'D7 abnahme|scripts/abnahme-abgleich.sh\tADR 0002, 6.12.5, Selbsttest.\nD9 rueckkanal|scripts/rueckkanal-pruefen.sh\tGrund ohne die Wendung.\nD11 geheimnisse|gitleaks\tADR 0002, 6.12.5, Selbsttest.\n' \
+  > "$baum/.claude/hooks/dod-gate-terminierte-lagen.txt"
+marker_liste=$(neu_verzeichnis)/marker
+zustand_liste=$(neu_verzeichnis)
+eingabe_liste=$(baue_eingabe "Stop" "$baum" "fall-liste-drei")
+rufe_gate "$eingabe_liste" "$zustand_liste" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=darf nie gelesen werden" "MOCK_RC=0" "MOCK_MARKER=$marker_liste"
+pruefe_rc Z-122 "Liste mit je einer Verletzung der Selbstpruefungen 2, 4 und 6 in verschiedenen Zeilen" 2
+pruefe_wahr Z-123 "Liste mit je einer Verletzung der Selbstpruefungen 2, 4 und 6" \
+  "die Attrappe von make dod verzeichnet keinen Aufruf -- geblockt wird vor dem Lauf der Kette" \
+  "$([ ! -e "$marker_liste" ] && echo 1 || echo 0)" \
+  "keine Markerdatei" "$([ -e "$marker_liste" ] && echo "Markerdatei besteht" || echo "keine Markerdatei")"
+pruefe_stderr_enthaelt Z-124 "Liste mit je einer Verletzung der Selbstpruefungen 2, 4 und 6" \
+  "der gezaehlte Schluessel stammt aus der Zeile mit der kleinsten Zeilennummer" "Schluessel: LISTE 2 D7 abnahme"
+
+echo
+echo "--- D12 mit mehreren fehlenden Gegenstaenden (N-08) ---------------------"
+echo
+
+# --- Z-130: git vorhanden, BEIDE D12-Skripte fehlen -> erster Gegenstand --
+scheinbaum_n08=$(neu_verzeichnis)
+git -C "$scheinbaum_n08" init -q
+git -C "$scheinbaum_n08" config user.email "selbsttest@example.invalid"
+git -C "$scheinbaum_n08" config user.name "Selbsttest"
+cp "$ECHTES_MAKEFILE" "$scheinbaum_n08/Makefile"
+git -C "$scheinbaum_n08" add -A
+git -C "$scheinbaum_n08" commit -q -m init
+ausgabe_n08=$(make -s -C "$scheinbaum_n08" nachweise 2>&1)
+fehlt_gelesen_n08=$(printf '%s' "$ausgabe_n08" | grep -oE 'FEHLT=[^ :]+' | head -1)
+pruefe_wahr Z-130 "D12 in Lage C mit mehreren fehlenden Gegenstaenden" \
+  "der gelesene FEHLT=-Wert ist der erste Gegenstand (scripts/nachweise-erzeugen.sh vor scripts/nachweise-vollstaendig.sh)" \
+  "$([ "$fehlt_gelesen_n08" = "FEHLT=scripts/nachweise-erzeugen.sh" ] && echo 1 || echo 0)" \
+  "FEHLT=scripts/nachweise-erzeugen.sh" "$fehlt_gelesen_n08"
+
+echo
+echo "--- Kette ruft selbst mktemp auf: eigene Wegwerfdatei ausserhalb (DT2-B2)"
+echo
+
+# --- Z-131/132 ---------------------------------------------------------------
 baum=$(neuer_mock_baum)
 m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
 ausgabe=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
 zustand_dtb2=$(neu_verzeichnis)
 spur_dtb2=$(neu_verzeichnis)/spur
 eingabe_dtb2=$(baue_eingabe "Stop" "$baum" "fall-dtb2")
+vorher_dtb2=$(find "$baum" -mindepth 1 2>/dev/null | sort)
 rufe_gate "$eingabe_dtb2" "$zustand_dtb2" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe" "MOCK_RC=0" "MOCK_TMP_SPUR=$spur_dtb2" "TMPDIR=$baum"
-gesamt=$((gesamt + 1))
-kette_eigene_tmp=$(cat "$spur_dtb2" 2>/dev/null || true)
-if [ "$G_RC" = "0" ] && [ -n "$kette_eigene_tmp" ]; then
-  case "$kette_eigene_tmp" in
-    "$baum"|"$baum"/*)
-      fehlgeschlagene_faelle+=("DT2-B2 TMPDIR an Kette weitergereicht")
-      echo "FEHLGESCHLAGEN  DT2-B2: die Kette legte ihre eigene Wegwerfdatei im Baum an ($kette_eigene_tmp)"
-      ;;
-    *)
-      bestanden=$((bestanden + 1)); echo "BESTANDEN  DT2-B2 TMPDIR an Kette weitergereicht, eigene mktemp-Datei ($kette_eigene_tmp) liegt ausserhalb des Baums"
-      ;;
-  esac
-else
-  fehlgeschlagene_faelle+=("DT2-B2 TMPDIR an Kette weitergereicht")
-  echo "FEHLGESCHLAGEN  DT2-B2 (rc=$G_RC, spur='$kette_eigene_tmp')"
-fi
+nachher_dtb2=$(find "$baum" -mindepth 1 2>/dev/null | sort)
+neue_dateien_dtb2=$(comm -13 <(printf '%s\n' "$vorher_dtb2") <(printf '%s\n' "$nachher_dtb2") | wc -l | tr -d ' ')
+kette_eigene_tmp_dtb2=$(cat "$spur_dtb2" 2>/dev/null || true)
+tmpdir_uebergeben_ausserhalb=0
+case "$kette_eigene_tmp_dtb2" in
+  "$baum"|"$baum"/*) tmpdir_uebergeben_ausserhalb=0 ;;
+  *) [ -n "$kette_eigene_tmp_dtb2" ] && tmpdir_uebergeben_ausserhalb=1 ;;
+esac
+pruefe_wahr Z-131 "TMPDIR in den Baum, und die Kette selbst legt eine Wegwerfdatei an" \
+  "das an make dod uebergebene TMPDIR liegt ausserhalb des geprueften Baums" \
+  "$tmpdir_uebergeben_ausserhalb" "ausserhalb von $baum" "kette_eigene_tmp=$kette_eigene_tmp_dtb2"
+pruefe_wahr Z-132 "TMPDIR in den Baum, Kette legt selbst an" \
+  "waehrend des Laufs entsteht im Baum keine Datei, auch keine unversionierte" \
+  "$([ "$neue_dateien_dtb2" = "0" ] && echo 1 || echo 0)" "0 neue Dateien" "$neue_dateien_dtb2 neue Dateien"
 
 echo
-echo "--- S-03/S-10: Baumzeile falsch bzw. fehlend --------------------------"
+echo "--- Markenzahl gegen die Schlusszeile selbst (S-11, 6.12.24 k; S3-02) -"
 echo
 
-# --- Fall S-03: Baumzeile nennt einen ANDEREN Baum -> KETTE baum-widerspruch
-baum=$(neuer_mock_baum)
-anderer_baum_s03=$(neu_verzeichnis)
-m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
-ausgabe_s03=$(bauen_ausgabe "$anderer_baum_s03" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
-lauf "$baum" Stop "fall-s03" "$ausgabe_s03" 0
-pruefe "S-03 Baumzeile nennt anderen Baum -> KETTE baum-widerspruch" 2 "" "Schluessel: KETTE baum-widerspruch"
-
-# --- Fall S-10: Baumzeile FEHLT GANZ -> KETTE ausgabe-unlesbar (kein
-#     Widerspruch -- ein Widerspruch braucht zwei Angaben, hier fehlt eine) --
-baum=$(neuer_mock_baum)
-m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
-ausgabe_s10=$(printf '=== Uebersicht Definition-of-Done-Kette (make dod) ===\n%s\n\nmake dod: D19: %s\n%s\n' \
-  "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
-lauf "$baum" Stop "fall-s10" "$ausgabe_s10" 0
-pruefe "S-10 fehlende Baumzeile -> KETTE ausgabe-unlesbar (nicht baum-widerspruch)" 2 "" "Schluessel: KETTE ausgabe-unlesbar"
-
-echo
-echo "--- S-11: Markenzahl gegen die Schlusszeile selbst -------------------"
-echo
-
-# --- Fall S-11a: Form 1 behauptet 14 Marken, die Uebersicht traegt KEINE ---
+# --- Z-133/134: Form 1 behauptet 14 Marken, die Uebersicht traegt KEINE ---
 baum=$(neuer_mock_baum)
 ausgabe_s11a=$(printf 'make dod: geprueft wird %s.\n=== Uebersicht Definition-of-Done-Kette (make dod) ===\n\nmake dod: D19: %s\nmake dod: alle 14 Kettenschritte durchlaufen, keiner ungleich 0, 14 gueltige Marken gezaehlt.\n' "$baum" "$D19_OK")
 lauf "$baum" Stop "fall-s11a" "$ausgabe_s11a" 0
-pruefe "S-11a null Marken trotz Form-1-Erfolg -> KETTE ausgabe-unlesbar" 2 "" "Schluessel: KETTE ausgabe-unlesbar"
+pruefe_rc Z-133 "Baumzeile, Form-1-Schlusszeile, D19 OHNE_BEFUND, Rueckgabewert 0 und null Marken" 2
+pruefe_stderr_enthaelt Z-134 "Form-1-Schlusszeile mit null Marken" \
+  "der Schluessel ist KETTE ausgabe-unlesbar" "Schluessel: KETTE ausgabe-unlesbar"
 
-# --- Fall S-11b: Form 1 behauptet 3 Marken, die Uebersicht traegt nur EINE -
+# --- Z-135/136: Form 1 behauptet 3 Marken, die Uebersicht traegt nur EINE -
 baum=$(neuer_mock_baum)
 m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
 ausgabe_s11b=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 3 Kettenschritte durchlaufen, keiner ungleich 0, 3 gueltige Marken gezaehlt.")
 lauf "$baum" Stop "fall-s11b" "$ausgabe_s11b" 0
-pruefe "S-11b Markenzahl (1) weicht von Schlusszeile (3) ab -> KETTE ausgabe-unlesbar" 2 "" "Schluessel: KETTE ausgabe-unlesbar"
+pruefe_rc Z-135 "Schlusszeile Form 1 nennt eine andere Zahl, als Marken gelesen wurden" 2
+pruefe_stderr_enthaelt Z-136 "Schlusszeile Form 1 mit abweichender Zahl" \
+  "der Schluessel ist KETTE ausgabe-unlesbar" "Schluessel: KETTE ausgabe-unlesbar"
 
-echo
-echo "--- S-05: N-08 gegen das ECHTE Makefile --------------------------------"
-echo
-
-# --- Fall S-05: make -s nachweise mit PATH ohne git -> FEHLT=git -----------
-scheinbaum_s05=$(neu_verzeichnis)
-git -C "$scheinbaum_s05" init -q
-git -C "$scheinbaum_s05" config user.email "selbsttest@example.invalid"
-git -C "$scheinbaum_s05" config user.name "Selbsttest"
-cp "$ECHTES_MAKEFILE" "$scheinbaum_s05/Makefile"
-git -C "$scheinbaum_s05" add -A
-git -C "$scheinbaum_s05" commit -q -m init
-wzk_s05=$(neu_verzeichnis)
-baue_werkzeugkasten "$wzk_s05" git
-ausgabe_s05=$(PATH="$wzk_s05" make -s -C "$scheinbaum_s05" nachweise 2>&1)
-gesamt=$((gesamt + 1))
-if printf '%s' "$ausgabe_s05" | grep -qE '::LAGE [^ ]+ D12 nachweise C FEHLT=git::'; then
-  bestanden=$((bestanden + 1)); echo "BESTANDEN  S-05 N-08 gegen echtes Makefile: fehlendes git -> FEHLT=git"
-else
-  fehlgeschlagene_faelle+=("S-05 N-08 gegen echtes Makefile")
-  echo "FEHLGESCHLAGEN  S-05 (Ausgabe: $(printf '%s' "$ausgabe_s05" | tr '\n' ' ' | head -c 400))"
-fi
-
-echo
-echo "--- S-06 (Entscheid h): drei Verstoesse -- die Kette darf NICHT laufen"
-echo
-
-# --- Fall S-06: Verstoss gegen 2 (Zeile 1), gegen 4 (Zeile 2), gegen 6
-#     (Zeile 3) -- Zeile 1 gewinnt (LISTE 2), UND die Attrappe darf ihre
-#     Markerdatei NICHT anlegen (Beweis, dass "make dod" gar nicht lief). ---
+# --- Z-137/138: Form 2 (teilweise, mit gedeckter Lage C) abweichende Zahl -
 baum=$(neuer_mock_baum)
-mkdir -p "$baum/scripts"
-: > "$baum/scripts/abnahme-abgleich.sh"
-git -C "$baum" add -A
-git -C "$baum" commit -q -m "artefakt entstanden (S-06)"
-printf 'D7 abnahme|scripts/abnahme-abgleich.sh\tADR 0002, 6.12.5, Selbsttest.\nD9 rueckkanal|scripts/rueckkanal-pruefen.sh\tGrund ohne die Wendung.\nD11 geheimnisse|gitleaks\tADR 0002, 6.12.5, Selbsttest.\n' > "$baum/.claude/hooks/dod-gate-terminierte-lagen.txt"
-marker_s06=$(neu_verzeichnis)/marker
-zustand_s06=$(neu_verzeichnis)
-eingabe_s06=$(baue_eingabe "Stop" "$baum" "fall-s06")
-rufe_gate "$eingabe_s06" "$zustand_s06" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=darf nie gelesen werden" "MOCK_RC=0" "MOCK_MARKER=$marker_s06"
-pruefe "S-06 drei Verstoesse (2,4,6), Verstoss 2 zuerst -> LISTE 2 D7 abnahme" 2 "" "Schluessel: LISTE 2 D7 abnahme"
-gesamt=$((gesamt + 1))
-if [ ! -e "$marker_s06" ]; then
-  bestanden=$((bestanden + 1)); echo "BESTANDEN  S-06 Kette lief NICHT (keine Markerdatei)"
-else
-  fehlgeschlagene_faelle+=("S-06 Kette lief NICHT (keine Markerdatei)")
-  echo "FEHLGESCHLAGEN  S-06: Markerdatei besteht trotzdem -- die Kette ist gelaufen"
-fi
+printf 'D7 abnahme|scripts/abnahme-abgleich.sh\tADR 0002, 6.12.5, Selbsttest.\n' > "$baum/.claude/hooks/dod-gate-terminierte-lagen.txt"
+m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
+m2=$(marken_zeile K1 D7 abnahme C scripts/abnahme-abgleich.sh "" 2)
+ausgabe_f2=$(bauen_ausgabe "$baum" "$m1
+$m2" "$D19_OK" "make dod: alle 5 Kettenschritte durchlaufen, 1 davon ohne Urteil (Lage C): D7 abnahme FEHLT=scripts/abnahme-abgleich.sh, Rueckgabewert 2.")
+lauf "$baum" Stop "fall-f2-abweichend" "$ausgabe_f2" 2
+pruefe_rc Z-137 "Schlusszeile Form 2 nennt eine andere Zahl, als Marken gelesen wurden" 2
+pruefe_stderr_enthaelt Z-138 "Schlusszeile Form 2 mit abweichender Zahl" \
+  "der Schluessel ist KETTE ausgabe-unlesbar" "Schluessel: KETTE ausgabe-unlesbar"
 
-echo
-echo "--- S-12: git status -z, Umbenennung der Uebergabedatei --------------"
-echo
+# --- Z-139/140: Form 4 (D19 VERLETZT/C) abweichende Zahl -------------------
+baum=$(neuer_mock_baum)
+m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
+ausgabe_f4=$(bauen_ausgabe "$baum" "$m1" "VERLETZT -- versionierter Bestand veraendert." "make dod: alle 5 Kettenschritte durchlaufen, Rahmenpruefung D19 VERLETZT, Rueckgabewert 2.")
+lauf "$baum" Stop "fall-f4-abweichend" "$ausgabe_f4" 2
+pruefe_rc Z-139 "Schlusszeile Form 4 nennt eine andere Zahl, als Marken gelesen wurden" 2
+pruefe_stderr_enthaelt Z-140 "Schlusszeile Form 4 mit abweichender Zahl" \
+  "der Schluessel ist KETTE ausgabe-unlesbar" "Schluessel: KETTE ausgabe-unlesbar"
 
-# --- Fall S-12: Uebergabedatei per "git mv" umbenannt (uncommittet) -------
-baum_s12=$(neuer_mock_baum)
-zustand_s12=$(neu_verzeichnis)
+# --- Z-141: Form 3 (Abbruch) -- wird NICHT auf die Zahl geprueft ----------
+baum=$(neuer_mock_baum)
 m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
 m2=$(marken_zeile K1 D3 linter A_FAIL "" "" 2)
-ausgabe_s12=$(bauen_ausgabe "$baum_s12" "$m1
+ausgabe_f3=$(bauen_ausgabe "$baum" "$m1
 $m2" "$D19_OK" "make dod: abgebrochen bei D3 linter, Rueckgabewert 2.")
-lauf_mit_zustand "$zustand_s12" "$baum_s12" Stop "fall-s12" "$ausgabe_s12" 2
-lauf_mit_zustand "$zustand_s12" "$baum_s12" Stop "fall-s12" "$ausgabe_s12" 2
-lauf_mit_zustand "$zustand_s12" "$baum_s12" Stop "fall-s12" "$ausgabe_s12" 2
-mkdir -p "$baum_s12/docs/uebergaben"
-printf 'Uebergabe\n\nEskalation 3.4: D3 linter A_FAIL\n' > "$baum_s12/docs/uebergaben/2026-09-02_s12-alt.md"
-git -C "$baum_s12" add -A
-git -C "$baum_s12" commit -q -m "Uebergabe unter dem alten Namen"
-git -C "$baum_s12" mv "docs/uebergaben/2026-09-02_s12-alt.md" "docs/uebergaben/2026-09-02_s12-neu.md"
-lauf_mit_zustand "$zustand_s12" "$baum_s12" Stop "fall-s12" "$ausgabe_s12" 2
-pruefe "S-12 umbenannte Uebergabedatei (git mv, uncommittet) -> Durchlass" 0 '"systemMessage".*Eskalation 3\.4'
+lauf "$baum" Stop "fall-f3-abweichend" "$ausgabe_f3" 2
+gefunden141=0
+printf '%s' "$G_STDERR" | grep -qF "Schluessel: D3 linter A_FAIL" && gefunden141=1
+nicht_unlesbar141=1
+printf '%s' "$G_STDERR" | grep -qF "Schluessel: KETTE ausgabe-unlesbar" && nicht_unlesbar141=0
+pruefe_wahr Z-141 "Schlusszeile Form 3 (abgebrochen) mit abweichender Zahl" \
+  "der gezaehlte Schluessel ist der Befund der Kette (D3 linter A_FAIL) und nicht KETTE ausgabe-unlesbar -- Form 3 wird nicht auf die Zahl geprueft" \
+  "$([ "$gefunden141" -eq 1 ] && [ "$nicht_unlesbar141" -eq 1 ] && echo 1 || echo 0)" \
+  "Schluessel: D3 linter A_FAIL, kein ausgabe-unlesbar" "gefunden=$gefunden141, nicht_unlesbar=$nicht_unlesbar141"
 
 echo
-echo "--- Ebene 2: roter und gruener Lauf gegen das ECHTE Makefile ---"
+echo "--- Wiederholtes GATE-Pruefmittel in derselben Sitzung (6.12.25 i) ----"
 echo
 
-# -----------------------------------------------------------------------------
-# Fall 27 (roter Lauf): backend/pyproject.toml OHNE gueltigen Inhalt -> "uv
-# sync" schlaegt fehl -> D1 bau A_FAIL -> Kette bricht dort ab. Kein Netzzugriff
-# noetig: uv bricht am kaputten TOML ab, bevor es etwas herunterlaedt.
-# -----------------------------------------------------------------------------
-scheinbaum_rot=$(neu_verzeichnis)
-git -C "$scheinbaum_rot" init -q
-git -C "$scheinbaum_rot" config user.email "selbsttest@example.invalid"
-git -C "$scheinbaum_rot" config user.name "Selbsttest"
-cp "$ECHTES_MAKEFILE" "$scheinbaum_rot/Makefile"
-printf '# CLAUDE.md (Scheinbaum)\n' > "$scheinbaum_rot/CLAUDE.md"
-mkdir -p "$scheinbaum_rot/backend"
-printf 'dies ist kein gueltiges TOML {{{\n' > "$scheinbaum_rot/backend/pyproject.toml"
-git -C "$scheinbaum_rot" add -A
-git -C "$scheinbaum_rot" commit -q -m init
-if command -v uv >/dev/null 2>&1; then
-  zustand27=$(neu_verzeichnis)
-  eingabe27=$(baue_eingabe "Stop" "$scheinbaum_rot" "fall27")
-  rufe_gate "$eingabe27" "$zustand27" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$scheinbaum_rot"
-  pruefe "27 roter Lauf gegen echtes Makefile (kaputtes pyproject.toml) -> 2" 2
-else
-  echo "UEBERSPRUNGEN  27 roter Lauf gegen echtes Makefile: 'uv' fehlt in dieser Umgebung."
-fi
+# --- Z-146/147/148: das Verzeichnis der Wegwerfdatei ist physisch nicht
+#     aufloesbar (Attrappe wie bei Z-114/115), zweimal in derselben Sitzung
+#     -- der Schluessel "GATE mktemp" laeuft ueber dieselbe Zaehlung nach
+#     6.12.9 wie jeder andere Block (6.12.25 i). Zaehlerdatei direkt lesen:
+#     erste Zeile = Schluessel, zweite Zeile = Stand (siehe pruefe_zaehler*
+#     oben). --------------------------------------------------------------
+baum=$(neuer_mock_baum)
+zustand_gm=$(neu_verzeichnis)
+m1=$(marken_zeile K1 D20 belege A_OK "" "" 0)
+ausgabe_gm=$(bauen_ausgabe "$baum" "$m1" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
+eingabe_gm=$(baue_eingabe "Stop" "$baum" "fall-gate-mktemp")
+zaehler_datei_gm="$zustand_gm/r3cosint/dod-gate/zaehler-$(printf '%s' 'fall-gate-mktemp' | sha256sum | cut -d' ' -f1)"
 
-# -----------------------------------------------------------------------------
-# Fall 28 (gruener Lauf): Scheinbaum mit CLAUDE.md, den beiden Bezugsdokumenten
-# in pruefbarer Form, dem echten Makefile, dem echten Belegpruefer samt
-# Ausnahmeliste, Attrappen fuer die vier noch nicht gebauten Skripte und dem
-# ECHTEN gitleaks im Suchpfad (heute unter /usr/local/bin installiert -- die
-# ADR-Formulierung "gitleaks-Attrappe", 6.12.19, galt, solange gitleaks nicht
-# zur Verfuegung stand; jetzt darf das echte Werkzeug benutzt werden).
-#
-# Befund vom 2026-09-02 (Uebergabe dieser Arbeitseinheit): Der fruehere Fall 28
-# meldete "bestanden", sobald das Gate den Lauf NACHWEISBAR ausgewertet hatte
-# (rc 0 oder 2) -- unabhaengig davon, ob der Lauf tatsaechlich gruen wurde. Die
-# Kette meldete D20 Lage C mit FEHLT=belege-pruefmittel (Belegpruefer rc=3):
-# der Projektauftrag der Minimalform trug nur eine "## N."-Ueberschrift, keine
-# "### N.M"-Unterabschnittsueberschrift -- der Belegpruefer bildet seine
-# Referenzmenge der Projektauftrag-Abschnitte AUSSCHLIESSLICH aus
-# Ueberschriften der Form N.M (belege-pruefen.sh, Pruefung 5; PA_ABSCHNITTE).
-# Behoben durch eine zusaetzliche Unterabschnittsueberschrift unten.
-#
-# Fall 28 prueft jetzt ECHTES Gruen, nicht nur eine auswertbare Form (ADR 0002,
-# 6.12.19: "Ob ein solcher Baum mit dem ECHTEN Belegpruefer gruen wird, ist mit
-# einem ausgefuehrten Lauf festzustellen"; hier ausgefuehrt und belegt). ZWEI
-# Pruefungen gegen DIESELBE Kette:
-#   1. "make -C <baum> dod" DIREKT, nicht ueber das Gate -- liefert
-#      Schlusszeile und Lage-Marken auch dann, wenn das Gate sie bei sauberem
-#      Gruen unterdrueckt (Fall 2).
-#   2. Danach DASSELBE ueber das Gate -- muss mit Rueckgabewert 0 UND OHNE
-#      jede Ausgabe durchlassen (sauberes Gruen, Fall 2).
-# Bestanden nur, wenn BEIDE gruen sind UND die Schlusszeile aus (1) der Form 1
-# entspricht ("alle 14 Kettenschritte durchlaufen, keiner ungleich 0, 14
-# gueltige Marken gezaehlt."). Bleibt der Lauf rot, wird das GEMELDET
-# (Schlusszeile und Lage-Marken der Kette), der Fall NICHT gelockert.
-# -----------------------------------------------------------------------------
-scheinbaum_gruen=$(neu_verzeichnis)
-git -C "$scheinbaum_gruen" init -q
-git -C "$scheinbaum_gruen" config user.email "selbsttest@example.invalid"
-git -C "$scheinbaum_gruen" config user.name "Selbsttest"
-cp "$ECHTES_MAKEFILE" "$scheinbaum_gruen/Makefile"
-mkdir -p "$scheinbaum_gruen/scripts" "$scheinbaum_gruen/docs" "$scheinbaum_gruen/.claude/hooks"
-cp "$ECHTER_BELEGPRUEFER" "$scheinbaum_gruen/scripts/belege-pruefen.sh"
-: > "$scheinbaum_gruen/scripts/belege-ausnahmen.txt"
-: > "$scheinbaum_gruen/.claude/hooks/dod-gate-terminierte-lagen.txt"
-cat > "$scheinbaum_gruen/CLAUDE.md" <<'EOF'
-# CLAUDE.md (Scheinbaum fuer den Selbsttest von dod-gate.sh)
+rufe_gate "$eingabe_gm" "$zustand_gm" "$WERKZEUGKASTEN_FAKE_MKTEMP_UNAUFLOESBAR" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe_gm" "MOCK_RC=0"
+pruefe_stderr_enthaelt Z-146 "Verzeichnis der Wegwerfdatei physisch nicht aufloesbar, erstes Ereignis" \
+  "die Fehlerausgabe nennt den Schluessel GATE mktemp" "GATE mktemp"
+schluessel_gm1=$(sed -n '1p' "$zaehler_datei_gm" 2>/dev/null || true)
+stand_gm1=$(sed -n '2p' "$zaehler_datei_gm" 2>/dev/null || true)
+pruefe_wahr Z-147 "Verzeichnis der Wegwerfdatei physisch nicht aufloesbar, erstes Ereignis" \
+  "die Zaehlerdatei traegt Schluessel GATE mktemp und Stand 1" \
+  "$([ "$schluessel_gm1" = "GATE mktemp" ] && [ "$stand_gm1" = "1" ] && echo 1 || echo 0)" \
+  "GATE mktemp|1" "$schluessel_gm1|$stand_gm1"
 
-Verweist auf docs/00_Projektauftrag.md, Abschnitt 1.1.
-EOF
-cat > "$scheinbaum_gruen/docs/00_Projektauftrag.md" <<'EOF'
-# Projektauftrag (Minimalform fuer den Selbsttest)
+rufe_gate "$eingabe_gm" "$zustand_gm" "$WERKZEUGKASTEN_FAKE_MKTEMP_UNAUFLOESBAR" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=$ausgabe_gm" "MOCK_RC=0"
+schluessel_gm2=$(sed -n '1p' "$zaehler_datei_gm" 2>/dev/null || true)
+stand_gm2=$(sed -n '2p' "$zaehler_datei_gm" 2>/dev/null || true)
+pruefe_wahr Z-148 "Dasselbe Ausbleiben ein zweites Mal in derselben Sitzung" \
+  "die Zaehlerdatei traegt Schluessel GATE mktemp und Stand 2" \
+  "$([ "$schluessel_gm2" = "GATE mktemp" ] && [ "$stand_gm2" = "2" ] && echo 1 || echo 0)" \
+  "GATE mktemp|2" "$schluessel_gm2|$stand_gm2"
 
-## 1. Zweck
+# --- Z-149/150/151: fehlendes sha256sum, zweimal in derselben Sitzung -----
+# dod-gate.sh (Zeilen ~193-214, Kommentar "N-09"): fehlt sha256sum, kann der
+# uebliche gehashte Zaehler-Schluessel nicht gebildet werden -- die
+# Zaehlerdatei traegt ersatzweise eine SANITIERTE Rohform von session_id
+# (tr -c 'A-Za-z0-9_-' '_'), NICHT den Hash. "fall-gate-sha256sum" enthaelt
+# nur bereits zulaessige Zeichen, die Sanitierung ist deshalb die Identitaet.
+WERKZEUGKASTEN_OHNE_SHA256SUM_GS=$(neu_verzeichnis)
+baue_werkzeugkasten "$WERKZEUGKASTEN_OHNE_SHA256SUM_GS" sha256sum
+zustand_gs=$(neu_verzeichnis)
+eingabe_gs=$(baue_eingabe "Stop" "$baum" "fall-gate-sha256sum")
+zaehler_datei_gs="$zustand_gs/r3cosint/dod-gate/zaehler-fall-gate-sha256sum"
 
-Minimaler Auftragstext, damit der Belegpruefer eine gueltige Menge von
-Abschnittsnummern bilden kann. Verweist auf R3-X-000 (docs/05_Product_Backlog.md).
+rufe_gate "$eingabe_gs" "$zustand_gs" "$WERKZEUGKASTEN_OHNE_SHA256SUM_GS" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=x" "MOCK_RC=0"
+pruefe_stderr_enthaelt Z-149 "Fehlendes sha256sum, erstes Ereignis" \
+  "die Fehlerausgabe nennt den Schluessel GATE sha256sum" "GATE sha256sum"
+schluessel_gs1=$(sed -n '1p' "$zaehler_datei_gs" 2>/dev/null || true)
+stand_gs1=$(sed -n '2p' "$zaehler_datei_gs" 2>/dev/null || true)
+pruefe_wahr Z-150 "Fehlendes sha256sum, erstes Ereignis" \
+  "die Zaehlerdatei traegt Schluessel GATE sha256sum und Stand 1" \
+  "$([ "$schluessel_gs1" = "GATE sha256sum" ] && [ "$stand_gs1" = "1" ] && echo 1 || echo 0)" \
+  "GATE sha256sum|1" "$schluessel_gs1|$stand_gs1"
 
-### 1.1 Geltungsbereich
+rufe_gate "$eingabe_gs" "$zustand_gs" "$WERKZEUGKASTEN_OHNE_SHA256SUM_GS" "CLAUDE_PROJECT_DIR=$baum" "MOCK_AUSGABE=x" "MOCK_RC=0"
+schluessel_gs2=$(sed -n '1p' "$zaehler_datei_gs" 2>/dev/null || true)
+stand_gs2=$(sed -n '2p' "$zaehler_datei_gs" 2>/dev/null || true)
+pruefe_wahr Z-151 "Fehlendes sha256sum, zweites Ereignis in derselben Sitzung" \
+  "die Zaehlerdatei traegt Schluessel GATE sha256sum und Stand 2" \
+  "$([ "$schluessel_gs2" = "GATE sha256sum" ] && [ "$stand_gs2" = "2" ] && echo 1 || echo 0)" \
+  "GATE sha256sum|2" "$schluessel_gs2|$stand_gs2"
 
-Der Belegpruefer bildet seine Referenzmenge NUR aus Ueberschriften der Form
-"N.M" (belege-pruefen.sh, Pruefung 5); eine blosse "N."-Ueberschrift wie oben
-reicht dafuer NICHT -- ohne diesen Unterabschnitt bleibt die Referenzmenge
-leer und der Belegpruefer faellt mit Rueckgabewert 3 in Lage C
-(Projektauftrag 1.1).
-EOF
-cat > "$scheinbaum_gruen/docs/05_Product_Backlog.md" <<'EOF'
-# Product Backlog (Minimalform fuer den Selbsttest)
+echo
+echo "--- Zweiter Selbsttest waehrend gehaltener Sperre (6.12.25 j) ---------"
+echo
 
-## R3-X-000: Beispieleintrag
-
-**Abnahme:** `make abnahme` bestanden (Abschnitt 1).
-EOF
-for skript in abnahme-abgleich prototyp-trennung-pruefen nachweise-vollstaendig rueckkanal-pruefen; do
-  cat > "$scheinbaum_gruen/scripts/$skript.sh" <<'EOF'
-#!/usr/bin/env bash
-exit 0
-EOF
-  chmod +x "$scheinbaum_gruen/scripts/$skript.sh"
-done
-cat > "$scheinbaum_gruen/scripts/nachweise-erzeugen.sh" <<'EOF'
-#!/usr/bin/env bash
-ziel="${1:-/dev/stdout}"
-printf '# Nachweise (Attrappe fuer den Selbsttest)\n' > "$ziel"
-exit 0
-EOF
-chmod +x "$scheinbaum_gruen/scripts/nachweise-erzeugen.sh"
-git -C "$scheinbaum_gruen" add -A
-git -C "$scheinbaum_gruen" commit -q -m init
-wzk_gruen=$(neu_verzeichnis)
-baue_werkzeugkasten "$wzk_gruen"
-GITLEAKS_ECHT="$(command -v gitleaks 2>/dev/null || true)"
-[ -n "$GITLEAKS_ECHT" ] && ln -sf "$GITLEAKS_ECHT" "$wzk_gruen/gitleaks"
-
-# --- Pruefung 1: die Kette DIREKT, ohne das Gate -----------------------------
-kette_stdout28=$(mktemp)
-( env -i PATH="$wzk_gruen" HOME="${HOME:-/root}" \
-    make -C "$scheinbaum_gruen" --no-print-directory dod ) >"$kette_stdout28" 2>&1
-kette_rc28=$?
-kette_ausgabe28=$(cat "$kette_stdout28")
-rm -f "$kette_stdout28"
-kette_schlusszeile28=$(printf '%s\n' "$kette_ausgabe28" | grep -E '^make dod: (alle|abgebrochen)' | tail -1)
-kette_marken28=$(printf '%s\n' "$kette_ausgabe28" | grep -E '^::LAGE ')
-kette_form1_erwartet='make dod: alle 14 Kettenschritte durchlaufen, keiner ungleich 0, 14 gueltige Marken gezaehlt.'
-
-# --- Pruefung 2: DIESELBE Kette ueber das Gate -- muss sauberes Gruen sein --
-zustand28=$(neu_verzeichnis)
-eingabe28=$(baue_eingabe "Stop" "$scheinbaum_gruen" "fall28")
-rufe_gate "$eingabe28" "$zustand28" "$wzk_gruen" "CLAUDE_PROJECT_DIR=$scheinbaum_gruen"
-
-echo "MELDUNG  28 gruener Lauf gegen echtes Makefile + echten Belegpruefer:"
-echo "  Kette direkt: rc=$kette_rc28, Schlusszeile: $kette_schlusszeile28"
-echo "  Gate: rc=$G_RC, stdout='$G_STDOUT', stderr (erste 800 Zeichen): $(printf '%s' "$G_STDERR" | head -c 800)"
-
-gesamt=$((gesamt + 1))
-if [ "$kette_rc28" = "0" ] \
-   && [ "$kette_schlusszeile28" = "$kette_form1_erwartet" ] \
-   && [ "$G_RC" = "0" ] && [ -z "$G_STDOUT" ] && [ -z "$G_STDERR" ]; then
-  bestanden=$((bestanden + 1))
-  echo "BESTANDEN  28 gruener Lauf gegen echtes Makefile + echten Belegpruefer, sauberes Gruen belegt (ADR 0002, 6.12.19)"
-else
-  fehlgeschlagene_faelle+=("28 gruener Lauf nicht gruen")
-  echo "FEHLGESCHLAGEN  28 gruener Lauf nicht gruen"
-  echo "  Schlusszeile der Kette: $kette_schlusszeile28"
-  echo "  Lage-Marken der Kette:"
-  printf '%s\n' "$kette_marken28"
-fi
-
-# -----------------------------------------------------------------------------
-# Fall 29 (G16, flacher Klon): direkt gegen das Makefile-Ziel "belege" eines
-# flachen Klons des ECHTEN Repositories -- nicht ueber das ganze Gate, um
-# keinen vollen "make dod"-Lauf (D7/D10/D12 etc.) fuer diesen einen,
-# eng gefassten Fall zu brauchen.
-# -----------------------------------------------------------------------------
-flacher_klon=$(neu_verzeichnis)
-if git clone -q --depth 1 "file://$REPO_WURZEL" "$flacher_klon/klon" 2>/tmp/klon-fehler.txt; then
-  klon="$flacher_klon/klon"
-  # Der Klon holt den zuletzt COMMITTETEN Stand; das ECHTE Makefile im
-  # Arbeitsbaum kann Aenderungen dieser Arbeitseinheit tragen, die noch nicht
-  # committet sind (3.1, "Kein Commit" fuer diese Einheit). Das aktuelle
-  # Makefile wird deshalb ins geklonte (weiterhin FLACHE) Repository kopiert,
-  # bevor "belege" darin laeuft -- die Historie des Klons selbst bleibt
-  # unangetastet.
-  cp "$ECHTES_MAKEFILE" "$klon/Makefile"
-  ausgabe29=$(make -C "$klon" belege 2>&1)
-  rc29=$?
-  gesamt=$((gesamt + 1))
-  if printf '%s' "$ausgabe29" | grep -q "git fetch --unshallow"; then
-    bestanden=$((bestanden + 1))
-    echo "BESTANDEN  29 flacher Klon -> LAGE C mit 'git fetch --unshallow' in der Meldung (rc=$rc29)"
-  else
-    fehlgeschlagene_faelle+=("29 flacher Klon")
-    echo "FEHLGESCHLAGEN  29 flacher Klon: 'git fetch --unshallow' nicht in der Meldung (rc=$rc29)"
-    printf '%s\n' "$ausgabe29" | head -c 800
-  fi
-else
-  echo "UEBERSPRUNGEN  29 flacher Klon: 'git clone --depth 1' auf dieses Repository ist hier nicht moeglich."
-fi
+# --- Z-152/153: dieses Skript haelt seine Sperre (SELBSTTEST_SPERRE_FD,
+#     flock -n, exklusiv) seit dem eigenen Skriptbeginn und fuer die
+#     GESAMTE Laufzeit -- ein Unterprozess, der denselben Selbsttest ein
+#     zweites Mal aufruft, kann die Sperre also nicht erwerben und muss
+#     sofort (rc 3, stderr) enden. -----------------------------------------
+zeit_start152=$(date +%s%N)
+zweiter_stdout152=$(mktemp)
+zweiter_stderr152=$(mktemp)
+timeout 10 "$BASH_BIN" "$SKRIPT_VERZEICHNIS/dod-gate-selbsttest.sh" >"$zweiter_stdout152" 2>"$zweiter_stderr152"
+zweiter_rc152=$?
+zeit_ende152=$(date +%s%N)
+dauer_ms152=$(( (zeit_ende152 - zeit_start152) / 1000000 ))
+pruefe_wahr Z-152 "Zweiter Selbsttest, gestartet waehrend der erste die Sperre haelt" \
+  "der zweite Aufruf endet innerhalb von 5 s mit Rueckgabewert 3" \
+  "$([ "$zweiter_rc152" = "3" ] && [ "$dauer_ms152" -lt 5000 ] && echo 1 || echo 0)" \
+  "rc=3, Dauer < 5000 ms" "rc=$zweiter_rc152, Dauer=${dauer_ms152}ms"
+zweiter_stderr_inhalt152=$(cat "$zweiter_stderr152" 2>/dev/null || true)
+gefunden153=0
+printf '%s' "$zweiter_stderr_inhalt152" | grep -qF "Selbsttest laeuft bereits" && gefunden153=1
+pruefe_wahr Z-153 "Zweiter Selbsttest, gestartet waehrend der erste die Sperre haelt" \
+  "die Fehlerausgabe des zweiten Aufrufs traegt die Zeile 'Selbsttest laeuft bereits'" \
+  "$gefunden153" "Selbsttest laeuft bereits" "$(printf '%s' "$zweiter_stderr_inhalt152" | head -c 200)"
+rm -f "$zweiter_stdout152" "$zweiter_stderr152"
 
 echo
 echo "=== Zusammenfassung ==="
@@ -1332,8 +1657,91 @@ if [ "${#fehlgeschlagene_faelle[@]}" -gt 0 ]; then
     echo "  - $f"
   done
 fi
-echo "Selbsttest: $bestanden von $gesamt Faellen bestanden"
-if [ "$bestanden" -eq "$gesamt" ]; then
+echo "Selbsttest: $bestanden von $gesamt Zusicherungen bestanden"
+
+# -----------------------------------------------------------------------------
+# Deckung (ADR 0002, 6.12.25 a): Kennungen aus der Tabelle 6.12.19 dieser
+# ADR-Datei (Zeilen, die mit "| Z-" beginnen) gegen die tatsaechlich
+# gemeldeten Kennungen, in BEIDE Richtungen. Zurueckgezogene Kennungen
+# (Wortlaut "zurueckgezogen" in der Zeile) sind ausgenommen und werden
+# aufgezaehlt. Der Pfad zur ADR-Datei wird REPO-RELATIV bestimmt, nicht ueber
+# einen absoluten Pfad der Arbeitsumgebung (das Skript liegt unter scripts/).
+# -----------------------------------------------------------------------------
+adr_pfad="$REPO_WURZEL/docs/adr/0002-architekturentscheid-ziel-stack.md"
+echo
+echo "=== Deckung gegen Tabelle 6.12.19 ($adr_pfad) ==="
+
+tabellen_kennungen=()
+zurueckgezogene_kennungen=()
+if [ -f "$adr_pfad" ]; then
+  while IFS= read -r zeile; do
+    kennung=$(printf '%s' "$zeile" | sed -n 's/^| \(Z-[0-9][0-9]*\).*/\1/p')
+    [ -n "$kennung" ] || continue
+    case "$zeile" in
+      *zurueckgezogen*|*zurückgezogen*)
+        zurueckgezogene_kennungen+=("$kennung")
+        ;;
+      *)
+        tabellen_kennungen+=("$kennung")
+        ;;
+    esac
+  done < <(grep '^| Z-' "$adr_pfad")
+else
+  echo "FEHLER  ADR-Datei nicht gefunden: $adr_pfad"
+fi
+
+# Duplikate innerhalb der Tabelle selbst waeren ein Befund am ADR, nicht am
+# Selbsttest -- hier nur gegen die vom Selbsttest gemeldeten Kennungen
+# geprueft (Auftrag, Punkt 2: "doppelt gemeldete Kennungen sind ebenfalls
+# ein Fehler").
+deckung_fehler=0
+
+ohne_pruefung=()
+for k in "${tabellen_kennungen[@]}"; do
+  gefunden=0
+  for g in "${GEMELDETE_KENNUNGEN[@]:-}"; do
+    [ "$g" = "$k" ] && gefunden=1 && break
+  done
+  [ "$gefunden" -eq 1 ] || ohne_pruefung+=("$k")
+done
+
+ohne_kennung=()
+for g in "${GEMELDETE_KENNUNGEN[@]:-}"; do
+  [ -n "$g" ] || continue
+  gefunden=0
+  for k in "${tabellen_kennungen[@]}"; do
+    [ "$g" = "$k" ] && gefunden=1 && break
+  done
+  [ "$gefunden" -eq 1 ] || ohne_kennung+=("$g")
+done
+
+doppelt_gemeldet=()
+if [ "${#GEMELDETE_KENNUNGEN[@]}" -gt 0 ]; then
+  while IFS= read -r k; do
+    [ -n "$k" ] && doppelt_gemeldet+=("$k")
+  done < <(printf '%s\n' "${GEMELDETE_KENNUNGEN[@]}" | sort | uniq -d)
+fi
+
+if [ "${#zurueckgezogene_kennungen[@]}" -gt 0 ]; then
+  echo "Zurueckgezogene Kennungen (von der Deckung ausgenommen): ${zurueckgezogene_kennungen[*]}"
+fi
+
+if [ "${#ohne_pruefung[@]}" -gt 0 ]; then
+  deckung_fehler=1
+  echo "Kennungen der Tabelle OHNE Pruefung: ${ohne_pruefung[*]}"
+fi
+if [ "${#ohne_kennung[@]}" -gt 0 ]; then
+  deckung_fehler=1
+  echo "Gemeldete Pruefungen mit einer Kennung, die NICHT in der Tabelle steht: ${ohne_kennung[*]}"
+fi
+if [ "${#doppelt_gemeldet[@]}" -gt 0 ]; then
+  deckung_fehler=1
+  echo "Doppelt gemeldete Kennungen: ${doppelt_gemeldet[*]}"
+fi
+
+echo "Deckung: ${#tabellen_kennungen[@]} Kennungen in der Tabelle, $((${#tabellen_kennungen[@]} - ${#ohne_pruefung[@]})) geprueft, ${#ohne_pruefung[@]} ohne Pruefung, ${#ohne_kennung[@]} ohne Kennung"
+
+if [ "$bestanden" -eq "$gesamt" ] && [ "$deckung_fehler" -eq 0 ] && [ -f "$adr_pfad" ]; then
   exit 0
 else
   exit 2
