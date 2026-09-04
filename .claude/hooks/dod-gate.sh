@@ -347,6 +347,26 @@ blockieren_mit_zaehlung() {
 }
 
 # -----------------------------------------------------------------------------
+# 0. sha256sum -- ZUERST, vor jedem anderen "GATE <Pruefmittel>"-Block
+#    (DT6-05, sechste Pruefrunde). sha256sum_vorhanden ist bereits oben (fuer
+#    den Zaehler-Schluessel selbst) bestimmt; fehlt es, traegt der Zaehler-
+#    Schluessel ab jetzt die sanitierte Ausweichform statt der gehashten
+#    (Kommentar bei "N-09" oben). S5-02 erlaubt die Ausweichform
+#    "ausschliesslich fuer den Fall, dass genau GATE sha256sum gemeldet
+#    wird" -- das laesst sich nur einhalten, wenn dieser Block VOR jeder
+#    anderen Zaehlung desselben Laufs greift: stuende er weiter unten (vor
+#    6.12.24 i hinter git/make/Makefile/dod-gate-terminierte-lagen.txt/
+#    timeout/flock), wuerde bei GLEICHZEITIG fehlendem sha256sum UND einem
+#    dieser anderen Pruefmittel der ANDERE Schluessel zuerst gezaehlt,
+#    obwohl bereits die Ausweichform aktiv waere.
+# -----------------------------------------------------------------------------
+if [ "$sha256sum_vorhanden" -eq 0 ]; then
+  blockieren_mit_zaehlung "GATE sha256sum" \
+    "'sha256sum' (coreutils) ist nicht installiert." \
+    "coreutils installieren, dann erneut versuchen."
+fi
+
+# -----------------------------------------------------------------------------
 # 1. git -- fuer die Bestimmung des geprueften Baums (G12) und fuer die
 #    Eskalationspruefung (G8). $baum traegt bis hierhin den provisorischen
 #    Baumhinweis (siehe oben); blockieren_mit_zaehlung zaehlt diesen Block

@@ -1,0 +1,203 @@
+# =============================================================================
+# dod-gate-mutationen.txt -- Mutationsprobe je Zusicherung des DoD-Gates
+# =============================================================================
+#
+# Festgelegt in ADR 0002, Abschnitt 6.12.26 b (Entscheid des Auftraggebers zu
+# O-25 vom 2026-09-03). Grundsatz: Eine Pruefung ist erst dann Beleg, wenn sie
+# ihre eigene Verneinung erkennt.
+#
+# Diese Datei ist die AUSFUEHRBARE Form der Spalte "Mutation" der Tabelle
+# 6.12.19. Sie ist Spezifikation, nicht Werkzeug: gebaut und ausgefuehrt wird
+# der Mutationsmodus vom DevOps Engineer, geprueft von Static und Dynamic
+# Software Tester auf einem anderen Modell (3.4). Der Software Architect hat
+# nichts davon ausgefuehrt.
+#
+# AUFBAU je Zeile, Felder durch EINEN Tabulator getrennt:
+#   1 Kennung   Z-nnn aus der Tabelle 6.12.19
+#   2 Ziel      dod-gate.sh | Makefile | dod-gate-terminierte-lagen.txt |
+#               selbsttest
+#   3 Mutation  sed-Ausdruck fuer eine KOPIE des Ziels, oder das Wort "keine"
+#   4 Grund     die Aenderung in Worten (bei "keine": der Grund aus der
+#               geschlossenen Liste in 6.12.26 b)
+# Zeilen, die mit "#" beginnen, sind Kommentar. Leerzeilen werden uebergangen.
+#
+# WAS DER MUTATIONSMODUS TUT (Aufruf: scripts/dod-gate-selbsttest.sh
+# --mutationen), in dieser Reihenfolge (6.12.26 b):
+#   1. Deckung in beide Richtungen: jede nicht zurueckgezogene Kennung der
+#      Tabelle 6.12.19 hat genau einen Eintrag hier, und jeder Eintrag hier
+#      traegt eine Kennung der Tabelle.
+#   2. Die Mutation wird auf eine KOPIE des Ziels angewandt; die Kopie MUSS
+#      sich vom Original unterscheiden. Ein sed-Ausdruck, der nichts trifft,
+#      ist selbst ein Befund und keine stille Nulloperation.
+#   3. Der Fall der Kennung laeuft gegen die mutierte Kopie und MUSS genau
+#      diese Kennung als FEHLGESCHLAGEN melden. Andere duerfen mitfallen.
+# Der Pruefgegenstand selbst wird NIE veraendert -- mutiert wird ausschliesslich
+# eine Kopie im Pruefaufbau.
+#
+# KONVENTIONEN der sed-Ausdruecke:
+#   - Trennzeichen ist "#", damit Pfade mit "/" unmaskiert stehen koennen.
+#   - Kein einziges Hochkomma (') im Ausdruck, damit der Aufrufer ihn ohne
+#     Maskierungsakrobatik in Hochkommata setzen kann; ein Hochkomma im
+#     Quelltext wird mit "." getroffen.
+#   - "&" in der Ersetzung meint den Treffer; ein woertliches "&" steht als
+#     "\&".
+#   - Kein Tabulator innerhalb eines Feldes.
+#
+# Z-110 ist am 2026-09-03 zurueckgezogen (6.12.25 h) und hat deshalb KEINEN
+# Eintrag; die Deckungspruefung nimmt zurueckgezogene Kennungen aus.
+# =============================================================================
+
+Z-001	dod-gate.sh	s#"A_FAIL" \]; then#& exit 3;#	Im A_FAIL-Zweig der Markenauswertung endet das Gate mit 3, bevor es blockiert
+Z-002	dod-gate.sh	s#^exit 0$#exit 3#	Der letzte Ausgang 0 (sauberes Gruen) endet mit 3
+Z-003	dod-gate.sh	s#^exit 0$#echo hallo; exit 0#	Vor dem letzten Ausgang 0 wird eine Zeile auf die Standardausgabe geschrieben
+Z-004	dod-gate.sh	s#^exit 0$#echo hallo >\&2; exit 0#	Vor dem letzten Ausgang 0 wird eine Zeile auf die Fehlerausgabe geschrieben
+Z-005	dod-gate.sh	s#msg="dod-gate: Durchlass mit terminierten Lagen C#exit 3; &#	Der Durchlasszweig fuer terminierte Lagen C endet mit 3
+Z-006	dod-gate.sh	/Durchlass mit terminierten Lagen C/,+2s#{systemMessage: $m}#{systemMessage: $m, zweitfeld: "x"}#	Das JSON-Objekt der Durchlassmeldung erhaelt ein zweites Feld neben systemMessage
+Z-007	dod-gate.sh	s#Durchlass mit terminierten Lagen C: $liste_text#Durchlass mit terminierten Lagen C#	Aus der Durchlassmeldung faellt die Aufzaehlung der gedeckten Schritte weg
+Z-008	dod-gate.sh	/Selbstpruefung 1: kein Eintrag fuer diesen Schritt/a exit 3	Im Zweig der ungedeckten Lage C endet das Gate mit 3
+Z-009	dod-gate.sh	s#if \[ -e "$baum/$pfad" \]; then#if false; then#	Selbstpruefung 2 (der Gegenstand besteht im Baum bereits) auf false gesetzt
+Z-010	dod-gate.sh	s#Zeile $terminiert_zeilennr: .$pfad. besteht im Baum bereits#Zeile $terminiert_zeilennr: ein Eintrag besteht im Baum bereits#	Aus der Meldung der Selbstpruefung 2 faellt der beanstandete Pfad weg
+Z-011	dod-gate.sh	s#\[ "$beobachtete_lage" != "C" \]#false#	Selbstpruefung 3 (Eintrag zu einem Schritt, der nicht C meldet) auf false gesetzt
+Z-012	dod-gate.sh	s#Eintrag fuer .$schluessel_d_ziel. (Zeile $zeile_dieser in $terminiert_pfad) ist veraltet#Eintrag ist veraltet#	Aus der Meldung der Selbstpruefung 3 fallen Schluessel und Zeilennummer weg
+Z-013	dod-gate.sh	s#\*"ADR 0002, "\*)#*)#	Selbstpruefung 4 nimmt jeden Grund an (der Musterzweig ADR 0002, wird zum Auffangmuster)
+Z-014	dod-gate.sh	s#if \[ "$d_nummer" = "D19" \] || \[ "$d_nummer" = "D20" \]; then#if false; then#	Die Pruefung auf die nicht terminierbaren D-Nummern D19 und D20 auf false gesetzt
+Z-015	dod-gate.sh	s#^    /\*)$#    ZZZ)#	Der Musterzweig fuer absolute Pfade auf ein nie zutreffendes Muster gesetzt
+Z-016	dod-gate.sh	s#\[ "$hinterlegt" = "$m_fehlt" \]#true#	Selbstpruefung 5 entfaellt: ein Eintrag deckt unabhaengig vom FEHLT-Wert
+Z-017	dod-gate.sh	s#msg="dod-gate: Reentranz-Schutz#exit 3; &#	Der Durchlass wegen stop_hook_active endet mit 3
+Z-018	dod-gate.sh	s#msg="dod-gate: Reentranz-Schutz#loesche_zaehler; &#	Der Durchlass wegen stop_hook_active loescht den Zaehler
+Z-019	dod-gate.sh	s#      primaer_schluessel="D19 VERLETZT"#      exit 3#	Im D19-Zweig VERLETZT endet das Gate mit 3
+Z-020	dod-gate.sh	s#      primaer_schluessel="D19 C"#      exit 3#	Im D19-Zweig Lage C endet das Gate mit 3
+Z-021	dod-gate.sh	/GATE jq --/,/^fi$/s#^  exit 2$#  exit 3#	Der jq-Zweig endet mit 3 statt mit 2
+Z-022	dod-gate.sh	/GATE jq --/,/^fi$/s#jq#XX#g	Im jq-Block wird jede Nennung von jq ersetzt (Schluessel, Meldung, Beschaffungsweg)
+Z-023	dod-gate.sh	s#blockieren_mit_zaehlung "GATE git"#exit 3; &#	Der git-Block endet mit 3, bevor er blockiert
+Z-024	dod-gate.sh	/blockieren_mit_zaehlung "GATE git"/,+2s#git#XX#g	Im git-Block wird jede Nennung von git ersetzt (Schluessel, Meldung, Beschaffungsweg)
+Z-025	dod-gate.sh	s#blockieren_mit_zaehlung "GATE make"#exit 3; &#	Der make-Block endet mit 3, bevor er blockiert
+Z-026	dod-gate.sh	/blockieren_mit_zaehlung "GATE make"/,+2s#[Mm]ake#XX#g	Im make-Block wird jede Nennung von make ersetzt
+Z-027	dod-gate.sh	s#blockieren_mit_zaehlung "GATE Makefile"#exit 3; &#	Der Makefile-Block endet mit 3, bevor er blockiert
+Z-028	dod-gate.sh	s#Makefile#Mk#g	Der gesuchte Dateiname und jede Nennung von Makefile werden auf Mk umgeschrieben
+Z-029	dod-gate.sh	s#blockieren_mit_zaehlung "GATE timeout"#exit 3; &#	Der timeout-Block endet mit 3, bevor er blockiert
+Z-030	dod-gate.sh	/blockieren_mit_zaehlung "GATE timeout"/,+2s#timeout#XX#g	Im timeout-Block wird jede Nennung von timeout ersetzt
+Z-031	dod-gate.sh	s#blockieren_mit_zaehlung "GATE flock"#exit 3; &#	Der flock-Block endet mit 3, bevor er blockiert
+Z-032	dod-gate.sh	/blockieren_mit_zaehlung "GATE flock"/,+2s#flock#XX#g	Im flock-Block wird jede Nennung von flock ersetzt
+Z-033	dod-gate.sh	s#blockieren_mit_zaehlung "GATE dod-gate-terminierte-lagen.txt"#exit 3; &#	Der Block wegen fehlender Liste endet mit 3
+Z-034	dod-gate.sh	s#terminiert_pfad="$baum/.claude/hooks/dod-gate-terminierte-lagen.txt"#terminiert_pfad="$baum/.claude/hooks/andere-liste.txt"#	Der Pfad der Liste zeigt auf einen anderen Dateinamen
+Z-035	dod-gate.sh	s#^  zustand_beschreibbar=0$#  zustand_beschreibbar=0; exit 3#	Bei nicht beschreibbarem Zustandsverzeichnis endet das Gate mit 3, bevor es urteilt
+Z-036	dod-gate.sh	s#zustand_hinweis=" Das Zustandsverzeichnis ist nicht beschreibbar.*#zustand_hinweis=""#	Der Zusatz zum nicht beschreibbaren Zustandsverzeichnis wird auf die leere Zeichenkette gesetzt
+Z-037	dod-gate.sh	s#blockieren_mit_zaehlung "KETTE zeitueberschreitung"#exit 3; &#	Der Zweig der inneren Zeitueberschreitung endet mit 3
+Z-038	dod-gate.sh	s#neue_zahl=$((alt_zahl + 1))#neue_zahl=1#	Der Zaehler wird bei gleichem Schluessel nicht mehr erhoeht (er bleibt auf 1)
+Z-039	dod-gate.sh	s#-eq 3 \]; then#-eq 3 ]; then exit 3;#	Der Zweig des dritten Ereignisses endet mit 3
+Z-040	dod-gate.sh	s#^    echo "Eskalation 3.4: $primaer_schluessel" >&2#    true#	Die Zeile Eskalation 3.4: <Schluessel> wird aus der Meldung des dritten Ereignisses entfernt
+Z-041	dod-gate.sh	s#msg="dod-gate: Eskalation 3.4 fuer#exit 3; &#	Der Eskalations-Durchlass endet mit 3
+Z-042	dod-gate.sh	s#"$primaer_schluessel" "$neue_zahl" > "$zaehler_datei"#"$primaer_schluessel" 1 > "$zaehler_datei"#	Die Zaehlerdatei traegt immer die Zahl 1 statt des erreichten Standes
+Z-043	selbsttest	keine	Vorbedingung des Aufbaus (Grund 2): die Zeile stellt fest, dass der Fall die Uebergabedatei wirklich in HEAD hat, und behauptet nichts ueber das Verhalten des Gates
+Z-044	dod-gate.sh	s#msg="dod-gate: Eskalation 3.4 fuer#exit 3; &#	Der Eskalations-Durchlass endet mit 3
+Z-045	selbsttest	keine	Vorbedingung des Aufbaus (Grund 2): die Zeile stellt fest, dass die Datei nur in einem aelteren Commit steht, und behauptet nichts ueber das Verhalten des Gates
+Z-046	dod-gate.sh	s#diff-tree --no-commit-id --name-only -r HEAD#log --pretty=format: --name-only#	Die Suche nach der Uebergabedatei wird von HEAD auf die ganze Historie ausgeweitet
+Z-047	dod-gate.sh	s#&& { \[ "$ereignis" = "Stop" \] || \[ "$ereignis" = "SubagentStop" \]; }##	Die Einschraenkung des Eskalations-Durchlasses auf Stop und SubagentStop entfaellt
+Z-048	selbsttest	keine	Vorbedingung des Aufbaus (Grund 2): die Zeile stellt fest, dass der Durchlass nicht am Fehlen der Uebergabedatei scheitert
+Z-049	dod-gate.sh	s#"A_FAIL" \]; then#& exit 3;#	Im A_FAIL-Zweig der Markenauswertung endet das Gate mit 3
+Z-050	dod-gate.sh	s#if \[ -z "$kette_abweichung_schluessel" \]; then#if true; then#	Nicht mehr die erste, sondern die letzte Abweichung setzt den Zaehlschluessel
+Z-051	dod-gate.sh	s#^  weitere_abweichungen_ausgeben$#  true#	Die Ausgabe der weiteren Abweichungen entfaellt
+Z-052	dod-gate.sh	s#^        alle_abweichung_schluessel+=("$m_d $m_ziel C ${m_fehlt:-unbenannt}")#        true#	Ungedeckte Lagen C werden nicht mehr in die Sammlung aller Abweichungen aufgenommen
+Z-053	dod-gate.sh	s#^    alle_abweichung_schluessel+=("D19 VERLETZT")#    true#	Der D19-Befund wird nicht mehr in die Sammlung aller Abweichungen aufgenommen
+Z-054	dod-gate.sh	s#m_fehlt="${BASH_REMATCH\[6\]}"#m_fehlt="$zeile"#	Der FEHLT-Wert wird aus der ganzen Marke statt aus ihrer FEHLT-Gruppe gelesen
+Z-055	dod-gate.sh	s#if \[ -n "$hinterlegt" \] && \[ "$hinterlegt" = "$m_fehlt" \]; then#if false; then#	Der Deckungszweig wird auf false gesetzt: kein Eintrag deckt mehr
+Z-056	dod-gate.sh	s#(OHNE_BEFUND|VERLETZT|B|C)#(VERLETZT|B|C)#g	OHNE_BEFUND entfaellt aus der Grammatik der D19-Zeile
+Z-057	dod-gate.sh	s#( -- .\*)?##g	Der optionale Zusatztext entfaellt aus der Grammatik der D19-Zeile
+Z-058	dod-gate.sh	s#VERLETZT#XX#g	Jede Nennung von VERLETZT in Schluessel und Meldung wird ersetzt
+Z-059	dod-gate.sh	s#( -- .\*)?##g	Der optionale Zusatztext entfaellt aus der Grammatik der D19-Zeile
+Z-060	dod-gate.sh	s#(OHNE_BEFUND|VERLETZT|B|C)#(OHNE_BEFUND|VERLETZT|C)#g	Jede Nennung der Lage B in Schluessel und Meldung wird ersetzt (die Lage faellt aus der Grammatik)
+Z-061	dod-gate.sh	s#( -- .\*)?##g	Der optionale Zusatztext entfaellt aus der Grammatik der D19-Zeile
+Z-062	dod-gate.sh	s#(OHNE_BEFUND|VERLETZT|B|C)#(OHNE_BEFUND|VERLETZT|B)#g	Jede Nennung der D19-Lage C in Schluessel und Meldung wird ersetzt (die Lage faellt aus der Grammatik)
+Z-063	dod-gate.sh	s#( -- .\*)?##g	Der optionale Zusatztext entfaellt aus der Grammatik der D19-Zeile
+Z-064	dod-gate.sh	s#^if \[ -n "$primaer_schluessel" \]; then$#if [ -n "$primaer_schluessel" ]; then [ "$ereignis" = TaskCompleted ] \&\& exit 3;#	Am Ausgang endet das Gate bei TaskCompleted mit 3 statt zu blockieren
+Z-065	dod-gate.sh	s#(Edit|Write|NotebookEdit)#(Edit|Write|NotebookEdit|Bash)#	Bash gilt als veraenderndes Werkzeug (das Muster wird um Bash erweitert)
+Z-066	dod-gate.sh	s#msg="dod-gate: Rolle .$agent_type. hat unter#exit 3; &#	Der Durchlass fuer Rollen ohne Schreibrecht endet mit 3
+Z-067	dod-gate.sh	s#(Edit|Write|NotebookEdit)#(Edit|Write|NotebookEdit|Bash)#	Bash gilt als veraenderndes Werkzeug (das Muster wird um Bash erweitert)
+Z-068	selbsttest	keine	Vorbedingung des Aufbaus (Grund 2): die Zeile stellt fest, dass der Scheinbaum die echten Rollendateien traegt, und behauptet nichts ueber das Verhalten des Gates
+Z-069	dod-gate.sh	s#^  rolle_schreibt=1$#  rolle_schreibt=0#	Jede Rolle gilt als nicht schreibberechtigt (Vorbelegung auf 0)
+Z-070	dod-gate.sh	s#^  rolle_schreibt=1$#  rolle_schreibt=0#	Jede Rolle gilt als nicht schreibberechtigt (Vorbelegung auf 0)
+Z-071	dod-gate.sh	s#if \[ "$name_feld" = "$agent_type" \]; then#if [ "$(basename "$datei" .md)" = "$agent_type" ]; then#	Die Rolle wird ueber den Dateinamen statt ueber das Feld name: aufgeloest
+Z-072	dod-gate.sh	s#if \[ "$name_feld" = "$agent_type" \]; then#if [ "$(basename "$datei" .md)" = "$agent_type" ]; then#	Die Rolle wird ueber den Dateinamen statt ueber das Feld name: aufgeloest
+Z-073	dod-gate.sh	s#^    treffer=0$#    treffer=1#	Ein unbekannter agent_type gilt als nicht schreibberechtigt (ein Treffer ohne Fundstelle, leere tools-Zeile)
+Z-074	dod-gate.sh	s#^    treffer=0$#    treffer=1#	Ein unbekannter agent_type gilt als nicht schreibberechtigt (ein Treffer ohne Fundstelle, leere tools-Zeile)
+Z-075	dod-gate.sh	s#^  rolle_schreibt=1$#  rolle_schreibt=0#	Jede Rolle gilt als nicht schreibberechtigt (Vorbelegung auf 0)
+Z-076	dod-gate.sh	s#^  rolle_schreibt=1$#  rolle_schreibt=0#	Jede Rolle gilt als nicht schreibberechtigt (Vorbelegung auf 0)
+Z-077	dod-gate.sh	s#^  rolle_schreibt=1$#  rolle_schreibt=0#	Die Bedingung genau ein Treffer wird aufgeweicht: der mehrdeutige Fall faellt auf die Vorbelegung 0 zurueck
+Z-078	dod-gate.sh	s#^  rolle_schreibt=1$#  rolle_schreibt=0#	Die Bedingung genau ein Treffer wird aufgeweicht: der mehrdeutige Fall faellt auf die Vorbelegung 0 zurueck
+Z-079	dod-gate.sh	/Selbstpruefung 1: kein Eintrag fuer diesen Schritt/a exit 3	Im Zweig der ungedeckten Lage C endet das Gate mit 3
+Z-080	Makefile	s#Beschaffen: git fetch --unshallow#Beschaffen: die Historie vervollstaendigen#	Im Makefile wird der Beschaffungsweg git fetch --unshallow durch einen anderen Text ersetzt
+Z-081	dod-gate.sh	s#baum=$(git -C "$cwd_feld" rev-parse --show-toplevel 2>/dev/null || true)#baum="$cwd_feld"#	Der gepruefte Baum wird roh aus cwd uebernommen statt ueber git aufgeloest
+Z-082	dod-gate.sh	s#^exit 0$#echo hallo; exit 0#	Vor dem letzten Ausgang 0 wird eine Zeile auf die Standardausgabe geschrieben
+Z-083	Makefile	s#geprueft wird $(PROJ).#geprueft wird /pfad/fremd.#	Im Makefile nennt die Baumzeile einen festen Fremdpfad statt PROJ
+Z-084	dod-gate.sh	s#baum=$(git -C "$cwd_feld" rev-parse --show-toplevel 2>/dev/null || true)#baum="$cwd_feld"#	Der gepruefte Baum wird roh aus cwd uebernommen statt ueber git aufgeloest
+Z-085	dod-gate.sh	s#^exit 0$#echo hallo; exit 0#	Vor dem letzten Ausgang 0 wird eine Zeile auf die Standardausgabe geschrieben
+Z-086	Makefile	s#geprueft wird $(PROJ).#geprueft wird $(PROJ)/.#	Im Makefile traegt die Baumzeile einen Schraegstrich am Ende
+Z-087	dod-gate.sh	s#baum=$(git -C "$cwd_feld" rev-parse --show-toplevel 2>/dev/null || true)#baum="$cwd_feld"#	Der gepruefte Baum wird roh aus cwd uebernommen statt ueber git aufgeloest
+Z-088	dod-gate.sh	s#^exit 0$#echo hallo; exit 0#	Vor dem letzten Ausgang 0 wird eine Zeile auf die Standardausgabe geschrieben
+Z-089	Makefile	s#cd "$$(dirname "$(MAKEFILE_ROH)")" && pwd -P#cd "$$(dirname "$(MAKEFILE_ROH)")" \&\& pwd -L#	Im Makefile wird PROJ mit pwd -L statt mit pwd -P bestimmt
+Z-090	dod-gate.sh	s#^if \[ -z "$baum" \] && \[ -n "$proj_feld" \]; then#if false; then#	Der Rueckfall auf CLAUDE_PROJECT_DIR entfaellt
+Z-091	dod-gate.sh	s#^exit 0$#echo hallo; exit 0#	Vor dem letzten Ausgang 0 wird eine Zeile auf die Standardausgabe geschrieben
+Z-092	Makefile	s#geprueft wird $(PROJ).#geprueft wird /pfad/fremd.#	Im Makefile nennt die Baumzeile einen festen Fremdpfad statt PROJ
+Z-093	Makefile	s#geprueft wird $(PROJ).#geprueft wird /pfad/fremd.#	Im Makefile nennt die Baumzeile einen festen Fremdpfad statt PROJ
+Z-094	dod-gate.sh	s#^exit 0$#exit 3#	Der letzte Ausgang 0 (sauberes Gruen) endet mit 3
+Z-095	dod-gate.sh	s#^exit 0$#echo hallo; exit 0#	Vor dem letzten Ausgang 0 wird eine Zeile auf die Standardausgabe geschrieben
+Z-096	dod-gate.sh	s#blockieren_mit_zaehlung "KETTE baum-widerspruch"#exit 3; &#	Der Zweig des Baum-Widerspruchs endet mit 3
+Z-097	dod-gate.sh	s#KETTE baum-widerspruch#KETTE baumfrage#g	Der Schluessel KETTE baum-widerspruch wird umbenannt
+Z-098	dod-gate.sh	s#^  zustand_beschreibbar=0$#  zustand_beschreibbar=0; exit 3#	Bei nicht bestimmbarem Zustandsverzeichnis endet das Gate mit 3, bevor es urteilt
+Z-099	dod-gate.sh	s#zustand_hinweis=" Das Zustandsverzeichnis ist nicht bestimmbar.*#zustand_hinweis=""#	Der Zusatz zum nicht bestimmbaren Zustandsverzeichnis wird auf die leere Zeichenkette gesetzt
+Z-100	dod-gate.sh	s#ist nicht bestimmbar#ist nicht beschreibbar#	Der Zusatz sagt nicht beschreibbar statt nicht bestimmbar
+Z-101	dod-gate.sh	s#msg="dod-gate: Durchlass (belegtes Gruen)#exit 1; &#	Bei nicht bestimmbarem Zustandsverzeichnis endet das Gate mit 1 (Rueckfall in den Befund B-01)
+Z-102	dod-gate.sh	/Durchlass (belegtes Gruen)/,+2s#{systemMessage: $m}#{systemMessage: $m, zweitfeld: "x"}#	Das JSON-Objekt erhaelt ein zweites Feld neben systemMessage
+Z-103	dod-gate.sh	s#ist nicht bestimmbar#ist nicht beschreibbar#	Der Zusatz sagt nicht beschreibbar statt nicht bestimmbar
+Z-104	dod-gate.sh	s#if mkdir -p "$sperre_ausweich" 2>/dev/null && \[ -w "$sperre_ausweich" \]; then#if false; then#	Der Ausweichweg der Sperrdatei nach /tmp wird auf false gesetzt
+Z-105	dod-gate.sh	s#^  zustand_beschreibbar=0$#  zustand_beschreibbar=0; exit 3#	Bei nicht beschreibbarem Zustandsverzeichnis endet das Gate mit 3, bevor es urteilt
+Z-106	dod-gate.sh	s#sperre_ausweich="/tmp/r3cosint-dod-gate"#sperre_ausweich="/tmp"#	Der Ausweichweg der Sperrdatei zeigt auf ein beschreibbares Verzeichnis
+Z-107	dod-gate.sh	s#^  zustand_beschreibbar=0$#  zustand_beschreibbar=0; exit 3#	Bei nicht beschreibbarem Zustandsverzeichnis endet das Gate mit 3, bevor es urteilt
+Z-108	dod-gate.sh	s#sperre_hinweis=" Sperre nicht aktiv: $sperre_grund."#sperre_hinweis=""#	Der Hinweis auf die nicht aktive Sperre wird auf die leere Zeichenkette gesetzt
+Z-109	dod-gate.sh	s#    ziel_verzeichnis="/tmp"#    ziel_verzeichnis="${TMPDIR:-/tmp}"#;s#^  "$baum"|"$baum"/\*)#  "KEINE-WACHE")#	Vorab-Bestimmung des Zielverzeichnisses und Wache danach ausgeschaltet -- die Wegwerfdatei entsteht und bleibt im geprueften Baum
+Z-111	dod-gate.sh	s#^TMPDIR="$ausgabe_verz_phys" timeout#timeout#	Die Zeile mit der TMPDIR-Zuweisung vor make entfernt
+Z-112	dod-gate.sh	s#    ausgabe_datei=$(mktemp -p /tmp 2>/dev/null || true)#    ausgabe_datei="/tmp/schein-wegwerfdatei"#	Der Ausweichaufruf mktemp -p /tmp gilt immer als gelungen
+Z-113	dod-gate.sh	s#GATE mktemp#GATE wegwerfdatei#g	Der Schluessel GATE mktemp wird umbenannt
+Z-114	dod-gate.sh	keine	Grund 3: teilt den Fall mit der Schwester Z-115 (Schluessel GATE mktemp); der Kanal rc kann die Verneinung (Wache faellt offen aus) nicht trennen, weil in der herstellbaren Lage (nicht vorhandenes Verzeichnis) die Umleitung der Kettenausgabe scheitert, make nie startet und das Gate mit dem Schluessel KETTE rueckgabewert=1 ebenfalls 2 liefert -- Z-115 sieht den Schluessel (6.12.26 f Punkt 13)
+Z-115	dod-gate.sh	s#GATE mktemp#GATE wegwerfdatei#g	Der Schluessel GATE mktemp wird umbenannt
+Z-116	dod-gate.sh	s#blockieren_mit_zaehlung "GATE sha256sum"#exit 3; &#	Der sha256sum-Block endet mit 3, bevor er blockiert
+Z-117	dod-gate.sh	/blockieren_mit_zaehlung "GATE sha256sum"/,+2s#sha256sum#XX#g	Im sha256sum-Block wird jede Nennung von sha256sum ersetzt
+Z-118	dod-gate.sh	s#"coreutils installieren, dann erneut versuchen."#""#g	Der Beschaffungsweg faellt aus dem naechsten Schritt weg
+Z-119	dod-gate.sh	s#^  blockieren_mit_zaehlung "GATE mktemp"#  exit 3; &#	Der mktemp-Block endet mit 3, bevor er blockiert
+Z-120	dod-gate.sh	s#mktemp. (coreutils) ist nicht installiert.#ein Werkzeug ist nicht installiert.#;s#^  blockieren_mit_zaehlung "GATE mktemp"#  blockieren_mit_zaehlung "GATE XX"#	Im mktemp-Block wird jede Nennung von mktemp ersetzt
+Z-121	dod-gate.sh	s#"coreutils installieren, dann erneut versuchen."#""#g	Der Beschaffungsweg faellt aus dem naechsten Schritt weg
+Z-122	dod-gate.sh	s#blockieren_mit_zaehlung "$terminiert_fehler_schluessel"#exit 3; &#	Der Block wegen fehlerhafter Liste endet mit 3
+Z-123	dod-gate.sh	s#^if \[ -n "$terminiert_fehler" \]; then$#if false; then#	Der Block wegen fehlerhafter Liste entfaellt; die Kette laeuft
+Z-124	dod-gate.sh	/^declare -A deckung_pfad=()$/,/^done < /s#^\( *\)break$#\1continue#	Die Abbruchanweisungen der Strukturpruefung (2, 4, 6) im Block, der den Schluessel setzt, ueber den Block verankert (Zeilen "declare -A deckung_pfad=()" bis "done < ...") auf Weiterlaufen umgestellt -- die letzte statt der ersten fehlerhaften Zeile bestimmt den Schluessel
+Z-125	dod-gate.sh	s#msg="dod-gate: Eskalation 3.4 fuer#loesche_zaehler; &#	Der Durchlass nach der Eskalation loescht den Zaehler
+Z-126	dod-gate.sh	s#msg="dod-gate: Eskalation 3.4 fuer#loesche_zaehler; &#	Der Durchlass nach der Eskalation loescht den Zaehler
+Z-127	dod-gate.sh	s#msg="dod-gate: Eskalation 3.4 fuer#loesche_zaehler; &#	Der Durchlass nach der Eskalation loescht den Zaehler
+Z-128	dod-gate.sh	s#(${neue_zahl}. Mal in Folge) -- Durchlass#(Durchlass)#	Die Angabe des n-ten Males faellt aus der Meldung weg
+Z-129	dod-gate.sh	s#msg="dod-gate: Eskalation 3.4 fuer#echo "dod-gate: verlangt die Uebergabedatei unter docs/uebergaben/" >\&2; &#	Die Durchlassmeldung nach der Eskalation traegt zusaetzlich die Forderung nach der Uebergabedatei
+Z-130	Makefile	s#\[ -n "$$fehlt" \] || fehlt="scripts/nachweise-vollstaendig.sh"#fehlt="scripts/nachweise-vollstaendig.sh"#	Im Makefile entfaellt die Wache vor dem zweiten Gegenstand von D12 (scripts/nachweise-vollstaendig.sh) -- der letzte statt des ersten fehlenden Gegenstands wird als FEHLT= genannt (6.12.26 f Punkt 13)
+Z-131	dod-gate.sh	s#^TMPDIR="$ausgabe_verz_phys" timeout#timeout#	Die Zeile mit der TMPDIR-Zuweisung vor make entfernt
+Z-132	dod-gate.sh	s#^TMPDIR="$ausgabe_verz_phys" timeout#timeout#	Die Zeile mit der TMPDIR-Zuweisung vor make entfernt
+Z-133	dod-gate.sh	s#\[ "$marken_anzahl" -eq 0 \] || ##	Die Forderung nach mindestens einer Marke entfaellt
+Z-134	dod-gate.sh	s#KETTE ausgabe-unlesbar#KETTE unlesbar#g	Der Schluessel KETTE ausgabe-unlesbar wird umbenannt
+Z-135	dod-gate.sh	s#if \[ -n "$schluss_marken_erwartet" \]#if [ -z "$schluss_marken_erwartet" ]#	Der Vergleich von gelesener und genannter Markenzahl entfaellt
+Z-136	dod-gate.sh	s#KETTE ausgabe-unlesbar#KETTE unlesbar#g	Der Schluessel KETTE ausgabe-unlesbar wird umbenannt
+Z-137	dod-gate.sh	s#  teilweise|d19)#  d19)#	Form 2 wird von der Markenzahl-Pruefung ausgenommen
+Z-138	dod-gate.sh	s#KETTE ausgabe-unlesbar#KETTE unlesbar#g	Der Schluessel KETTE ausgabe-unlesbar wird umbenannt
+Z-139	dod-gate.sh	keine	Grund 3: teilt den Fall mit der Schwester Z-140 (Schluessel KETTE ausgabe-unlesbar); der Kanal rc kann die Verneinung (Form 4 von der Markenzahl-Pruefung ausgenommen) nicht trennen, weil der Rueckgabewert 2 im Pruefaufbau auch aus D19 VERLETZT folgt -- Z-140 sieht sie ueber den Schluessel (6.12.26 f Punkt 1)
+Z-140	dod-gate.sh	s#KETTE ausgabe-unlesbar#KETTE unlesbar#g	Der Schluessel KETTE ausgabe-unlesbar wird umbenannt
+Z-141	dod-gate.sh	s#^schluss_marken_erwartet=""$#schluss_marken_erwartet=99#	Der Abbruchfall traegt neu den Schluessel KETTE ausgabe-unlesbar (die Markenzahl-Pruefung greift auch bei Form 3)
+Z-142	dod-gate.sh	s#      primaer_schluessel="D19 B-widerspruch"#      exit 3#	Der Zweig des D19-B-Widerspruchs endet mit 3
+Z-143	dod-gate.sh	s#\[ "$primaer_schluessel" != "D19 B-widerspruch" \]#true#	Der Vorrang des Schluessels D19 B-widerspruch vor der Konsistenzwache entfaellt
+Z-144	dod-gate.sh	s#^  blockieren_mit_zaehlung "KETTE ausgabe-unlesbar"#  exit 3; &#	Der Zweig der fehlenden Baumzeile endet mit 3
+Z-145	dod-gate.sh	s#KETTE ausgabe-unlesbar#KETTE unlesbar#g	Der Schluessel KETTE ausgabe-unlesbar wird umbenannt
+Z-146	dod-gate.sh	s#GATE mktemp#GATE wegwerfdatei#g	Der Schluessel GATE mktemp wird umbenannt
+Z-147	dod-gate.sh	s#^    neue_zahl=1$#    neue_zahl=7#	Das erste Ereignis wird mit 7 statt mit 1 gezaehlt
+Z-148	dod-gate.sh	s#neue_zahl=$((alt_zahl + 1))#neue_zahl=1#	Der Zaehler wird bei gleichem Schluessel nicht erhoeht
+Z-149	dod-gate.sh	s#GATE sha256sum#GATE pruefsumme#g	Der Schluessel GATE sha256sum wird umbenannt
+Z-150	dod-gate.sh	s#^    neue_zahl=1$#    neue_zahl=7#	Das erste Ereignis wird mit 7 statt mit 1 gezaehlt
+Z-151	dod-gate.sh	s#neue_zahl=$((alt_zahl + 1))#neue_zahl=1#	Der Zaehler wird bei gleichem Schluessel nicht erhoeht
+Z-152	selbsttest	keine	Die Zusicherung beschreibt den Selbsttest selbst (Grund 1): eine Mutation daran mutierte das Messinstrument, nicht den Gegenstand
+Z-153	selbsttest	keine	Die Zusicherung beschreibt den Selbsttest selbst (Grund 1): eine Mutation daran mutierte das Messinstrument, nicht den Gegenstand
+Z-154	dod-gate.sh	s#handoff_zeile="Eskalation 3.4: $primaer_schluessel"#handoff_zeile="Eskalation 3.4:"#	Der im Gate gesuchte Text der Uebergabedatei wird von "Eskalation 3.4: <gezaehlter Schluessel>" auf "Eskalation 3.4:" ohne Schluessel verkuerzt -- jede Uebergabedatei mit irgendeiner Eskalationszeile oeffnete den Durchlass (DT7-03)
+Z-155	dod-gate.sh	keine	Grund 3: teilt den Fall mit der Schwester Z-154; der Kanal zaehler kann die Verneinung nicht trennen, weil der Stand 4 nach Z-125 auch beim Durchlass gilt -- Z-154 sieht sie ueber den Rueckgabewert (6.12.26 f Entscheid 7)
