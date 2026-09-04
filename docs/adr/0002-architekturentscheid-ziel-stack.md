@@ -4,7 +4,7 @@
 |---|---|
 | **Titel** | Ziel-Stack, Modulschnitt, Datenzugriff und Grundgerüst für R3cOSINT |
 | **Status** | **angenommen** — Freigabe des Auftraggebers am 2026-08-20, Abschnitt 10 |
-| **Fortschreibung** | 2026-08-21 — O-4 entfallen: TheHive und Cortex mit der Neufassung von Projektauftrag 5.17 gestrichen; Abschnitte 8 und 9 nachgeführt. Der Optionenvergleich der Sprachwahl in Abschnitt 3.1 bleibt als damalige Entscheidungsgrundlage unverändert. — 2026-08-30 — Abschnitt 6 in drei Punkten fortgeschrieben: D11 prüft zwei Gegenstände (Arbeitsbaum und Git-Historie) statt nur der Historie; neuer Kettenschritt D18 für die Architekturverträge des Importprüfers, den Abschnitt 3.5 seit dem 2026-08-20 verlangt, ohne dass die Tabelle ihn führte; Kettengrundsatz "ein Prüflauf verändert den Gegenstand nicht, über den er urteilt" samt Folge für D12. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.1; als Verweis berührt sind zusätzlich 1.3 (K5), 3.5, 3.12 sowie 8 (O-8, neu O-10) und 9. — 2026-08-30, **zweite Fortschreibung desselben Tages** nach einer abschliessenden adversarischen Prüfung: Die Kette schreibt keine Sperrdatei mehr (`uv sync --locked` und `uv run --locked` statt `--frozen`), die Unverändertheit des Arbeitsbaums wird als Rahmenprüfung **D19** tatsächlich beobachtet statt nur behauptet, die Objektbestimmung aller Kettenschritte steht neu einmal und einheitlich in einer eigenen Tabelle (löst den Widerspruch bei D18 und die fehlende Bedingung bei D10 auf), und die Prüffläche des Arbeitsbaumlaufs aus D11 ist festgelegt. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.2; berührt sind zusätzlich 1.3 (K5), 3.11 und 8 (O-10 neu gefasst) sowie 9. — 2026-08-30, **dritte Fortschreibung desselben Tages** nach vier vom DevOps Engineer gemeldeten Abweichungen zwischen diesem ADR und dem Makefile: Jeder `uv`-Aufruf der Kette trägt `--project backend`, ohne das `--locked` wirkungslos bleibt (belegter Lauf); D7 erkennt seinen Gegenstand am Backlog statt am Dateinamen und hat keine Lage B mehr; `git` ist bei D11 Prüfmittel des Historienlaufs, sein Fehlen ist Lage C; der Abgleich der Wurzelpakete für D18 ist als O-11 terminiert. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.3; berührt sind zusätzlich 8 (O-11 neu) und 9. — 2026-08-30, **vierte Fortschreibung desselben Tages**: D19 misst den Inhalt des Arbeitsbaums (Prüfsummen aller versionierten Dateien und die Maskierungsmerkmale des Index) statt nur der Statusliste; eine Änderung an einer bereits geänderten Datei blieb sonst unsichtbar. Belege in Abschnitt 6.4. — 2026-08-31, **fünfte Fortschreibung**: Die Reichweite der Kette ist entschieden statt offengelassen — sie schützt gegen Bequemlichkeit und Abkürzung, nicht gegen einen Aufrufer, der die Umgebung beherrscht; die harte Zusicherung liegt in einem Lauf auf der Gegenseite, neu als O-12 terminiert. Belege in Abschnitt 6.5. — 2026-08-31, **sechste Fortschreibung desselben Tages** nach einer eng gefassten Nachprüfung auf einem anderen Modell, die beide Änderungen der fünften Fortschreibung blockierend beanstandet hat: Die Positivliste um `$(UV)` gibt `UV_CACHE_DIR`, `XDG_CACHE_HOME` und `TMPDIR` nicht mehr frei (ein präparierter Zwischenspeicher erzeugte damit ein falsches `A_OK`, weil `--locked` ein bereits entpacktes Archiv nicht erneut prüft), und die Projektbestimmung fällt nicht mehr auf das Arbeitsverzeichnis zurück (die Kette prüfte sonst still ein fremdes Repository). Belege in Abschnitt 6.6; berührt ist zusätzlich 8 (O-13 neu). — 2026-08-31, **siebte Fortschreibung desselben Tages**: O-13 ist vom Auftraggeber entschieden — die Kette benutzt den Zwischenspeicher von `uv` nicht, `$(UV)` setzt `UV_NO_CACHE=1`. Damit ist der letzte Weg zu einem falschen `A_OK` über den Zwischenspeicher geschlossen statt nur abgegrenzt. Belege in Abschnitt 6.7; berührt ist zusätzlich 8 (O-13 entschieden). — 2026-09-01, **achte Fortschreibung** auf Entscheid des Auftraggebers: Der Belegprüfer `scripts/belege-pruefen.sh` wird als Kettenschritt **D20** aufgenommen und läuft **als erster Schritt, vor D1** — nicht am Ende, weil die Kette heute bei D7 abbricht und ein Schritt hinter D7 bis auf Weiteres nie liefe. D20 hat **keine Lage B**. Weil das Werkzeug seine eigene Unvollständigkeit einräumt, hält diese Fortschreibung fest, was ein grüner Lauf aussagt und was nicht, und verallgemeinert die Aussage auf die ganze Kette. Belege in Abschnitt 6.8; berührt sind zusätzlich 1.3 (K5), 8 (O-14 und O-15 neu) und 9. — 2026-09-01, **neunte Fortschreibung** nach einem vom Requirements Engineer gemeldeten Auseinanderlaufen von Festlegung und Umsetzung bei D19: Die **Beobachtbarkeit des Index** — `assume-unchanged` und `skip-worktree` — wird als Bestandteil des Prüfmittels aufgenommen, weil sie im Makefile beobachtet wird und im ADR nirgends vorkam. Der Ausgang "nicht beobachtbar" ist **Lage C**; dafür wird Lage C allgemein geschärft: ein Prüfmittel, das vorhanden ist, die Aussage aber nicht trägt, steht einem fehlenden gleich. Dazu die Unterscheidung, dass der **Gegenstand** relativ gemessen wird (vorher gegen nachher) und das **Instrument** absolut verlangt wird. Belege in Abschnitt 6.9; berührt sind zusätzlich 8 (O-16 neu) und 9. — 2026-09-01, **zehnte Fortschreibung desselben Tages**: O-16 ist mit einem ausgeführten Lauf beantwortet — die Maskierung schaltet **eine** Hälfte des D19-Instruments stumm, nicht beide; die Inhaltsprüfsumme misst weiter. Der Entscheid aus 6.9 bleibt unverändert, **eine Begründungszeile daraus wird berichtigt**, weil sie für beide Hälften behauptete, was nur für eine gilt, und die Befundmeldung wird auf die schwächere, richtige Aussage festgelegt. Der nicht gemessene Fall — Löschung einer maskierten Datei — ist als O-17 benannt statt vermutet. Belege in Abschnitt 6.10; berührt sind zusätzlich 8 (O-16 beantwortet, O-17 neu) und 9 |
+| **Fortschreibung** | 2026-08-21 — O-4 entfallen: TheHive und Cortex mit der Neufassung von Projektauftrag 5.17 gestrichen; Abschnitte 8 und 9 nachgeführt. Der Optionenvergleich der Sprachwahl in Abschnitt 3.1 bleibt als damalige Entscheidungsgrundlage unverändert. — 2026-08-30 — Abschnitt 6 in drei Punkten fortgeschrieben: D11 prüft zwei Gegenstände (Arbeitsbaum und Git-Historie) statt nur der Historie; neuer Kettenschritt D18 für die Architekturverträge des Importprüfers, den Abschnitt 3.5 seit dem 2026-08-20 verlangt, ohne dass die Tabelle ihn führte; Kettengrundsatz "ein Prüflauf verändert den Gegenstand nicht, über den er urteilt" samt Folge für D12. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.1; als Verweis berührt sind zusätzlich 1.3 (K5), 3.5, 3.12 sowie 8 (O-8, neu O-10) und 9. — 2026-08-30, **zweite Fortschreibung desselben Tages** nach einer abschliessenden adversarischen Prüfung: Die Kette schreibt keine Sperrdatei mehr (`uv sync --locked` und `uv run --locked` statt `--frozen`), die Unverändertheit des Arbeitsbaums wird als Rahmenprüfung **D19** tatsächlich beobachtet statt nur behauptet, die Objektbestimmung aller Kettenschritte steht neu einmal und einheitlich in einer eigenen Tabelle (löst den Widerspruch bei D18 und die fehlende Bedingung bei D10 auf), und die Prüffläche des Arbeitsbaumlaufs aus D11 ist festgelegt. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.2; berührt sind zusätzlich 1.3 (K5), 3.11 und 8 (O-10 neu gefasst) sowie 9. — 2026-08-30, **dritte Fortschreibung desselben Tages** nach vier vom DevOps Engineer gemeldeten Abweichungen zwischen diesem ADR und dem Makefile: Jeder `uv`-Aufruf der Kette trägt `--project backend`, ohne das `--locked` wirkungslos bleibt (belegter Lauf); D7 erkennt seinen Gegenstand am Backlog statt am Dateinamen und hat keine Lage B mehr; `git` ist bei D11 Prüfmittel des Historienlaufs, sein Fehlen ist Lage C; der Abgleich der Wurzelpakete für D18 ist als O-11 terminiert. Frühere Fassungen, Belege und Begründungen in Abschnitt 6.3; berührt sind zusätzlich 8 (O-11 neu) und 9. — 2026-08-30, **vierte Fortschreibung desselben Tages**: D19 misst den Inhalt des Arbeitsbaums (Prüfsummen aller versionierten Dateien und die Maskierungsmerkmale des Index) statt nur der Statusliste; eine Änderung an einer bereits geänderten Datei blieb sonst unsichtbar. Belege in Abschnitt 6.4. — 2026-08-31, **fünfte Fortschreibung**: Die Reichweite der Kette ist entschieden statt offengelassen — sie schützt gegen Bequemlichkeit und Abkürzung, nicht gegen einen Aufrufer, der die Umgebung beherrscht; die harte Zusicherung liegt in einem Lauf auf der Gegenseite, neu als O-12 terminiert. Belege in Abschnitt 6.5. — 2026-08-31, **sechste Fortschreibung desselben Tages** nach einer eng gefassten Nachprüfung auf einem anderen Modell, die beide Änderungen der fünften Fortschreibung blockierend beanstandet hat: Die Positivliste um `$(UV)` gibt `UV_CACHE_DIR`, `XDG_CACHE_HOME` und `TMPDIR` nicht mehr frei (ein präparierter Zwischenspeicher erzeugte damit ein falsches `A_OK`, weil `--locked` ein bereits entpacktes Archiv nicht erneut prüft), und die Projektbestimmung fällt nicht mehr auf das Arbeitsverzeichnis zurück (die Kette prüfte sonst still ein fremdes Repository). Belege in Abschnitt 6.6; berührt ist zusätzlich 8 (O-13 neu). — 2026-08-31, **siebte Fortschreibung desselben Tages**: O-13 ist vom Auftraggeber entschieden — die Kette benutzt den Zwischenspeicher von `uv` nicht, `$(UV)` setzt `UV_NO_CACHE=1`. Damit ist der letzte Weg zu einem falschen `A_OK` über den Zwischenspeicher geschlossen statt nur abgegrenzt. Belege in Abschnitt 6.7; berührt ist zusätzlich 8 (O-13 entschieden). — 2026-09-01, **achte Fortschreibung** auf Entscheid des Auftraggebers: Der Belegprüfer `scripts/belege-pruefen.sh` wird als Kettenschritt **D20** aufgenommen und läuft **als erster Schritt, vor D1** — nicht am Ende, weil die Kette heute bei D7 abbricht und ein Schritt hinter D7 bis auf Weiteres nie liefe. D20 hat **keine Lage B**. Weil das Werkzeug seine eigene Unvollständigkeit einräumt, hält diese Fortschreibung fest, was ein grüner Lauf aussagt und was nicht, und verallgemeinert die Aussage auf die ganze Kette. Belege in Abschnitt 6.8; berührt sind zusätzlich 1.3 (K5), 8 (O-14 und O-15 neu) und 9. — 2026-09-01, **neunte Fortschreibung** nach einem vom Requirements Engineer gemeldeten Auseinanderlaufen von Festlegung und Umsetzung bei D19: Die **Beobachtbarkeit des Index** — `assume-unchanged` und `skip-worktree` — wird als Bestandteil des Prüfmittels aufgenommen, weil sie im Makefile beobachtet wird und im ADR nirgends vorkam. Der Ausgang "nicht beobachtbar" ist **Lage C**; dafür wird Lage C allgemein geschärft: ein Prüfmittel, das vorhanden ist, die Aussage aber nicht trägt, steht einem fehlenden gleich. Dazu die Unterscheidung, dass der **Gegenstand** relativ gemessen wird (vorher gegen nachher) und das **Instrument** absolut verlangt wird. Belege in Abschnitt 6.9; berührt sind zusätzlich 8 (O-16 neu) und 9. — 2026-09-01, **zehnte Fortschreibung desselben Tages**: O-16 ist mit einem ausgeführten Lauf beantwortet — die Maskierung schaltet **eine** Hälfte des D19-Instruments stumm, nicht beide; die Inhaltsprüfsumme misst weiter. Der Entscheid aus 6.9 bleibt unverändert, **eine Begründungszeile daraus wird berichtigt**, weil sie für beide Hälften behauptete, was nur für eine gilt, und die Befundmeldung wird auf die schwächere, richtige Aussage festgelegt. Der nicht gemessene Fall — Löschung einer maskierten Datei — ist als O-17 benannt statt vermutet. Belege in Abschnitt 6.10; berührt sind zusätzlich 8 (O-16 beantwortet, O-17 neu) und 9. — 2026-09-01, **elfte Fortschreibung** — *hier am 2026-09-02 nachgetragen; diese Kopfzeile führte sie nicht, siehe 6.12.18*: ein blockierender und fünf nachrangige Befunde einer unabhängigen Prüfung auf einem anderen Modell behoben. Der Belegprüfer unterscheidet neu einen dritten Rückgabewert (3 = Lage C) von einem Befund (2), und die sechs Prüfmittel von D20 werden vor jeder Verwendung geprüft statt nur drei. Belege in Abschnitt 6.11; berührt sind zusätzlich 8 (O-10 als überholt gekennzeichnet, O-18 neu) und 9. — 2026-09-02, **zwölfte Fortschreibung** — **Entwurf, dem Auftraggeber am 2026-09-02 vorgelegt, Bau auf Weisung vom selben Tag begonnen, förmliche Freigabe ausstehend (Abschnitt 10)**: Entwurf der Definition-of-Done-Gates aus R3-Q-001 (`Stop`, `SubagentStop`, `TaskCompleted`). Entschieden werden die vier Fragen des Auftraggebers — wie das Gate einen Befund von einem ausgefallenen Prüfmittel unterscheidet, was bei Lage C geschieht (terminierte Lagen C als versionierte, selbstprüfende Liste neben dem Hook), wie dreimaliges Scheitern am gleichen Kriterium gezählt wird und wie `stop_hook_active` greift — dazu die Prüfmittel des Gates, seine beiden Zeitgrenzen, der geprüfte Arbeitsbaum, die Behandlung von Rollen ohne veränderndes Werkzeug und die Aussagekraft eines Durchlasses. Die Kette selbst wird an vier Stellen fortgeschrieben: sie bricht bei Lage C nicht mehr ab, ihre Lage-Marke trägt das fehlende Prüfmittel, ihre Schlusszeilen sind eindeutig, und die Vollständigkeit der Git-Historie wird Prüfmittel von D20. Belege in Abschnitt 6.12. **Runde 1 der Prüfung am 2026-09-02 eingearbeitet:** vier Prüflinsen auf einem anderen Modell und eine Nachprüfung des Koordinators haben dreizehn Befunde gebracht, darunter einen blockierenden inneren Widerspruch — das Kriterium für Rollen ohne Schreibrecht zählte `Bash` zu den verändernden Werkzeugen und hätte damit gerade die beiden Prüferrollen erfasst, für die es gemacht ist. Alle dreizehn sind eingearbeitet und an den betroffenen Stellen als **Runde 1** gekennzeichnet; die D20-Zeile der Objekttabelle in Abschnitt 6 ist dabei selbst nachgeführt worden, weil nach Regel 2 aus 6.2.2 die Tabelle die massgebliche Stelle ist. Berührt sind zusätzlich 6 (Objekttabelle, D20), 8 (O-19 bis O-23 neu, O-8, O-10 (neu gefasst), O-15 und O-18 fortgeschrieben) und 9. **Nachträge aus dem Bau vom 2026-09-02, entschieden in 6.12.23:** drei vom DevOps Engineer gemeldete Stellen, an denen der Entwurf keinen Fall vorsieht — eine **vierte** Schlusszeile für den vollständig gelaufenen Lauf, dessen Rahmenprüfung D19 einen Befund oder Lage C meldet, samt der Parse-Regel "Rückgabewert 0 nur mit Form 1"; ein eigener Zählschlüsselraum `LISTE …` für die Selbstprüfungen 2 bis 6 der terminierten Lagen, damit ein Block wegen der Liste vom Ausfall eines Prüfmittels des Gates unterscheidbar bleibt; und die benannte Grenze, dass ein Block wegen fehlendem `jq` nicht zählbar ist. Nachgeführt sind an Ort die Überblickstabelle 6.12.1 und die Unterabschnitte 6.12.3, 6.12.4, 6.12.8, 6.12.9 und 6.12.22 sowie die `Makefile`-Zeile in Abschnitt 9. **Nachträge aus der Verifikation vom 2026-09-02, entschieden in 6.12.24:** Die statische Prüfung des gebauten Gates auf einem anderen Modell ist mit vierzehn Befunden **nicht bestanden**, die dynamische mit fünf Befunden ebenfalls **nicht**; die **zweite** Prüfrunde desselben Tages bestätigt alle Behebungen und ist wegen neuer Punkte selbst nicht bestanden (alles Fremdbeleg, eine dritte Runde folgt). Zehn Entscheide führen den Entwurf dort nach, wo er einen Fall nicht vorsieht: die Bestimmung des geprüften Baums als **physisch aufgelöste Wurzel** des Arbeitsbaums, ohne die ein Schrägstrich am Ende oder ein Symlink das Gate rot mit falscher Begründung machte; der Schlüssel `KETTE baum-widerspruch` in der Klassifizierungstabelle; das **nicht bestimmbare** Zustandsverzeichnis, das keinen eigenen Ausgang erhält, damit das Gate ausserhalb der Zeitgrenze nie mit einem anderen Wert als 0 oder 2 endet; der Durchlass nach der Eskalation, der den Zähler **nicht** löscht; Sperrdatei und Wegwerfdatei nachweislich ausserhalb des geprüften Baums; `sha256sum` und `mktemp` als siebtes und achtes blockierendes Prüfmittel des Gates; die Reihenfolge der Selbstprüfungen der terminierten Lagen; der Umfang des Selbsttests; und, aus der zweiten Runde, die Prüfung der Markenzahl gegen die **Selbstaussage der Kette**, ohne dass das Gate eine eigene Zahl führte. Nachgeführt sind an Ort die Überblickstabelle 6.12.1 und die Unterabschnitte 6.12.3, 6.12.4, 6.12.9, 6.12.11, 6.12.13, 6.12.15, 6.12.19 und 6.12.23 b sowie O-20 und der neue O-24 in Abschnitt 8 und Abschnitt 9. **Dritte Prüfrunde vom 2026-09-03 (Fremdbeleg):** Alle dreizehn Befunde der zweiten Runde sind mit eigenen Läufen beider Prüfer als behoben belegt, der Selbsttest besteht 81 von 81 Fällen — beide Prüfungen sind gleichwohl nicht bestanden (blockierend S3-01 und DT3-B1). Weil dieselbe Fehlerklasse — ein Selbsttestfall besteht, ohne seine Behauptung zu belegen — **zum dritten Mal** aufgetreten ist, ist die Arbeitseinheit am 2026-09-03 nach 3.4 **abgebrochen** und mit dem neuen offenen Punkt **O-24** (Abbildung der Tabelle 6.12.19 auf einzeln prüfbare Zusicherungen) vorgelegt worden; die zugehörigen Behebungen stehen in 6.12.24 j als **Vorschlag** und sind nicht entschieden. Berichtigt sind an Ort drei Stellen aus jener Runde (S3-03, S3-04, S3-06). Die Überschrift von 6.12 sagt neu, dass der Bau auf Weisung begonnen hat; die förmliche Freigabe der Entscheidpunkte E-A bis E-K und die Abnahme des Gates stehen unverändert aus (Abschnitt 10). — 2026-09-03, **dreizehnte Fortschreibung** auf Entscheid des Auftraggebers zu **O-24**: Die Prüftabelle von G17 wird **zerlegt**. Sie führt neu die Spalten Kennung, Fall, Zusicherung, Herkunft und je Zeile **genau eine** messbare Zusicherung mit einer dauerhaften, nie umnummerierten Kennung `Z-001` bis `Z-145`; der Selbsttest trägt je Kennung genau eine Prüfung, gibt je Prüfung eine Zeile `BESTANDEN`/`FEHLGESCHLAGEN` mit der Kennung aus und prüft die Deckung zwischen Tabelle und Prüfungen **mechanisch in beide Richtungen**. Damit wird "ungemessen" ein Zustand, den die Maschine findet, statt eine Lücke, die eine Prüfrunde finden muss — die Fehlerklasse hinter DT-B4, S-01 und S3-01. Dazu vier Behebungen aus Runde 3: die Blockmeldung nennt alle Abweichungen (S3-01), das Zielverzeichnis der Wegwerfdatei wird vor dem Anlegen bestimmt (DT3-B1, Fortschreibung von 6.12.24 f an Ort), ein unauflösbares Verzeichnis fällt geschlossen aus (S3-05), und die beiden ungemessenen Zusicherungen aus S3-02 und S3-07 erhalten Zeilen. Belege und Begründungen in Abschnitt 6.12.25; nachgeführt sind an Ort 6.12.1, die Tabelle in 6.12.19 und der Vermerk in 6.12.24 f sowie O-24 in Abschnitt 8 und Abschnitt 9. Der Entscheid betrifft **allein O-24**: die förmliche Freigabe der Entscheidpunkte E-A bis E-K und die Abnahme des Gates stehen weiterhin aus (Abschnitt 10), und den Stand nach der Umsetzung belegt erst eine vierte Prüfrunde. **Nachtrag vom 2026-09-03 nach der vierten Prüfrunde (Fremdbeleg: dynamisch bestanden, statisch nicht bestanden — S4-01 blockierend, vierter Auftritt derselben Fehlerklasse, und zwar an der in dieser Fortschreibung neu geschriebenen Zeile `Z-129`), entschieden auf Weisung des Auftraggebers in 6.12.25 f bis k:** Jede Zusicherung der Tabelle nennt neu ihren **Messumfang** — Kanal, Ereignis und, wo es darauf ankommt, Anzahl — und die Prüfung misst genau diesen Umfang (f; 75 Zeilen präzisiert); `Z-129` ist berichtigt statt zurückgezogen (g), `Z-110` als im Prüfaufbau nicht messbar zurückgezogen und `Z-111` auf den ganzen Baum erweitert (h); im Gate läuft **jeder** Block mit Schlüssel `GATE <Prüfmittel>` über die Zählung nach 6.12.9, einzige Ausnahme bleibt `GATE jq` (i); der Selbsttest hält für seine ganze Laufzeit eine Sperre unter `/tmp` und endet als zweiter Aufruf mit Rückgabewert 3 statt mit Scheinbefunden (j). Die Tabelle führt damit `Z-001` bis `Z-153`, davon `Z-110` zurückgezogen; k) hält die Beleglage der vierten Runde fest. Nachgeführt sind an Ort 6.12.19 und 6.12.25 sowie O-24 in Abschnitt 8 und Abschnitt 9. Den Stand nach dieser Nachführung belegt erst eine **fünfte** Prüfrunde. **Nachtrag vom 2026-09-03 nach der fünften Prüfrunde (Fremdbeleg: statisch und dynamisch nicht bestanden — blockierend S5-01, 16 Zusicherungen messen einen anderen Kanal als den in ihrer Zeile genannten, und DT5-01, `Z-111` besteht ohne Beobachtungsfenster; die acht dynamischen Prüfpunkte im Übrigen ohne Beanstandung):** Die Beleglage hält 6.12.25 k fest; damit ist dieselbe Fehlerklasse **zum fünften Mal** aufgetreten, und der Koordinator hat die Arbeitseinheit nach 3.4 abgebrochen (`docs/uebergaben/2026-09-03_r3-q-001-o-24-zusicherungen.md`). Der übereinstimmende Vorschlag beider Prüfer — Messumfang und Trennschärfe je Zusicherung maschinell erzwingen, über eine Kanalspalte mit festem Wertevorrat samt Abgleich und eine Mutationsprobe je Zusicherung — ist als **O-25** in Abschnitt 8 dem Auftraggeber vorgelegt und hier nicht entschieden. — 2026-09-03, **vierzehnte Fortschreibung** auf Entscheid des Auftraggebers zu **O-25** (Weisung im Wortlaut: "O-25 entscheiden: beides umsetzen, dann sechste Runde."): Beide von den Prüfern vorgeschlagenen Mittel werden festgelegt. Die Tabelle 6.12.19 trägt neu die Spalte **Kanal** mit einem abschliessenden Wertevorrat (`rc`, `stdout`, `stderr`, `zaehler`, `datei`, `beobachter`, `kette`, `selbsttest`, `dauer`), den der Selbsttest je Kennung mitmeldet und der mechanisch gegen die Tabelle abgeglichen wird — eine Abweichung endet ungleich 0. Und sie trägt die Spalte **Mutation**: je Zusicherung die Änderung am Prüfgegenstand, die genau diese Zusicherung fehlschlagen lassen muss, ausführbar in der neuen versionierten Datei `scripts/dod-gate-mutationen.txt` und geprüft in einem eigenen Modus `--mutationen` des Selbsttests. Der Grundsatz dahinter: eine Prüfung ist erst dann Beleg, wenn sie ihre eigene Verneinung erkennt. Dazu die vier Befunde der fünften Runde als Entscheide — die 16 Zeilen aus S5-01 messen neu auf dem in ihrer Zeile genannten Kanal (Wortlaut unverändert), `Z-111` erhält ein Beobachtungsfenster von mindestens 300 ms (DT5-01), der Ausweichname der Zählerdatei bei fehlendem `sha256sum` ist terminiert (S5-02), und `Z-018` misst den Stand statt der Abwesenheit (S5-03). Belege und Begründungen in Abschnitt 6.12.26; nachgeführt sind an Ort 6.12.1, 6.12.9, 6.12.11, die Tabelle in 6.12.19 sowie O-25 in Abschnitt 8 und Abschnitt 9. Der Entscheid betrifft **allein O-25**: die förmliche Freigabe der Entscheidpunkte E-A bis E-K und die Abnahme des Gates stehen weiterhin aus (Abschnitt 10), und den Stand nach der Umsetzung belegt erst die **sechste** Prüfrunde. — 2026-09-03 — 6.12.26 f (**fünfzehnte Fortschreibung**): Nachträge aus der siebten Prüfrunde (`Z-124`, `Z-132` und `Z-133` präzisiert; `Z-139` und `Z-155` mit `keine` nach Grund 3; neu `Z-154` und `Z-155`; typisierte Messhüllen verbindlich, Sperre unter `/tmp` bestätigt); Abschnitte 8 und 9 nachgeführt. — 2026-09-04 — 6.12.26 f Punkt 13: Berichtigungen aus Bau 4 (`Z-114` bleibt bei `rc`, Mutation `keine` nach Grund 3 mit `Z-115`; Mutation von `Z-130` auf das `Makefile` verlegt; 156 Messhüllen, neun Zeilen mit `keine`) — 2026-09-04 — 6.12.26 g (**sechzehnte Fortschreibung**): achte Prüfrunde, Abbruch nach 3.4, O-26 vorgelegt |
 | **Datum** | 2026-08-20 |
 | **Kennung** | R3-C-001 |
 | **Grundlage** | Projektauftrag 3.1, 3.4, 5.1 bis 5.18, 9.1; `docs/05_Product_Backlog.md` (Etappen 0 und 1); `docs/06_Definition_of_Ready_und_Done.md`; `docs/04_Kontextmodell.md`; `docs/adr/0001-rollenmodell.md` |
@@ -570,7 +570,7 @@ Dazu vier Regeln:
 | D12 | Die nachweispflichtigen Artefakte nach 6.6 | `docs/` vorhanden — Bestandteil des Repositories, der Schritt läuft immer | tritt nicht ein | `scripts/nachweise-erzeugen.sh`, `scripts/nachweise-vollstaendig.sh` |
 | D18 | **Python-Produktionscode unterhalb `backend/src/`, unabhängig davon, wie das Paket heisst** | mindestens eine `*.py`-Datei unterhalb `backend/src/` | keine `*.py`-Datei unterhalb `backend/src/` | `backend/importvertraege.toml`; `lint-imports` |
 | D19 | Der Bestand der versionierten Dateien über die Dauer eines Laufs von `make dod` | Die Versionsverwaltung meldet einen Arbeitsbaum; ist `git` nicht ausführbar, hilfsweise die blosse Anwesenheit von `.git` — **als Datei oder als Verzeichnis**, weil `.git` in einem zusätzlichen Arbeitsbaum und in einem Untermodul eine Datei ist *(neunte Fortschreibung 2026-09-01, 6.9.3; vorher stand hier "`.git/` vorhanden")* | kein Arbeitsbaum und kein `.git` | `git`; dazu die **Beobachtbarkeit des Index**: Ist für eine verfolgte Datei `assume-unchanged` oder `skip-worktree` gesetzt, ist das Prüfmittel stummgeschaltet, und das ist Lage C *(neunte Fortschreibung 2026-09-01, 6.9.2)* |
-| D20 | **Die Herkunfts- und Fundortangaben in den versionierten Markdown-Dateien des Repositories** — Wurzel, `docs/` und `.claude/` | Mindestens eine versionierte Markdown-Datei dieser Prüffläche, festgestellt über die Versionsverwaltung und nicht über einen Verzeichnisnamen | **keine** — der Bestand kann nicht leer sein, und ein leerer Bestand wäre ein Befund und kein leerer Gegenstand *(achte Fortschreibung 2026-09-01, 6.8.3)* | `scripts/belege-pruefen.sh` und `scripts/belege-ausnahmen.txt`; `bash`, `git`, `grep`, `sed`, `awk`; dazu die beiden Bezugsdokumente `docs/05_Product_Backlog.md` und `docs/00_Projektauftrag.md`, aus denen der Prüfer seine Referenzmengen bildet. Fehlt eines davon, ist das Lage C — nicht ein bestandener Schritt (6.8.3) |
+| D20 | **Die Herkunfts- und Fundortangaben in den versionierten Markdown-Dateien des Repositories** — Wurzel, `docs/` und `.claude/` | Mindestens eine versionierte Markdown-Datei dieser Prüffläche, festgestellt über die Versionsverwaltung und nicht über einen Verzeichnisnamen | **keine** — der Bestand kann nicht leer sein, und ein leerer Bestand wäre ein Befund und kein leerer Gegenstand *(achte Fortschreibung 2026-09-01, 6.8.3)* | `scripts/belege-pruefen.sh` und `scripts/belege-ausnahmen.txt`; `bash`, `git`, `grep`, `sed`, `awk`; dazu die beiden Bezugsdokumente `docs/05_Product_Backlog.md` und `docs/00_Projektauftrag.md`, aus denen der Prüfer seine Referenzmengen bildet. Fehlt eines davon, ist das Lage C — nicht ein bestandener Schritt (6.8.3). Dazu die **Vollständigkeit der Git-Historie**: Ist der Klon flach (`git rev-parse --is-shallow-repository` meldet wahr), trägt die lokale Historie die Aussage über Commit-Prüfsummen nicht, und das ist nach der geschärften Bedingung Lage C mit dem Beschaffungsweg `git fetch --unshallow` *(zwölfte Fortschreibung 2026-09-02, 6.12.17 — **Bau auf Weisung vom 2026-09-02 begonnen, förmliche Freigabe ausstehend**; bis zur Freigabe gilt die Zeile ohne diesen Satz)* |
 
 Zwei Anmerkungen zu dieser Tabelle:
 
@@ -1945,6 +1945,3373 @@ nicht leisten konnte, nie, dass am Bestand nichts wäre. D1 bis D12 und D18
 bleiben unverändert. Die offenen Punkte O-7, O-8, O-10 (neu gefasst), O-12,
 O-14, O-15 und O-17 bleiben offen. O-16 bleibt geschlossen. O-18 ist neu.
 
+### 6.12 Zwölfte Fortschreibung vom 2026-09-02 — das Definition-of-Done-Gate aus R3-Q-001, entworfen; Bau auf Weisung vom 2026-09-02 begonnen, förmliche Freigabe ausstehend
+
+> **Status dieses Abschnitts: dem Auftraggeber am 2026-09-02 vorgelegt; der
+> Bau ist am selben Tag auf seine Weisung begonnen worden; die förmliche
+> Freigabe der Entscheidpunkte E-A bis E-K steht aus** (Wortlaut der Weisung,
+> Lesart und umgesetzte Optionen in Abschnitt 10; Formweg: Merge des Pull
+> Requests dieses Arbeitszweigs oder Anweisung mit exaktem Wortlaut). Bis zur
+> Weisung war kein Hook-Skript, keine Liste terminierter Lagen und keine
+> Änderung an `.claude/settings.json` oder am `Makefile` entstanden. Die
+> Einträge dieser Fortschreibung in den Abschnitten 8 und 9 tragen denselben
+> Vermerk.
+
+**Anlass.** Der Auftraggeber hat am 2026-09-02 angewiesen, die Gates aus
+R3-Q-001 als Fortschreibung dieses Abschnitts **vor** dem Bau vorzulegen. Der
+Grund liegt in diesem Abschnitt selbst: Er legt seit dem 2026-08-20 fest, dass
+der Hook aus R3-Q-001 **diesen einen Befehl** `make dod` aufruft, dass nur
+Rückgabewert 2 blockiert, dass ein Reentranz-Schutz über `stop_hook_active`
+greift und dass nach dreimaligem Scheitern am gleichen Kriterium eskaliert wird
+(3.4). Was er nicht festlegt, ist das Entscheidende: **wie das Gate die
+Ausgabe von `make dod` liest.** Vier Fragen sind daran offen, und jede von
+ihnen entscheidet zwischen einem Gate, das ab sofort jede Arbeitseinheit
+blockiert, und einem, das nichts wert ist.
+
+**Beleglage dieser Fortschreibung — was worauf beruht.** Wie in 6.8, 6.9 und
+6.11 wird getrennt, worauf welche Aussage beruht. Diese Rolle hat **nichts
+ausgeführt**; sie hat kein Ausführungswerkzeug und prüft ihre eigene Arbeit
+ohnehin nicht (3.4).
+
+| Herkunft | Was |
+|---|---|
+| **Gelesen** (diese Rolle, am 2026-09-02) | `CLAUDE.md`; `docs/00_Projektauftrag.md`, Abschnitte 3.3 und 3.4; `docs/05_Product_Backlog.md`, Eintrag R3-Q-001 mit beiden Achtung-Hinweisen und die offenen Punkte des Backlogs, Nummer 16; `docs/06_Definition_of_Ready_und_Done.md`, Teil 2 vollständig; dieser Abschnitt 6 vollständig einschliesslich 6.1 bis 6.11; vom `Makefile` der Kopfkommentar, der Variablenblock, das Makro `KLASSIFIZIEREN`, die Ziele `belege`, `abnahme` und `dod` vollständig; `.claude/hooks/block-main-write.sh` vollständig; `.claude/rules/claude-konfiguration.md`, Abschnitt "Hooks"; `scripts/belege-ausnahmen.txt`; `methodik/entscheide.md` des Methodik-Repositories, Einträge V9 bis V13, S4 und S5; die offizielle Hook-Dokumentation `https://code.claude.com/docs/en/hooks.md`, abgerufen am 2026-09-02, in den Abschnitten "Stop", "SubagentStop", "TaskCompleted", "Exit code output", "Timeouts", "Exit code 2 behavior per event", "JSON output", "Common input fields", "Common fields", "Matcher patterns" und "Reference scripts by path" |
+| **Selbst gemessen ohne Ausführung** | Die Zeichenkette `LAGE C:` kommt im `Makefile` **53-mal** vor. Über alle **21** Rollendateien unter `.claude/agents/`: `static-software-tester` und `pentester` tragen `tools: Read, Grep, Glob, Bash, Skill` — also `Bash`, aber weder `Edit` noch `Write` —, und in allen 21 Dateien ist das Frontmatter-Feld `name:` mit dem Dateinamen gleich. `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` steht an **drei** Stellen des Repositories: `docs/00_Projektauftrag.md` (3.4), `docs/06_Definition_of_Ready_und_Done.md` ("Durchsetzung") und `docs/adr/0001-rollenmodell.md`. Das sind Textsuchen über Dateien, keine Läufe |
+| **Fremdbeleg** (Läufe des Koordinators vom 2026-09-02, hier übernommen und nicht nachgeprüft) | Die Umgebung der Sitzung (`CLAUDE_CODE_REMOTE=true`, `CLAUDE_PROJECT_DIR` wird an Hooks exportiert, `HOME=/root`, GNU Make 4.3, bash 5.2.21, jq 1.7, `timeout` und `flock` vorhanden, `git` vorhanden, `gitleaks` fehlt, `uv` und `ruff` vorhanden, kein `backend/`, kein `frontend/`, kein `deploy/`); der flache Klon und seine 31 Funde gegenüber 1 Fund nach `git fetch --unshallow`; der eine Fund auf `origin/main` in jedem frischen Klon; der gemessene Lauf von `make dod` (5,8 s, Rückgabewert 2, Abbruch bei D20); die Form der Ausgabe, soweit sie einen Lauf voraussetzt; die parallel schreibenden Subagenten dieser Sitzung |
+| **Nicht behauptet, weil nicht belegt** | Ob es eine Umgebungsvariable `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` gibt (6.12.2, O-19); wie lange die Kette mit dem Grundgerüst läuft (O-20); ob ein Scheinbaum mit dem echten Belegprüfer grün wird (6.12.19) |
+| **Berichtigt nach Runde 1 der Prüfung** | Die erste Fassung dieses Entwurfs führte hier zusätzlich, die Referenz sage nicht, ob eine Änderung an `.claude/settings.json` in der laufenden Sitzung wirke. **Das ist falsch:** Sie sagt es, im Abschnitt zur Einrichtung der Hooks — "Direct edits to hooks in settings files are normally picked up automatically by the file watcher." Die Angabe ist berichtigt; der Entscheid zum Selbsttest (6.12.19) bleibt bestehen, trägt aber jetzt die Gründe, die ihn wirklich tragen, statt eines Schweigens, das es nicht gab |
+
+Diese Trennung steht hier aus demselben Grund wie in 6.8: Eine Aussage über die
+Herkunft, die stärker ist, als die Quelle sie trägt, ist die Fehlerklasse, an
+der in diesem Projekt bereits zwei Arbeitseinheiten nach 3.4 abgebrochen sind
+(V11, V12).
+
+**Runde 1 der Prüfung, eingearbeitet am 2026-09-02.** Vier Prüflinsen auf einem
+anderen Modell als die Umsetzung und eine Nachprüfung des Koordinators am
+Bestand haben gegen die erste Fassung dieses Abschnitts **dreizehn** Befunde
+gebracht, darunter einen blockierenden inneren Widerspruch (6.12.14). Alle
+dreizehn sind hier eingearbeitet; die betroffenen Stellen tragen den Vermerk
+**Runde 1**, und keine frühere Aussage ist gelöscht, sondern berichtigt. Das ist
+V11 in Anwendung: Eine Behebung ist nicht fertig, wenn der Befund weg ist,
+sondern wenn die Schicht geprüft ist, die sie erreichbar gemacht hat — deshalb
+sind mit den Befunden auch die Stellen nachgeführt worden, die sie erst
+erreichbar gemacht haben (die Objekttabelle in Abschnitt 6 für G16, die
+Übersichtstabelle in 6.12.1 für G10).
+
+**Ein gemessener Stand, und weshalb er ein vergangener ist.** Als
+**Fremdbeleg** kommt aus dieser Runde hinzu: Der Koordinator hat am 2026-09-02
+den ortsgebundenen Ausnahmeeintrag für den Fund aus 6.12.17 angelegt und danach
+`scripts/belege-pruefen.sh` laufen lassen — **0 Befunde, Rückgabewert 0**,
+gemessen **vor** dem Anlegen dieses Abschnitts; der Eintrag ist zum Zeitpunkt
+dieser Fortschreibung **noch nicht committet**. Dieser Stand gilt für den
+damaligen Bestand und nicht für den heutigen: Dieser Abschnitt nennt selbst zwei
+Dateien, die erst mit dem Bau entstehen — `.claude/hooks/dod-gate.sh` und
+`.claude/hooks/dod-gate-terminierte-lagen.txt` —, und jede Nennung eines noch
+nicht bestehenden Pfades ist für D20 ein Fund. Das ist kein Fehler des Textes,
+sondern der vorgesehene Fall: Er wird durch zwei ortsgebundene Ausnahmen der
+Form `datei|wert` gedeckt, die der Koordinator als Umsetzung nach 6.8.5 anlegt
+und die mit dem Entstehen der beiden Dateien wieder zu **entfernen** sind — die
+Selbstprüfung "der Gegenstand existiert inzwischen" macht sie dann selbst zum
+Befund (6.8.5, Eigenschaft 3). Genau so soll es sein: Ein Entwurf, der Artefakte
+beschreibt, die es noch nicht gibt, hinterlässt eine Spur, die sich beim Bau von
+selbst wieder schliesst.
+
+#### 6.12.1 Überblick über die Entscheide dieser Fortschreibung
+
+| Nr. | Gegenstand | Entscheid | Unterabschnitt |
+|---|---|---|---|
+| G1 | Die drei Ereignisse und wer die Zusicherung trägt | Ein Skript für `Stop`, `SubagentStop` und `TaskCompleted`, kein Matcher; die harte Zusicherung "nicht abschliessbar" trägt allein `TaskCompleted` — und nur in einer Sitzung, in der überhaupt eine Aufgabenliste geführt wird *(Runde 1, terminiert als O-23)* | 6.12.2 |
+| G2 | Was das Gate liest | Die Ausgabe von `make dod`, nicht nur den Rückgabewert; zwei voneinander unabhängige Kriterien, wie sie die Kette für ihre eigenen Schritte schon verlangt *(Nachtrag 6.12.24 k: dazu die Zahl der gelesenen Marken gegen die Zahl, die die Schlusszeile selbst nennt, und mindestens eine Marke — weiterhin ohne eigene Zahl im Gate)* | 6.12.3 |
+| G3 | Befund gegen Ausfall (Frage 1) | Unterschieden wird an der **Lage der Marke**, nicht am Rückgabewert und nicht am Meldungstext *(Nachtrag aus dem Bau, 6.12.23: Verstösse gegen die Selbstprüfungen der terminierten Lagen zählen unter `LISTE …`, ein Widerspruch zwischen Rückgabewert 0 und Schlusszeile unter `KETTE schlusszeile-widerspruch`; **Nachtrag 6.12.24:** ein Widerspruch zwischen der Baumzeile der Kette und dem vom Gate bestimmten Baum unter `KETTE baum-widerspruch`)* | 6.12.4 |
+| G4 | Lage C (Frage 2) | **Terminierte Lagen C**: eine versionierte, selbstprüfende Liste neben dem Hook; sechs Selbstprüfungen, jede blockierend | 6.12.5 |
+| G5 | Der blinde Fleck hinter dem ersten C | Die Kette bricht bei Lage C **nicht mehr ab**, sondern läuft weiter und sammelt; abgebrochen wird weiterhin bei einem Befund | 6.12.6 |
+| G6 | Woran das Gate das fehlende Prüfmittel erkennt | Die Lage-Marke trägt es **strukturiert** (`FEHLT=<pfad>`), nicht der Meldungstext; ein C-Zweig ohne Angabe fällt geschlossen | 6.12.7 |
+| G7 | Die Schlusszeilen von `make dod` | **Vier** eindeutige Formen, eine eigenständige D19-Zeile, eine Zeile, die den geprüften Baum nennt *(die vierte Form — vollständig gelaufen, aber D19 mit Befund — ist Nachtrag aus dem Bau, 6.12.23)* | 6.12.8 |
+| G8 | Zählung und Eskalation (Frage 3) | Zustand ausserhalb des Arbeitsbaums, Schlüssel ist das Kriterium — bei mehreren Abweichungen die erste in Kettenreihenfolge; das dritte Mal verlangt die Übergabedatei, ab dem vierten lässt sie durch, aber **nur** bei `Stop` und `SubagentStop`, nicht bei `TaskCompleted` *(beides Runde 1)*; **fehlt `jq`, blockiert das Gate, kann den Block aber nicht zählen — benannte Grenze** *(Nachtrag aus dem Bau, 6.12.23)*; der Durchlass ab dem vierten Mal löscht den Zähler **nicht**, und ein **nicht bestimmbares** Zustandsverzeichnis erzeugt keinen eigenen Ausgang *(Nachtrag 6.12.24)* | 6.12.9 |
+| G9 | `stop_hook_active` (Frage 4) | Rückgabewert 0, wie 3.4 und der Backlog es wörtlich verlangen — **ohne** den Zähler zu verändern; die Folge daraus wird ausgesprochen | 6.12.10 |
+| G10 | Prüfmittel des Gates | Sieben, namentlich aufgezählt. **Sechs** davon sind Lage C des Gates und enden mit 2, wenn sie fehlen; das siebte — das Zustandsverzeichnis — hat **keinen eigenen Ausgang**, weil es allein das Zählwerk trägt und nicht das Urteil *(Runde 1: die frühere Fassung dieser Zeile sagte "fehlt eines" und widersprach damit 6.12.11)*. **Nachtrag 6.12.24:** Mit `sha256sum` und `mktemp` führt die Tabelle **acht** blockierende Prüfmittel und neun insgesamt | 6.12.11 |
+| G11 | Zeitüberschreitung | Zwei Grenzen: 900 s in `settings.json`, 600 s für die Kette im Skript, 120 s Wartezeit auf die Sperre | 6.12.12 |
+| G12 | Der geprüfte Arbeitsbaum, Nebenläufigkeit | Der Baum wird über `git` bestimmt, nicht über einen Verzeichnisnamen; eigene Läufe werden über `flock` serialisiert, die Sperrdatei liegt ausserhalb des Baums *(Nachtrag 6.12.24: der geprüfte Baum ist die **physisch aufgelöste Wurzel** des Arbeitsbaums; Sperr- und Wegwerfdatei liegen nachweislich ausserhalb des Baums, notfalls fest unter `/tmp`)* | 6.12.13 |
+| G13 | `SubagentStop` und Rollen ohne Schreibrecht | Das Gate liest den **Gegenstand** — hat diese Rolle ein Werkzeug, über das ADR 0001 Schreibrecht vergibt, also `Edit`, `Write` oder `NotebookEdit`? — und läuft für Rollen ohne ein solches Werkzeug gar nicht erst. `Bash` zählt **nicht** dazu *(Runde 1, blockierender Befund; Begründung und benannte Grenze in 6.12.14)*. Die Rolle wird über das Frontmatter-Feld `name:` aufgelöst, nicht über den Dateinamen | 6.12.14 |
+| G14 | Sichtbarkeit | Jeder Durchlass, der kein sauberes Grün ist, meldet sich über `systemMessage`; kein `continue: false`; kein eigenes Protokoll des Gates | 6.12.15 |
+| G15 | Kein Zwischenspeicher des Urteils | Das Gate läuft bei jedem Ereignis; ein gespeichertes Urteil wäre ein Urteil über einen vergangenen Lauf | 6.12.16 |
+| G16 | Flacher Klon | Die Vollständigkeit der Git-Historie wird **Prüfmittel von D20**; ein flacher Klon ist Lage C mit Beschaffungsweg | 6.12.17 |
+| G17 | Der Selbsttest | Formprüfungen gegen eine Attrappe, dazu je ein roter und ein grüner Lauf gegen das **echte** Makefile *(Nachtrag 6.12.24: alle acht Kombinationen der D19-Zeile, die **echten** Rollendateien im G13-Fall, eigene Fälle für G12 und für die Nachträge dieses Abschnitts)* | 6.12.19 |
+
+**Was diese Fortschreibung nicht tut.** Sie baut nichts. Sie legt keine Datei
+an ausser dieser. Die Umsetzung liegt beim DevOps Engineer (Makefile,
+Hook-Skript, `settings.json`), die Verifikation beim Static und beim Dynamic
+Software Tester auf einem anderen Modell als die Umsetzung (3.4).
+
+**Drei Nachträge aus dem Bau vom 2026-09-02** — drei Stellen, an denen dieser
+Entwurf keinen Fall vorsieht — sind in **6.12.23** entschieden; die betroffenen
+Zeilen dieser Tabelle und der Unterabschnitte 6.12.3, 6.12.4, 6.12.8, 6.12.9
+und 6.12.22 tragen den Vermerk "(Nachtrag aus dem Bau, 6.12.23)" an Ort.
+
+**Zehn weitere Entscheide und ein Vermerk zur Beleglage** — aus der statischen
+und der dynamischen Verifikation des gebauten Gates vom 2026-09-02, beide
+Runden **nicht bestanden** (Fremdbeleg) — stehen in **6.12.24**. Die übrigen
+Befunde jener Prüfungen behebt der DevOps Engineer im Code, ohne dass dieser
+Entwurf zu ändern wäre; nachgetragen wird hier nur, wo der Entwurf schweigt oder
+zu wenig sagt. Die betroffenen Zeilen dieser Tabelle und der Unterabschnitte
+6.12.3, 6.12.4, 6.12.9, 6.12.11, 6.12.13, 6.12.15 und 6.12.19 tragen den
+Vermerk "(Nachtrag 6.12.24)" an Ort.
+
+**Ein Entscheid des Auftraggebers vom 2026-09-03 zu O-24** steht in **6.12.25**:
+Die Prüftabelle von G17 führt seither je Zeile **genau eine** messbare
+Zusicherung mit einer dauerhaften Kennung `Z-nnn`, und der Selbsttest trägt je
+Kennung genau eine Prüfung; die Deckung zwischen Tabelle und Selbsttest wird
+mechanisch in beide Richtungen geprüft. Dazu vier Behebungen aus Runde 3 —
+S3-01, DT3-B1, S3-05 und die beiden fehlenden Zusicherungen aus S3-02 und
+S3-07. Die Tabelle in 6.12.19 ist an Ort neu gefasst, 6.12.24 f trägt einen
+Vermerk an Ort. Kein Entscheid G1 bis G17 wird dadurch zurückgenommen.
+
+**Nach der vierten Prüfrunde vom 2026-09-03** ist 6.12.25 um die Buchstaben
+**f) bis k)** fortgeschrieben — dynamisch bestanden, statisch nicht bestanden,
+blockierend S4-01: Jede Zusicherung nennt neu ihren **Messumfang** (Kanal,
+Ereignis, wo nötig Anzahl), und die Prüfung misst genau diesen Umfang (f);
+`Z-129` ist berichtigt (g), `Z-110` zurückgezogen und `Z-111` auf den ganzen
+geprüften Baum erweitert (h); **jeder** Block mit Schlüssel `GATE <Prüfmittel>`
+läuft über die Zählung nach 6.12.9, einzige Ausnahme bleibt `GATE jq` (i); der
+Selbsttest ist gegen Nebenläufigkeit gesperrt (j); k) hält die Beleglage fest.
+Die Tabelle in 6.12.19 führt seither `Z-001` bis `Z-153`, davon `Z-110`
+zurückgezogen. Den Stand danach belegt erst eine **fünfte** Prüfrunde.
+
+**Nach der fünften Prüfrunde vom 2026-09-03** — statisch und dynamisch nicht
+bestanden, blockierend S5-01 und DT5-01, fünfter Auftritt derselben
+Fehlerklasse — steht der Entscheid des Auftraggebers zu **O-25** in
+**6.12.26**: Die Tabelle 6.12.19 trägt neu die Spalten **Kanal** (fester,
+abschliessender Wertevorrat, vom Selbsttest mitgemeldet und mechanisch
+abgeglichen) und **Mutation** (je Zusicherung die Änderung, die genau sie
+fehlschlagen lassen muss, ausführbar in `scripts/dod-gate-mutationen.txt` und
+geprüft im Modus `--mutationen`). Dazu die vier Befunde der fünften Runde als
+Entscheide (c) und die Beleglage als Fremdbeleg (d). Den Stand danach belegt
+erst die **sechste** Prüfrunde.
+
+#### 6.12.2 G1 — Die drei Ereignisse, und welche Ebene welche Zusicherung trägt
+
+| | |
+|---|---|
+| **Vorher galt** | Der Backlog verlangt `Stop`-, `SubagentStop`- und `TaskCompleted`-Hook in der versionierten `.claude/settings.json`; Projektauftrag 3.4 ordnet sie den Ebenen 2 und 3 zu. Welche der drei Ebenen welche Zusicherung trägt, stand nirgends |
+| **Jetzt gilt** | Ein Skript `.claude/hooks/dod-gate.sh` bedient alle drei Ereignisse und verzweigt über das Eingabefeld `hook_event_name`. Die harte Zusicherung "die Aufgabe lässt sich nicht abschliessen" trägt **allein `TaskCompleted`**. `Stop` und `SubagentStop` leisten eine erzwungene Fortsetzung mit Begründung je Beendigungsversuch — nicht mehr, und das ist zu wissen |
+
+**Weshalb ein Skript und nicht drei.** Drei Dateien, die dieselbe Kette
+auswerten, sind drei Stellen, an denen dieselbe Aussage verschieden stehen
+kann. Genau diesen Fehler hat dieser Abschnitt bereits dreimal behoben — die
+Objektbedingung stand zweimal verschieden (6.2.2), das Prüfmittel von D19 stand
+zweimal verschieden (6.9.1), die Ausführungsreihenfolge stand zweimal und war
+veraltet (6.11.3 b). V13 zieht daraus den allgemeinen Satz: Eine Angabe, die
+nichts steuert, sondern etwas anderes wiederholt, wird gestrichen. Für ein Gate
+gilt er erst recht.
+
+**Weshalb kein Matcher.** Die gelesene Referenz führt `Stop` und
+`TaskCompleted` in der Matcher-Tabelle unter "no matcher support — always fires
+on every occurrence"; `SubagentStop` kann auf den Rollennamen (`agent_type`)
+filtern. Ein Matcher mit neunzehn Rollennamen in `settings.json` wäre eine
+zweite Kopie der Rechtetabelle aus ADR 0001 und veraltete mit der ersten
+Rollenänderung, ohne dass es auffiele. Die Unterscheidung gehört an den
+Gegenstand, nicht an eine Namensliste — siehe G13.
+
+**Die Zusicherung, ehrlich zugeordnet.** Die gelesene Referenz sagt zu `Stop`
+und `SubagentStop`: "The `stop_hook_active` field is `true` when Claude Code is
+already continuing as a result of a stop hook." Wenn das Gate bei gesetztem
+Feld mit 0 endet — und das verlangen Projektauftrag 3.4, Ebene 4, und das
+Abnahmekriterium von R3-Q-001 wörtlich —, dann erzwingt ein Stop-Gate je
+Beendigungsversuch **genau eine** Fortsetzung: Block, Fortsetzung, und der
+nächste Stop dieser Fortsetzung wird durchgelassen, auch wenn die Kette rot
+bleibt. Zwei aufeinanderfolgende Blocks innerhalb derselben Fortsetzung sind
+dann unmöglich.
+
+Daraus folgt zweierlei, und beides gehört ausgesprochen statt später entdeckt:
+
+1. **Die in der Referenz genannte Obergrenze — "Claude Code overrides the hook
+   and ends the turn after 8 consecutive blocks" — ist mit diesem Entwurf
+   innerhalb eines Beendigungsversuchs unerreichbar.** Sie wird deshalb für
+   nichts gebraucht, und der Entwurf stützt sich an keiner Stelle auf sie.
+2. **"Dreimal am gleichen Kriterium" (3.4) zählt über Beendigungsversuche
+   hinweg**, nicht innerhalb eines einzelnen. Der Zähler aus G8 ist deshalb
+   nicht Beiwerk, sondern die einzige Stelle, an der die Eskalationsregel aus
+   3.4 überhaupt greifen kann.
+
+Für `TaskCompleted` sagt die Referenz: Bei Rückgabewert 2 "the task is not
+marked as completed and the stderr message is fed back to the model as
+feedback". Sie führt `stop_hook_active` ausschliesslich bei `Stop` und
+`SubagentStop` als zusätzliches Eingabefeld auf; für `TaskCompleted` nennt sie
+es nicht. Damit prüft `TaskCompleted` **jeden** Abschlussversuch erneut, ohne
+Reentranz-Ausnahme — und trägt als einziges der drei Ereignisse die Zusicherung
+aus dem Abnahmekriterium von R3-Q-001. Wer das Gate beurteilt, beurteilt
+zuerst `TaskCompleted`; `Stop` und `SubagentStop` sind die laute, frühe
+Rückmeldung, nicht die Sperre.
+
+**Und damit steht und fällt die Zusicherung mit einer Voraussetzung, die
+niemand festgelegt hat** *(Runde 1)*. Die gelesene Referenz sagt, wann
+`TaskCompleted` überhaupt feuert: "when any agent explicitly marks a task as
+completed through the TaskUpdate tool, or when an [agent team] teammate
+finishes its turn with in-progress tasks". In einer Sitzung, in der keine
+Aufgabenliste geführt wird, feuert das Ereignis **nie** — und dann gilt die
+harte Zusicherung für nichts. Was bliebe, wären `Stop` und `SubagentStop` mit
+je einer erzwungenen Fortsetzung, also genau das, was oben ausdrücklich als
+nicht tragend bezeichnet ist.
+
+Das ist keine Kleinigkeit am Rand, sondern die Bedingung, unter der dieser
+Entwurf das leistet, was der Backlog von ihm verlangt. Zwei Wege stehen offen,
+und die Wahl liegt nicht bei dieser Rolle:
+
+1. **Jede Arbeitseinheit wird als Aufgabe geführt.** Dann feuert
+   `TaskCompleted` verlässlich, und die Zusicherung greift. Der Ort dafür ist
+   `CLAUDE.md` oder `.claude/rules/claude-konfiguration.md`, und es wäre eine
+   Vorschrift an das Vorgehen, nicht an die Architektur — Abschnitt 9 führt sie
+   als Nachführung unter Vorbehalt.
+2. **Es bleibt dabei, dass Aufgabenlisten fakultativ sind.** Dann ist
+   auszusprechen, dass die Definition-of-Done-Kette in solchen Sitzungen nicht
+   erzwungen, sondern nur laut angemahnt wird, und dass der Nachweis dort am
+   menschlichen Review hängt.
+
+Entschieden wird das vom Auftraggeber; der Punkt ist als **O-23** terminiert.
+Er wird hier nicht stillschweigend in die eine oder andere Richtung
+vorweggenommen — eine Zusicherung, deren Voraussetzung ungeklärt ist, ist genau
+die Zusicherung ohne Deckung aus V12.
+
+#### 6.12.3 G2 — Das Gate liest die Ausgabe, nicht nur den Rückgabewert
+
+| | |
+|---|---|
+| **Vorher galt** | "Der Hook aus R3-Q-001 ruft **diesen einen Befehl** auf. … nur Rückgabewert 2 blockiert" — über die Auswertung stand nichts |
+| **Jetzt gilt** | Das Gate wertet zwei voneinander unabhängige Dinge aus: den Rückgabewert des Aufrufs **und** die Ausgabe von `make dod`, namentlich die Lage-Marken der Übersicht, die D19-Zeile und die Schlusszeile. Fehlt eines von beiden oder widersprechen sie sich, blockiert das Gate |
+
+**Weshalb nicht der Rückgabewert allein.** Das ist keine neue Vorsicht, sondern
+die Regel, die `make dod` seit dem 2026-08-30 für seine eigenen Unterschritte
+anwendet und im Makefile begründet: Zwei Kriterien entscheiden je Schritt, der
+eigene Rückgabewert **und** eine eigene, passende Lage-Marke, weil ein
+Rückgabewert allein sich mit `-i/--ignore-errors` und mit einem umgebogenen
+Unter-Make-Aufruf erzeugen lässt. Ein Gate, das sich auf denselben einen Wert
+verlässt, den die Kette selbst für unzureichend hält, wäre die schwächste
+Stelle der ganzen Anordnung.
+
+**Was das Gate von `make dod` übernimmt und was es selbst prüft.** Es übernimmt
+die Markenprüfung: `make dod` erzeugt je Aufruf eine nicht vorhersagbare
+Lauf-Kennung, reicht sie ausschliesslich über die Umgebung an den jeweiligen
+Unter-Make-Aufruf weiter und akzeptiert nur Marken mit genau dieser Kennung.
+Diese Kennung ist dem Aufrufer vorher nicht bekannt (Fremdbeleg); das Gate kann
+sie also nicht selbst prüfen und muss es auch nicht — es liest sie aus der
+Ausgabe und verlangt, dass **alle** Marken der Übersicht dieselbe tragen. Was
+das Gate selbst prüft, ist die Form: die Übersichtszeile, genau eine der **vier**
+Schlusszeilen aus G7 *(Nachtrag aus dem Bau, 6.12.23; bis dahin drei)*, genau
+eine D19-Zeile, und keine Marke der Lage `A_FAIL`. Ein Rückgabewert 0 zusammen
+mit einer anderen Schlusszeile als der ersten Form ist ein Widerspruch und
+blockiert *(Nachtrag aus dem Bau, 6.12.23)*.
+
+**Was das Gate ausdrücklich nicht zählt.** Es zählt **nicht** die Zahl der
+Kettenschritte. Diese Zahl steht im Makefile in einer eigenständigen Liste
+(`ERWARTETE_KETTENSCHRITTE`) und wird dort gegen die Zielliste geprüft; `make
+dod` sagt in seiner Schlusszeile selbst, dass die Zählung aufging. Eine zweite
+Zahl im Gate wäre eine Angabe, die nichts steuert und beim nächsten
+Kettenschritt falsch wird — V13, und die Tautologie aus Befund A3, die im
+Makefile bereits einmal behoben werden musste. Das Gate liest die **Aussage**,
+nicht die Zahl. *(Nachtrag 6.12.24 k: Es führt weiterhin **keine eigene** Zahl.
+Es vergleicht aber die Zahl, die die Schlusszeile der Kette selbst nennt, mit
+der Zahl der gelesenen Marken und verlangt mindestens eine Marke — geprüft wird
+die Selbstaussage der Kette gegen ihren Inhalt, nicht gegen eine Erwartung des
+Gates.)*
+
+#### 6.12.4 G3 — Frage 1: Wie das Gate einen Befund von einem ausgefallenen Prüfmittel unterscheidet
+
+**Der Massstab ist die Lage, nicht der Rückgabewert und nicht der Text.** Die
+Lagen A, B und C sind seit dem 2026-08-30 die Begriffe dieser Kette, jede
+Marke trägt sie, und Regel 4 aus 6.2.2 verlangt ohnehin, dass die Lage
+ausgegeben und nicht erschlossen wird. Genau dafür ist sie da.
+
+| Beobachtung in der Ausgabe von `make dod` | Art | Schlüssel des Kriteriums | Ausgang des Gates |
+|---|---|---|---|
+| Eine Marke endet auf `A_FAIL` | **Befund** | `<D> <ziel> A_FAIL` | blockiert |
+| Eine Marke endet auf `C` und ist durch einen gültigen Eintrag der terminierten Lagen gedeckt (G4) | **Ausfall, terminiert** | — | lässt durch, mit `systemMessage` |
+| Eine Marke endet auf `C` und ist nicht gedeckt | **Ausfall** | `<D> <ziel> C <fehlendes Prüfmittel>` | blockiert |
+| Eine Zeile der Übersicht trägt keine Marke | nicht nachweisbar gelaufen | `KETTE marke-fehlt <D> <ziel>` | blockiert |
+| Die D19-Zeile meldet `VERLETZT` | **Befund** | `D19 VERLETZT` | blockiert |
+| Die D19-Zeile meldet Lage C | **Ausfall** | `D19 C` | blockiert |
+| Die D19-Zeile meldet Lage B, obwohl das Gate einen Arbeitsbaum bestimmt hat *(Nachtrag 6.12.24, Befund S-01: Dieser Schlüssel hat **Vorrang** vor der Konsistenzwache "Rückgabewert 0 mit einer Abweichung"; sonst zählte derselbe Fall als `KETTE ausgabe-unlesbar` und die Meldung sagte das Falsche)* | Widerspruch | `D19 B-widerspruch` | blockiert |
+| Keine Übersichtszeile oder keine der **vier** Schlusszeilen aus G7 *(Nachtrag aus dem Bau, 6.12.23; bis dahin drei)* | nicht nachweisbar gelaufen | `KETTE ausgabe-unlesbar` | blockiert |
+| Rückgabewert 0, aber eine andere Schlusszeile als Form 1 aus G7 *(Nachtrag aus dem Bau, 6.12.23)* | Widerspruch | `KETTE schlusszeile-widerspruch` | blockiert |
+| Die erste Zeile der Kette (`make dod: geprueft wird <PROJ>.`) nennt einen anderen Baum als den vom Gate bestimmten *(Nachtrag 6.12.24; Befund S-10: eine **fehlende** Baumzeile ist dagegen `KETTE ausgabe-unlesbar` — sie nennt keinen anderen Baum, sondern gar keinen)* | Widerspruch | `KETTE baum-widerspruch` | blockiert |
+| Rückgabewert weder 0 noch 2 | nicht nachweisbar gelaufen | `KETTE rueckgabewert=<N>` | blockiert |
+| Die Kette reisst das innere Zeitlimit (G11) | nicht nachweisbar gelaufen | `KETTE zeitueberschreitung` | blockiert |
+| Eine Zeile der terminierten Lagen verletzt die Selbstprüfung 2, 3 oder 5 (G4) *(Nachtrag aus dem Bau, 6.12.23)* | **Fehler der Liste** | `LISTE <Nummer der Selbstpruefung> <D> <ziel>` | blockiert |
+| Eine Zeile der terminierten Lagen verletzt die Selbstprüfung 4 oder 6 (G4) *(Nachtrag aus dem Bau, 6.12.23)* | **Fehler der Liste** | `LISTE <Nummer der Selbstpruefung> <Zeilennummer>` | blockiert |
+| Ein Prüfmittel des Gates fehlt (G10) | **Lage C des Gates** | `GATE <fehlendes Prüfmittel>` | blockiert |
+
+**Die Zeile für die Selbstprüfung 1 der terminierten Lagen steht bereits in
+dieser Tabelle** *(Nachtrag aus dem Bau, 6.12.23)*: Eine gemeldete Lage C ohne
+Eintrag ist kein Fehler der Liste, sondern eine ungedeckte Lage C, und zählt
+unverändert unter `<D> <ziel> C <fehlendes Prüfmittel>`. Nur die
+Selbstprüfungen 2 bis 6 brauchten einen eigenen Schlüssel.
+
+**Der tragende Satz: Alles ausser einem belegten Grün blockiert.** Ein belegtes
+Grün liegt vor, wenn die Kette **vollständig gelaufen** ist (eine der **drei**
+Vollständigkeits-Schlusszeilen aus G7 — Form 1, 2 oder 4; *Nachtrag aus dem
+Bau, 6.12.23, bis dahin zwei*), **keine** Marke `A_FAIL` zeigt, die D19-Zeile
+ohne Befund ist und **jede** Marke der Lage C durch einen gültigen Eintrag
+gedeckt ist. Über Form 4 kann ein belegtes Grün nie zustande kommen: Sie setzt
+einen D19-Befund voraus, und der schliesst das Grün nach demselben Satz aus. Jeder andere Ausgang blockiert — auch der, den niemand
+vorhergesehen hat. Das ist die Richtung, in die ein Gate irren darf: falsch rot
+ist sichtbar, ortsgebunden behandelbar und unterliegt der Eskalation aus 3.4;
+falsch grün ist die gefährliche Richtung (6.8.4, Punkt 3).
+
+**Weshalb die Unterscheidung überhaupt gebraucht wird.** Sie steuert dreierlei:
+den Schlüssel des Zählers (G8) — ein Befund und ein Ausfall am selben Schritt
+sind nicht dasselbe Kriterium; die Meldung, die an die Rolle zurückgeht — bei
+einem Befund ist etwas zu beheben, bei einem Ausfall ist ein Prüfmittel zu
+beschaffen; und den einen Fall, in dem das Gate durchlässt (G4). Ohne sie wäre
+das Gate genau der Fehlermodus, den 6.11.1 belegt hat: rot mit falscher
+Begründung.
+
+#### 6.12.5 G4 — Frage 2: Was bei Lage C geschieht
+
+**Die Lage, in der entschieden wird.** *(Nach Runde 1 präzisiert; die erste
+Fassung schrieb pauschal "am Bestand von `origin/main` ist heute D20 grün" und
+widersprach damit 6.12.17.)* Zu unterscheiden sind zwei Stände:
+
+- **Auf `origin/main`** (`405ebada79a145ac537d8e4102ce46d029046475`) ist D20
+  **A_FAIL mit einem Fund** — dem lokalen Zweig-Ref aus 6.12.17. Da D20 als
+  erster Schritt läuft und ein Befund die Kette abbricht, endete die Kette dort
+  bei D20, und kein weiterer Schritt liefe.
+- **Im Arbeitsbaum mit dem am 2026-09-02 angelegten, noch nicht committeten
+  Ausnahmeeintrag** war D20 grün: Ein Lauf des Koordinators am 2026-09-02, **vor
+  dem Anlegen dieses Abschnitts**, ergab 0 Befunde und Rückgabewert 0
+  (Fremdbeleg). Für den heutigen Arbeitsbaum gilt das nicht mehr, und zwar aus
+  einem Grund, der zum Entwurf gehört: Dieser Abschnitt nennt zwei erst mit dem
+  Bau entstehende Dateien, was für D20 je ein Fund ist und über zwei
+  ortsgebundene Ausnahmen gedeckt wird (siehe die Beleglage oben). Erst
+  in diesem Stand gilt die Lagenfolge, um die es hier geht: D1 bis D6, D8, D9
+  und D18 sind Lage B, und **vier** Schritte sind Lage C — D7
+  (`scripts/abnahme-abgleich.sh` fehlt), D10
+  (`scripts/prototyp-trennung-pruefen.sh` fehlt), D11 (`gitleaks` fehlt) und
+  D12 (`scripts/nachweise-vollstaendig.sh` fehlt).
+
+Für den Entwurf zählt der zweite Stand, weil der erste mit dem Ausnahmeeintrag
+behoben wird und weil er ohnehin die Frage nicht stellt, um die es hier geht:
+Auf `origin/main` endet die Kette mit 2 wegen eines **Befunds**, im Arbeitsbaum
+mit 2 wegen eines **fehlenden Prüfmittels**. Genau diese beiden Fälle
+auseinanderzuhalten ist die Aufgabe des Gates (6.12.4) — der heutige Bestand
+liefert für beide je ein Beispiel.
+
+`make dod` endet also im massgeblichen Stand mit 2, nicht wegen eines Befunds,
+sondern wegen eines fehlenden Prüfmittels. Ein Gate, das jeden Wert ungleich 0 als "nicht abschliessbar"
+liest, blockiert ab seiner Einführung **jede** Arbeitseinheit bis zum
+Grundgerüst — und das Grundgerüst ist selbst eine Arbeitseinheit.
+
+**Optionen.**
+
+| Option | Bewertung |
+|---|---|
+| (a) Lage C blockiert immer | Ehrlich, aber unbrauchbar: Das Gate wäre vom Tag seiner Einführung an dauerhaft rot, einschliesslich für die Arbeitseinheit, die die fehlenden Skripte anlegt. Ein Gate, das immer rot ist, wird nicht befolgt, sondern entfernt — dieselbe Erfahrung, die im Makefile-Kopf schon einmal festgehalten werden musste: "Ein Gate, das nichts mehr durchlaesst, ist so kaputt wie eines, das alles durchlaesst." |
+| (b) Lage C lässt immer durch | Abgelehnt. Wer `scripts/belege-ausnahmen.txt` beiseitelegt, erzeugt Lage C bei D20 und ginge durch — ausgeführt belegt als Gegenprobe der elften Fortschreibung. Damit wäre die Ausnahmeliste der Weg an der ganzen Kette vorbei |
+| (c) **Terminierte Lagen C** — eine versionierte, selbstprüfende Liste neben dem Hook, nach den vier Eigenschaften aus 6.8.5 | Gewählt. Sie macht die Menge der geduldeten Ausfälle abzählbar, ortsgebunden, begründet und selbstprüfend; sie kann nicht stillschweigend wachsen, und sie schrumpft von selbst, sobald ein Prüfmittel entsteht |
+| (d) Relativ messen wie D19 — die Kette auf `origin/main` gegen die Kette im Arbeitsbaum | Abgelehnt. Ein zweiter Lauf je Beendigungsversuch, der einen zweiten Arbeitsbaum auf `main` braucht — den das main-Gate sperrt —, und "nicht schlechter als vorher" ist nicht "erledigt". Für den **Gegenstand** ist der relative Massstab richtig (6.9.2); für das **Instrument** gilt der absolute, und ein fehlendes Prüfmittel gehört zum Instrument |
+| (e) Nur melden, nicht blockieren | Abgelehnt, aus dem in 6.2.3 und 6.8.4 bereits zweimal entschiedenen Grund: Eine Meldung, die nicht blockiert, wird in einem Stop-Hook nicht gelesen; eine abgestufte Wirkung ist eine Abschaltung mit besserem Namen (5.4) |
+
+**Entscheid: (c).**
+
+**Die Liste.** `.claude/hooks/dod-gate-terminierte-lagen.txt`, versioniert,
+neben dem Hook, in der Form von `scripts/belege-ausnahmen.txt` — Schlüssel,
+Tabulator, Grund; Leerzeilen und Zeilen mit `#` werden übergangen. Der
+Schlüssel ist **doppelt ortsgebunden**, an den Schritt und an das Prüfmittel:
+
+```
+<D-Nummer> <ziel>|<fehlendes Prüfmittel als repository-relativer Pfad>	<Grund>
+```
+
+**Sechs Selbstprüfungen, jede für sich blockierend.** Sie sind der Grund, aus
+dem diese Liste keine Abschaltung ist:
+
+1. **Ein Schritt meldet Lage C ohne Eintrag** — das Gate blockiert. Die Liste
+   ist eine Positivliste, keine Ausschlussregel.
+2. **Ein Eintrag, dessen Prüfmittel existiert** — der Eintrag ist veraltet, das
+   Gate blockiert. Das ist Eigenschaft 3 aus 6.8.5, wörtlich übernommen: Ein
+   Eintrag, dessen Gegenstand entstanden ist, deckt beim nächsten Mal etwas
+   Echtes zu.
+3. **Ein Eintrag zu einem Schritt, der eine andere Lage als C meldet** — der
+   Eintrag ist veraltet, das Gate blockiert. Sonst bliebe eine Zeile stehen,
+   die niemand mehr liest.
+4. **Ein Eintrag ohne Grund** — das Gate blockiert. Eigenschaft 2 aus 6.8.5:
+   Eine Ausnahme ohne Begründung ist eine Lücke mit Deckmantel.
+5. **Die Marke des Schrittes nennt ein anderes Prüfmittel als der Schlüssel** —
+   das Gate blockiert. Ohne diese Prüfung deckte ein Eintrag für D7 wegen des
+   fehlenden Abgleichsskripts auch den ganz anderen Fall, dass der Backlog
+   keine Abnahmekriterien mehr führt; das Makefile kennt für D7 allein drei
+   verschiedene C-Ursachen (gelesen). Diese Prüfung ist der Grund für G6.
+6. **Der Schlüssel nennt kein terminierbares Prüfmittel** — das Gate blockiert.
+
+**Was terminierbar ist und was nicht.** Terminierbar ist ausschliesslich ein
+**Projektartefakt dieses Repositories**, das dieser ADR in Abschnitt 5 oder 6
+als noch nicht entstanden führt — heute die vier Skripte
+`scripts/abnahme-abgleich.sh`, `scripts/prototyp-trennung-pruefen.sh`,
+`scripts/nachweise-vollstaendig.sh` und `scripts/rueckkanal-pruefen.sh` sowie
+`backend/importvertraege.toml`. Nicht terminierbar sind:
+
+- **ein installierbares Werkzeug** — `gitleaks`, `uv`, `node`, `npm`, `docker`,
+  `git`. Es fehlt nicht, weil es noch nicht gebaut ist, sondern weil es nicht
+  installiert ist; das ist keine Terminierung, sondern eine Aufgabe. **D11
+  bleibt damit blockierend**, und das ist beabsichtigt: Der Geheimnis-Scanner
+  ist der Schritt, dessen Ausfall am teuersten ist.
+- **jedes Prüfmittel von D20** — der Belegprüfer, seine Ausnahmeliste, die
+  beiden Bezugsdokumente, `git`, der Arbeitsbaum und, neu mit G16, die
+  Vollständigkeit der Historie. D20 ist der Schritt, der die Nachweisführung
+  selbst prüft; eine Ausnahme an ihm wäre eine Ausnahme an der Nachweiskette.
+- **D19**, weil D19 kein Kettenschritt ist, sondern das Instrument, mit dem der
+  Kettengrundsatz beobachtet wird (6.9.1).
+
+**Was das Gate davon maschinell prüft — und was nicht.** V12 verlangt, dass ein
+genannter Massstab auch geprüft wird. Deshalb genau:
+
+| Prüft das Gate | Prüft das Gate nicht |
+|---|---|
+| Der Schlüssel trägt genau eine D-Nummer, einen Zielnamen und, nach dem senkrechten Strich, einen **repository-relativen Pfad** (kein absoluter Pfad, kein blosser Programmname ohne Verzeichnistrenner) | Ob der genannte Grund inhaltlich zutrifft |
+| Die D-Nummer ist weder D19 noch D20 | Ob die genannte ADR-Stelle das Artefakt tatsächlich terminiert |
+| Der genannte Pfad existiert heute nicht | |
+| Der Grund ist nicht leer und nennt eine Stelle dieses ADR in der Form `ADR 0002, <Abschnitt>` | |
+| Die Marke des Schrittes trägt dasselbe Prüfmittel (G6) | |
+
+Die rechte Spalte bleibt beim menschlichen Review — dieselbe ehrliche Grenze,
+die 6.8.4 für D20 zieht: Ein Werkzeug prüft, dass ein Verweis nicht ins Leere
+zeigt, nicht, dass der Fundort die Behauptung trägt. Wer diese Grenze
+verschweigt, baut wieder die Zusicherung ohne Deckung aus V12.
+
+**Wer die Liste pflegen darf.** Anders als bei der Ausnahmeliste von D20, die
+ein Inventar des Dokumentenbestandes ist, sagt jeder Eintrag hier: *Dieser
+Kettenschritt urteilt bis auf Weiteres nicht.* Das ist eine Aussage über die
+Kette, nicht über ein Dokument.
+
+| Vorgang | Wer | Bedingung |
+|---|---|---|
+| Einen Eintrag hinzufügen oder entfernen | Software Architect, als Fortschreibung dieses Abschnitts | Nur für ein Artefakt, das dieser ADR als noch nicht entstanden führt; der Grund nennt die Tatsache und die ADR-Stelle |
+| Die Form der Schlüssel, die sechs Selbstprüfungen oder den Begriff des Terminierbaren ändern | Software Architect, als Fortschreibung dieses Abschnitts | — |
+| Eine ganze Lage-Art von der Prüfung ausnehmen | Niemand über diese Liste | Das ist keine Ausnahme, sondern eine Änderung des Gates |
+
+**Der Vergleich, an dem diese Entscheidung hängt.** Für einen Kettenschritt ist
+Lage B der Zustand "der Massstab hat nichts zu messen" — er wird gemeldet, nicht
+verschwiegen, und der Schritt endet mit 0. Für das Gate ist eine terminierte
+Lage C dasselbe eine Ebene höher: Der Massstab ist noch nicht da, das wird
+gemeldet, und die Arbeit geht weiter. Der Unterschied zur abgelehnten Option
+(e) ist nicht rhetorisch: Das Gate blockiert weiterhin bei jedem Schritt, der
+**urteilen konnte** und etwas gefunden hat, und die Menge der geduldeten
+Ausfälle kann nicht wachsen, ohne dass jemand eine versionierte Zeile mit einem
+geschriebenen Grund anlegt, die einer Verifikation durch andere unterliegt.
+
+**Und die Gegenseite bleibt streng.** `make dod` selbst kennt diese Liste
+**nicht** und wird durch sie nicht weicher: Eine terminierte Lage C ist für die
+Kette unverändert Lage C und ergibt Rückgabewert 2. Die Ausnahme lebt
+ausschliesslich im Gate der Arbeitsumgebung, deren Zweck es ist, die Arbeit bis
+zum Grundgerüst möglich zu halten. Der Lauf auf der Gegenseite aus O-12 ruft
+dieselbe Kette ohne diese Liste auf; dort ist rot rot. Damit ist die Ausnahme
+nicht nur begrenzt, sondern hat eine Instanz über sich, die sie nicht kennt.
+
+#### 6.12.6 G5 — Der blinde Fleck hinter dem ersten C, und weshalb die Kette dort nicht mehr abbricht
+
+Dies ist der Punkt, an dem die gewählte Option (c) allein noch nicht trägt, und
+er ist beim Entwurf aufgefallen, nicht in der Vorlage genannt.
+
+| | |
+|---|---|
+| **Vorher galt** | "`make dod` ruft alle Kettenschritte dieser Tabelle in der festgelegten Reihenfolge auf und **endet bei der ersten Abweichung ungleich 0**" |
+| **Jetzt gilt** | Die Kette endet bei der ersten Abweichung, **die ein Urteil ist** — bei `A_FAIL`, bei einer fehlenden oder mehrfachen Marke und bei einem sonstigen Rückgabewert ungleich 0. Bei **Lage C** läuft sie weiter, merkt sich den Schritt und endet am Ende trotzdem mit 2 |
+
+**Der Beleg dafür, dass das nötig ist, steht in F5 und in der Lagetabelle des
+Makefiles.** Die Kette bricht heute bei D7 ab. Wäre D7 als terminierte Lage C
+gedeckt und bräche die Kette dort weiterhin ab, so liesse das Gate einen Lauf
+durch, in dem D8 bis D12 **nie gelaufen sind** — darunter D11, dessen Lage C
+gerade nicht terminierbar ist, und D12. Das Gate erklärte damit einen Stand für
+in Ordnung, von dem es sechs Schritte nicht angesehen hat, und der Grund dafür
+wäre eine Zeile in seiner eigenen Ausnahmeliste. Das ist ein falsches Grün, und
+zwar das teuerste denkbare: Es entsteht genau dann, wenn jemand die Liste
+sorgfältig pflegt.
+
+**Weshalb Weiterlaufen zulässig ist.** Jeder Kettenschritt urteilt über eine
+eigene Sache mit einem eigenen Prüfmittel (Objekttabelle in Abschnitt 6); ein
+Schritt in Lage C hat nichts gemessen und nichts verändert. Der
+Kettengrundsatz aus 6.1.3 ist nicht berührt, und D19 klammert unverändert den
+ganzen Lauf ein. Der Preis ist Laufzeit — und V9 ist an genau dieser Abwägung
+entschieden: "Das, was korrekt und qualitativ ist. Soll zwar effizient sein,
+aber nie an Korrektheit und Qualität verlieren."
+
+**Weshalb bei `A_FAIL` weiterhin abgebrochen wird.** Ein Befund ist ein Urteil.
+Er ist zu beheben, und alles, was danach käme, würde gegen einen Stand laufen,
+der ohnehin geändert wird. Das ist die ursprüngliche Begründung des Abbruchs,
+und sie gilt für Befunde unverändert; sie galt für Lage C nie, weil dort gar
+nichts geurteilt wurde.
+
+**Was die Umsetzung genau zu ändern hat** (Makefile, Ziel `dod`, DevOps
+Engineer): Die Schleife bricht bei `gefundene_lage = C` nicht mehr ab, sondern
+setzt `gesamt_rc` auf 2, vermerkt Kennung, Ziel und das mit G6 mitgelieferte
+fehlende Prüfmittel in einer eigenen Liste und fährt fort; der unmittelbar
+folgende Abbruch wegen `rc -ne 0` darf für diesen Schritt nicht greifen, weil
+`KLASSIFIZIEREN` bei Lage C mit 1 endet und GNU Make daraus 2 macht. Bei
+`A_FAIL`, bei fehlender oder mehrfacher Marke und bei jedem anderen
+Rückgabewert ungleich 0 bricht sie unverändert ab. Die gültigen Marken der
+übersprungenen C-Schritte zählen für `marken_zaehler` mit — sie sind gültig.
+
+#### 6.12.7 G6 — Die Lage-Marke trägt das fehlende Prüfmittel, nicht der Meldungstext
+
+| | |
+|---|---|
+| **Vorher galt** | Die Marke lautet `::LAGE <lauf-kennung> <D-Nummer> <ziel> <A_OK\|A_FAIL\|B\|C>[ SCHWELLE=…\|OHNE_SCHWELLE]::` und trägt bei Lage C **nicht**, welches Prüfmittel fehlt. Welches es ist, steht allein in einer Zeile der Form `[Dn ziel] LAGE C: <Text>` auf der Fehlerausgabe |
+| **Jetzt gilt** | Die Marke erhält eine **feste Grammatik**, und der Lage-C-Fall trägt das fehlende Prüfmittel darin strukturiert mit: `::LAGE <lauf-kennung> <D-Nummer> <ziel> <Lage>[ FEHLT=<wert>][ SCHWELLE=…\|OHNE_SCHWELLE]::`. Die Reihenfolge der beiden Zusätze ist festgelegt und nicht dem Zufall des Aufrufs überlassen; beide dürfen nebeneinander stehen |
+
+**Optionen.** Entweder das Gate liest die deutsche Meldungszeile und sucht darin
+den Pfad, oder die Marke trägt ihn. Der Meldungsweg ist billiger — er kostet
+keine Änderung am Makefile —, und er ist falsch:
+
+1. **Er misst einen Text statt eines Gegenstands.** Die 53 C-Zweige des
+   Makefiles sind Fliesstext in Deutsch (selbst gezählt: `LAGE C:` kommt
+   53-mal vor). Sie werden umformuliert, wenn eine Fortschreibung sie
+   umformuliert — und das Gate entschiede beim nächsten Mal anders, ohne dass
+   jemand das Gate angefasst hätte. Das ist wörtlich Regel 1 aus 6.2.2, die
+   dieser Abschnitt seit dem 2026-08-30 auf jeder Ebene durchsetzt.
+2. **Nicht jeder Zweig nennt einen Pfad.** D11 meldet "gitleaks fehlt" — einen
+   Programmnamen. Ein Gate, das darin einen Pfad sucht, findet keinen und
+   müsste raten.
+3. **Die Marke ist der einzige Kanal, den die Kette selbst als vertrauenswürdig
+   behandelt.** Sie trägt die Lauf-Kennung, und `make dod` akzeptiert nichts
+   sonst. Eine zweite Auswertung neben ihr wäre eine zweite Stelle, an der
+   dieselbe Aussage steht — der Fehler aus 6.2.2, 6.9.1 und 6.11.3 b.
+
+**Entscheid: strukturiert.** Der Preis ist benannt und angenommen: 53 Zweige
+setzen je eine Shell-Variable.
+
+**Wie die Angabe in die Marke kommt — und weshalb nicht über den vierten
+Parameter** *(Runde 1, Präzisierung)*. Die erste Fassung dieses Entscheids
+schrieb, die 53 Zweige gäben ihren Wert `KLASSIFIZIEREN` "als vierten Parameter"
+mit. Das trägt aus zwei Gründen nicht, und beide sind am Makefile belegt:
+
+1. **Der vierte Parameter ist schon belegt.** D3, D6 und D8 füllen ihn heute
+   **statisch** mit `SCHWELLE=<wert>` beziehungsweise `OHNE_SCHWELLE`, und zwar
+   unabhängig von der Lage — bei Lage C träfen beide Angaben zusammen, und eine
+   von beiden ginge verloren oder ergäbe eine Marke, deren Aufbau vom Schritt
+   abhinge.
+2. **Ein Make-Parameter ist Expansionszeit, der Wert ist Laufzeit.** Welches
+   Prüfmittel fehlt, stellt sich erst im Rezept heraus, in derselben Shell, die
+   auch `hat_lage_c` setzt. Ein Wert, den `$(call …)` einsetzt, steht dagegen
+   fest, bevor die erste Rezeptzeile läuft.
+
+Deshalb: Jeder Lage-C-Zweig setzt neben `hat_lage_c=1` eine **Shell-Variable zur
+Laufzeit** — sie trägt den Pfad oder den Werkzeugnamen —, und `KLASSIFIZIEREN`
+hängt daraus im C-Zweig selbst `FEHLT=<wert>` an die Marke an, **vor** dem
+Zusatz aus dem vierten Parameter. Der vierte Parameter bleibt unverändert das,
+was er heute ist, und wird nicht umgewidmet. Das ist mechanisch, einmalig und
+braucht keinen neuen Mechanismus — es braucht nur, dass die Grammatik der Marke
+einmal festgeschrieben ist statt sich aus den Aufrufen zu ergeben.
+
+**Fail-closed.** `KLASSIFIZIEREN` setzt bei Lage C `FEHLT=` **immer**; ist die
+Variable leer, lautet der Wert `FEHLT=unbenannt`. Ein vergessener Zweig erzeugt
+damit eine Marke, die kein Schlüssel der terminierten Lagen treffen kann, und
+das Gate blockiert. Ein Zweig, an den niemand gedacht hat, fällt zu und nicht
+auf. Das ist dieselbe Richtung, in die alle Wachen dieser Datei fallen.
+
+#### 6.12.8 G7 — Vier eindeutige Schlusszeilen, eine eigenständige D19-Zeile, ein genannter Baum
+
+| | |
+|---|---|
+| **Vorher galt** | Bei Erfolg endet `make dod` mit `make dod: alle N Kettenschritte durchlaufen (…), keiner ungleich 0, N gueltige Marken gezaehlt, D19: <Befund>.`; bei Abbruch mit `make dod: D19: <Befund>.` und `make dod: abgebrochen, Rueckgabewert N.` Die D19-Aussage steht also in zwei verschiedenen Formen, je nach Ausgang, und der geprüfte Arbeitsbaum wird nirgends genannt. **Runde 1, ergänzt:** Der Befundtext selbst ist ebenfalls frei — fünf verschiedene Texte, darunter **zwei** Schreibweisen für dieselbe Lage C ("Lage C -- git fehlt", "LAGE C, nicht beobachtbar"), und die Lage-B-Zeile beginnt gar nicht mit `D19:`, sondern mit `D19 Lage B --` |
+| **Jetzt gilt** | Die D19-Aussage steht **immer** in genau einer eigenständigen Zeile mit **fester Grammatik**. Die Schlusszeile kennt **vier** eindeutige Formen. Eine erste Zeile nennt den geprüften Arbeitsbaum |
+
+*(Überschrift und Zahl sind am 2026-09-02 von drei auf vier nachgeführt; die
+vierte Form ist ein **Nachtrag aus dem Bau, 6.12.23**, und ist unten als solche
+gekennzeichnet. Die drei ursprünglichen Formen sind unverändert.)*
+
+```
+make dod: geprueft wird <PROJ>.
+…
+make dod: D19: <OHNE_BEFUND|VERLETZT|B|C>[ -- <Text>].
+```
+
+Das Schlüsselwort steht unmittelbar hinter `D19:` und ist eines von genau vier;
+alles danach ist frei und für das Gate bedeutungslos. Damit bleibt der Text das,
+was er sein soll — die Erklärung für den Menschen, einschliesslich der in 6.10.2
+und 6.11.3 e zugesagten Angabe, welche Hälfte des Instruments stumm ist und was
+die andere in diesem Lauf gemessen hat —, und das Gate misst nicht mehr den
+Text. Ohne diese Festlegung müsste es zwei Schreibweisen derselben Lage kennen
+und eine Zeile, die anders beginnt als die übrigen; das ist wörtlich Regel 1
+aus 6.2.2, nur auf der Ebene der Meldung.
+
+und danach genau eine der vier Formen:
+
+```
+make dod: alle <N> Kettenschritte durchlaufen, keiner ungleich 0, <N> gueltige Marken gezaehlt.
+make dod: alle <N> Kettenschritte durchlaufen, <k> davon ohne Urteil (Lage C): <Liste>, Rueckgabewert 2.
+make dod: abgebrochen bei <D-Nummer> <ziel>, Rueckgabewert <N>.
+make dod: alle <N> Kettenschritte durchlaufen, Rahmenpruefung D19 <VERLETZT|C>, Rueckgabewert 2.
+```
+
+Die **vierte** Form ist ein *Nachtrag aus dem Bau, 6.12.23*: Sie gilt für den
+Lauf, der vollständig, ohne `A_FAIL` und ohne Lage C durchgelaufen ist, in dem
+aber D19 einen Befund oder Lage C meldet und der deshalb mit 2 endet. Ohne sie
+passte keine der drei ursprünglichen Formen auf diesen Lauf. Welche Form wann
+gilt und weshalb daraus die Parse-Regel "Rückgabewert 0 nur mit Form 1" folgt,
+steht in 6.12.23 a.
+
+**Weshalb die D19-Zeile aus der Erfolgszeile herausgelöst wird und nicht
+zusätzlich dort steht.** Weil sie sonst zweimal stünde. V13: Eine Angabe, die
+nichts steuert, sondern etwas anderes wiederholt, wird gestrichen und nicht
+nachgeführt. Das Gate liest dann **eine** Form statt zweier, und die zweite
+kann nicht veralten.
+
+**Weshalb die mittlere Form gebraucht wird.** Nach G5 läuft die Kette bei Lage C
+weiter und endet trotzdem mit 2. Die heutige Zeile "abgebrochen" wäre für
+diesen Lauf schlicht unwahr — er ist nicht abgebrochen, er ist vollständig
+gelaufen und hat an k Stellen nicht urteilen können. Eine Nachweiszeile, die
+zu viel oder das Falsche behauptet, ist derselbe Mangel wie eine fehlende;
+dieselbe Überlegung hat in 6.10.2 bereits einmal dazu geführt, eine Meldung auf
+die schwächere, richtige Aussage festzulegen, und im Makefile dazu, "beobachtet
+und in Ordnung" von "gar nicht beobachtet" zu trennen.
+
+**Weshalb der Baum genannt wird.** Das Gate nennt in jeder Meldung, welchen
+Arbeitsbaum es hat prüfen lassen (G12). Diese Angabe ist nur dann ein Nachweis,
+wenn sie sich gegen die Kette prüfen lässt, die tatsächlich gelaufen ist —
+sonst ist sie eine Behauptung des Gates über einen fremden Prozess. Die Kette
+bestimmt ihren Baum selbst und ohne Rückfall (`PROJ` aus `MAKEFILE_LIST`, mit
+Hartabbruch statt Rückfall auf das Arbeitsverzeichnis); sie sagt ihn heute nur
+nicht. Dass die Bestimmung streng ist, aber ihr Ergebnis unsichtbar bleibt, ist
+dieselbe Lücke, die 6.9.1 an D19 beschrieben hat: Es genügt nicht, richtig zu
+messen, es muss auch feststehen, was gemessen wurde.
+
+#### 6.12.9 G8 — Frage 3: Wie dreimaliges Scheitern am gleichen Kriterium erkannt wird, und wo gezählt wird
+
+**Wo gezählt wird: ausserhalb des Arbeitsbaums.** Unter
+`${XDG_STATE_HOME:-$HOME/.local/state}/r3cosint/dod-gate/`, je Sitzung
+(`session_id`) und, wenn vorhanden, je Subagent (`agent_id`) eine Datei. Der
+Grund ist zwingend und nicht eine Frage des Geschmacks: Eine Zählerdatei im
+Arbeitsbaum wäre eine Datei, die das Gate während des Laufs schreibt, den es
+beurteilt — D19 sähe sie, und das Gate erzeugte den Befund, den es meldet. Das
+ist der Kettengrundsatz aus 6.1.3, angewandt auf das Gate selbst. *(Nachtrag
+6.12.24 c: Sind weder `XDG_STATE_HOME` noch `HOME` gesetzt, ist das Verzeichnis
+**nicht bestimmbar**; dieser Zustand wird behandelt wie ein nicht
+beschreibbares Verzeichnis und erhält keinen eigenen Ausgang.)*
+
+**Wie die Zählerdatei heisst — und wie sie heisst, wenn `sha256sum` fehlt**
+*(Nachtrag 6.12.26 c, Befund S5-02 aus Runde 5)*. Der Regelfall ist die
+**gehashte** Form: der Name trägt die SHA-256-Summe der `session_id`, bei
+vorhandener `agent_id` ergänzt um die Summe über sie. Fehlt `sha256sum`, lässt
+sich diese Summe nicht bilden — und genau dieser Fall muss zählbar bleiben,
+weil `GATE sha256sum` seit 6.12.25 i wie jeder andere `GATE <Prüfmittel>`-Block
+über die Zählung läuft. Der Ausweichname ist deshalb die **bereinigte Rohform**
+der `session_id`: jedes Zeichen ausserhalb von `A-Za-z0-9_-` wird durch `_`
+ersetzt, bei vorhandener `agent_id` ergänzt um dieselbe Bildung über sie. Er
+ist innerhalb einer Sitzung deterministisch — mehr braucht die Zählung nicht —
+und gilt **ausschliesslich** für den Fall des fehlenden `sha256sum`. Diese
+Festlegung war im Bau bereits so umgesetzt und in diesem ADR nicht terminiert;
+sie wird hier nachgeführt, nicht geändert (V12: was das Gate tut, steht in der
+Festlegung oder es steht nirgends).
+
+**Kein Rückkanal.** Das Gate schreibt ausschliesslich lokal und sendet nichts
+nach aussen. Das ist keine Selbstverständlichkeit, sondern eine Bauvorschrift
+(5.4, CLAUDE.md), und sie gilt für die Werkzeugkette so gut wie für das
+Produkt.
+
+**Was gezählt wird: das Kriterium, nicht das Ereignis.** Schlüssel ist die
+Klassifizierung aus 6.12.4 — `<D> <ziel> <Lage>`, `D19 <Befund>`, `KETTE
+<Grund>` oder `GATE <Prüfmittel>`. Gleicher Schlüssel wie beim letzten Block →
+Zähler plus eins; anderer Schlüssel → Zähler auf eins. Ein **Durchlass** löscht
+den Zähler; ein Durchlass wegen `stop_hook_active` (G9) und ein Nichtlaufen
+wegen fehlender Schreibrechte der Rolle (G13) verändern ihn **nicht** — und
+ebenso wenig der Durchlass ab dem vierten Mal nach der Eskalation *(Nachtrag
+6.12.24 d)*.
+
+**Weshalb `Stop`- und `TaskCompleted`-Blocks in denselben Zähler laufen.** 3.4
+spricht von "derselben Prüfung am gleichen Kriterium", nicht von demselben
+Ereignis. Ein Kriterium, das dreimal gescheitert ist, ist dreimal gescheitert,
+gleich bei welcher Gelegenheit es geprüft wurde. Ein Subagent zählt dagegen für
+sich, weil `agent_id` vorliegt: Er hat eine eigene Aufgabe, ein eigenes
+Zugkontingent (`maxTurns`) und einen eigenen Abschlussbericht.
+
+**Was beim dritten Mal geschieht.** Die Blockmeldung benennt das blockierende
+Kriterium und verlangt, was 3.3 und 3.4 ohnehin verlangen: die Übergabedatei
+unter `docs/uebergaben/`, mit einer vom Gate vorgegebenen, wörtlich zu
+übernehmenden Zeile
+
+```
+Eskalation 3.4: <Schlüssel>
+```
+
+**Ab dem vierten Mal** lässt das Gate durch, wenn eine Datei unterhalb
+`docs/uebergaben/` diese Zeile trägt **und** entweder nach `git status` neu
+oder geändert ist **oder** im jüngsten Commit (`HEAD`) enthalten ist. Die
+zweite Bedingung ist nicht Förmelei: Ohne sie genügte ein Verweis auf eine
+beliebige alte Übergabe, und die Eskalation würde zur Formel. *(Runde 1: Die
+erste Fassung verlangte allein "neu oder geändert nach `git status`" und
+übersah damit den Regelfall — jede bisherige Eskalationsübergabe ist committet
+worden, zuletzt `docs/uebergaben/2026-09-01_belegpruefer-abbruch-nach-3-4.md`.
+Nach dem Commit wäre die Datei weder neu noch geändert, und der Durchlass
+griffe nie. Der Zusatz "im jüngsten Commit enthalten" schliesst die Lücke, ohne
+eine beliebige ältere Datei zuzulassen.)* Fehlt die Datei, blockiert das Gate
+weiter mit derselben Forderung — die Eskalation ist kein Ausweg aus der
+Blockade, sondern der vorgeschriebene Weg aus ihr heraus: abbrechen, Stand
+schreiben, dem Auftraggeber vorlegen.
+
+**Der Durchlass nach der Eskalation gilt nur für `Stop` und `SubagentStop`**
+*(Runde 1, fehlender Entscheid)*. Für `TaskCompleted` gilt er **nicht**: Dort
+blockiert das Gate weiter, auch nach der Eskalation. Der Grund ist die
+Bedeutung der beiden Ereignisse. Der Durchlass bei `Stop` ist nötig, damit die
+Rolle die Übergabe überhaupt abliefern und den Zug beenden kann — er sagt
+nichts über die Aufgabe. Ein Durchlass bei `TaskCompleted` sagte dagegen
+genau das Falsche: dass die Aufgabe **erledigt** sei. Sie ist es nicht; sie ist
+abgebrochen und liegt dem Auftraggeber vor (3.4). Eine Aufgabe, die dreimal am
+gleichen Kriterium gescheitert ist, als abgeschlossen zu markieren, widerspräche
+dem Wortlaut des Abnahmekriteriums von R3-Q-001 ebenso wie dem Satz aus
+`docs/06_Definition_of_Ready_und_Done.md`, dass ein halbfertiger Zustand nicht als erledigt gilt. Die
+Eskalation beendet die Iteration, nicht die Aufgabe.
+
+**Welcher Schlüssel gezählt wird, wenn ein Lauf mehrere Abweichungen zeigt**
+*(Runde 1, fehlende Festlegung)*. Seit G5 läuft die Kette bei Lage C weiter;
+ein Lauf kann deshalb mehrere ungedeckte Lagen C melden, dazu eine
+D19-Abweichung. Gezählt und in der Blockmeldung zuerst genannt wird **die erste
+Abweichung in der Reihenfolge der Kette** — also die erste Zeile der Übersicht,
+deren Marke `A_FAIL` oder eine ungedeckte Lage C trägt; erst wenn keine solche
+Zeile besteht, der D19-Befund. Der Grund ist die Vergleichbarkeit über Läufe
+hinweg: Ein Zähler, dessen Schlüssel davon abhinge, welche von mehreren
+Abweichungen gerade zufällig ausgewählt wurde, zählte nie dreimal dasselbe
+Kriterium und die Eskalation griffe nie. Die übrigen Abweichungen stehen
+vollständig in der Meldung — gezählt wird eine, verschwiegen wird keine.
+
+**Was das Gate nicht kann, und wo die Grenze liegt.** Der Zustand liegt in der
+Umgebung der Sitzung; in einer Cloud-Sitzung ist `HOME=/root` (Fremdbeleg) und
+das Verzeichnis vergänglich. Über **Sitzungsgrenzen hinweg zählt das Gate
+nicht.** Das ist keine Lücke, sondern die richtige Reichweite: 3.4 zählt die
+Iteration innerhalb einer Arbeitseinheit, und über Arbeitseinheiten hinweg
+trägt die Übergabedatei, nicht ein Zähler. Ist das Zustandsverzeichnis nicht
+beschreibbar **oder nicht bestimmbar** *(Nachtrag 6.12.24 c)*, urteilt das Gate
+unverändert und sagt in der Blockmeldung, dass es nicht zählen kann und weshalb;
+die Rolle zählt dann selbst (3.4). Dass sich die
+Eskalation dadurch aushebeln liesse, ist benannt und nicht verschwiegen — sie
+ist ein Schutz des Kontingents, keine Bauvorschrift nach 5.4.
+
+**Der eine Block, der das Zählwerk zwangsläufig verlässt** *(Nachtrag aus dem
+Bau, 6.12.23 c)*. Fehlt `jq`, blockiert das Gate unverändert mit Rückgabewert 2
+und dem Schlüssel `GATE jq` (6.12.11) — aber es **zählt diesen Block nicht**,
+und es kann es nicht: `session_id` und `agent_id` stehen in der Eingabe-JSON,
+die ohne `jq` nicht lesbar ist. Das Gate weiss dann, dass es blockiert, aber
+nicht, wofür es den Block anschreiben soll. Dreimaliges Scheitern an `GATE jq`
+läuft deshalb nicht in die Eskalation nach 3.4; die Rolle zählt dort selbst,
+wie schon im Fall des nicht beschreibbaren Zustandsverzeichnisses. Ein
+Ersatzschlüssel wird nicht erfunden — die Begründung steht in 6.12.23 c und
+wird hier nicht wiederholt (V13). *(Nachtrag 6.12.25 i, Befund S4-04 aus Runde
+4: `GATE jq` ist die **einzige** Ausnahme. Jeder andere Block mit einem
+Schlüssel `GATE <Prüfmittel>` — namentlich `GATE mktemp`, `GATE sha256sum`,
+`GATE flock`, `GATE make`, `GATE timeout`, `GATE git` — läuft über die Zählung
+dieses Abschnitts und endet nicht unmittelbar.)*
+
+#### 6.12.10 G9 — Frage 4: Wie `stop_hook_active` greift
+
+| | |
+|---|---|
+| **Vorher galt** | "Reentranz-Schutz über `stop_hook_active`" — ohne Ausgang |
+| **Jetzt gilt** | Ist `stop_hook_active` wahr, endet das Gate mit **0**, meldet über `systemMessage`, dass es wegen des Reentranz-Schutzes nicht durchgesetzt hat und in welchem Zustand die Kette zuletzt war, und **verändert den Zähler nicht** |
+
+**Weshalb 0 und nicht eine eigene Erfindung.** Der Wortlaut ist an drei Stellen
+eindeutig und deckungsgleich: Projektauftrag 3.4, Ebene 4 ("Der Hook muss dann
+mit 0 enden und das Beenden zulassen"), `docs/06_Definition_of_Ready_und_Done.md`, Abschnitt "Durchsetzung",
+und das Abnahmekriterium `R3-Q-001_gate_blockiert` ("bei gesetztem
+`stop_hook_active` endet er mit 0, auch wenn der Prüflauf rot ist"). Auch die
+gelesene Referenz begründet es sachlich: "Check this value or process the
+transcript to avoid blocking on a condition that will never resolve." Ein
+Kriterium, das sich innerhalb der Sitzung nicht erfüllen lässt — und bis zum
+Grundgerüst gibt es solche —, blockierte sonst dauerhaft.
+
+**Weshalb der Zähler unberührt bleibt.** Ein Durchlass wegen `stop_hook_active`
+ist kein Durchlass wegen eines Ergebnisses. Würde er den Zähler löschen, käme
+er nach jedem Block, und der Zähler stünde nie über eins — die Eskalationsregel
+aus 3.4 wäre dann nicht bloss schwach, sondern unerreichbar. Würde er ihn
+erhöhen, zählte das Gate einen Block, den es nicht ausgesprochen hat. Also
+keines von beidem.
+
+**Die Folge, ausgesprochen statt später entdeckt.** Siehe 6.12.2: Ein Stop-Gate
+mit diesem Reentranz-Schutz erzwingt je Beendigungsversuch genau eine
+Fortsetzung. Es hindert niemanden daran, die Antwort zu beenden; es hindert
+daran, sie **ohne Rückmeldung** zu beenden. Die Zusicherung, dass eine Aufgabe
+bei roter Kette nicht abschliessbar ist, trägt `TaskCompleted` — dort greift
+der Reentranz-Schutz nicht, weil die gelesene Referenz das Feld für dieses
+Ereignis nicht führt. Wer diesen Entwurf beurteilt, muss beides zusammen sehen:
+Der Reentranz-Schutz ist gewollt schwach, und er ist nicht die Stelle, an der
+die Zusicherung hängt.
+
+#### 6.12.11 G10 — Die Prüfmittel des Gates, und was bei deren Ausfall geschieht
+
+V12 verlangt: Nennt ein Text ein Prüfmittel, dessen Ausfall eine Wirkung haben
+soll, muss der Code genau dieses Prüfmittel prüfen. Deshalb hier abschliessend
+und namentlich, was das Gate braucht:
+
+| Prüfmittel | Wofür | Fehlt es |
+|---|---|---|
+| `jq` | Lesen der Eingabe-JSON von der Standardeingabe | Lage C des Gates, Rückgabewert 2 |
+| `git` | Bestimmung des geprüften Arbeitsbaums; Prüfung der Übergabedatei bei der Eskalation | Lage C des Gates, Rückgabewert 2 |
+| GNU Make und das `Makefile` im bestimmten Baum | Der eine Einstieg (`make dod`) | Lage C des Gates, Rückgabewert 2 |
+| `.claude/hooks/dod-gate-terminierte-lagen.txt` | Entscheidung über eine gemeldete Lage C | Lage C des Gates, Rückgabewert 2 — eine fehlende Liste liesse jede terminierte Lage stumm wegfallen und machte das Gate dauerhaft rot, ohne zu sagen weshalb. Eine **vorhandene, leere** Liste ist dagegen ein zulässiger Zustand: es gibt dann keine terminierten Lagen. Das ist wörtlich die Unterscheidung, die 6.11.2 für `scripts/belege-ausnahmen.txt` getroffen hat |
+| `timeout` (coreutils) | Rückgewinnung der Kontrolle vor der Zeitgrenze des Harness (G11) | Lage C des Gates, Rückgabewert 2 |
+| `flock` (util-linux) | Serialisierung der eigenen Läufe (G12) | Lage C des Gates, Rückgabewert 2 |
+| `sha256sum` (coreutils) *(Nachtrag 6.12.24 g)* | Bildung der Namen von Sperr- und Zählerdatei aus dem Pfad des geprüften Baums (G8, G12) | Lage C des Gates, Rückgabewert 2, Schlüssel `GATE sha256sum`. *(Nachtrag 6.12.26 c, Befund S5-02: Damit dieser Block zählbar bleibt, trägt die Zählerdatei in genau diesem Fall den Ausweichnamen aus der **bereinigten Rohform** der `session_id` — jedes Zeichen ausserhalb von `A-Za-z0-9_-` wird zu `_`, bei vorhandener `agent_id` ergänzt um dieselbe Bildung über sie. Terminiert in 6.12.9, Absatz "Wie die Zählerdatei heisst"; ausschliesslich für diesen Fall, im Regelfall bleibt es bei der gehashten Form.)* |
+| `mktemp` (coreutils) *(Nachtrag 6.12.24 g)* | Die Wegwerfdatei, in der die Ausgabe der Kette ausserhalb des geprüften Baums abgefangen wird (G14) | Lage C des Gates, Rückgabewert 2, Schlüssel `GATE mktemp` |
+| Ein beschreibbares Zustandsverzeichnis | **Nur** das Zählwerk (G8) | **Kein** eigener Ausgang: das Gate urteilt unverändert und nennt **in jeder Meldung**, dass es nicht zählen kann; bei sauberem Grün ist das seine einzige Meldung *(Nachtrag 6.12.24 c: ein **nicht bestimmbares** Verzeichnis wird gleich behandelt; Nachtrag 6.12.24 e: die Sperre aus G12 weicht dann auf `/tmp` aus und entfällt nicht still)* |
+
+**Die Präzedenz.** `.claude/hooks/block-main-write.sh` und
+`block-prototype-import.sh` blockieren mit einer Meldung, wenn `jq` fehlt,
+statt stillschweigend durchzulassen; CLAUDE.md führt das unter "Aktive Gates"
+ausdrücklich. Das Gate aus R3-Q-001 verhält sich genauso, und zwar für alle
+sechs blockierenden Prüfmittel: Jede Meldung nennt das fehlende Mittel **und
+den Beschaffungsweg**, wie es die Lage-C-Zweige des Makefiles ebenfalls tun.
+
+*(Nachtrag 6.12.24 g: Die Zahl "sechs" in diesem Absatz ist der Stand vor der
+Verifikation vom 2026-09-02 und wird nicht umgeschrieben. Massgeblich ist nach
+Regel 2 aus 6.2.2 die Tabelle darüber; sie führt seit diesem Nachtrag **acht**
+blockierende Prüfmittel und neun insgesamt. Der Satz über Meldung und
+Beschaffungsweg gilt unverändert für alle.)*
+
+**Die eine Ausnahme, und weshalb sie eine ist.** Das Zustandsverzeichnis trägt
+nicht das Urteil, sondern nur die Zählung. Wäre sein Fehlen ein blockierender
+Ausgang, würde ein Gate, das nicht schreiben darf, auch bei grüner Kette
+blockieren — ein Gate, das nichts mehr durchlässt. Die Zählung ist ausserdem
+kein Schutz nach 5.4, sondern ein Schutz des Kontingents (3.3, 3.4). Die
+Unterscheidung ist dieselbe wie bei D20 und dem zweiten Arbeitsbaum in 6.8.3:
+Was den Gegenstand betrifft, ist Lage C; was nur die Vollständigkeit der
+Meldung betrifft, gehört in die Meldung.
+
+#### 6.12.12 G11 — Zeitüberschreitung: zwei Grenzen, und weshalb die innere die kleinere ist
+
+**Der Befund aus der gelesenen Referenz.** "Claude Code cancels a `command` …
+hook that reaches its `timeout`, discarding the hook's output, so on most events
+a timed-out hook renders no decision." Ein Gate, das seine Zeitgrenze reisst,
+**lässt also durch** — lautlos und ohne Ausgabe. Für ein Gate ist das der
+schlechteste aller Ausgänge, und er tritt genau dann ein, wenn die Kette lange
+läuft, also wenn viel gebaut und getestet wurde.
+
+| | |
+|---|---|
+| **Vorher galt** | Nichts. Weder dieser ADR noch `docs/06_Definition_of_Ready_und_Done.md` nennen eine Zeitgrenze für die Gates |
+| **Jetzt gilt** | Zwei Grenzen, und die innere ist die kleinere: `timeout: 900` je Hook-Eintrag in `.claude/settings.json`; im Skript läuft `make dod` unter `timeout` (coreutils) mit **600 s**; die Wartezeit auf die Sperre aus G12 beträgt **120 s** |
+
+**Weshalb 600 s innen.** Die gelesene Referenz nennt 600 s als Vorgabewert für
+`command`-Hooks — das ist die Dauer, die der Harness selbst für normal hält,
+und damit keine erfundene Zahl. Der heute gemessene Lauf dauert 5,8 s
+(Fremdbeleg); mit dem Grundgerüst kommen Bau, Containerbau, Testsuite,
+Abdeckung und durchgehende Oberflächenläufe hinzu, und die Grössenordnung
+wechselt von Sekunden zu Minuten.
+
+**Weshalb 900 s aussen.** 600 s für die Kette, 120 s Wartezeit auf die Sperre
+und die eigene Arbeit des Gates ergeben höchstens rund 720 s; 900 s lassen
+180 s Reserve. Die äussere Grenze ist ausdrücklich **kein** zweiter Massstab,
+sondern eine Notbremse: Erreicht wird sie nur, wenn das Skript selbst hängt.
+
+**Was bei der inneren Grenze geschieht.** Das Gate beendet den Lauf (mit
+Nachlauffrist, damit kein `make` im Hintergrund weiterläuft) und endet mit 2:
+`KETTE zeitueberschreitung`. Es behauptet dabei nichts über den Arbeitsbaum —
+die Nachher-Aufnahme von D19 hat nicht stattgefunden, und ein abgebrochener
+Lauf hat kein Urteil gefällt. "Nicht nachweisbar gelaufen" ist die richtige und
+die einzige belegte Aussage.
+
+**Was offen bleibt, und weshalb es hier steht statt vermutet zu werden.** Ob
+600 s für die Kette mit dem Grundgerüst reichen, ist nicht gemessen. Reichen sie
+nicht, wäre das Gate regelmässig falsch rot — und ein regelmässig falsch rotes
+Gate wird entfernt. Deshalb: **O-20**, mit einem ausgeführten Lauf zu
+beantworten, sobald `backend/` und `deploy/` bestehen. Ergibt die Messung, dass
+die Kette länger braucht, werden **beide** Werte als Fortschreibung angehoben —
+das innere Limit wird nicht stillschweigend entfernt. Ein Gate ohne innere
+Grenze ist ein Gate, das bei langem Lauf durchlässt.
+
+#### 6.12.13 G12 — Welcher Arbeitsbaum geprüft wird, und was bei Nebenläufigkeit gilt
+
+**Der geprüfte Baum wird bestimmt, nicht geraten.** Die gelesene Referenz sagt
+zu Arbeitsbäumen: `${CLAUDE_PROJECT_DIR}` "still points at the project root
+where the session started", während das Eingabefeld `cwd` "is the worktree root
+after Claude enters a worktree". Beides zugleich zu nehmen geht nicht; eines
+von beiden blind zu nehmen, hiesse in einem der beiden Fälle den falschen Baum
+zu prüfen.
+
+| | |
+|---|---|
+| **Vorher galt** | Nichts; `block-main-write.sh` nimmt `${CLAUDE_PROJECT_DIR:-$PWD}` und benennt im Kopf, dass ein zweiter Arbeitsbaum ausserhalb der Sitzung nicht erfasst ist |
+| **Jetzt gilt** | Das Gate prüft den Arbeitsbaum, in dem `cwd` liegt, **sofern dieser zu demselben Repository gehört** wie `${CLAUDE_PROJECT_DIR}` — festgestellt über die Versionsverwaltung (das gemeinsame Git-Verzeichnis), nicht über einen Verzeichnisnamen. Sonst gilt `${CLAUDE_PROJECT_DIR}`. Der geprüfte Baum steht in **jeder** Meldung des Gates, blockierend wie durchlassend. *(Nachtrag 6.12.24 a: Bestimmt wird in beiden Fällen die **Wurzel** des Arbeitsbaums, und zwar **physisch aufgelöst** — sonst vergleicht das Gate seine Angabe mit der Baumzeile der Kette, die aus `pwd -P` stammt, und misst eine Schreibweise statt eines Baums.)* |
+
+**Weshalb nicht einfach `${CLAUDE_PROJECT_DIR}`.** Weil CLAUDE.md den Betrieb
+auf einem Arbeitszweig vorschreibt und ein zweiter Arbeitsbaum damit eine
+naheliegende Arbeitsform ist — das steht bereits als Begründung im Makefile bei
+D19 und in 6.9.3. Arbeitet Claude in einem Arbeitsbaum und prüfte das Gate die
+Sitzungswurzel, meldete es Grün über einen Stand, den niemand angesehen hat.
+Genau dieser Fehler ist an dieser Datei schon einmal blockierend aufgetreten:
+Die dritte Fassung der `PROJ`-Bestimmung fiel auf das Arbeitsverzeichnis zurück
+und prüfte belegt ein fremdes Repository, während der Lauf wie eine reguläre
+Prüfung aussah. V10 sagt dazu: Was sich schliessen lässt, wird geschlossen; und
+das hier lässt sich mit `git` schliessen.
+
+**Weshalb kein Urteil über ein fremdes Repository.** Liegt `cwd` ausserhalb
+jedes Arbeitsbaums dieses Repositories — etwa im Methodik-Repository —, prüft
+das Gate die Sitzungswurzel und sagt das. Es prüft **nie** ein Repository, für
+das es nicht eingerichtet ist. Auch das ist aus der `PROJ`-Geschichte
+übernommen: lieber kein Urteil als ein Urteil über das falsche Verzeichnis.
+
+**Serialisierung der eigenen Läufe.** In dieser Sitzung laufen Subagenten
+parallel und schreiben Dateien (Fremdbeleg); die gelesene Referenz sagt zudem,
+dass mehrere Hooks desselben Ereignisses parallel laufen. Zwei gleichzeitige
+`make dod` gegen denselben Baum stören einander über D19. Das Gate nimmt
+deshalb vor dem Lauf eine Sperre (`flock`) mit 120 s Wartezeit; läuft sie ab,
+endet es mit 2 und sagt, dass ein anderer Lauf die Sperre hält. **Die
+Sperrdatei liegt im Zustandsverzeichnis, nicht im Arbeitsbaum** — eine
+Sperrdatei im Baum wäre eine Datei, die während des Laufs entsteht und
+vergeht, und D19 sähe sie. Sie ist an den Pfad des geprüften Baums gebunden,
+nicht an die Sitzung, damit sie auch zwischen Sitzungen wirkt. *(Nachtrag
+6.12.24 e: Ist das Zustandsverzeichnis nicht beschreibbar oder nicht
+bestimmbar, liegt die Sperrdatei mit demselben Namen fest unter `/tmp`; geht
+auch das nicht, läuft das Gate **ohne** Sperre und sagt das in jeder Meldung.)*
+
+**Die Grenze, die bleibt.** Ein **fremder** Schreiber — ein anderer Subagent,
+der während des Laufs eine Datei ändert — lässt sich damit nicht anhalten. D19
+meldet dann `VERLETZT`, obwohl kein Kettenschritt geschrieben hat, und das Gate
+kann die beiden Ursachen nicht unterscheiden. Entschieden wird: **`VERLETZT`
+blockiert immer.** Die Meldung nennt beide möglichen Ursachen und verlangt, den
+Lauf zu wiederholen, wenn sonst nichts läuft. Das Gate erklärt einen Befund
+nicht weg — es ist nicht die Stelle, an der entschieden wird, ob eine
+Beobachtung zählt. Bleibt der Befund dreimal, greift die Eskalation aus G8, und
+das ist der richtige Ausgang: Ein Problem, das sich nicht von innen lösen lässt,
+gehört vorgelegt (3.4).
+
+#### 6.12.14 G13 — `SubagentStop` und Rollen, die den Arbeitsbaum nicht ändern können
+
+**Das Problem.** Static Software Tester und Pentester haben weder `Edit` noch
+`Write`. Ein Block verlangte von ihnen eine Behebung, die sie nicht leisten
+können, und veränderte zugleich ihren Abschlussbericht — die letzte Nachricht
+eines Subagenten ist sein Arbeitsergebnis, und der aufrufende Kontext liest sie.
+Beim Prüfer wiegt das doppelt: **Seine Aufgabe ist es, den roten Befund zu
+melden.** Ein Gate, das ihn wegen desselben roten Befunds am Abliefern hindert,
+macht die Meldung des Befunds unmöglich.
+
+| Option | Bewertung |
+|---|---|
+| (i) Das Gate gilt für alle Subagenten gleich | Abgelehnt, aus dem Grund oben. Es blockierte am zuverlässigsten die Rollen, die es am wenigsten angeht |
+| (ii) Das Gate liest das `tools:`-Feld der Rollendatei und behandelt Rollen ohne Schreibwerkzeug gesondert | Gewählt. Es misst den **Gegenstand** — hat diese Rolle das Recht, den Baum zu ändern? — statt eines Namens. Das ist Regel 1 aus 6.2.2 |
+| (iii) Ein Matcher in `settings.json` | Abgelehnt. Eine zweite Kopie der Rechtetabelle aus ADR 0001, die mit der ersten Rollenänderung veraltet, ohne dass es auffällt (V13) |
+
+**Entscheid: (ii), und das Gate läuft für diese Rollen gar nicht erst.** Es
+bestimmt zuerst die Rolle; enthält deren `tools:`-Feld **keines von `Edit`,
+`Write` und `NotebookEdit`**, endet es mit 0 und meldet über `systemMessage`,
+dass es die Kette für diese Rolle nicht hat laufen lassen und weshalb. `make
+dod` läuft dann nicht — das spart bis zu 600 s je Abschluss eines
+Prüf-Subagenten und, wichtiger, es vermeidet eine Aussage über einen
+Kettenzustand, den diese Rolle weder verursacht hat noch beheben kann.
+
+**`Bash` zählt nicht dazu — ein blockierender Befund aus Runde 1, hier
+entschieden.** Die erste Fassung führte `Bash` unter den verändernden
+Werkzeugen. Gemessen über alle 21 Rollendateien tragen `static-software-tester`
+und `pentester` genau `tools: Read, Grep, Glob, Bash, Skill` — also `Bash`,
+aber weder `Edit` noch `Write`. Mit `Bash` im Kriterium liefe das Gate
+ausgerechnet für die beiden Rollen, für die G13 gemacht ist; der Entwurf hätte
+sich selbst aufgehoben. Massgeblich ist deshalb die Menge der Werkzeuge, über
+die **ADR 0001 Schreibrecht vergibt**: `Edit`, `Write`, `NotebookEdit`.
+
+**Die Grenze dieses Kriteriums, ausgesprochen statt überdeckt.** `Bash` **kann**
+schreiben — mit `sed -i`, mit einer Umleitung, mit einem Interpreteraufruf; das
+Gate `block-main-write.sh` behandelt genau diese Wege in seinem
+Bash-Zweig. Eine Rolle mit `Bash` und ohne `Edit`/`Write` **darf** also nicht
+schreiben, **könnte** es aber. Das Kriterium misst damit das Recht, nicht die
+Fähigkeit, und das ist eine bewusste Wahl mit zwei Gründen: Erstens ist das
+Recht das, worüber ADR 0001 verfügt und worüber sich die Rolle Rechenschaft
+schuldet; zweitens ist die Fähigkeit ohnehin nicht die Frage, die G13 stellt —
+ein Prüfer, der unter Umgehung seines Rechts geschrieben hätte, hat ein
+grösseres Problem als eine ungelaufene Kette. Die **harte** Durchsetzung der
+Schreibgrenzen ist R3-Q-005 und bleibt es; dieses Gate ersetzt sie nicht und
+gibt nicht vor, es zu tun. Solange R3-Q-005 nicht steht, bleibt der Fall
+"Prüfer schreibt über `Bash`" durch nichts abgefangen — das ist eine benannte
+Lücke des Rollenmodells, nicht eine, die dieser Entwurf einführt.
+
+**Woran das Gate die Rolle erkennt: am Frontmatter, nicht am Dateinamen**
+*(Runde 1)*. Die gelesene Referenz sagt zu `agent_type` im Abschnitt
+`SubagentStart`, auf den der `SubagentStop`-Abschnitt für die Werte verweist:
+"For custom subagents, this is the `name` field from the agent's frontmatter,
+not the filename." Die erste Fassung dieses Entwurfs las
+`.claude/agents/<agent_type>.md` und setzte damit stillschweigend Dateiname
+gleich `name` voraus. Dass beides heute in allen 21 Rollendateien
+übereinstimmt (selbst gemessen), macht die Annahme nicht richtig — sie wäre
+beim ersten Auseinanderfallen still falsch, und das ist derselbe Fehler, den
+6.2.2 als Regel 1 verbietet: ein Name statt des Gegenstands. Das Gate löst
+`agent_type` deshalb über das Frontmatter-Feld `name:` **aller** Dateien unter
+`.claude/agents/` auf und nimmt den eindeutigen Treffer.
+
+**Fail-closed in jeder Unklarheit.** Findet die Auflösung keinen oder mehr als
+einen Treffer — auch bei einer eingebauten Rolle wie `Explore` oder bei einem
+plugin-bezogenen Namen mit Doppelpunkt, den die Referenz ausdrücklich nennt —,
+so behandelt das Gate die Rolle als **schreibberechtigt** und läuft. Eine
+unbekannte Rolle ist keine bekannte Ausnahme. Ist `agent_type` leer oder trägt
+er Zeichen, die in einem Frontmatter-Namen nicht vorkommen können, gilt
+dasselbe. Der Zähler wird in allen diesen Fällen nicht verändert (G8).
+
+#### 6.12.15 G14 — Sichtbarkeit: was gemeldet wird, wohin, und was nicht
+
+**Der Befund aus der gelesenen Referenz.** Bei Rückgabewert 0 geht die
+Standardausgabe eines Hooks "to the debug log and doesn't show it in the
+transcript"; die Fehlerausgabe bei 0 geht ebenfalls nur ins Debug-Protokoll und
+"Claude never sees it". Ein Durchlass ist also **stumm** — und ein Durchlass
+mit terminierten Lagen C wäre damit ein Negativbefund, den niemand sieht. Nach
+5.3 sind Negativbefunde zwingend Teil der Spur; das ist der Gedanke, der hier
+sinngemäss trägt.
+
+| | |
+|---|---|
+| **Jetzt gilt** | Bei jedem Durchlass, der **kein sauberes Grün** ist, gibt das Gate auf der Standardausgabe genau ein JSON-Objekt mit dem Feld `systemMessage` aus. Bei sauberem Grün gibt es nichts aus. Beim Blockieren geht der Grund auf die Fehlerausgabe, und die Standardausgabe bleibt leer |
+
+Drei Fälle sind kein sauberes Grün und melden sich deshalb: der Durchlass mit
+terminierten Lagen C (die Meldung nennt, **welche** Schritte nicht geurteilt
+haben und welches Prüfmittel ihnen fehlt), der Durchlass wegen
+`stop_hook_active` (G9) und das Nichtlaufen für eine Rolle ohne veränderndes
+Werkzeug (G13). *(Nachtrag 6.12.24 c und e: Ein **vierter** Fall kommt hinzu —
+ein ausgefallenes Zählwerk oder eine ausgefallene Sperre. Auch dann meldet sich
+das Gate; ist die Kette im Übrigen sauber grün, ist das seine einzige Meldung.
+Der Grundsatz bleibt unverändert: Geschwiegen wird nur, wenn es nichts zu
+melden gibt.)*
+
+**Weshalb bei sauberem Grün Schweigen richtig ist.** Weil dann nichts zu melden
+ist und jede zusätzliche Zeile Rauschen wäre, das die drei Fälle oben
+unsichtbar machte. Das Gate ist auch nicht der Ort der Nachweisführung: Der
+Nachweis eines grünen Laufs entsteht dort, wo `make dod` geführt und sein
+Ergebnis festgehalten wird (D12, 6.6), nicht in einer Meldung an den Bildschirm.
+
+**Zwei Dinge, die das Gate ausdrücklich nicht tut.**
+
+- **Kein `continue: false`.** Die gelesene Referenz beschreibt das Feld als "If
+  `false`, Claude stops processing entirely after the hook runs". Das nimmt dem
+  Menschen die Entscheidung aus der Hand und geht über das hinaus, was 3.4
+  Ebene 2 verlangt: blockieren und begründen, damit weitergearbeitet wird. Ein
+  Gate, das die Sitzung beendet, ist kein Gate, sondern ein Abbruch.
+- **Kein eigenes Protokoll.** Das Gate führt keine dritte Spur neben
+  Ermittlungs- und Arbeitsspur (5.3) und kein Laufprotokoll. Eine Spur ohne
+  Leser wächst, veraltet und wird zur Ausrede; die Zählerdatei aus G8 ist der
+  gesamte Zustand, den das Gate führt.
+
+**Die Form der Ausgabe ist eine Bedingung, keine Empfehlung.** Die gelesene
+Referenz sagt: "Your hook's stdout must contain only the JSON object", und sie
+beschreibt, dass eine Ausgabe, die mit einer geschweiften Klammer beginnt und
+endet, als JSON gelesen wird — schlägt das fehl, entsteht eine sichtbare
+Fehlermeldung, und auf manchen Ereignissen wird der Text verworfen. Daraus
+folgt zwingend: **Die Ausgabe von `make dod` darf niemals auf die
+Standardausgabe des Gates gelangen.** Das Gate fängt Standard- und
+Fehlerausgabe der Kette gemeinsam ab und wertet sie aus; auf die eigene
+Standardausgabe geht ausschliesslich das JSON-Objekt oder nichts. *(Nachtrag
+6.12.24 f: Die Wegwerfdatei, in der das Gate die Ausgabe abfängt, liegt
+nachweislich **ausserhalb** des geprüften Baums — sonst erzeugte das Gate den
+D19-Befund, den es meldet.)* Die
+Referenz begrenzt Ausgabezeichenketten zudem auf 10 000 Zeichen und nennt dabei
+`systemMessage` ausdrücklich; über die Fehlerausgabe sagt sie dazu nichts.
+Deshalb gilt für beide Wege dieselbe Bauvorschrift: **Die Meldung des Gates ist
+kurz und nennt den Schlüssel, den Schritt, das fehlende Prüfmittel und den
+nächsten Schritt — sie reicht nicht die ganze Ausgabe der Kette durch.** Wer
+den vollen Lauf sehen will, ruft `make dod` selbst auf; das ist ohnehin der
+Weg, auf dem er zum Nachweis wird.
+
+#### 6.12.16 G15 — Kein Zwischenspeicher des Urteils
+
+Naheliegend wäre, das Urteil zwischenzuspeichern und die Kette nur laufen zu
+lassen, wenn sich der Arbeitsbaum seit dem letzten Lauf geändert hat. Das wird
+**abgelehnt**, aus drei Gründen:
+
+1. **Das Urteil ist nicht allein eine Funktion des Arbeitsbaums.** D8 fragt eine
+   Schwachstellendatenbank ab, Werkzeuge werden installiert und entfernt,
+   `gitleaks` kann heute fehlen und morgen da sein. Ein gespeichertes Urteil
+   wäre ein Urteil über einen vergangenen Lauf, ausgegeben als Aussage über den
+   gegenwärtigen.
+2. **Es wäre ein zweites Messmittel an derselben Sache.** Um zu erkennen, ob
+   sich der Baum geändert hat, müsste das Gate genau das messen, was D19 misst
+   — und dann stünde dieselbe Messung an zwei Stellen. Das ist das Muster aus
+   6.9.1, das dieser Abschnitt bereits dreimal aufgelöst hat.
+3. **V9.** Steht eine Abwägung zwischen Laufzeit und Beweiskraft, entscheidet
+   die Beweiskraft.
+
+**Der Preis ist benannt.** Das Gate lässt die Kette bei jedem Beendigungsversuch
+und bei jedem Abschlussversuch laufen. Heute kostet das 5,8 s (Fremdbeleg); mit
+dem Grundgerüst wird es mehr. Wird es untragbar, ist das eine Fortschreibung
+dieses Abschnitts mit einem gemessenen Lauf als Grundlage — etwa dahin, dass
+das Gate auf `Stop` nur läuft, wenn seit dem letzten Lauf geschrieben wurde —,
+und nicht eine stille Optimierung im Skript. Die Messung ist Teil von O-20.
+
+#### 6.12.17 G16 — Der flache Klon: die Vollständigkeit der Historie wird Prüfmittel von D20
+
+**Der Befund** (Fremdbeleg, 2026-09-02): Der Klon der Sitzung war flach
+(`git rev-parse --is-shallow-repository` meldet wahr, 92 Commits sichtbar). In
+diesem Zustand meldete D20 **31 Funde**, davon 30 der Art `commit` —
+Commit-Prüfsummen, die in `docs/NACHWEISE.md` stehen und lokal als Objekt
+fehlen —, und `make dod` endete mit `D20 belege A_FAIL`. Nach `git fetch
+--unshallow` (98 Commits) blieb **ein** Fund.
+
+**Weshalb das entschieden werden muss.** Cloud-Sitzungen klonen flach. Das Gate
+liefe dort ab seiner Einführung gegen 30 Scheinfunde und blockierte jede
+Arbeitseinheit — mit einer Begründung, die nicht stimmt. Das ist **wörtlich der
+Fehlermodus aus 6.11.1**: rot, aber mit falscher Begründung, weil ein
+Prüfmittel ausgefallen ist und niemand danach fragt. Und es ist die vierte
+Wiederholung derselben Fehlerklasse, die V12 beschreibt: Der Belegprüfer prüft
+Commit-Prüfsummen gegen die lokale Historie und behandelt eine unvollständige
+Historie als vollständige.
+
+| | |
+|---|---|
+| **Vorher galt** | Prüfmittel von D20 sind `scripts/belege-pruefen.sh` und `scripts/belege-ausnahmen.txt`, `bash`, `git`, `grep`, `sed`, `awk` sowie die beiden Bezugsdokumente. Von der **Vollständigkeit** der Historie stand nichts — weder in der Objekttabelle noch im Ziel `belege` noch im Skript |
+| **Jetzt gilt** | Die Prüfmittelspalte der D20-Zeile trägt zusätzlich: **eine vollständige Git-Historie.** Ist der Klon flach, trägt die lokale Historie die Aussage über Commit-Prüfsummen nicht; das ist **Lage C** nach der geschärften Bedingung aus 6.9.2 — das Prüfmittel ist vorhanden und trägt die Aussage nicht. Der Beschaffungsweg lautet `git fetch --unshallow` und gehört in die Meldung |
+
+**Wo geprüft wird.** Im Makefile-Ziel `belege`, in dessen Wächter-Block, der
+seit der elften Fortschreibung ohnehin `git`, den Arbeitsbaum und die drei
+Dateien vor jeder Verwendung prüft. Dort entsteht die Lage-Marke, und dort
+gehört die Prüfung hin; das Skript bleibt unverändert. Eine zweite Prüfung an
+zweiter Stelle wäre wieder dieselbe Aussage an zwei Orten.
+
+**Und wo es geschrieben steht** *(Runde 1)*. Die erste Fassung dieses
+Unterabschnitts sagte, die Prüfmittelspalte der D20-Zeile trage die
+Vollständigkeit der Historie "jetzt" — die **Objekttabelle in Abschnitt 6**
+enthielt das Wort aber nicht. Nach Regel 2 aus 6.2.2 ist diese Tabelle die eine
+massgebliche Stelle, und frühere Fortschreibungen haben ihre Zeilen deshalb
+selbst geändert statt nur über sie zu schreiben; die D20-Zeile trägt sichtbar
+den Vermerk der achten Fortschreibung. Die Zeile ist jetzt nachgeführt und
+trägt den Zusatz samt Entwurfsvorbehalt. Bemerkenswert an diesem Befund ist,
+dass er dieselbe Fehlerklasse zeigt, gegen die dieser Abschnitt seit dem
+2026-08-30 arbeitet — eine Festlegung, die an einer Stelle steht und an der
+massgeblichen nicht.
+
+**Weshalb nicht terminierbar.** Ein flacher Klon ist kein Artefakt, das noch
+entsteht, sondern ein Zustand, der sich mit einem Befehl beheben lässt; und
+Prüfmittel von D20 sind nach G4 grundsätzlich nicht terminierbar. Das Gate
+blockiert in einer frisch geklonten Cloud-Sitzung also so lange, bis die
+Historie vollständig ist — mit einer Meldung, die den einen nötigen Befehl
+nennt. Das ist unbequem und richtig: Die Alternative wäre, eine Kette laufen zu
+lassen, die über Herkunftsangaben urteilt, ohne die Herkunft sehen zu können.
+
+**Der Nebenbefund, hier nur verzeichnet.** In jedem frischen Klon bleibt ein
+Fund auf `origin/main`
+(`405ebada79a145ac537d8e4102ce46d029046475`): Eine Übergabedatei nennt den Pfad
+eines **lokalen** Zweig-Refs als Beleg, und ein lokaler Ref existiert nur auf
+dem Arbeitsplatz, auf dem der Zweig ausgecheckt war. Übergaben belegen einen
+vergangenen Stand und werden nicht geändert (Abschnitt 9). Der ortsgebundene
+Ausnahmeeintrag dafür ist Umsetzung nach 6.8.5 und **kein** Architekturentscheid;
+diese Fortschreibung legt ihn nicht an. Für den Entwurf zählt allein die
+Feststellung: Das Gate trifft auf einen Bestand, in dem die erste Abweichung
+ein `A_FAIL` sein kann, dessen Ursache die Umgebung ist — und genau deshalb
+steht die Klassifizierung aus 6.12.4 am Anfang dieses Entwurfs und nicht am
+Ende.
+
+#### 6.12.18 Was ein Durchlass des Gates aussagt — und was nicht
+
+Der Kettengrundsatz aus 6.8.4 gilt für das Gate unverändert und eine Ebene
+höher:
+
+> **Ein Durchlass des Gates heisst: `make dod` ist in dem genannten
+> Arbeitsbaum nachweisbar gelaufen und hat nichts von dem gefunden, was die
+> Kette sucht — bei terminierten Lagen C mit Ausnahme der genannten Schritte,
+> die nicht geurteilt haben. Er heisst nie: die Arbeit ist richtig.** Die
+> menschlich bestätigten Bedingungen D13 bis D17 stehen genau deshalb daneben
+> und werden durch keinen Durchlass ersetzt.
+
+Dazu vier Aussagen, die ein Durchlass **nicht** trägt und die deshalb hier
+stehen:
+
+1. Nichts über einen anderen Arbeitsbaum als den genannten (G12).
+2. Nichts, wenn er wegen `stop_hook_active` erfolgte (G9) — dort hat das Gate
+   überhaupt nicht durchgesetzt, es hat nur nicht blockiert.
+3. Nichts über die Arbeit einer Rolle, für die er wegen fehlender verändernder
+   Werkzeuge erfolgte (G13).
+4. **Nichts, was D20 nicht selbst trägt.** Das Gate stützt sich auf die ganze
+   Kette und damit auch auf D20, und D20s Werkzeug ist nach Eskalationsregel
+   3.4 abgebrochen und **nicht abgenommen** (O-15); seine Selbstauskunft erklärt
+   die Liste ihrer Grenzen ausdrücklich für unvollständig. Der Auftraggeber hat
+   verlangt, das hier ausdrücklich festzuhalten, und die Feststellung wiegt seit
+   dem 2026-09-02 schwerer als am 2026-09-01: Mit dem flachen Klon (G16) und dem
+   Fund auf `origin/main` ist nun **belegt**, dass D20 rote Läufe erzeugt, deren
+   Ursache die Umgebung ist. Die Aufnahme in die Kette hängt weiterhin nicht an
+   der Abnahme — ein Schritt, der nur Funde hinzufügt, macht die Aussage der
+   Kette nie schwächer —, aber ein Gate, das jede Arbeitseinheit an dieses
+   Werkzeug bindet, macht seine Abnahme dringender. O-15 bleibt offen, mit
+   unverändertem Termin vor der Freigabe des Grundgerüsts.
+5. **Nichts über eine Sitzung, in der `TaskCompleted` nie feuert** *(Runde 1)*.
+   Das Ereignis setzt nach der gelesenen Referenz voraus, dass eine Aufgabe über
+   das Aufgabenwerkzeug abgeschlossen wird oder ein Mitglied eines Teams seinen
+   Zug mit offenen Aufgaben beendet. Wird in einer Sitzung keine Aufgabenliste
+   geführt, bleiben allein `Stop` und `SubagentStop` — und die leisten je
+   Beendigungsversuch eine erzwungene Fortsetzung, nicht mehr (6.12.2). Ein
+   Durchlass sagt dann nur, dass in diesem Augenblick nichts gefunden wurde, und
+   die Aussage "die Aufgabe war nicht abschliessbar" hat in einer solchen
+   Sitzung überhaupt keinen Träger. Welcher der beiden Wege beschritten wird,
+   entscheidet der Auftraggeber (O-23); bis dahin ist dieser Satz die ehrliche
+   Reichweite des Entwurfs.
+
+**Zwei Berichtigungen an dieser Datei.**
+
+**Erstens, die Kopfzeile.** Beim Nachführen ist aufgefallen, dass sie die
+**elfte** Fortschreibung vom 2026-09-01 nicht führt — sie endete bei der
+zehnten. Die Lücke ist am 2026-09-02 geschlossen und als Nachtrag
+gekennzeichnet; der Abschnitt 6.11 selbst blieb unverändert.
+
+**Zweitens, die Tabelle der offenen Punkte in Abschnitt 8 — eine Formberichtigung
+ohne Inhaltsänderung** *(Runde 2 der Prüfung, 2026-09-02)*. Seit O-11 standen
+zwischen den Zeilen jener Tabelle Leerzeilen: zwischen O-10 (neu gefasst) und
+O-11, vor O-13, vor O-14, vor O-16 und, mit den neuen Punkten dieser
+Fortschreibung, vor O-19 bis O-23. Eine Leerzeile beendet in Markdown die
+Tabelle; die betroffenen Zeilen wurden deshalb nicht als Tabellenzeilen
+dargestellt, sondern als einzelne Textfragmente ohne Kopfzeile — die Spalten
+"Warum heute nicht entscheidbar", "Wer entscheidet" und "Spätestens" waren dort
+für einen Leser nicht mehr als Spalten erkennbar. Alle Leerzeilen innerhalb der
+Tabelle sind geschlossen; **kein Wort einer Zeile ist geändert, keine Zeile
+gelöscht, keine hinzugefügt.** Das ist genau der Schaden, gegen den der als
+O-22 eingeordnete Struktur- und Tabellenprüfer gebaut werden soll, und er ist
+hier am eigenen Dokument eingetreten, bevor das Werkzeug besteht — ein Beleg
+für O-22, den niemand herstellen musste.
+
+Beide Male gilt derselbe Vorgang wie in 6.11.5: Eine Berichtigung wird vermerkt,
+nicht stillschweigend vorgenommen, und die frühere Fassung wird nicht gelöscht.
+
+#### 6.12.19 G17 — Was der Selbsttest zu decken hat
+
+`.claude/rules/claude-konfiguration.md` verlangt: "Jedes Hook-Skript wird vor
+dem Einbau gegen einen blockierenden und einen durchzulassenden Fall geprüft.
+Ein ungetestetes Gate ist kein Gate." Das Abnahmekriterium
+`R3-Q-001_gate_blockiert` verlangt dasselbe in drei Fällen. Beides ist
+dieselbe Forderung und braucht keinen zusätzlichen Backlog-Eintrag (so schon
+der zweite Achtung-Hinweis bei R3-Q-001).
+
+**Zwei Prüfebenen, und keine ersetzt die andere.**
+
+- **Die Formprüfungen gegen eine Attrappe von `make dod`.** Nur so lassen sich
+  Lagen herstellen, die am heutigen Bestand nicht herstellbar sind — ein
+  `A_FAIL` bei D3, ein `VERLETZT` bei D19, eine fehlende Marke, ein
+  Rückgabewert 7. Die Attrappe druckt eine Übersicht in der Form aus G7 und
+  lebt ausschliesslich im Prüfaufbau; sie steht **nie** in der versionierten
+  `.claude/settings.json`.
+- **Je ein roter und ein grüner Lauf gegen das echte `Makefile`.** Sonst wäre
+  die Formannahme des Gates nur gegen sich selbst geprüft. Der grüne Lauf
+  braucht einen **Scheinbaum**, weil `PROJ` sich nicht überschreiben lässt und
+  aus dem Pfad des Makefiles hergeleitet wird: ein eigenes Git-Repository mit
+  `CLAUDE.md`, den beiden Bezugsdokumenten in prüfbarer Form, dem echten
+  Makefile, dem echten Belegprüfer samt Ausnahmeliste, Attrappen für die vier
+  noch nicht gebauten Skripte und einer `gitleaks`-Attrappe im Suchpfad. Ob ein
+  solcher Baum mit dem **echten** Belegprüfer grün wird, ist mit einem
+  ausgeführten Lauf festzustellen und wird hier **nicht behauptet**; fällt es
+  anders aus, ist der Befund zu melden und nicht der Scheinbaum
+  zurechtzubiegen.
+
+**Was zu decken ist.** Diese Tabelle gilt seit dem 2026-09-03 in der Fassung
+von **6.12.25** (Entscheid des Auftraggebers zu O-24): Sie führt keine
+mehrteiligen Erwartungen mehr, sondern je Zeile **genau eine** messbare
+Zusicherung mit einer dauerhaften Kennung `Z-nnn`; die Regeln zu Kennungen,
+Rücknahme und zur mechanischen Deckung durch den Selbsttest stehen dort.
+
+**Jede Zusicherung nennt ihren Messumfang** *(6.12.25 f, Befunde S4-01 und
+DT4-02 aus Runde 4)*: den **Kanal** — Rückgabewert, Standardausgabe,
+Fehlerausgabe, Zählerdatei, eine Datei an einem benannten Ort, ein Beobachter
+ohne Wartezeit —, das **Ereignis**, wo der Fall mehr als eines umfasst, und die
+**Anzahl**, wo es darauf ankommt. Die Prüfung im Selbsttest misst genau diesen
+Umfang, nicht weniger. Umfasst der Fall genau ein Ereignis, ist es mit dem Fall
+benannt und wird in der Spalte Zusicherung nicht wiederholt (V13). Die am
+2026-09-03 präzisierten Zeilen tragen dafür **keinen** neuen Herkunftsvermerk:
+Ihre Zusicherung ist unverändert, ausdrücklich geworden ist allein der
+Messumfang; Herkunft dieser Präzisierung ist 6.12.25 f für die ganze Tabelle.
+
+**Seit dem 2026-09-03 trägt die Tabelle zwei weitere Spalten** *(6.12.26,
+Entscheid des Auftraggebers zu O-25; Befunde S5-01 und DT5-01 aus Runde 5)*:
+**Kanal** — ein Wert aus dem abschliessenden Vorrat, den 6.12.26 a definiert,
+den der Selbsttest je Kennung mitmeldet und der mechanisch gegen die Tabelle
+abgeglichen wird — und **Mutation** — die Änderung am Prüfgegenstand, die genau
+diese Zusicherung fehlschlagen lassen muss; ihre ausführbare Form steht in
+`scripts/dod-gate-mutationen.txt` (6.12.26 b). Die 16 in Runde 5 beanstandeten
+Zeilen tragen deshalb **keinen** neuen Herkunftsvermerk: Ihr Wortlaut ist
+unverändert, umgestellt wird allein die Messung auf den in der Zeile genannten
+Kanal (6.12.26 c). Eigene Herkunft tragen allein `Z-018` und `Z-111`, deren
+Fall beziehungsweise Zusicherung sich ändert.
+
+| Kennung | Fall | Kanal | Zusicherung | Mutation | Herkunft |
+|---|---|---|---|---|---|
+| Z-001 | Kette mit `A_FAIL` | rc | Rückgabewert 2 | Im `A_FAIL`-Zweig der Markenauswertung endet das Gate mit 3, bevor es blockiert | Entwurf G17 |
+| Z-002 | Kette grün, ohne Lage C | rc | Rückgabewert 0 | Der letzte Ausgang 0 (sauberes Grün) endet mit 3 | Entwurf G17 |
+| Z-003 | Kette grün, ohne Lage C | stdout | Standardausgabe leer — kein einziges Byte | Vor dem letzten Ausgang 0 wird eine Zeile auf die Standardausgabe geschrieben | Entwurf G17; 6.12.15 |
+| Z-004 | Kette grün, ohne Lage C | stderr | Fehlerausgabe leer | Vor dem letzten Ausgang 0 wird eine Zeile auf die Fehlerausgabe geschrieben | Entwurf G17; 6.12.15 |
+| Z-005 | Terminierte Lage C, Eintrag gültig | rc | Rückgabewert 0 | Der Durchlasszweig für terminierte Lagen C endet mit 3 | Entwurf G17 |
+| Z-006 | Terminierte Lage C, Eintrag gültig | stdout | Die Standardausgabe ist genau ein JSON-Objekt, dessen einziges Feld `systemMessage` heisst | Das JSON-Objekt der Durchlassmeldung erhält ein zweites Feld neben `systemMessage` | Entwurf G17; 6.12.15 |
+| Z-007 | Terminierte Lage C, Eintrag gültig | stdout | Die `systemMessage` auf der Standardausgabe nennt die Kennung des Kettenschritts, der nicht geurteilt hat | Aus der Durchlassmeldung fällt die Aufzählung der gedeckten Schritte weg | Entwurf G17 |
+| Z-008 | Lage C ohne Eintrag in der Liste | rc | Rückgabewert 2 | Im Zweig der ungedeckten Lage C endet das Gate mit 3 | Entwurf G17 |
+| Z-009 | Eintrag vorhanden, Prüfmittel existiert inzwischen | rc | Rückgabewert 2 | Selbstprüfung 2 (der Gegenstand besteht im Baum bereits) auf `false` gesetzt | Entwurf G17 |
+| Z-010 | Eintrag vorhanden, Prüfmittel existiert inzwischen | stderr | Die Fehlerausgabe führt den beanstandeten Eintrag im Wortlaut seiner Zeile auf | Aus der Meldung der Selbstprüfung 2 fällt der beanstandete Pfad weg | Entwurf G17 |
+| Z-011 | Eintrag vorhanden, Schritt meldet `A_OK` | rc | Rückgabewert 2 | Selbstprüfung 3 (Eintrag zu einem Schritt, der nicht C meldet) auf `false` gesetzt | Entwurf G17 |
+| Z-012 | Eintrag vorhanden, Schritt meldet `A_OK` | stderr | Die Fehlerausgabe führt den beanstandeten Eintrag im Wortlaut seiner Zeile auf | Aus der Meldung der Selbstprüfung 3 fallen Schlüssel und Zeilennummer weg | Entwurf G17 |
+| Z-013 | Eintrag ohne Grund | rc | Rückgabewert 2 | Selbstprüfung 4 nimmt jeden Grund an (der Musterzweig `ADR 0002, ` wird zum Auffangmuster) | Entwurf G17 |
+| Z-014 | Eintrag mit nicht terminierbarem Prüfmittel | rc | Rückgabewert 2 | Die Prüfung auf die nicht terminierbaren D-Nummern D19 und D20 auf `false` gesetzt | Entwurf G17 |
+| Z-015 | Eintrag mit absolutem Pfad | rc | Rückgabewert 2 | Der Musterzweig für absolute Pfade (`/*`) auf ein nie zutreffendes Muster gesetzt | Entwurf G17 |
+| Z-016 | Marke nennt ein anderes Prüfmittel als der Schlüssel | rc | Rückgabewert 2 | Selbstprüfung 5 entfällt: ein Eintrag deckt unabhängig vom `FEHLT=`-Wert | Entwurf G17 |
+| Z-017 | `stop_hook_active` wahr bei roter Kette | rc | Rückgabewert 0 | Der Durchlass wegen `stop_hook_active` endet mit 3 | Entwurf G17 |
+| Z-018 | `stop_hook_active` wahr bei roter Kette, Zählerdatei vor dem Aufruf mit Schlüssel und Stand 2 angelegt | zaehler | Die Zählerdatei trägt nach dem Aufruf unverändert denselben Schlüssel und den Stand 2 | Der Durchlass wegen `stop_hook_active` löscht den Zähler | Entwurf G17; Runde 5, S5-03 (6.12.26 c) |
+| Z-019 | D19 `VERLETZT` | rc | Rückgabewert 2 | Im D19-Zweig `VERLETZT` endet das Gate mit 3 | Entwurf G17 |
+| Z-020 | D19 Lage C | rc | Rückgabewert 2 | Im D19-Zweig Lage C endet das Gate mit 3 | Entwurf G17 |
+| Z-021 | Fehlendes `jq` | rc | Rückgabewert 2 | Der `jq`-Zweig endet mit 3 statt mit 2 | Entwurf G17 |
+| Z-022 | Fehlendes `jq` | stderr | Die Fehlerausgabe nennt `jq` | Im `jq`-Block wird jede Nennung von `jq` ersetzt (Schlüssel, Meldung, Beschaffungsweg) | Entwurf G17 |
+| Z-023 | Fehlendes `git` | rc | Rückgabewert 2 | Der `git`-Block endet mit 3, bevor er blockiert | Entwurf G17 |
+| Z-024 | Fehlendes `git` | stderr | Die Fehlerausgabe nennt `git` | Im `git`-Block wird jede Nennung von `git` ersetzt (Schlüssel, Meldung, Beschaffungsweg) | Entwurf G17 |
+| Z-025 | Fehlendes `make` | rc | Rückgabewert 2 | Der `make`-Block endet mit 3, bevor er blockiert | Entwurf G17 |
+| Z-026 | Fehlendes `make` | stderr | Die Fehlerausgabe nennt `make` | Im `make`-Block wird jede Nennung von `make` ersetzt | Entwurf G17 |
+| Z-027 | Fehlendes `Makefile` | rc | Rückgabewert 2 | Der `Makefile`-Block endet mit 3, bevor er blockiert | Entwurf G17 |
+| Z-028 | Fehlendes `Makefile` | stderr | Die Fehlerausgabe nennt `Makefile` | Der gesuchte Dateiname und jede Nennung von `Makefile` werden auf `Mk` umgeschrieben | Entwurf G17 |
+| Z-029 | Fehlendes `timeout` | rc | Rückgabewert 2 | Der `timeout`-Block endet mit 3, bevor er blockiert | Entwurf G17 |
+| Z-030 | Fehlendes `timeout` | stderr | Die Fehlerausgabe nennt `timeout` | Im `timeout`-Block wird jede Nennung von `timeout` ersetzt | Entwurf G17 |
+| Z-031 | Fehlendes `flock` | rc | Rückgabewert 2 | Der `flock`-Block endet mit 3, bevor er blockiert | Entwurf G17 |
+| Z-032 | Fehlendes `flock` | stderr | Die Fehlerausgabe nennt `flock` | Im `flock`-Block wird jede Nennung von `flock` ersetzt | Entwurf G17 |
+| Z-033 | Fehlende Liste der terminierten Lagen | rc | Rückgabewert 2 | Der Block wegen fehlender Liste endet mit 3 | Entwurf G17 |
+| Z-034 | Fehlende Liste der terminierten Lagen | stderr | Die Fehlerausgabe nennt den Pfad der Liste | Der Pfad der Liste zeigt auf einen anderen Dateinamen | Entwurf G17 |
+| Z-035 | Nicht beschreibbares Zustandsverzeichnis bei roter Kette | rc | Rückgabewert 2 | Bei nicht beschreibbarem Zustandsverzeichnis endet das Gate mit 3, bevor es urteilt | Entwurf G17 |
+| Z-036 | Nicht beschreibbares Zustandsverzeichnis bei roter Kette | stderr | Die Fehlerausgabe trägt den Zusatz, dass nicht gezählt werden kann | Der Zusatz zum nicht beschreibbaren Zustandsverzeichnis wird auf die leere Zeichenkette gesetzt | Entwurf G17 |
+| Z-037 | Innere Zeitüberschreitung | rc | Rückgabewert 2 | Der Zweig der inneren Zeitüberschreitung endet mit 3 | Entwurf G17 |
+| Z-038 | Dreimal derselbe Schlüssel | zaehler | Die Zählerdatei trägt nach dem **dritten** Ereignis den Stand 3 | Der Zähler wird bei gleichem Schlüssel nicht mehr erhöht (er bleibt auf 1) | Entwurf G17 |
+| Z-039 | Dreimal derselbe Schlüssel | rc | Rückgabewert 2 beim dritten Ereignis | Der Zweig des dritten Ereignisses endet mit 3 | Entwurf G17 |
+| Z-040 | Dreimal derselbe Schlüssel | stderr | Die Fehlerausgabe des **dritten** Ereignisses enthält die Zeile `Eskalation 3.4: <Schlüssel>` wörtlich | Die Zeile `Eskalation 3.4: <Schlüssel>` wird aus der Meldung des dritten Ereignisses entfernt | Entwurf G17 |
+| Z-041 | Übergabedatei mit der geforderten Zeile, neu oder geändert | rc | Rückgabewert 0 | Der Eskalations-Durchlass endet mit 3 | Entwurf G17 |
+| Z-042 | Übergabedatei mit der geforderten Zeile, neu oder geändert | zaehler | Die Zählerdatei trägt nach dem **vierten** Ereignis den Stand 4 | Die Zählerdatei trägt immer die Zahl 1 statt des erreichten Standes | Entwurf G17 |
+| Z-043 | Übergabedatei mit der geforderten Zeile, committet | datei | Die Ausgabe von `git ls-tree -r HEAD` vor dem Aufruf des Gates führt die Datei — der Fall hat sie wirklich in `HEAD` | keine — Vorbedingung des Aufbaus (Grund 2) | Nachtrag 6.12.24 i, Befund DT-B4 |
+| Z-044 | Übergabedatei mit der geforderten Zeile, committet | rc | Rückgabewert 0 | Der Eskalations-Durchlass endet mit 3 | Runde 1, B6 |
+| Z-045 | Übergabedatei nur in einem älteren Commit | datei | Die Ausgabe von `git ls-tree -r HEAD` vor dem Aufruf führt die Datei **nicht**, die eines älteren Commits dagegen schon | keine — Vorbedingung des Aufbaus (Grund 2) | Entwurf G17 |
+| Z-046 | Übergabedatei nur in einem älteren Commit | rc | Rückgabewert 2 | Die Suche nach der Übergabedatei wird von `HEAD` auf die ganze Historie ausgeweitet | Entwurf G17 |
+| Z-047 | Dieselbe Eskalation auf `TaskCompleted` | rc | Rückgabewert 2 | Die Einschränkung des Eskalations-Durchlasses auf `Stop` und `SubagentStop` entfällt | Runde 1, B5 |
+| Z-048 | Dieselbe Eskalation auf `TaskCompleted` | datei | Die Ausgabe von `git ls-tree -r HEAD` vor dem Aufruf führt die Übergabedatei mit der geforderten Zeile — der Durchlass scheitert nicht an ihrem Fehlen | keine — Vorbedingung des Aufbaus (Grund 2) | Runde 1, B5 |
+| Z-049 | Lauf mit `A_FAIL`, zwei ungedeckten Lagen C und D19 `VERLETZT` zugleich | rc | Rückgabewert 2 | Im `A_FAIL`-Zweig der Markenauswertung endet das Gate mit 3 | Runde 1, B7 |
+| Z-050 | Lauf mit `A_FAIL`, zwei ungedeckten Lagen C und D19 `VERLETZT` zugleich | zaehler | Die Zählerdatei trägt als Schlüssel die **erste** Abweichung in Kettenreihenfolge | Nicht mehr die erste, sondern die letzte Abweichung setzt den Zählschlüssel | Runde 1, B7 |
+| Z-051 | Lauf mit `A_FAIL`, zwei ungedeckten Lagen C und D19 `VERLETZT` zugleich | stderr | Die Fehlerausgabe nennt **jede** `A_FAIL`-Marke des Laufs | Die Ausgabe der weiteren Abweichungen entfällt | Runde 3, S3-01 (6.12.25 b) |
+| Z-052 | Lauf mit `A_FAIL`, zwei ungedeckten Lagen C und D19 `VERLETZT` zugleich | stderr | Die Fehlerausgabe nennt **jede** ungedeckte Lage C mit ihrem `FEHLT=`-Wert | Ungedeckte Lagen C werden nicht mehr in die Sammlung aller Abweichungen aufgenommen | Runde 3, S3-01 (6.12.25 b) |
+| Z-053 | Lauf mit `A_FAIL`, zwei ungedeckten Lagen C und D19 `VERLETZT` zugleich | stderr | Die Fehlerausgabe nennt den D19-Befund | Der D19-Befund wird nicht mehr in die Sammlung aller Abweichungen aufgenommen | Runde 3, S3-01 (6.12.25 b) |
+| Z-054 | Marke mit `FEHLT=` und `SCHWELLE=` zugleich (D3, D6 oder D8 in Lage C) | stderr | Die Fehlerausgabe nennt als `FEHLT=`-Wert genau den Pfad, ohne den `SCHWELLE=`-Teil | Der `FEHLT=`-Wert wird aus der ganzen Marke statt aus ihrer `FEHLT=`-Gruppe gelesen | Runde 1, B8 |
+| Z-055 | Marke mit `FEHLT=` und `SCHWELLE=` zugleich | rc | Bei gedecktem Eintrag Rückgabewert 0 — die Deckung wird am `FEHLT=`-Teil entschieden | Der Deckungszweig wird auf `false` gesetzt: kein Eintrag deckt mehr | Runde 1, B8 |
+| Z-056 | D19-Zeile `OHNE_BEFUND`, ohne Zusatztext | rc | Rückgabewert 0 bei sonst grüner Kette — die Zeile ist als `OHNE_BEFUND` gelesen | `OHNE_BEFUND` entfällt aus der Grammatik der D19-Zeile | Runde 1, B9; N-02 |
+| Z-057 | D19-Zeile `OHNE_BEFUND`, mit Zusatztext | rc | Rückgabewert 0 bei sonst grüner Kette — der Zusatztext ändert die Zuordnung nicht | Der optionale Zusatztext entfällt aus der Grammatik der D19-Zeile | Runde 1, B9; N-02 |
+| Z-058 | D19-Zeile `VERLETZT`, ohne Zusatztext | stderr | Die Fehlerausgabe nennt den gelesenen D19-Befund `VERLETZT` | Jede Nennung von `VERLETZT` in Schlüssel und Meldung wird ersetzt | Runde 1, B9; N-02 |
+| Z-059 | D19-Zeile `VERLETZT`, mit Zusatztext | stderr | Die Fehlerausgabe nennt den gelesenen D19-Befund `VERLETZT` | Der optionale Zusatztext entfällt aus der Grammatik der D19-Zeile | Runde 1, B9; N-02 |
+| Z-060 | D19-Zeile `B`, ohne Zusatztext | stderr | Die Fehlerausgabe nennt den gelesenen D19-Befund als Lage `B` | Jede Nennung der Lage `B` in Schlüssel und Meldung wird ersetzt | Runde 1, B9; N-02 |
+| Z-061 | D19-Zeile `B`, mit Zusatztext | stderr | Die Fehlerausgabe nennt den gelesenen D19-Befund als Lage `B` | Der optionale Zusatztext entfällt aus der Grammatik der D19-Zeile | Runde 1, B9; N-02 |
+| Z-062 | D19-Zeile `C`, ohne Zusatztext | stderr | Die Fehlerausgabe nennt den gelesenen D19-Befund als Lage `C` | Jede Nennung der D19-Lage `C` in Schlüssel und Meldung wird ersetzt | Runde 1, B9; N-02 |
+| Z-063 | D19-Zeile `C`, mit Zusatztext | stderr | Die Fehlerausgabe nennt den gelesenen D19-Befund als Lage `C` | Der optionale Zusatztext entfällt aus der Grammatik der D19-Zeile | Runde 1, B9; N-02 |
+| Z-064 | `TaskCompleted` bei roter Kette | rc | Rückgabewert 2 | Am Ausgang endet das Gate bei `TaskCompleted` mit 3 statt zu blockieren | Entwurf G17 |
+| Z-065 | `SubagentStop` der echten Rollendatei `static-software-tester` (`Bash`, ohne `Edit`/`Write`/`NotebookEdit`) | rc | Rückgabewert 0 | `Bash` gilt als veränderndes Werkzeug (das Muster wird um `Bash` erweitert) | Runde 1, B1 |
+| Z-066 | `SubagentStop` der echten Rollendatei `pentester` | rc | Rückgabewert 0 | Der Durchlass für Rollen ohne Schreibrecht endet mit 3 | Runde 1, B1 |
+| Z-067 | `SubagentStop` einer Rolle ohne veränderndes Werkzeug | datei | Das Aufrufprotokoll der `make dod`-Attrappe (Datei im Prüfaufbau) verzeichnet **keinen** Aufruf — die Kette läuft nicht | `Bash` gilt als veränderndes Werkzeug (das Muster wird um `Bash` erweitert) | Runde 1, B1 |
+| Z-068 | `SubagentStop` einer Rolle ohne veränderndes Werkzeug | datei | Die `sha256sum`-Prüfsummen der im Scheinbaum verwendeten Rollendateien stimmen mit denen aus `.claude/agents/` überein | keine — Vorbedingung des Aufbaus (Grund 2) | Nachtrag 6.12.24 i, Befund N-03 |
+| Z-069 | `SubagentStop` der echten Rollendatei `devops-engineer` (mit `Edit`/`Write`) | datei | Das Aufrufprotokoll der Attrappe verzeichnet **einen** Aufruf | Jede Rolle gilt als nicht schreibberechtigt (Vorbelegung auf 0) | Nachtrag 6.12.24 i |
+| Z-070 | `SubagentStop` der echten Rollendatei `devops-engineer` | rc | Rückgabewert 2 bei roter Kette — das Gate urteilt | Jede Rolle gilt als nicht schreibberechtigt (Vorbelegung auf 0) | Nachtrag 6.12.24 i |
+| Z-071 | `agent_type`, der über `name:` aufzulösen ist und nicht über den Dateinamen | datei | Das Aufrufprotokoll der Attrappe verzeichnet keinen Aufruf — die Rolle ist über `name:` aufgelöst | Die Rolle wird über den Dateinamen statt über das Feld `name:` aufgelöst | Runde 1, B2 |
+| Z-072 | `agent_type`, der über `name:` aufzulösen ist | rc | Rückgabewert 0 | Die Rolle wird über den Dateinamen statt über das Feld `name:` aufgelöst | Runde 1, B2 |
+| Z-073 | `SubagentStop` mit **unbekanntem** `agent_type` | datei | Das Aufrufprotokoll der Attrappe verzeichnet einen Aufruf | Ein unbekannter `agent_type` gilt als nicht schreibberechtigt | Entwurf G17 |
+| Z-074 | `SubagentStop` mit unbekanntem `agent_type` | rc | Rückgabewert 2 bei roter Kette | Ein unbekannter `agent_type` gilt als nicht schreibberechtigt | Entwurf G17 |
+| Z-075 | `SubagentStop` mit **leerem** `agent_type` | datei | Das Aufrufprotokoll der Attrappe verzeichnet einen Aufruf | Jede Rolle gilt als nicht schreibberechtigt (Vorbelegung auf 0) | Entwurf G17 |
+| Z-076 | `SubagentStop` mit leerem `agent_type` | rc | Rückgabewert 2 bei roter Kette | Jede Rolle gilt als nicht schreibberechtigt (Vorbelegung auf 0) | Entwurf G17 |
+| Z-077 | `SubagentStop` mit **mehrdeutigem** `agent_type` | datei | Das Aufrufprotokoll der Attrappe verzeichnet einen Aufruf | Die Bedingung "genau ein Treffer" wird auf "mindestens ein Treffer" aufgeweicht | Entwurf G17 |
+| Z-078 | `SubagentStop` mit mehrdeutigem `agent_type` | rc | Rückgabewert 2 bei roter Kette | Die Bedingung "genau ein Treffer" wird auf "mindestens ein Treffer" aufgeweicht | Entwurf G17 |
+| Z-079 | Flacher Klon | rc | Rückgabewert 2 | Im Zweig der ungedeckten Lage C endet das Gate mit 3 | Entwurf G17 |
+| Z-080 | Flacher Klon | kette | Die **direkt aufgerufene Kettenausgabe** nennt im Lage-C-Befund zu D20 den Beschaffungsweg `git fetch --unshallow` | Im `Makefile` wird der Beschaffungsweg `git fetch --unshallow` durch einen anderen Text ersetzt | Entwurf G17; Kanal und Wortlaut nachgeführt 6.12.26 e |
+| Z-081 | `cwd` in einem Unterverzeichnis des Baums, grüner Scheinbaum | rc | Rückgabewert 0 | Der geprüfte Baum wird roh aus `cwd` übernommen statt über `git` aufgelöst | Nachtrag 6.12.24 i, Entscheid a; B-02 |
+| Z-082 | `cwd` in einem Unterverzeichnis des Baums | stdout | Standardausgabe leer — bei sauberem Grün schweigt das Gate (6.12.15) | Vor dem letzten Ausgang 0 wird eine Zeile auf die Standardausgabe geschrieben | Berichtigt nach S3-03 |
+| Z-083 | `cwd` in einem Unterverzeichnis des Baums | kette | Die Baumzeile der Kettenausgabe im Prüfaufbau nennt die physisch aufgelöste Wurzel des Arbeitsbaums | Im `Makefile` nennt die Baumzeile einen festen Fremdpfad statt `PROJ` | Nachtrag 6.12.24 i, Entscheid a |
+| Z-084 | `cwd` mit Schrägstrich am Ende, grüner Scheinbaum | rc | Rückgabewert 0 | Der geprüfte Baum wird roh aus `cwd` übernommen statt über `git` aufgelöst | Nachtrag 6.12.24 i, Entscheid a; B-03 |
+| Z-085 | `cwd` mit Schrägstrich am Ende | stdout | Standardausgabe leer | Vor dem letzten Ausgang 0 wird eine Zeile auf die Standardausgabe geschrieben | Berichtigt nach S3-03 |
+| Z-086 | `cwd` mit Schrägstrich am Ende | kette | Die Baumzeile der Kettenausgabe im Prüfaufbau nennt die Wurzel ohne Schrägstrich am Ende | Im `Makefile` trägt die Baumzeile einen Schrägstrich am Ende | Nachtrag 6.12.24 i, Entscheid a |
+| Z-087 | `cwd` über einen Symlink auf den Baum, grüner Scheinbaum | rc | Rückgabewert 0 | Der geprüfte Baum wird roh aus `cwd` übernommen statt über `git` aufgelöst | Nachtrag 6.12.24 i, Entscheid a |
+| Z-088 | `cwd` über einen Symlink | stdout | Standardausgabe leer | Vor dem letzten Ausgang 0 wird eine Zeile auf die Standardausgabe geschrieben | Berichtigt nach S3-03 |
+| Z-089 | `cwd` über einen Symlink | kette | Die Baumzeile der Kettenausgabe im Prüfaufbau nennt die physisch aufgelöste Wurzel, nicht den Pfad über den Symlink | Im `Makefile` wird `PROJ` mit `pwd -L` statt mit `pwd -P` bestimmt | Nachtrag 6.12.24 i, Entscheid a |
+| Z-090 | `cwd` ausserhalb jedes Arbeitsbaums dieses Repositories | rc | Rückgabewert 0 im grünen Scheinbaum | Der Rückfall auf `${CLAUDE_PROJECT_DIR}` entfällt | Nachtrag 6.12.24 i, G12 |
+| Z-091 | `cwd` ausserhalb jedes Arbeitsbaums | stdout | Standardausgabe leer | Vor dem letzten Ausgang 0 wird eine Zeile auf die Standardausgabe geschrieben | Berichtigt nach S3-03 |
+| Z-092 | `cwd` ausserhalb jedes Arbeitsbaums | kette | Die Baumzeile der Kettenausgabe im Prüfaufbau nennt die Wurzel von `${CLAUDE_PROJECT_DIR}` | Im `Makefile` nennt die Baumzeile einen festen Fremdpfad statt `PROJ` | Nachtrag 6.12.24 i, G12 |
+| Z-093 | Zweiter Arbeitsbaum (`git worktree`), `cwd` darin | kette | Die Baumzeile der Kettenausgabe im Prüfaufbau nennt den **zweiten** Baum | Im `Makefile` nennt die Baumzeile einen festen Fremdpfad statt `PROJ` | Nachtrag 6.12.24 i, Befund DT-B5 |
+| Z-094 | Zweiter Arbeitsbaum, `cwd` darin | rc | Rückgabewert 0 im grünen Scheinbaum | Der letzte Ausgang 0 (sauberes Grün) endet mit 3 | Nachtrag 6.12.24 i, G12 |
+| Z-095 | Zweiter Arbeitsbaum, `cwd` darin | stdout | Standardausgabe leer | Vor dem letzten Ausgang 0 wird eine Zeile auf die Standardausgabe geschrieben | Berichtigt nach S3-03 |
+| Z-096 | Die Baumzeile der Kette nennt einen anderen Baum als den bestimmten | rc | Rückgabewert 2 | Der Zweig des Baum-Widerspruchs endet mit 3 | Nachtrag 6.12.24 i, Entscheid b |
+| Z-097 | Die Baumzeile nennt einen anderen Baum als den bestimmten | zaehler | Die Zählerdatei trägt den Schlüssel `KETTE baum-widerspruch` | Der Schlüssel `KETTE baum-widerspruch` wird umbenannt | Nachtrag 6.12.24 i, Entscheid b |
+| Z-098 | Weder `XDG_STATE_HOME` noch `HOME` gesetzt, rote Kette | rc | Rückgabewert 2 | Bei nicht bestimmbarem Zustandsverzeichnis endet das Gate mit 3, bevor es urteilt | Nachtrag 6.12.24 i, Entscheid c |
+| Z-099 | Weder `XDG_STATE_HOME` noch `HOME` gesetzt, rote Kette | stderr | Die Fehlerausgabe trägt den Zusatz, dass nicht gezählt werden kann | Der Zusatz zum nicht bestimmbaren Zustandsverzeichnis wird auf die leere Zeichenkette gesetzt | Nachtrag 6.12.24 i, Entscheid c |
+| Z-100 | Weder `XDG_STATE_HOME` noch `HOME` gesetzt, rote Kette | stderr | Der Zusatz auf der Fehlerausgabe sagt "nicht bestimmbar" und nicht "nicht beschreibbar" | Der Zusatz sagt "nicht beschreibbar" statt "nicht bestimmbar" | Runde 2, S-13 |
+| Z-101 | Weder `XDG_STATE_HOME` noch `HOME` gesetzt, grüne Kette | rc | Rückgabewert 0 — nie 1 | Bei nicht bestimmbarem Zustandsverzeichnis endet das Gate mit 1 (Rückfall in den Befund B-01) | Nachtrag 6.12.24 i, Entscheid c |
+| Z-102 | Weder `XDG_STATE_HOME` noch `HOME` gesetzt, grüne Kette | stdout | Die Standardausgabe ist genau ein JSON-Objekt, dessen `systemMessage` allein diesen Zusatz trägt | Das JSON-Objekt erhält ein zweites Feld neben `systemMessage` | Runde 2, S-13 |
+| Z-103 | Weder `XDG_STATE_HOME` noch `HOME` gesetzt, grüne Kette | stdout | Der Zusatz in der `systemMessage` auf der Standardausgabe sagt "nicht bestimmbar" | Der Zusatz sagt "nicht beschreibbar" statt "nicht bestimmbar" | Runde 2, S-13 |
+| Z-104 | Zustandsverzeichnis nicht beschreibbar | beobachter | Ein Beobachter ohne Wartezeit findet die Sperrdatei während des Laufs unter `/tmp` | Der Ausweichweg der Sperrdatei nach `/tmp` wird auf `false` gesetzt | Nachtrag 6.12.24 i, Entscheid e |
+| Z-105 | Zustandsverzeichnis nicht beschreibbar | rc | Rückgabewert 2 bei roter Kette — das Urteil bleibt gleich | Bei nicht beschreibbarem Zustandsverzeichnis endet das Gate mit 3, bevor es urteilt | Nachtrag 6.12.24 i, Entscheid e |
+| Z-106 | Zustandsverzeichnis **und** `/tmp` nicht beschreibbar | beobachter | Ein Beobachter ohne Wartezeit findet während des ganzen Laufs an keinem der beiden Orte eine Sperrdatei | Der Ausweichweg der Sperrdatei zeigt auf ein beschreibbares Verzeichnis | Nachtrag 6.12.24 i, Entscheid e |
+| Z-107 | Zustandsverzeichnis und `/tmp` nicht beschreibbar | rc | Rückgabewert 2 bei roter Kette | Bei nicht beschreibbarem Zustandsverzeichnis endet das Gate mit 3, bevor es urteilt | Nachtrag 6.12.24 i, Entscheid e |
+| Z-108 | Zustandsverzeichnis und `/tmp` nicht beschreibbar | stderr | Die Fehlerausgabe nennt den Ausfall der Sperre | Der Hinweis auf die nicht aktive Sperre wird auf die leere Zeichenkette gesetzt | Nachtrag 6.12.24 i, Entscheid e |
+| Z-109 | `TMPDIR` zeigt in den geprüften Baum | beobachter | Ein Beobachter ohne Wartezeit findet die Wegwerfdatei während des Laufs ausserhalb des geprüften Baums; ihr physisch aufgelöster Pfad liegt nicht im Baum | Vorab-Bestimmung des Zielverzeichnisses und Wache danach ausgeschaltet — die Wegwerfdatei entsteht und bleibt im geprüften Baum | Nachtrag 6.12.24 i, Entscheid f |
+| Z-110 | `TMPDIR` zeigt in den geprüften Baum | — | **zurückgezogen** am 2026-09-03 (6.12.25 h, Befund S4-02): "D19 meldet `OHNE_BEFUND`" ist im Attrappenaufbau nicht messbar — die D19-Zeile stammt aus der vom Selbsttest selbst geschriebenen Attrappenausgabe, gemessen würde die eigene Vorgabe. Von der Deckung ausgenommen; die Sache trägt `Z-111` | — | Nachtrag 6.12.24 i, Entscheid f; Runde 4, S4-02 zurückgezogen (6.12.25 h) |
+| Z-111 | `TMPDIR` zeigt in den geprüften Baum; die Attrappenkette hält ihre Wegwerfdatei mindestens 300 ms, damit ein Beobachtungsfenster besteht | beobachter | Ein Beobachter ohne Wartezeit findet während des **gesamten** Laufs im **ganzen** geprüften Baum — alle Verzeichnisse ausser `.git` — keine Datei mit dem Muster `tmp.*` | Die Zeile mit der `TMPDIR`-Zuweisung vor `make` entfernt | Runde 3, DT3-B1 (6.12.25 c); Runde 4, DT4-01 präzisiert (6.12.25 h); Runde 5, DT5-01 (6.12.26 c) |
+| Z-112 | Wegwerfdatei ausserhalb des Baums nicht anlegbar | rc | Rückgabewert 2 | Der Ausweichaufruf `mktemp -p /tmp` gilt immer als gelungen | Nachtrag 6.12.24 i, Entscheid f |
+| Z-113 | Wegwerfdatei ausserhalb des Baums nicht anlegbar | zaehler | Die Zählerdatei trägt den Schlüssel `GATE mktemp` | Der Schlüssel `GATE mktemp` wird umbenannt | Nachtrag 6.12.24 i, Entscheid f |
+| Z-114 | Das Verzeichnis der Wegwerfdatei ist physisch nicht auflösbar (im Selbsttest hergestellt als nicht vorhandenes Verzeichnis) | rc | Rückgabewert 2 — die Wache fällt geschlossen aus | keine — Grund 3, Schwester `Z-115`: unter der Verneinung (Wache fällt offen aus) scheitert die Umleitung der Kettenausgabe in das nicht vorhandene Verzeichnis, `make` startet nie, und das Gate blockiert mit `KETTE rueckgabewert=1` — der Rückgabewert 2 trennt nicht, der Schlüssel schon | Runde 3, S3-05 (6.12.25 d); Fall, Kanal und Wortlaut nachgeführt 6.12.26 f (Runde 7, S7-02); berichtigt 6.12.26 f Punkt 13 (Bau 4) |
+| Z-115 | Das Verzeichnis der Wegwerfdatei ist physisch nicht auflösbar | zaehler | Die Zählerdatei trägt den Schlüssel `GATE mktemp` | Der Schlüssel `GATE mktemp` wird umbenannt | Runde 3, S3-05 (6.12.25 d) |
+| Z-116 | Fehlendes `sha256sum` | rc | Rückgabewert 2 | Der `sha256sum`-Block endet mit 3, bevor er blockiert | Nachtrag 6.12.24 i, Entscheid g |
+| Z-117 | Fehlendes `sha256sum` | stderr | Die Fehlerausgabe nennt `sha256sum` | Im `sha256sum`-Block wird jede Nennung von `sha256sum` ersetzt | Nachtrag 6.12.24 i, Entscheid g |
+| Z-118 | Fehlendes `sha256sum` | stderr | Die Fehlerausgabe nennt den Beschaffungsweg | Der Beschaffungsweg fällt aus dem nächsten Schritt weg | Nachtrag 6.12.24 i, Entscheid g |
+| Z-119 | Fehlendes `mktemp` | rc | Rückgabewert 2 | Der `mktemp`-Block endet mit 3, bevor er blockiert | Nachtrag 6.12.24 i, Entscheid g |
+| Z-120 | Fehlendes `mktemp` | stderr | Die Fehlerausgabe nennt `mktemp` | Im `mktemp`-Block wird jede Nennung von `mktemp` ersetzt | Nachtrag 6.12.24 i, Entscheid g |
+| Z-121 | Fehlendes `mktemp` | stderr | Die Fehlerausgabe nennt den Beschaffungsweg | Der Beschaffungsweg fällt aus dem nächsten Schritt weg | Nachtrag 6.12.24 i, Entscheid g |
+| Z-122 | Liste mit je einer Verletzung der Selbstprüfungen 2, 4 und 6 in verschiedenen Zeilen | rc | Rückgabewert 2 | Der Block wegen fehlerhafter Liste endet mit 3 | Nachtrag 6.12.24 i, Entscheid h |
+| Z-123 | Liste mit Verletzungen der Selbstprüfungen 2, 4 und 6 | datei | Das Aufrufprotokoll der Attrappe verzeichnet keinen Aufruf — geblockt wird **vor** dem Lauf der Kette | Der Block wegen fehlerhafter Liste entfällt; die Kette läuft | Nachtrag 6.12.24 i, Entscheid h |
+| Z-124 | Liste mit **zwei** fehlerhaften Zeilen, die **verschiedene** Selbstprüfungen verletzen (2 und 6) und damit **verschiedene** Schlüssel ergeben | zaehler | Die Zählerdatei trägt den Schlüssel aus der Zeile mit der **kleinsten** Zeilennummer und nicht den der späteren | Die Abbruchanweisung der strukturellen Selbstprüfungen (2, 4, 6) — das `break` **innerhalb des Blocks, der den Schlüssel der Strukturprüfung setzt** — durch ein Weiterlaufen ersetzt; dann bestimmt die letzte statt der ersten fehlerhaften Zeile den Schlüssel. Der `sed`-Ausdruck ist über diesen Block zu verankern (Bereichsadresse oder mitgeführtes Kontextmuster) und trifft keine Zeile ausserhalb | Nachtrag 6.12.24 i, Entscheid h; Fall und Mutation präzisiert 6.12.26 f (Runde 7, S7-02) |
+| Z-125 | Vierter Durchlass nach der Eskalation, danach erneut Blocks am selben Kriterium | zaehler | Die Zählerdatei trägt nach dem **vierten** Ereignis den Stand 4 | Der Durchlass nach der Eskalation löscht den Zähler | Nachtrag 6.12.24 i, Entscheid d; DT2-B1 |
+| Z-126 | Vierter Durchlass, danach erneut Blocks | zaehler | Die Zählerdatei trägt nach dem **fünften** Ereignis den Stand 5 | Der Durchlass nach der Eskalation löscht den Zähler | Nachtrag 6.12.24 i, Entscheid d; DT2-B1 |
+| Z-127 | Vierter Durchlass, danach erneut Blocks | zaehler | Die Zählerdatei trägt nach dem **sechsten** Ereignis den Stand 6 | Der Durchlass nach der Eskalation löscht den Zähler | Nachtrag 6.12.24 i, Entscheid d; DT2-B1 |
+| Z-128 | Vierter Durchlass, danach erneut Blocks | stdout | Die `systemMessage` auf der Standardausgabe des **fünften** Ereignisses (Durchlass nach der Eskalation) nennt das fünfte Mal | Die Angabe des n-ten Males fällt aus der Meldung weg | Nachtrag 6.12.24 i, Entscheid d |
+| Z-129 | Vierter Durchlass, danach erneut Blocks | stdout+stderr | Bei **jedem** Ereignis nach dem vierten Durchlass — geprüft am fünften Ereignis (`Stop`) und an einem `TaskCompleted` im selben Zustand — enthält **weder** die Standardausgabe **noch** die Fehlerausgabe die Forderung nach der Übergabedatei (Zeichenfolge "verlangt die Übergabedatei"). Das wörtliche Zitat der Übergabezeile `Eskalation 3.4: <Schlüssel>` als **Begründung des Durchlasses** ist zulässig und kein Verstoss | Die Durchlassmeldung nach der Eskalation trägt zusätzlich die Forderung nach der Übergabedatei | Runde 3, S3-07 (6.12.25 e); Runde 4, S4-01/DT4-02 berichtigt (6.12.25 g) |
+| Z-130 | D12 in Lage C mit **mehreren** fehlenden Gegenständen | kette | Die **direkt aufgerufene Kettenausgabe** nennt in der Marke von D12 als `FEHLT=`-Wert den **ersten** Gegenstand | Im `Makefile` entfällt die Wache `[ -n "$fehlt" ] \|\|` vor dem zweiten Gegenstand von D12 (`scripts/nachweise-vollstaendig.sh`); der letzte statt des ersten fehlenden Gegenstands wird als `FEHLT=`-Wert genannt — Ziel der Mutation ist das `Makefile`, nicht das Gate | Nachtrag 6.12.24 i, Befund N-08; Kanal und Wortlaut nachgeführt 6.12.26 e; Mutation auf das `Makefile` verlegt 6.12.26 f Punkt 13 (Bau 4) |
+| Z-131 | `TMPDIR` in den Baum, und die **Kette selbst** legt eine Wegwerfdatei an (Ziele `nachweise`, `abdeckung`) | datei | Das im Aufrufprotokoll der Attrappe verzeichnete, an `make dod` übergebene `TMPDIR` liegt ausserhalb des geprüften Baums | Die Zeile mit der `TMPDIR`-Zuweisung vor `make` entfernt | Nachtrag 6.12.24 f, Befund DT2-B2 |
+| Z-132 | `TMPDIR` in den Baum, Kette legt selbst an; die Attrappenkette schreibt das ihr wirksam übergebene `TMPDIR` in eine Spurdatei an einem benannten Ort **ausserhalb** des geprüften Baums | datei | Die Spurdatei nennt ein `TMPDIR`, das ausserhalb des geprüften Baums liegt — die **Kette selbst** sieht die Umlenkung, nicht nur der Aufruf trägt sie | Die Zeile mit der `TMPDIR`-Zuweisung vor `make` entfernt | Nachtrag 6.12.24 f, Befund DT2-B2; Fall, Kanal und Wortlaut nachgeführt 6.12.26 f (Runde 7, S7-02) |
+| Z-133 | Baumzeile, D19 `OHNE_BEFUND`, Rückgabewert 0, **null** Marken und eine Schlusszeile **Form 1**, die genau `0 gueltige Marken gezaehlt` nennt — gelesene und genannte Zahl stimmen damit überein, sodass allein die Forderung nach mindestens einer Marke den Block trägt | rc | Rückgabewert 2 — kein stummer Durchlass mit 0 | Der Disjunkt "gezählte Markenzahl gleich 0" entfällt; der zweite Disjunkt (gelesene Zahl ungleich genannter Zahl) trägt in diesem Fall nichts, der Lauf ginge durch | Nachtrag 6.12.24 k, Befund S-11; Fall, Wortlaut und Mutation präzisiert 6.12.26 f (Runde 7, S7-02) |
+| Z-134 | Form-1-Schlusszeile mit null Marken | zaehler | Die Zählerdatei trägt den Schlüssel `KETTE ausgabe-unlesbar` | Der Schlüssel `KETTE ausgabe-unlesbar` wird umbenannt | Nachtrag 6.12.24 k, Befund S-11 |
+| Z-135 | Schlusszeile Form 1 nennt eine andere Zahl, als Marken gelesen wurden | rc | Rückgabewert 2 | Der Vergleich von gelesener und genannter Markenzahl entfällt | Nachtrag 6.12.24 k |
+| Z-136 | Schlusszeile Form 1 mit abweichender Zahl | zaehler | Die Zählerdatei trägt den Schlüssel `KETTE ausgabe-unlesbar` | Der Schlüssel `KETTE ausgabe-unlesbar` wird umbenannt | Nachtrag 6.12.24 k |
+| Z-137 | Schlusszeile **Form 2** nennt eine andere Zahl, als Marken gelesen wurden | rc | Rückgabewert 2 | Form 2 wird von der Markenzahl-Prüfung ausgenommen | Runde 3, S3-02 (6.12.25 e) |
+| Z-138 | Schlusszeile Form 2 mit abweichender Zahl | zaehler | Die Zählerdatei trägt den Schlüssel `KETTE ausgabe-unlesbar` | Der Schlüssel `KETTE ausgabe-unlesbar` wird umbenannt | Runde 3, S3-02 (6.12.25 e) |
+| Z-139 | Schlusszeile **Form 4** nennt eine andere Zahl, als Marken gelesen wurden | rc | Rückgabewert 2 | keine — die Verneinung (Form 4 von der Markenzahl-Prüfung ausgenommen) ist im selben Fall durch die Schwester `Z-140` gedeckt: Fiele die Prüfung weg, trüge die Zählerdatei den Schlüssel `KETTE ausgabe-unlesbar` nicht mehr, und `Z-140` fällt. Der Kanal `rc` dieser Zeile kann die Verneinung nicht trennen, weil der Rückgabewert 2 im Prüfaufbau auch aus dem Befund `D19 VERLETZT` folgt (Grund 3) | Runde 3, S3-02 (6.12.25 e); Mutation auf `keine` gesetzt 6.12.26 f (Runde 7, S7-02) |
+| Z-140 | Schlusszeile Form 4 mit abweichender Zahl | zaehler | Die Zählerdatei trägt den Schlüssel `KETTE ausgabe-unlesbar` | Der Schlüssel `KETTE ausgabe-unlesbar` wird umbenannt | Runde 3, S3-02 (6.12.25 e) |
+| Z-141 | Schlusszeile **Form 3** (abgebrochen) mit abweichender Zahl | zaehler | Die Zählerdatei trägt den Befund der Kette als Schlüssel und **nicht** `KETTE ausgabe-unlesbar` — Form 3 wird nicht auf die Zahl geprüft | Der Abbruchfall trägt neu den Schlüssel `KETTE ausgabe-unlesbar` | Runde 3, S3-02 (6.12.25 e) |
+| Z-142 | D19-Zeile meldet Lage B bei Rückgabewert 0, obwohl das Gate einen Arbeitsbaum bestimmt hat | rc | Rückgabewert 2 | Der Zweig des D19-B-Widerspruchs endet mit 3 | Nachtrag 6.12.24, Befund S-01 |
+| Z-143 | D19-Zeile meldet Lage B bei Rückgabewert 0 | zaehler | Die Zählerdatei trägt genau den Schlüssel `D19 B-widerspruch` und nicht `KETTE ausgabe-unlesbar` | Der Vorrang des Schlüssels `D19 B-widerspruch` vor der Konsistenzwache entfällt | Nachtrag 6.12.24, Befund S-01 |
+| Z-144 | Baumzeile **fehlt** ganz | rc | Rückgabewert 2 | Der Zweig der fehlenden Baumzeile endet mit 3 | Nachtrag 6.12.24, Befund S-10 |
+| Z-145 | Baumzeile fehlt ganz | zaehler | Die Zählerdatei trägt den Schlüssel `KETTE ausgabe-unlesbar` | Der Schlüssel `KETTE ausgabe-unlesbar` wird umbenannt | Nachtrag 6.12.24, Befund S-10 |
+| Z-146 | Verzeichnis der Wegwerfdatei physisch nicht auflösbar, **erstes** Ereignis | stderr | Die Fehlerausgabe nennt den Schlüssel `GATE mktemp` | Der Schlüssel `GATE mktemp` wird umbenannt | Runde 4, S4-04 (6.12.25 i) |
+| Z-147 | Verzeichnis der Wegwerfdatei physisch nicht auflösbar, **erstes** Ereignis | zaehler | Die Zählerdatei trägt `GATE mktemp\|1` | Das erste Ereignis wird mit 7 statt mit 1 gezählt | Runde 4, S4-04 (6.12.25 i) |
+| Z-148 | Dasselbe Ausbleiben ein **zweites** Mal in derselben Sitzung | zaehler | Die Zählerdatei trägt `GATE mktemp\|2` | Der Zähler wird bei gleichem Schlüssel nicht erhöht | Runde 4, S4-04 (6.12.25 i) |
+| Z-149 | Fehlendes `sha256sum`, **erstes** Ereignis | stderr | Die Fehlerausgabe nennt den Schlüssel `GATE sha256sum` | Der Schlüssel `GATE sha256sum` wird umbenannt | Runde 4, S4-04 (6.12.25 i) |
+| Z-150 | Fehlendes `sha256sum`, **erstes** Ereignis | zaehler | Die Zählerdatei trägt `GATE sha256sum\|1` | Das erste Ereignis wird mit 7 statt mit 1 gezählt | Runde 4, S4-04 (6.12.25 i) |
+| Z-151 | Fehlendes `sha256sum`, **zweites** Ereignis in derselben Sitzung | zaehler | Die Zählerdatei trägt `GATE sha256sum\|2` | Der Zähler wird bei gleichem Schlüssel nicht erhöht | Runde 4, S4-04 (6.12.25 i) |
+| Z-152 | Zweiter Selbsttest, gestartet während der erste die Sperre hält | selbsttest+dauer | Der zweite Aufruf endet innerhalb von 5 s mit Rückgabewert 3 | keine — die Zusicherung beschreibt den Selbsttest selbst (Grund 1) | Runde 4, S4-03 (6.12.25 j) |
+| Z-153 | Zweiter Selbsttest, gestartet während der erste die Sperre hält | selbsttest | Die Fehlerausgabe des zweiten Aufrufs trägt die Zeile `Selbsttest laeuft bereits` | keine — die Zusicherung beschreibt den Selbsttest selbst (Grund 1) | Runde 4, S4-03 (6.12.25 j) |
+| Z-154 | Vierter Stop nach drei Blocks am selben Kriterium, mit einer Übergabedatei in `HEAD`, deren Eskalationszeile einen **anderen** Schlüssel nennt als den gezählten | rc | Rückgabewert 2 — eine Übergabedatei mit fremdem Schlüssel öffnet den Durchlass **nicht**; der Durchlass ist an den gezählten Schlüssel gebunden | Der im Gate gesuchte Text wird von `Eskalation 3.4: <gezählter Schlüssel>` auf `Eskalation 3.4:` ohne Schlüssel verkürzt | Runde 7, DT7-03 (6.12.26 f) |
+| Z-155 | Derselbe Fall: vierter Stop, Übergabedatei mit fremdem Schlüssel in der Eskalationszeile | zaehler | Die Zählerdatei trägt nach dem vierten Ereignis den **gezählten** Schlüssel mit dem Stand 4 — der Zähler zählt weiter und wird nicht zurückgesetzt | keine — die Verneinung ist im selben Fall durch die Schwester `Z-154` gedeckt; der Kanal `zaehler` kann sie nicht trennen, weil der Stand 4 nach `Z-125` auch beim Durchlass gilt (Grund 3) | Runde 7, DT7-03 (6.12.26 f) |
+
+**Wie geprüft wird.** Das Skript wird im Selbsttest **unmittelbar** mit einer
+JSON-Eingabe auf der Standardeingabe aufgerufen, nicht über den Harness.
+*(Runde 1, Begründung berichtigt: Die erste Fassung stützte das darauf, die
+Referenz sage nicht, ob eine Änderung an `.claude/settings.json` in der
+laufenden Sitzung wirke. Sie sagt es — "Direct edits to hooks in settings files
+are normally picked up automatically by the file watcher." Der Entscheid bleibt,
+die Begründung wird ausgetauscht; eine Festlegung, die auf einem Schweigen
+beruht, das es nicht gibt, ist eine Zusicherung ohne Deckung, V12.)* Die
+tragenden Gründe sind zwei andere, und beide sind stärker: **Herstellbarkeit** —
+über die Standardeingabe lässt sich jeder Fall der Tabelle oben gezielt
+erzeugen, auch die, die im Ereignisfluss des Harness nicht auf Bestellung
+eintreten (`stop_hook_active` wahr, ein unbekannter `agent_type`, der dritte
+Block in Folge); und **Determinismus** — der Selbsttest darf nicht davon
+abhängen, wann eine Dateiüberwachung eine Änderung bemerkt, sonst prüft er
+nebenbei den Harness statt das Skript. Die Verifikation liegt beim Static und
+beim Dynamic Software Tester auf einem anderen Modell als die Umsetzung (3.4);
+die Rolle, die das Gate baut, prüft es nicht selbst.
+
+#### 6.12.20 Einordnung der drei übrigen Punkte aus dem Achtung-Hinweis zu R3-Q-001
+
+Der zweite Achtung-Hinweis bei R3-Q-001 nennt vier Bauformen aus dem Vergleich
+mit einem fremden Bestand; der Backlog hält ausdrücklich fest, dass alle vier
+Sache des Software Architects im Rahmen dieser Fortschreibung sind und keinen
+eigenen Backlog-Eintrag erhalten. Punkt 1 — der rote und der grüne Lauf — ist
+mit G17 erledigt. Die übrigen drei werden hier **eingeordnet und nicht gebaut**,
+wie der Auftraggeber es angewiesen hat.
+
+| Punkt | Einordnung | Zuständig | Bedingung und Termin |
+|---|---|---|---|
+| **Schwachstellenklassen im eigenen Code** (ruff-Regelgruppe `S`) | Zu entscheiden ist **nicht ob, sondern wo**: als Regelgruppe in der bestehenden ruff-Konfiguration und damit in D3, oder als eigener Kettenschritt mit eigener Nummer. Für D3 spricht, dass kein neues Werkzeug und kein neuer Schritt entsteht; dagegen spricht das Argument aus 6.1.2 für D18 — eine Aussage über eine Sicherheitseigenschaft soll einen eigenen Rückgabewert haben und darf nicht mit einem Schwellenwert für Stilwarnungen (E-08, O-7) zusammenfallen. Als **O-21** geführt | Software Architect mit SecDevOps Engineer; Bau beim Backend Engineer | Heute Lage B: es gibt keinen eigenen Python-Code. Mit dem Anlegen von `backend/pyproject.toml`, vor der ersten Umsetzungseinheit mit Fachlogik |
+| **Markdown-Struktur- und Tabellenprüfer** | Der Gegenstand besteht **heute** — eine verrutschte Spalte in der Rollentabelle ist eine falsch gelesene Bauvorschrift. Er geht **nicht** in D20 auf: D20 urteilt über Herkunfts- und Fundortangaben, ein Strukturprüfer über den Aufbau des Dokuments; das sind zwei Sachen, und jeder Schritt urteilt über eine (6.2.2). Eine D-Nummer wird hier **nicht** vergeben — eine Nummer für einen nicht entschiedenen Schritt wäre eine Absichtserklärung, und nach 6.8.1 wäre sie mit der Nennung vergeben. Als **O-22** geführt | Software Architect (Entscheid über den Schnitt), DevOps Engineer (Bau) | Keine Vorbedingung im Bestand; Termin: mit der nächsten Fortschreibung dieses Abschnitts, spätestens vor der Freigabe des Grundgerüsts |
+| **Prüfmodus für den Nachweiserzeuger** | **Kein neuer offener Punkt.** Das ist der Gegenstand von **O-8** ("Betriebsart für D10 und Form von D12"), der seit dem 2026-08-30 zusätzlich an den Kettengrundsatz gebunden ist: Die gewählte Form schreibt nicht in den Arbeitsbaum. O-8 trägt heute den Termin "mit R3-Q-001"; dieser Termin ist nicht haltbar, weil weder `scripts/nachweise-vollstaendig.sh` noch `scripts/prototyp-trennung-pruefen.sh` bestehen und ein Entscheid über die Betriebsart eines nicht vorhandenen Skripts eine Absichtserklärung wäre. **O-8 wird auf "mit dem Grundgerüst" umterminiert** | DevOps Engineer mit Protocol Master | Mit dem Anlegen der beiden Skripte, also mit dem Grundgerüst |
+
+#### 6.12.21 Bezug zu den offenen Punkten, die das Gate berühren
+
+- **O-7** (Schwellenwerte in D3, D6, D8) bleibt offen und unberührt. Das Gate
+  liest die Marke; ob sie `SCHWELLE=5` oder `OHNE_SCHWELLE` trägt, ändert an
+  seiner Auswertung nichts.
+- **O-8** ist umterminiert, siehe 6.12.20.
+- **O-10 (neu gefasst), Restfrage (a)** — die namentliche Ausschlussliste des
+  Arbeitsbaumlaufs von D11 und ihre technische Form — trägt heute den Termin
+  "mit R3-Q-001". Sie ist nur mit einem ausgeführten Lauf der eingesetzten
+  Werkzeugfassung zu belegen, und `gitleaks` ist nicht installiert (Fremdbeleg).
+  **Umterminiert auf: mit der Installation von `gitleaks`, spätestens mit dem
+  Grundgerüst.** Restfrage (b) bleibt unverändert.
+- **O-12** (Lauf auf der Gegenseite) bleibt offen und gewinnt eine Aufgabe: Der
+  Lauf auf der Gegenseite ruft `make dod` **ohne** die Liste der terminierten
+  Lagen auf. Das Gate ist wie die Kette die zweite Linie — gegen einen Aufrufer,
+  der die Umgebung beherrscht, ist ein Gate im Arbeitsverzeichnis grundsätzlich
+  wirkungslos, und das steht im Makefile-Kopf und im Kopf beider bestehender
+  Gates bereits so. Das Gate ändert daran nichts; es setzt Disziplin durch, es
+  ersetzt die Gegenseite nicht.
+- **O-14** (fest verdrahteter Ort des zweiten Arbeitsbaums bei D20) bleibt offen
+  und wird vom Gate **geerbt**: Die Zahl der nicht prüfbaren Zeilen geht nicht
+  in den Rückgabewert ein und steht nicht in der Marke; das Gate sieht sie also
+  nicht und kann sie nicht melden. Der Termin "mit R3-Q-001" bleibt; die
+  Behebung ist Umsetzung und liegt beim DevOps Engineer.
+- **O-15** (Abnahme des Belegprüfers) bleibt offen, siehe 6.12.18, Punkt 4.
+- **O-17** (Löschung einer maskierten Datei) bleibt offen und ist vom Gate
+  unberührt: D19 Lage C blockiert in jedem Fall; die Antwort bestimmt allein,
+  wie weit die Meldung sagen darf, der Inhalt sei beurteilt.
+- **O-18** (Aktualität der Bezugsdokumente von D20) **bleibt offen**, mit
+  geschärfter Frage und neuem Termin. Der Grund für das Offenbleiben ist keine
+  Verlegenheit: Zu prüfen, ob eine Anforderungskennung im Backlog noch **gilt**,
+  ist eine Aussage über den Inhalt am Fundort, und genau die hat 6.8.4 dem
+  menschlichen Review zugewiesen. Maschinell prüfbar wäre sie erst, wenn der
+  Backlog je Eintrag ein **maschinenlesbares Statusfeld** trüge — das ist die
+  eigentliche, bisher nicht benannte Vorbedingung, und sie ist eine Änderung am
+  Format des Backlogs, nicht am Belegprüfer. Zuständig bleibt der Software
+  Architect mit dem Static Software Tester, für das Statusfeld der Requirements
+  Engineer mit dem Product Owner; **Termin neu: mit dem Grundgerüst.**
+
+#### 6.12.22 Was diese Fortschreibung nicht ändert
+
+Die Kernarchitektur aus 5.1 bleibt unberührt; diese Fortschreibung betrifft
+ausschliesslich die Werkzeugkette. Die Entscheide A1 bis A13 bleiben
+unverändert. Der Modulschnitt aus Abschnitt 4 und die Verankerung der
+Verfahrensgarantien in 4.2 und 4.3 bleiben unverändert — das Gate ist keine
+Verfahrensgarantie nach 5.4, sondern die Durchsetzung der Definition of Done
+nach 3.4, und es wird an keiner Stelle zwischen Freigabe und Ausführung
+gestellt. Nichts an diesem Entwurf bereitet Gestrichenes vor (5.17, 5.18, 9.1,
+5.10, 5.1).
+
+An der Kette bleiben **Gegenstand, Erkennungsmerkmal und Prüfmittel** aller
+Schritte unverändert; die einzige Ergänzung ist die Vollständigkeit der
+Historie bei D20 (G16). Die Reihenfolge bleibt unverändert. Die Nummernregel
+aus 6.1.2 bleibt in Kraft, und diese Fortschreibung vergibt **keine** neue
+D-Nummer. Der Kettengrundsatz aus 6.1.3 gilt unverändert und wird durch G8
+(Zustand ausserhalb des Arbeitsbaums) und G12 (Sperrdatei ausserhalb des
+Arbeitsbaums) auf das Gate selbst ausgedehnt. Der Grundsatz aus 6.8.4 zur
+Aussagekraft eines Rückgabewerts 0 gilt unverändert und wird in 6.12.18 auf das
+Gate übertragen. Die vier Eigenschaften der Ausnahmeliste aus 6.8.5 bleiben
+unverändert; die Liste der terminierten Lagen ist eine **zweite** Liste mit
+eigenen Regeln und ändert an der ersten nichts. Die geschärfte Lage C aus 6.9.2
+bleibt unverändert und trägt G16.
+
+Geändert werden am `Makefile` ausschliesslich vier Dinge, jedes davon oben
+begründet: das Weiterlaufen bei Lage C (G5), das strukturierte `FEHLT=` in der
+Marke (G6), die Schlusszeilen samt eigenständiger D19-Zeile und der
+Nennung des geprüften Baums (G7 — **vier** Formen seit dem Nachtrag aus dem
+Bau, 6.12.23; bis dahin drei) und die Prüfung der Historienvollständigkeit
+im Ziel `belege` (G16). Kein Kettenschritt wechselt dadurch seine Lage, und
+kein roter Lauf wird grün.
+
+Nicht entschieden werden: die Abnahme des Belegprüfers (O-15), die
+Schwellenwerte (O-7), die beiden Restfragen aus O-10, der Lauf auf der
+Gegenseite (O-12), der Ort des zweiten Arbeitsbaums (O-14), der Löschfall
+(O-17) und die Aktualitätsprüfung (O-18). O-14 und O-17 fallen mit diesem
+Backlog-Eintrag fällig, gehören aber dem DevOps Engineer und sind nicht Teil
+dieses Entwurfs; ihre Einplanung liegt beim Koordinator.
+
+#### 6.12.23 Nachträge aus dem Bau vom 2026-09-02
+
+Der Bau nach 6.12 ist am 2026-09-02 auf Weisung des Auftraggebers erfolgt; die
+förmliche Freigabe der Entscheidpunkte E-A bis E-K steht aus (Abschnitt 10).
+Der DevOps Engineer hat dabei **drei Stellen** gemeldet, an denen dieser
+Entwurf keinen Fall vorsieht, und je eine Übergangslösung eingebaut, um
+weiterarbeiten zu können. Sie werden hier entschieden. Eine Übergangslösung
+wird durch einen Nachtrag **abgelöst, nicht bestätigt** — auch dann nicht, wenn
+der Entscheid ihr im Ergebnis folgt. Der Unterschied ist nicht formal: Eine
+Behelfslösung im Code, die niemand entschieden hat, ist eine Festlegung ohne
+Fundstelle, und genau daran misst D20.
+
+Diese Rolle hat **nichts ausgeführt** und nichts nachgeprüft (3.4). Was unten
+als Tatsache steht, ist **Fremdbeleg** aus den Läufen des DevOps Engineers und
+des Koordinators vom 2026-09-02 und als solcher gekennzeichnet.
+
+**a) Eine vierte Schlusszeile — vollständig gelaufen, und trotzdem Rückgabewert 2**
+
+| | |
+|---|---|
+| **Vorher galt** | G7 (6.12.8) kennt genau **drei** Schlusszeilen: vollständig und sauber; vollständig mit k Schritten in Lage C; abgebrochen bei einem Schritt |
+| **Jetzt gilt** | Es gibt eine **vierte** Form für den Lauf, der vollständig und ohne `A_FAIL` und ohne Lage C durchgelaufen ist, in dem aber die Rahmenprüfung **D19** `VERLETZT` oder Lage C meldet und der deshalb mit 2 endet |
+
+Der Fall ist im Entwurf nicht vorgesehen, und keine der drei Formen trifft ihn:
+Form 1 behauptet "keiner ungleich 0" und stünde über einem Lauf mit
+Rückgabewert 2; Form 2 verlangt Schritte in Lage C, die es hier nicht gibt;
+Form 3 sagt "abgebrochen bei", obwohl nichts abgebrochen wurde. Die
+Übergangslösung des DevOps Engineers — Form 3 mit dem zuletzt gelaufenen
+Schritt — ist **unwahr**: Sie benennt einen Schritt als Abbruchstelle, der
+durchgelaufen ist. Das ist derselbe Mangel, den 6.12.8 für die mittlere Form
+schon einmal ausgeschlossen hat: Eine Nachweiszeile, die zu viel oder das
+Falsche behauptet, ist so untauglich wie eine fehlende (5.3).
+
+**Entscheid: eine vierte Form.**
+
+```
+make dod: alle <N> Kettenschritte durchlaufen, Rahmenpruefung D19 <VERLETZT|C>, Rueckgabewert 2.
+```
+
+**Welche Form wann gilt** — in dieser Reihenfolge zu prüfen, damit die Zuordnung
+eindeutig ist:
+
+1. Die Kette ist abgebrochen (`A_FAIL`, fehlende oder mehrfache Marke, sonstiger
+   Rückgabewert ungleich 0) → **Form 3**.
+2. Sonst, wenn mindestens ein Schritt Lage C meldet → **Form 2**, unabhängig
+   davon, was D19 meldet. Die D19-Aussage steht ohnehin in ihrer eigenen Zeile
+   und wird dort gelesen (G7).
+3. Sonst, wenn die D19-Zeile `VERLETZT` oder `C` meldet → **Form 4**.
+4. Sonst → **Form 1**.
+
+**Damit gilt: Rückgabewert 0 nur zusammen mit Form 1.** Das ist der eigentliche
+Gewinn der vierten Form. Vorher war die Zuordnung von Rückgabewert und
+Schlusszeile nicht eindeutig — ein Lauf mit Rückgabewert 2 konnte Form 1 tragen
+—, und eine Formprüfung, die das duldet, prüft nichts. Ein Lauf, der
+Rückgabewert 0 mit einer anderen Schlusszeile als Form 1 verbindet, ist ein
+**Widerspruch** und blockiert unter dem Schlüssel `KETTE
+schlusszeile-widerspruch`; die Zeile steht in der Tabelle 6.12.4. Ohne diesen
+Ausgang wäre die Parse-Regel ein genannter Massstab ohne Prüfung — V12.
+
+**Was sich für die Klassifizierung nicht ändert.** Das Gate urteilt über diesen
+Lauf unverändert über die D19-Zeile, mit den bestehenden Schlüsseln `D19
+VERLETZT` beziehungsweise `D19 C` (6.12.4). Die vierte Form ändert an Ausgang,
+Schlüssel und Zählung **nichts**; sie stellt die Nachweiszeile richtig und macht
+die Parse-Regel prüfbar. Für das Gate ändert sich allein die Formprüfung aus
+6.12.3: genau eine der **vier** Formen statt einer der drei. Die beiden
+Selbsttestfälle "D19 `VERLETZT`" und "D19 Lage C" aus 6.12.19 sind neu in dieser
+Form zu erzeugen; die Anforderung selbst bleibt unverändert.
+
+**b) Der Zählschlüssel für Verstösse gegen die terminierten Lagen**
+
+| | |
+|---|---|
+| **Vorher galt** | Die Tabelle 6.12.4 führt für die sechs Selbstprüfungen der terminierten Lagen (6.12.5) **keinen** Zählschlüssel. Für Selbstprüfung 1 greift die Zeile "Marke endet auf `C` und ist nicht gedeckt"; für die Selbstprüfungen 2 bis 6 gibt es keinen |
+| **Jetzt gilt** | Verstösse gegen die Selbstprüfungen 2 bis 6 zählen unter einem eigenen Schlüsselraum `LISTE …`. Die Übergangslösung `GATE dod-gate-terminierte-lagen.txt` für alle sechs ist abgelöst |
+
+**Entscheid.**
+
+| Selbstprüfung (6.12.5) | Schlüssel |
+|---|---|
+| 2 (Prüfmittel existiert inzwischen), 3 (Schritt meldet eine andere Lage als C), 5 (Marke nennt ein anderes Prüfmittel als der Schlüssel) | `LISTE <Nummer der Selbstpruefung> <D> <ziel>` |
+| 4 (Eintrag ohne Grund), 6 (Schlüssel nennt kein terminierbares Prüfmittel) | `LISTE <Nummer der Selbstpruefung> <Zeilennummer>` |
+| 1 (Lage C ohne Eintrag) | unverändert `<D> <ziel> C <fehlendes Prüfmittel>` — kein Fehler der Liste, sondern eine ungedeckte Lage C |
+
+Die **Zeilennummer** ist die physische, bei 1 beginnende Zeilennummer in
+`.claude/hooks/dod-gate-terminierte-lagen.txt`; Leer- und Kommentarzeilen
+zählen mit, weil nur so die genannte Zeile ohne Umrechnung auffindbar ist.
+
+**Weshalb nicht `GATE …`.** `GATE <Prüfmittel>` bezeichnet den **Ausfall** eines
+Prüfmittels des Gates (6.12.11) — bei dieser Liste den einen Fall, dass sie
+fehlt. Eine fehlerhafte Zeile in einer vorhandenen Liste ist das Gegenteil
+davon: Das Prüfmittel ist da und urteilt, und die Zeile ist zu berichtigen.
+Fielen beide unter denselben Schlüssel, hätte das zwei Folgen, und beide sind
+in dieser Datei schon einmal teuer gewesen. Erstens zählte 3.4 an einem
+Kriterium, das zwei verschiedene Sachverhalte zusammenfasst — die Eskalation
+träfe dann eine Mischung statt eines Kriteriums. Zweitens sagte die Meldung dem
+Bearbeiter das Falsche: "beschaffe das Prüfmittel" statt "berichtige Zeile n".
+Das ist wörtlich der Fehlermodus, den 6.12.4 mit der Unterscheidung von Befund
+und Ausfall vermeidet, und der Befund aus 6.11.1: rot mit falscher Begründung.
+
+**Weshalb die Selbstprüfungen 4 und 6 die Zeilennummer tragen und nicht den
+Schritt.** Bei ihnen ist die Aussage der Zeile selbst untauglich — bei 4 fehlt
+der Grund, bei 6 nennt der Schlüssel ein Prüfmittel, das nach 6.12.5 gar nicht
+terminierbar ist. Ein Zählschlüssel, der Kennung und Ziel aus dieser Zeile
+übernähme, machte die Behauptung der fehlerhaften Zeile zum Schlüssel des
+Zählers, der über sie urteilt. Die Zeilennummer ortet die Zeile, ohne ihr
+etwas zu glauben. Dass sie sich verschiebt, sobald die Datei geändert wird, ist
+hier richtig und kein Mangel: Eine geänderte Liste ist ein anderer Sachverhalt,
+und der Zähler soll dann von vorn zählen.
+
+**Welcher Schlüssel gezählt wird, wenn mehreres zugleich zutrifft.** 6.12.9 legt
+fest: gezählt wird eine Abweichung, genannt werden alle. Die Reihenfolge wird
+hier für den neuen Schlüsselraum ergänzt und lautet vollständig: (1) `GATE …` —
+ohne Prüfmittel urteilt das Gate über gar nichts; (2) `LISTE …`, bei mehreren
+fehlerhaften Zeilen die erste in Dateireihenfolge; (3) die erste Abweichung in
+Kettenreihenfolge, also `A_FAIL` oder ungedeckte Lage C; (4) `D19 …`.
+*(Nachtrag 6.12.24 h, Befund S3-06: Zwischen (1) und (2) tritt `KETTE
+ausgabe-unlesbar` — ohne lesbare Ausgabe ist keine Deckungsprüfung möglich.)* Der Grund
+für den Vorrang der Liste vor der Kette: Solange eine Zeile der Liste
+fehlerhaft ist, beruht die Deckungsprüfung **jeder** gemeldeten Lage C auf einem
+Instrument, das selbst beanstandet ist. Zuerst wird das Instrument in Ordnung
+gebracht, dann wird über den Gegenstand geurteilt — dieselbe Rangfolge, mit der
+6.9.2 Instrument und Gegenstand trennt.
+
+**c) Fehlt `jq`, bleibt der Block ungezählt — eine benannte Grenze**
+
+| | |
+|---|---|
+| **Vorher galt** | 6.12.11 führt `jq` als Prüfmittel des Gates: Fehlt es, ist das Lage C des Gates mit Rückgabewert 2. Über die Zählung dieses Blocks sagt der Entwurf nichts |
+| **Jetzt gilt** | Dieser eine Block wird **nicht gezählt** und kann es nicht werden. Die Grenze ist als solche benannt und steht an Ort in 6.12.9; ein Ersatzweg wird nicht erfunden |
+
+Der Grund ist zwingend und nicht behebbar: Gezählt wird je Sitzung und, wenn
+vorhanden, je Subagent (G8). `session_id` und `agent_id` stehen in der
+Eingabe-JSON, und ohne `jq` kann das Gate diese Eingabe nicht lesen. Es weiss
+also, **dass** es blockiert, aber nicht, **wofür** es den Block anschreiben
+soll.
+
+Ein Ausweichschlüssel wird ausdrücklich nicht erfunden. Jeder denkbare — ein
+fester Dateiname, die Kennung des Elternprozesses, der Zeitpunkt — zählte
+entweder Läufe zusammen, die nichts miteinander zu tun haben, oder trennte
+Läufe, die zusammengehören. Ein falsch geführter Zähler ist schlechter als ein
+fehlender: Er löst eine Eskalation nach 3.4 aus, für die es keinen Grund gibt,
+oder verhindert eine, für die es einen gibt. Die Grenze ist ausserdem eng —
+`jq` fehlt für eine ganze Sitzung oder gar nicht, und die beiden bestehenden
+Gates blockieren bei fehlendem `jq` aus demselben Grund (CLAUDE.md, "Aktive
+Gates"). Der Fall ist damit sichtbar, blockierend und unzählbar; verschwiegen
+ist er nicht (V12).
+
+**d) Zwei Tatsachen aus dem Bau (Fremdbeleg, nicht von dieser Rolle geprüft)**
+
+1. **Der Selbsttest `scripts/dod-gate-selbsttest.sh` besteht 48 von 48 Fällen.**
+   Ob diese 48 Fälle die Tabelle aus 6.12.19 vollständig abdecken, wird hier
+   **nicht behauptet**; das festzustellen ist Sache der Verifikation durch den
+   Static und den Dynamic Software Tester auf einem anderen Modell (3.4).
+2. **Der grüne Lauf gegen das echte `Makefile` im Scheinbaum ist beim ersten Bau
+   nicht grün geworden**, sondern endete mit **D20 in Lage C**: Der Belegprüfer
+   meldete im Scheinbaum Rückgabewert 3. Genau diesen Ausgang benennt 6.12.19
+   ausdrücklich als möglich — "Ob ein solcher Baum mit dem **echten**
+   Belegprüfer grün wird, ist mit einem ausgeführten Lauf festzustellen und wird
+   hier **nicht** behauptet; fällt es anders aus, ist der Befund zu melden und
+   nicht der Scheinbaum zurechtzubiegen." Der Befund ist gemeldet worden. Die
+   Folge ist die dort vorgeschriebene: **Der Scheinbaum wird in prüfbare Form
+   gebracht, nicht der Prüfer geschwächt.**
+
+**Die Anforderung aus 6.12.19 bleibt unverändert bestehen und wird hier nicht
+abgeschwächt:** Der grüne Lauf muss mit **Rückgabewert 0 der Kette** belegt
+sein. Solange dieser Beleg nicht vorliegt, gilt der Selbsttest als **nicht
+vollständig** — auch bei 48 von 48 bestandenen Fällen. Das ist
+keine neue offene Frage und braucht keine eigene Nummer; es ist die
+unveränderte Forderung aus G17, deren Erfüllung noch aussteht. Ein Selbsttest,
+der die Attrappe besteht und am echten Gegenstand nicht belegt ist, prüft die
+Formannahme des Gates gegen sich selbst — genau das, was 6.12.19 mit dem
+zweiten Prüfweg ausschliesst.
+
+**Was diese Nachträge nicht ändern.** Kein Entscheid G1 bis G17 wird
+zurückgenommen. Die Kernarchitektur aus 5.1, die Entscheide A1 bis A13, der
+Modulschnitt und die Verankerung der Verfahrensgarantien bleiben unberührt.
+Keine D-Nummer wird vergeben. Die sechs Selbstprüfungen der terminierten Lagen
+bleiben in Zahl, Inhalt und Wirkung unverändert — sie erhalten einen
+Zählschlüssel, keine Ausnahme. Kein Kettenschritt wechselt seine Lage, und kein
+roter Lauf wird grün. Nichts hier bereitet Gestrichenes vor (5.17, 5.18, 9.1,
+5.10, 5.1).
+
+#### 6.12.24 Nachträge aus der Verifikation vom 2026-09-02
+
+Der Bau nach 6.12 ist am 2026-09-02 auf Weisung des Auftraggebers erfolgt; die
+förmliche Freigabe der Entscheidpunkte E-A bis E-K steht aus (Abschnitt 10).
+Dieser Nachtrag ändert daran nichts. Er behauptet **weder eine Freigabe noch
+eine Abnahme** — er entscheidet **zehn** Stellen, an denen der Entwurf einen
+Fall nicht vorsieht oder zu wenig sagt: a) bis i) aus der ersten Prüfrunde und
+k) aus der zweiten; j) verzeichnet die Beleglage beider Runden.
+
+**Was geprüft wurde, und mit welchem Ergebnis (Fremdbeleg).** Der Static
+Software Tester hat den gebauten Stand am 2026-09-02 auf einem anderen Modell
+als die Umsetzung gegen 6.12 verifiziert und ihn **nicht bestanden**: vierzehn
+Befunde, davon **fünf blockierend** (B-01 bis B-05) und neun nicht blockierend
+(N-01 bis N-09). Der Dynamic Software Tester hat am selben Tag ebenfalls
+**nicht bestanden**: fünf Befunde, davon **drei blockierend**; die drei
+blockierenden haben dieselbe Ursache wie B-02 und B-03. Diese Rolle hat
+**nichts ausgeführt** und nichts nachgeprüft (3.4). Was unten als Tatsache
+steht, ist **Fremdbeleg** aus diesen beiden Berichten und aus den Läufen des
+Koordinators vom 2026-09-02 und als solcher gekennzeichnet.
+
+**Wer was behebt — und weshalb hier überhaupt etwas zu entscheiden ist.** Der
+DevOps Engineer behebt B-01, B-02, B-03, N-02 bis N-06, N-08 und N-09 im Code.
+B-04 und B-05 sind vom Koordinator in `scripts/belege-ausnahmen.txt` behoben
+(Fremdbeleg): die ortsgebundene Ausnahme für `CLAUDE.md`, deren Zeilenangabe
+durch das Wachsen der Datei überholt war, ist nachgeführt, und vier Ausnahmen
+der Form `datei|wert` decken die in `docs/06_Definition_of_Ready_und_Done.md`
+genannten, noch nicht gebauten Skripte. Beides ist **Umsetzung nach 6.8.5 und
+kein Architekturentscheid**; dieser Nachtrag verzeichnet es und entscheidet es
+nicht — und die vier Einträge sind mit dem Entstehen der Skripte wieder zu
+entfernen, wie es 6.8.5, Eigenschaft 3, ohnehin erzwingt. Für **N-01** und
+**N-07** wird der Code **nicht** geändert: Dort verhält sich der Bau richtig,
+und dieser Entwurf sagt es nicht. Genau das ist der Grund für diesen Abschnitt,
+und es ist dieselbe Regel wie in 6.12.23 — **eine Festlegung, die im Code steht
+und in diesem ADR nicht, ist eine Festlegung ohne Fundstelle, und genau daran
+misst D20.** Die Entscheide unten **lösen** die Behelfe des Baus ab; sie
+bestätigen sie nicht, auch dort nicht, wo der Entscheid ihnen im Ergebnis folgt.
+
+**a) Der geprüfte Baum ist die physisch aufgelöste Wurzel des Arbeitsbaums**
+*(Befunde B-02 und B-03; die drei blockierenden Befunde der dynamischen Prüfung
+haben dieselbe Ursache; ergänzt 6.12.13)*
+
+| | |
+|---|---|
+| **Vorher galt** | 6.12.13 sagt, das Gate prüfe "den Arbeitsbaum, in dem `cwd` liegt", sofern dieser zu demselben Repository gehört wie `${CLAUDE_PROJECT_DIR}`, sonst diesen. Über die **Form** des so bestimmten Pfades sagt der Entwurf nichts. Der Bau übernahm `cwd` beziehungsweise `CLAUDE_PROJECT_DIR` roh und verglich zeichengenau mit der ersten Zeile der Kette, die das Makefile über `pwd -P` erzeugt (G7) |
+| **Jetzt gilt** | Der geprüfte Baum ist die **Wurzel des Arbeitsbaums, physisch aufgelöst**. Gehört `cwd` zum selben Repository wie `${CLAUDE_PROJECT_DIR}` — festgestellt über den Vergleich der physisch aufgelösten gemeinsamen Git-Verzeichnisse, unverändert gegenüber 6.12.13 —, dann gilt `git -C <cwd> rev-parse --show-toplevel`; sonst die Wurzel des Arbeitsbaums von `${CLAUDE_PROJECT_DIR}`, und ist dieses kein Arbeitsbaum, dessen physisch aufgelöster Pfad. Die Baumzeile der Kette und die Bestimmung des Gates sind damit beide physische Pfade ohne Schrägstrich am Ende und vergleichbar |
+
+**Was ohne diese Festlegung geschah** (Fremdbeleg, ausgeführt in beiden
+Prüfungen):
+
+1. Ein **Schrägstrich am Ende** des Pfades oder ein **Symlink** auf den Baum
+   ergab `KETTE baum-widerspruch` — obwohl in der Sache kein Widerspruch
+   bestand, sondern zwei Schreibweisen desselben Baums verglichen wurden.
+2. Lag `cwd` in einem **Unterverzeichnis** des Baums, ergab es `GATE Makefile`
+   — obwohl das `Makefile` besteht; das Gate suchte es im Unterverzeichnis.
+
+Beide Male endete das Gate mit Rückgabewert 2 und **falscher Begründung**. Das
+ist wörtlich der Fehlermodus aus 6.11.1, gegen den die Klassifizierung in
+6.12.4 gebaut ist, und er ist hier besonders teuer: Der Block zählt unter einem
+Schlüssel, der mit der Sache nichts zu tun hat, und die Eskalation nach 3.4
+träfe dreimal die falsche Frage.
+
+**Weshalb die physische Auflösung und nicht ein nachsichtiger Vergleich.** Ein
+Vergleich trägt nur, wenn beide Seiten dieselbe Sprache sprechen. Die Kette
+bestimmt ihren Baum selbst und ohne Rückfall und gibt ihn über `pwd -P` aus
+(G7); also muss das Gate denselben Massstab anlegen, statt die Abweichung
+hinterher wegzurechnen. Ein Vergleich, der Schreibweisen duldet, duldet
+irgendwann auch zwei verschiedene Bäume — und dann wäre die Baumzeile keine
+Prüfung mehr, sondern Zierde. Dass die **Wurzel** genommen wird und nicht das
+Verzeichnis, in dem gerade gearbeitet wird, ist dieselbe Überlegung: `make dod`
+läuft gegen den Baum, nicht gegen ein Unterverzeichnis.
+
+**Diese eine Angabe trägt vier Dinge**, und deshalb steht sie hier so genau:
+den Aufruf von `make dod`, den Vergleich mit der Baumzeile (b), die Namen von
+Sperr- und Zählerdatei (e) und die Prüfung, ob die Wegwerfdatei im Baum liegt
+(f). Ist sie uneindeutig, sind alle vier uneindeutig.
+
+**b) `KETTE baum-widerspruch` wird in die Klassifizierung aufgenommen**
+*(Befund N-01; ergänzt 6.12.4)*
+
+| | |
+|---|---|
+| **Vorher galt** | G7 verlangt die Baumzeile, 6.12.13 verlangt den Baum in jeder Meldung — einen **Ausgang** für den Fall, dass die Baumzeile der Kette einen anderen Baum nennt als das Gate bestimmt hat, führt die Klassifizierungstabelle 6.12.4 nicht. Der Bau kennt den Schlüssel, die Tabelle nicht |
+| **Jetzt gilt** | Die Tabelle 6.12.4 trägt die Zeile: *Die erste Zeile der Kette nennt einen anderen Baum als den vom Gate bestimmten* → Art: Widerspruch, Schlüssel `KETTE baum-widerspruch`, Rückgabewert 2 |
+
+**Weshalb blockierend.** Eine Kette, die über einen anderen Baum berichtet als
+den, den das Gate meint, ist **kein Nachweis über diesen Baum**. Sie mag
+tadellos gelaufen sein — nur eben anderswo. Das ist derselbe Grund, aus dem G7
+die Baumzeile überhaupt verlangt (6.12.8: "Es genügt nicht, richtig zu messen,
+es muss auch feststehen, was gemessen wurde") und aus dem 6.12.13 lieber kein
+Urteil fällt als ein Urteil über das falsche Verzeichnis.
+
+**Weshalb der Ausgang bleibt, obwohl a) ihn selten macht.** Nach a) sprechen
+beide Seiten dieselbe Sprache, und der Schlüssel sollte im Regelbetrieb nicht
+mehr fallen. Er ist danach kein Formfehler mehr, sondern die Anzeige eines
+echten Auseinanderfallens — ein umgebogener Aufruf, ein zweiter Arbeitsbaum,
+ein `Makefile` an unerwarteter Stelle. Fail-closed: Alles ausser einem belegten
+Grün blockiert (6.12.4), und ein Grün über einen ungenannten Baum ist keines.
+Ein Schlüssel im Code ohne Zeile in der Tabelle wäre ausserdem genau die
+Festlegung ohne Fundstelle, die oben benannt ist.
+
+**c) Ein nicht bestimmbares Zustandsverzeichnis erhält keinen eigenen Ausgang**
+*(Befund B-01; ergänzt 6.12.9 und 6.12.11)*
+
+| | |
+|---|---|
+| **Vorher galt** | 6.12.9 nennt `${XDG_STATE_HOME:-$HOME/.local/state}/r3cosint/dod-gate/` und regelt den Fall "nicht beschreibbar". Den Fall, dass sich das Verzeichnis **gar nicht bestimmen** lässt, regelt der Entwurf nicht. Der Bau las `$HOME` unter `set -u`; fehlten `XDG_STATE_HOME` und `HOME`, endete das Gate mit **Rückgabewert 1** (ausgeführt belegt, Fremdbeleg) — und liess damit durch |
+| **Jetzt gilt** | `XDG_STATE_HOME`, sonst `$HOME/.local/state`, sonst **nicht bestimmbar**. Dieser Zustand wird behandelt wie "nicht beschreibbar": **kein eigener Ausgang**; das Gate urteilt unverändert und nennt in **jeder** Meldung, dass es nicht zählen kann und weshalb — und die Meldung unterscheidet **nicht bestimmbar** von **nicht beschreibbar** *(Runde 2, Befund S-13: zwei verschiedene Ursachen, zwei verschiedene nächste Schritte)*. Ist die Kette im Übrigen sauber grün, ist dieser Hinweis die **einzige** Meldung: Bei sauberem Grün schweigt das Gate (6.12.15), ausser das Zählwerk oder die Sperre (e) sind ausgefallen. Ausserhalb der Zeitgrenze endet das Gate **nie** mit einem anderen Wert als 0 oder 2 |
+
+**Weshalb das blockierend zu benennen war.** Rückgabewert 1 blockiert nicht
+(3.4, CLAUDE.md, "Aktive Gates"). Ein Gate, das an einer fehlenden
+Umgebungsvariablen mit 1 endet, lässt genau in der Lage durch, in der es am
+wenigsten weiss — die gefährliche Richtung aus 6.8.4, Punkt 3, und aus 6.12.4.
+Dass der Ausfall harmlos aussieht, macht ihn nicht harmlos: Er tritt in einer
+fremden Umgebung ein, nicht in der, in der man ihn sucht.
+
+**Weshalb trotzdem kein eigener Ausgang.** Das Zustandsverzeichnis trägt nach
+6.12.11 allein das Zählwerk und nicht das Urteil. Ein blockierender Ausgang
+machte ein Gate, das nicht zählen kann, auch bei grüner Kette rot — ein Gate,
+das nichts mehr durchlässt. Die gewählte Behandlung ist die einzige, die in
+**beiden** Richtungen richtig ist: nicht durchlassen, weil nicht gezählt werden
+kann, und nicht blockieren, weil nicht gezählt werden kann. Sie ist ausserdem
+schon entschieden — für den nicht beschreibbaren Fall in 6.12.11 — und wird
+hier nur auf den zweiten Weg ausgedehnt, auf dem dasselbe Ergebnis eintritt.
+
+**Jede `exit`-Anweisung des Gates mit festem Wert trägt 0 oder 2** (Fremdbeleg
+aus beiden Prüfrunden, je ausgeführt; diese Rolle hat nicht nachgezählt). So —
+und ausdrücklich **nicht** als Zahl von Fundstellen — ist der Entscheid
+formuliert: Eine Zahl veraltet mit der nächsten geänderten Zeile und wäre beim
+nächsten Lauf falsch, ohne dass jemand etwas Falsches getan hätte. Prüfbar ist
+die Aussage über `grep -nE '(^|[;&|{] *)exit [0-9]+'` über das Skript; keine
+Fundstelle darf einen anderen Wert tragen. *(Runde 3, Befund S3-04: Der zuerst
+genannte Ausdruck `^\s*exit [0-9]+` fand nur `exit`-Anweisungen am Zeilenanfang
+und übersah ein eingebettetes `exit 2` in der `mktemp`-Zeile — ein Prüfmittel,
+das einen Teil des Gegenstands nicht sieht, ist die Fehlerklasse aus 6.9.2.)* Nicht "das Gate soll nicht mit 1 enden",
+sondern "es gibt keine Stelle, an der es das könnte".
+
+**d) Der Durchlass nach der Eskalation löscht den Zähler nicht**
+*(Befund N-07; ergänzt 6.12.9)*
+
+| | |
+|---|---|
+| **Vorher galt** | "Ein **Durchlass** löscht den Zähler", mit zwei Ausnahmen: der Durchlass wegen `stop_hook_active` (G9) und das Nichtlaufen für eine Rolle ohne veränderndes Werkzeug (G13) |
+| **Jetzt gilt** | Eine **dritte** Ausnahme: Der Durchlass ab dem vierten Mal nach 6.12.9 — die Übergabedatei mit der Eskalationszeile liegt vor — **löscht den Zähler nicht**. Das Kriterium ist erneut gescheitert, also zählt der Zähler wahrheitsgemäss weiter (4, 5, 6), und die Meldung nennt das n-te Mal *(Runde 2, Befund DT2-B1: Die erste Fassung dieses Nachtrags schrieb "lässt den Zähler unverändert"; das war so nie entschieden und ist hiermit berichtigt — nicht gelöscht heisst **weitergezählt**, nicht eingefroren.)* |
+
+**Weshalb.** Der Zähler dokumentiert die Eskalation, bis ein grüner Lauf die
+Serie beendet. Löschte der Durchlass ihn, begänne die Zählung beim nächsten
+`Stop` derselben Sitzung wieder bei eins: Das Gate blockierte **dreimal neu** am
+unverändert roten Kriterium und verlangte für dasselbe Problem eine **zweite**
+Übergabedatei. Das wäre die Eskalation als Formel — genau das, was 6.12.9 mit
+der Bedingung "neu, geändert oder in `HEAD` enthalten" ausschliessen will, und
+das Gegenteil dessen, was 3.4 mit dem Abbruch bezweckt: Ein Problem, das sich
+nicht von innen lösen lässt, wird **einmal** vorgelegt und nicht in
+Dreierschritten wiederholt.
+
+Gelöscht wird der Zähler weiterhin von einem Durchlass, der das Kriterium
+wirklich hinter sich lässt — einem Lauf ohne diese Abweichung. Das ist der
+Unterschied, auf den es ankommt: Ein Durchlass, der etwas **feststellt**,
+löscht; ein Durchlass, der nur **weiterlässt**, löscht nicht. Für
+`stop_hook_active` und für G13 gilt derselbe Satz, und er stand dort schon.
+
+**Ausgeführt belegt** (Fremdbeleg aus beiden Prüfungen der zweiten Runde): Über
+sechs Läufe am selben Kriterium trägt die Zählerdatei nacheinander 1, 2, 3, 4,
+5 und 6; die Forderung nach der Übergabedatei wird **nur beim dritten Mal**
+erhoben, und die Zählung beginnt nicht neu. Damit ist die Aussage geprüft und
+nicht bloss behauptet — der Unterschied, auf den V12 in diesem Abschnitt
+mehrfach zurückkommt.
+
+**e) Die Sperre entfällt nicht still, wenn das Zustandsverzeichnis fehlt**
+*(Befund N-04; ergänzt 6.12.13)*
+
+| | |
+|---|---|
+| **Vorher galt** | Die Sperrdatei liegt im Zustandsverzeichnis, ausserhalb des Arbeitsbaums (G12). Damit hing die Sperre an derselben Bedingung wie das Zählwerk — war das Verzeichnis nicht beschreibbar, entfiel sie **still** |
+| **Jetzt gilt** | Die Sperrdatei liegt im Zustandsverzeichnis; ist dieses nicht beschreibbar oder nicht bestimmbar (c), unter **`/tmp`** — fest, **nicht** `TMPDIR` —, mit demselben Namen aus dem Hash des Baumpfads. Geht auch das nicht, läuft das Gate **ohne Sperre** und sagt das **in jeder Meldung** |
+
+**Weshalb kein blockierender Ausgang.** Die Sperre schützt vor falschem
+**Rot**: Zwei gleichzeitige eigene Läufe gegen denselben Baum stören einander
+über D19 (6.12.13). Sie schützt nicht vor falschem Grün. Ihr Ausfall darf
+deshalb die Arbeit nicht anhalten — er darf aber auch nicht unsichtbar sein,
+denn ein `VERLETZT` ohne Sperre hat eine zweite mögliche Ursache, und die
+Meldung muss sie nennen, damit niemand einen Befund für bare Münze nimmt, den
+das Gate selbst mitverursacht haben kann. Das ist genau die Grenze, die 6.12.13
+unter "Die Grenze, die bleibt" schon offen ausspricht, hier für den Fall des
+ausgefallenen Verzeichnisses.
+
+**Weshalb `/tmp` fest und nicht `TMPDIR`.** Eine Sperre wirkt nur, wenn alle
+Beteiligten **dieselbe** Datei nehmen. `TMPDIR` kann je Prozess verschieden
+gesetzt sein; zwei Läufe mit verschiedenem `TMPDIR` hielten zwei verschiedene
+Sperren und liefen doch gleichzeitig. Eine Sperre, die nicht sperrt, ist
+schlechter als keine, weil man sich auf sie verlässt. `/tmp` liegt zudem
+ausserhalb jedes Arbeitsbaums; der Kettengrundsatz aus 6.1.3 bleibt gewahrt.
+
+**f) Die Wegwerfdatei liegt nachweislich ausserhalb des Baums**
+*(Befund N-06; ergänzt 6.12.15 und 6.12.9)*
+
+| | |
+|---|---|
+| **Vorher galt** | 6.12.15 verlangt, dass das Gate Standard- und Fehlerausgabe der Kette gemeinsam abfängt; **wo** die Ausgabe zwischenliegt, sagt der Entwurf nicht. Der Bau nahm `mktemp`, und `mktemp` folgt `TMPDIR`. Zeigt `TMPDIR` in den Arbeitsbaum, entsteht die Datei im **beurteilten** Baum, und D19 meldet `VERLETZT` |
+| **Jetzt gilt** | Nach dem Anlegen prüft das Gate den **physisch aufgelösten** Pfad der Wegwerfdatei. Liegt er im geprüften Baum, wird die Datei gelöscht und unter `/tmp` neu angelegt. Gelingt auch das nicht, endet das Gate mit **2** und dem Schlüssel `GATE mktemp` |
+
+**Weshalb.** Das ist der Kettengrundsatz aus 6.1.3, auf das Gate angewandt —
+dieselbe Überlegung, die den Zähler aus dem Baum genommen hat (G8) und die
+Sperrdatei (G12). Ein Gate, das den Befund erzeugt, den es meldet, misst sich
+selbst; und weil D19 den ganzen Lauf einklammert, wäre der Befund nicht einmal
+falsch, sondern richtig und trotzdem wertlos. **Geprüft** wird der Pfad und
+nicht bloss angenommen, weil `TMPDIR` von aussen kommt — V12: Ein genannter
+Massstab, den niemand prüft, ist keiner.
+
+**Weshalb hier ausnahmsweise blockiert wird.** Ohne Wegwerfdatei kann das Gate
+die Ausgabe der Kette nicht auffangen und also nicht auswerten; ohne Auswertung
+gibt es kein belegtes Grün (6.12.4). Der Ausgang gehört damit zu den
+Prüfmitteln des Gates und nicht zur Meldung — deshalb steht `mktemp` in g) auch
+in der Tabelle 6.12.11.
+
+**Die zweite Hälfte desselben Befunds** *(Runde 2, Befund DT2-B2, ausgeführt
+belegt mit einem Beobachter im 20-ms-Takt; Fremdbeleg)*. Das Gate reichte
+`TMPDIR` unverändert an `make dod` durch. Zeigt `TMPDIR` in den geprüften Baum,
+legt die **Kette selbst** dort eine Datei an — die Ziele `nachweise` und
+`abdeckung` rufen je `mktemp` auf —, für rund 0,4 s. **D19 sieht sie nicht**:
+Die Rahmenprüfung misst Prüfsummen der versionierten Dateien. Das Gate hätte
+seinen eigenen Grundsatz also gewahrt und die Kette gegen ihn laufen lassen,
+ohne dass ein Befund entstünde — der Fall, vor dem 6.8.4 warnt: Ein
+Rückgabewert 0 sagt nur, was gefunden wurde, nicht, dass nichts geschehen ist.
+
+**Entscheid:** Der Kettenlauf erhält `TMPDIR` gleich dem Verzeichnis der
+geprüften Wegwerfdatei des Gates — also demjenigen Verzeichnis, von dem oben
+nachgewiesen ist, dass es ausserhalb des Baums liegt. Damit gilt der
+Kettengrundsatz aus 6.1.3 für beide Seiten, und er gilt aus dem richtigen
+Grund: nicht, weil D19 nichts gemeldet hat, sondern weil im Baum nichts
+entsteht. Eine Umgebungsvariable, die das Gate von aussen ungeprüft
+weiterreicht, ist ohnehin die Lücke, die 6.6.1 an `$(UV)` schon einmal
+schliessen musste.
+
+**Fortgeschrieben am 2026-09-03 durch 6.12.25 c** *(Befund DT3-B1 aus Runde 3,
+Fremdbeleg)*. Die Fassung oben prüft den Pfad **nach** dem Anlegen; ausgeführt
+belegt ist, dass die Wegwerfdatei damit für rund 6,9 ms **im geprüften Baum**
+besteht, bevor sie verlagert wird. Der Wortlaut dieses Entscheids ist dabei
+erfüllt, sein Zweck — der Kettengrundsatz aus 6.1.3 — verfehlt. **Neu gilt
+zusätzlich:** Das Zielverzeichnis wird **vor** dem Anlegen bestimmt (`TMPDIR`
+physisch aufgelöst; liegt es im Baum oder ist es nicht auflösbar, gilt `/tmp`;
+dann `mktemp -p` in diesem Verzeichnis), und ein physisch nicht auflösbares
+Verzeichnis endet mit 2 und `GATE mktemp` (6.12.25 d, Befund S3-05). Die
+Prüfung nach dem Anlegen **bleibt** als Wache. Dieser Absatz wird nicht
+umgeschrieben, sondern trägt den Vermerk an Ort (6.1.2, 6.11.5).
+
+**g) Zwei weitere Prüfmittel des Gates: `sha256sum` und `mktemp`**
+*(Befund N-09 und eine Ergänzung des Koordinators; ergänzt 6.12.11)*
+
+| | |
+|---|---|
+| **Vorher galt** | 6.12.11 zählt **sieben** Prüfmittel, sechs davon blockierend. `sha256sum` — mit dem die Namen von Sperr- und Zählerdatei aus dem Pfad des geprüften Baums gebildet werden — und `mktemp` kommen darin nicht vor, obwohl das Gate beide braucht |
+| **Jetzt gilt** | Beide stehen in der Tabelle. Fehlt eines, ist das **Lage C des Gates**, Rückgabewert 2, Schlüssel `GATE sha256sum` beziehungsweise `GATE mktemp`, und die Meldung nennt den Beschaffungsweg — beide gehören zu den coreutils |
+
+**Weshalb das nachzutragen war.** V12 verlangt, dass ein genanntes Prüfmittel
+auch geprüft wird. Die Umkehrung gilt genauso und ist hier der Punkt: **Was der
+Code braucht, gehört in die Tabelle** — sonst fällt es ungenannt aus, und das
+Gate scheitert an einer Stelle, für die es keine Meldung hat. Ein fehlendes
+`sha256sum` nähme ihm die Namensbildung für Sperre und Zähler, ein fehlendes
+`mktemp` die Auswertung der Ausgabe; beides ist ein Ausfall des Instruments und
+kein Befund am Gegenstand (6.9.2).
+
+**Zur Zahl im Text darunter.** Der Absatz "Die Präzedenz" in 6.12.11 spricht von
+"allen sechs blockierenden Prüfmitteln". Diese Zahl wird **nicht
+umgeschrieben** — sie war am 2026-09-02 vor der Verifikation richtig.
+Massgeblich ist nach Regel 2 aus 6.2.2 die **Tabelle**, und sie führt seit
+diesem Nachtrag **acht** blockierende Prüfmittel und neun insgesamt; ein
+Verweis an Ort sagt das. Der Satz selbst — jede Meldung nennt das fehlende
+Mittel und den Beschaffungsweg — gilt unverändert für alle.
+
+**h) Reihenfolge der Selbstprüfungen und der `LISTE`-Schlüssel**
+*(Befund N-05; präzisiert 6.12.23 b)*
+
+| | |
+|---|---|
+| **Vorher galt** | 6.12.23 b sagt: bei mehreren fehlerhaften Zeilen "die erste in Dateireihenfolge" — ohne Rücksicht darauf, dass die Selbstprüfungen **3** (der Schritt meldet eine andere Lage als C) und **5** (die Marke nennt ein anderes Prüfmittel als der Schlüssel) die Ausgabe der Kette brauchen, die Selbstprüfungen **2**, **4** und **6** dagegen nicht |
+| **Jetzt gilt** | Die **strukturellen** Selbstprüfungen 2, 4 und 6 laufen **vor** der Kette über die ganze Liste. Blockiert wird mit der fehlerhaften Zeile mit der **kleinsten Zeilennummer**, gleich welcher der drei Prüfungen sie zuzuordnen ist. Erst wenn alle drei bestehen, läuft die Kette; danach laufen 3 und 5 über alle Einträge, und wiederum blockiert die erste in Dateireihenfolge |
+
+**Zwei Gründe, und beide stehen schon in diesem Abschnitt.** Erstens: Eine
+strukturell fehlerhafte Liste ist zu berichtigen, **bevor** die Kette bis zu
+zehn Minuten läuft (G11). Das ist keine Bequemlichkeit, sondern die Rangfolge
+aus 6.12.23 b — solange das Instrument beanstandet ist, wird über den
+Gegenstand ohnehin nicht geurteilt. Zweitens: Der Schlüssel muss über Läufe
+hinweg **stabil** sein, sonst zählt 3.4 nie dreimal dasselbe Kriterium
+(6.12.9). Hinge die Auswahl davon ab, welche Prüfung zufällig zuerst anschlägt,
+trüge dieselbe unveränderte Liste in zwei Läufen zwei Schlüssel — und die
+Eskalation griffe nie. Die kleinste Zeilennummer ist die einzige Ordnung, die
+von der Prüfreihenfolge unabhängig ist.
+
+Die Selbstprüfungen bleiben in **Zahl, Inhalt und Wirkung unverändert**; dieser
+Entscheid ordnet allein, wann sie laufen und welcher ihrer Befunde zählt.
+
+**Die Rangfolge, um einen Schlüssel ergänzt** *(Runde 3, Befund S3-06)*. Sie
+lautet vollständig: `GATE …` — `KETTE ausgabe-unlesbar` — `LISTE …` — die erste
+Abweichung in Kettenreihenfolge — `D19 …`. Neu ist allein die zweite Stelle:
+Ohne lesbare Ausgabe der Kette lässt sich **keine** Deckungsprüfung anstellen,
+denn die Selbstprüfungen 3 und 5 vergleichen mit der gemeldeten Lage und mit
+der Marke. Ein Zählschlüssel aus der Liste über eine Ausgabe, die niemand lesen
+konnte, wäre eine Aussage über nichts. Der Bau verhält sich bereits so
+(Fremdbeleg): Die Markenzahlprüfung aus k) läuft vor `LISTE 3` und `LISTE 5`;
+hier wird das entschieden statt geduldet.
+
+**i) Was der Selbsttest zusätzlich zu decken hat**
+*(Befunde N-02 und N-03 der statischen, DT-B4 und DT-B5 der dynamischen
+Prüfung; ergänzt 6.12.19)*
+
+| | |
+|---|---|
+| **Vorher galt** | 6.12.19 verlangt einen Fall für die D19-Zeile "in allen vier Schlüsselwortformen, je mit und ohne Zusatztext" und einen G13-Fall für "den belegten Fall `static-software-tester` und `pentester`". Zu G12 — welcher Arbeitsbaum geprüft wird — führt die Falltabelle **keine** Zeile |
+| **Jetzt gilt** | Der Fall zur D19-Zeile deckt **alle acht** Kombinationen. Der G13-Fall verwendet die **echten** Rollendateien `static-software-tester.md` und `pentester.md` aus `.claude/agents/`, in den Scheinbaum kopiert, dazu einen Gegenfall mit `devops-engineer.md`. Neu hinzu kommen Fälle für **G12** und je einer für die Entscheide a), c), e), f), g) und h) sowie für den Makefile-Befund N-08. Der Fall zur committeten Übergabedatei muss diese **nachweislich in `HEAD`** haben. Die Zeilen stehen in der Tabelle 6.12.19 und tragen dort den Vermerk |
+
+**Weshalb die echten Rollendateien (N-03).** G13 misst den **Gegenstand** — hat
+diese Rolle ein Werkzeug, über das ADR 0001 Schreibrecht vergibt? — und nicht
+einen Namen (6.12.14). Ein Selbsttest gegen erfundene Rollendateien prüft die
+Formannahme des Gates gegen sich selbst; genau das schliesst 6.12.19 mit dem
+zweiten Prüfweg aus. Ändert sich das `tools:`-Feld einer der drei echten
+Dateien, muss der Selbsttest es merken — sonst ist er in dem Augenblick still
+falsch, in dem er gebraucht würde.
+
+**Weshalb G12 eigene Fälle bekommt (DT-B5).** Der Entscheid a) ist die Antwort
+auf drei blockierende Befunde, die alle daran hingen, wie das Gate den Baum
+bestimmt. Ein Entscheid, dessen Fälle in der Prüftabelle fehlen, ist ein
+genannter Massstab ohne Prüfung — V12, und in diesem Abschnitt zum vierten Mal
+dieselbe Fehlerklasse. Gedeckt sind deshalb: `cwd` im Unterverzeichnis, mit
+Schrägstrich am Ende und über einen Symlink; `cwd` ausserhalb jedes
+Arbeitsbaums dieses Repositories; und der zweite Arbeitsbaum (`git worktree`),
+für den G12 überhaupt gebaut ist.
+
+**Weshalb der Fall zur committeten Übergabedatei nachzuschärfen ist (DT-B4).**
+Der Fall hat bestanden, ohne seine Behauptung zu belegen: Die Übergabedatei war
+im Augenblick der Prüfung weder neu noch geändert noch in `HEAD` — der
+Hilfscommit hatte nichts zu committen (Fremdbeleg). Das ist ein Mangel am
+**Prüfmittel**, nicht am Gegenstand: Das Gate selbst verhält sich richtig, ein
+eigener Lauf des Testers mit committeter Übergabedatei auf `TaskCompleted`
+endete mit 2 (Fremdbeleg). Ein grüner Prüffall, der nichts gemessen hat, ist
+aber die gefährlichste Zeile einer Prüftabelle — er sieht aus wie Deckung und
+ist keine. Dieselbe Unterscheidung wie in 6.9.2, eine Ebene höher.
+
+**Der Makefile-Befund N-08.** Meldet D12 Lage C und fehlen **mehrere**
+Gegenstände, so nennt `FEHLT=` den **ersten**; ein späterer `if`-Block
+überschreibt ihn nicht. Das ist keine neue Regel, sondern die Anwendung von G6:
+Die Marke trägt das fehlende Prüfmittel, und der Schlüssel der terminierten
+Lagen wird gegen genau diesen Wert geprüft (Selbstprüfung 5). Wechselte der
+Wert je nach Prüfreihenfolge, träfe ein gültiger Eintrag die Marke einmal und
+einmal nicht, und das Gate blockierte mit einer Begründung, die nicht stimmt.
+Der Selbsttest erhält dafür einen eigenen Fall.
+
+**j) Der Stand der Verifikation — Fremdbeleg, und was er nicht sagt**
+
+Alles in diesem Abschnitt ist Fremdbeleg aus den beiden Prüfberichten vom
+2026-09-02 und den Läufen des Koordinators; diese Rolle hat nichts ausgeführt
+und nichts nachgeprüft (3.4).
+
+1. **Der Selbsttest `scripts/dod-gate-selbsttest.sh` bestand vor dieser Runde
+   50 von 50 Fällen.** Der Fremdbeleg "48 von 48" in 6.12.23 d bleibt als
+   damaliger Stand stehen und wird nicht umgeschrieben — er war am 2026-09-02
+   richtig, und ein vergangener Stand belegt einen vergangenen Stand
+   (Abschnitt 9, letzter Absatz).
+2. **Die statische Prüfung ist nicht bestanden**: vierzehn Befunde, fünf davon
+   blockierend (B-01 bis B-05).
+3. **Die dynamische Prüfung ist ebenfalls nicht bestanden**: fünf Befunde, drei
+   davon blockierend. Die drei blockierenden — `cwd` in einem Unterverzeichnis
+   ergab `GATE Makefile`, ein Pfad mit Schrägstrich am Ende und ein Pfad über
+   einen Symlink ergaben `KETTE baum-widerspruch` — haben dieselbe Ursache wie
+   B-02 und B-03 und sind mit Entscheid a) gedeckt. Die beiden nicht
+   blockierenden (DT-B4, DT-B5) betreffen den Selbsttest und sind in i)
+   aufgenommen.
+4. **Ohne Beanstandung geprüft** hat die dynamische Prüfung: die
+   Ende-zu-Ende-Eskalation nach 3.4 in neun Läufen (Zähler 1, 2, 3 mit der
+   Eskalationszeile; ohne Übergabedatei weiter 2; mit neuer und mit committeter
+   Übergabedatei 0; `TaskCompleted` trotzdem 2; ein anderer Schlüssel zählt neu
+   bei 1; ein Durchlass löscht den Zähler); den Reentranz-Schutz
+   (`stop_hook_active` bei `Stop` → 0 ohne Lauf der Kette; bei `TaskCompleted`
+   nicht ausgewertet, die Kette lief); `SubagentStop` mit den echten Rollen
+   (`static-software-tester` und `pentester` → 0 ohne Lauf; `devops-engineer` →
+   Kette läuft; unbekannte, leere und plugin-bezogene Rolle → Kette läuft); die
+   Manipulationsfälle (fehlende Marke → `KETTE marke-fehlt`; Listeneintrag mit
+   existierendem Pfad → `LISTE 2 …`; Eintrag ohne ADR-Grund → `LISTE 4
+   <Zeilennummer>`; ein fremder Schreiber während des Laufs → `D19 VERLETZT`);
+   die innere Zeitgrenze; die Nebenläufigkeit (zwei Läufe durch `flock`
+   serialisiert, drei Sitzungen drei Zähler); und die Ausgabeform (auf der
+   Standardausgabe genau ein JSON-Objekt mit `systemMessage` beim Durchlass,
+   nichts beim Block, nie die Ausgabe der Kette).
+5. **Die gemessene Laufzeit gehört zu O-20 und schliesst ihn nicht.** Gemessen
+   wurden 6,4 bis 7,0 s je Lauf des Gates auf dem echten Baum (Mittel 6,65 s)
+   und 7,6 bis 8,2 s für einen vollständigen Lauf im Klon. Das ist der heutige
+   Stand **ohne** `backend/` und `deploy/`; O-20 fragt nach der Laufzeit **mit**
+   dem Grundgerüst und bleibt offen. Die Grenzen von 600 s und 900 s bleiben
+   unverändert, bis der Auftraggeber entscheidet (Abschnitt 8, O-20).
+6. **Ein Hinweis des Testers, kein Befund**, hier verzeichnet, damit die Frage
+   nicht ein zweites Mal gestellt wird: Meldet ein Lauf drei terminierte Lagen C
+   **und** D19 `VERLETZT`, trägt die Schlusszeile **Form 2** und nicht Form 4.
+   Das ist genau die Prüfreihenfolge aus 6.12.23 a — Lage C vor D19 —, und sie
+   nimmt der D19-Aussage nichts: Sie steht in ihrer eigenen Zeile, wird dort
+   gelesen, und der Zählschlüssel bleibt `D19 VERLETZT`. Kein Entscheid ändert
+   sich.
+7. **Was nach der Behebung gilt, belegt die zweite Prüfrunde — nicht dieser
+   Nachtrag.** Er entscheidet zehn Punkte; ob der Bau sie erfüllt, stellen
+   Static und Dynamic Software Tester auf einem anderen Modell fest (3.4), und
+   die Rollen, die gebaut haben, prüfen ihre eigene Arbeit nicht. Unverändert
+   bestehen bleibt auch die Forderung aus 6.12.23 d: Solange der grüne Lauf
+   gegen das **echte** `Makefile` nicht mit **Rückgabewert 0 der Kette** belegt
+   ist, gilt der Selbsttest als **nicht vollständig** — 50 bestandene Fälle
+   ändern daran so wenig wie zuvor 48.
+
+**Die zweite Prüfrunde vom 2026-09-02 (Fremdbeleg, nachgetragen).** Sie hat
+stattgefunden, und ihr Ergebnis gehört hierher, weil Punkt 7 sie ausdrücklich
+zum Massstab erklärt hat:
+
+8. **Alle fünf blockierenden Befunde aus Runde 1 sind mit eigenen Läufen als
+   behoben belegt**, statisch wie dynamisch. Der Selbsttest besteht **67 von
+   67** Fällen.
+9. **Beide Prüfungen sind wegen neuer Punkte nicht bestanden.** Statisch:
+   dreizehn Befunde, vier davon blockierend — **S-01** (die Klassifizierung von
+   D19 Lage B bei Rückgabewert 0) und **S-03**, **S-04**, **S-05** (drei
+   fehlende Selbsttestfälle). Dynamisch: zwei Befunde und ein Hinweis,
+   blockierend **DT2-B1** — der Wortlaut von d). Alle sind oben eingearbeitet:
+   S-01 und S-10 als Vermerke in 6.12.4, S-11 als Entscheid k), S-13 in c),
+   DT2-B1 in d), DT2-B2 in f), die fehlenden Fälle in der Tabelle 6.12.19.
+10. **Der Lauf am echten Bestand** (Fremdbeleg): `make dod` im echten Baum
+    endete mit **Form 2** — Lage C bei D7, D10 und D12 —, Rückgabewert 2; der
+    unmittelbare Aufruf des Gates auf dieselbe Ausgabe endete mit **0** und der
+    `systemMessage` "Durchlass mit terminierten Lagen C". Das ist genau der
+    Ausgang, den G4 vorsieht, und er ist damit erstmals am echten Bestand
+    beobachtet. Die Forderung aus 6.12.23 d ist davon zu trennen und nach
+    Fremdbeleg **erfüllt**: Selbsttestfall 28 lässt das **echte** `Makefile`
+    in einem Scheinbaum laufen, und beide Prüfer belegen für ihn **Rückgabewert
+    0 der Kette** mit Schlusszeile Form 1 (Static Software Tester, Runde 1 und
+    2; Dynamic Software Tester, Runde 1 und 2). Am echten Bestand selbst ist
+    ein grüner Lauf erst möglich, wenn die drei terminierten Lagen C durch die
+    Skripte des Grundgerüsts abgelöst sind — das ist kein Mangel des
+    Selbsttests, sondern der belegte Zustand nach 6.12.5.
+11. **Eine Beobachtung des Static Software Testers, die hier festgehalten
+    wird**: Die Fehlerklasse "ein Selbsttestfall besteht, ohne seine Behauptung
+    zu belegen" ist nun **zweimal** aufgetreten — DT-B4 in Runde 1, S-01 in
+    Runde 2. Beim **dritten** Mal greift 3.4 für dieses Kriterium: abbrechen,
+    Übergabedatei schreiben, dem Auftraggeber vorlegen. Das steht hier, damit
+    die Zählung nicht mit jeder Runde von vorn beginnt — dieselbe Überlegung,
+    aus der d) den Zähler weiterlaufen lässt.
+12. **Die dritte Prüfrunde vom 2026-09-03 (Fremdbeleg).** Alle **dreizehn**
+    Befunde aus Runde 2 sind mit eigenen Läufen **beider** Prüfer als behoben
+    belegt; der Selbsttest besteht **81 von 81** Fällen, unabhängig
+    reproduziert; `make dod` im echten Baum endete mit **Form 2** (D7, D10 und
+    D12 terminiert), Rückgabewert 2, und der Aufruf des Gates darauf mit **0**
+    und der `systemMessage` "Durchlass mit terminierten Lagen C".
+13. **Statisch gleichwohl nicht bestanden.** Blockierend ist **S3-01**: Die
+    Blockmeldung nennt nur den **gezählten** Schlüssel und nicht alle
+    Abweichungen, während 6.12.9 und die Tabellenzeile 6.12.19 (Runde 1, B7)
+    verlangen: gezählt wird eine, verschwiegen wird keine. Ausgeführt belegt an
+    einem Lauf mit zwei ungedeckten Lagen C, einem `A_FAIL` und D19 `VERLETZT`
+    — genannt wurde allein D7. Der zugehörige Selbsttestfall ist grün, **ohne
+    diese Hälfte der Zusicherung zu messen**. Nicht blockierend: **S3-02** (die
+    Fälle zur Markenzahl decken nur Form 1), **S3-03** (drei Tabellenzeilen
+    verlangten eine Meldung bei sauberem Grün, die 6.12.15 ausschliesst),
+    **S3-04** (der in c) genannte `grep`-Ausdruck übergeht ein eingebettetes
+    `exit 2` in der `mktemp`-Zeile), **S3-05** (bleibt das Verzeichnis der
+    Wegwerfdatei unauflösbar, fällt die Wache **offen** aus), **S3-06**
+    (`KETTE ausgabe-unlesbar` ist in der Rangfolge nicht eingeordnet, während
+    die Markenzahlprüfung im Bau bereits vor `LISTE 3` und `LISTE 5` läuft),
+    **S3-07** (der Fall zu d) prüft nicht, dass die Forderung nach der
+    Übergabedatei kein zweites Mal erhoben wird). S3-03, S3-04 und S3-06 sind
+    als Berichtigungen an Ort eingearbeitet — in den drei G12-Zeilen der
+    Tabelle 6.12.19, im `grep`-Ausdruck in c) und in der Rangfolge in h).
+14. **Dynamisch ebenfalls nicht bestanden.** **DT3-B1**: Zeigt `TMPDIR` in den
+    geprüften Baum, legt das Gate seine Wegwerfdatei **zuerst dort** an und
+    verlagert sie erst nach rund **6,9 ms** (Beobachter ohne Wartezeit, 922
+    Treffer; der 20-ms-Takt der zweiten Runde sah davon nichts). Das entspricht
+    dem **Wortlaut** von f) — geprüft wird **nach** dem Anlegen — und verletzt
+    gleichwohl den Kettengrundsatz aus 6.1.3, den f) auf das Gate anwendet. Ein
+    Entscheid, dessen Wortlaut erfüllt ist und dessen Zweck verfehlt wird, ist
+    ein Mangel des Entscheids und nicht des Baus; die Behebung steht unten als
+    Vorschlag. Die übrigen sechs Prüfpunkte blieben **ohne Beanstandung**: Die
+    Kette legt nichts mehr im Baum an; der Zähler trägt 1 bis 7 über sieben
+    Läufe; eine Umbenennung über `git mv` wird erkannt; das nicht bestimmbare
+    Zustandsverzeichnis verhält sich bei Grün wie bei Rot richtig; fünf
+    Klassifizierungsfälle und die Ausgabeform sind in Ordnung.
+15. **Dieselbe Fehlerklasse zum dritten Mal — die Arbeitseinheit ist
+    abgebrochen.** "Ein Selbsttestfall besteht, ohne seine Behauptung zu
+    belegen" ist mit S3-01 zum **dritten** Mal aufgetreten (DT-B4 in Runde 1,
+    S-01 in Runde 2, S3-01 in Runde 3). Punkt 11 hat genau diesen Fall
+    vorgezeichnet, und 3.4 verlangt dann den Abbruch. Der Koordinator hat die
+    Einheit am **2026-09-03** abgebrochen;
+    `docs/uebergaben/2026-09-02_r3-q-001-gate-gebaut.md` trägt die Zeile
+    `Eskalation 3.4: Selbsttestfall besteht, ohne seine Behauptung zu belegen`.
+    **Vorgelegt wird nicht die vierte Einzelbehebung**, sondern die Frage
+    dahinter — die Beobachtung des Static Software Testers: Die Tabelle 6.12.19
+    führt je Zeile **mehrteilige** Erwartungen, der Selbsttest je Fall **eine**
+    Zusicherung; wo eine Zeile mehr verspricht als Rückgabewert und Schlüssel,
+    bleibt der Rest ungemessen. Wie eine solche Zeile in einzeln prüfbare
+    Zusicherungen zerlegt wird, ist als **O-24** in Abschnitt 8 terminiert und
+    liegt beim Auftraggeber.
+16. **Fünf Behebungen als Vorschlag, nicht als Entscheid.** Sie gehören in die
+    nächste Einheit **nach** dem Entscheid zu O-24, weil eine vierte
+    Einzelbehebung an derselben Fehlerklasse genau das wäre, was 3.4
+    ausschliesst: (1) zu S3-01 — die Blockmeldung führt **alle** Abweichungen
+    auf, gezählt wird weiterhin **eine**; (2) zu DT3-B1 — das Zielverzeichnis
+    der Wegwerfdatei wird **vor** dem Anlegen bestimmt, die Prüfung danach
+    bleibt als Wache stehen; (3) zu S3-05 — ein unauflösbares Verzeichnis ist
+    `GATE mktemp` und damit fail-closed; (4) zu S3-02 und (5) zu S3-07 die
+    fehlenden Selbsttestfälle. Dieser Nachtrag **entscheidet sie nicht**.
+
+**k) Das Gate prüft die Zahl der Marken gegen die Selbstaussage der Kette**
+*(statischer Befund S-11 aus Runde 2; ergänzt 6.12.3 und 6.12.4)*
+
+*(Dieser Entscheid steht hinter j), weil Buchstaben so wenig umnummeriert
+werden wie D-Nummern (6.1.2). Entscheide sind a) bis i) und k); j) verzeichnet
+die Beleglage beider Prüfrunden.)*
+
+| | |
+|---|---|
+| **Vorher galt** | 6.12.3 sagt, das Gate zähle **nicht** die Kettenschritte und lese "die Aussage, nicht die Zahl"; 6.12.4 sagt, alles ausser einem belegten Grün blockiere. Zwischen beiden lag eine Lücke: Eine Ausgabe mit Baumzeile, Form-1-Schlusszeile ("alle 14 Kettenschritte durchlaufen … 14 gueltige Marken gezaehlt"), D19 `OHNE_BEFUND`, Rückgabewert 0 und **null** Marken liess das Gate **stumm mit 0** durch (ausgeführt belegt, Fremdbeleg) |
+| **Jetzt gilt** | Das Gate vergleicht die Zahl der **gelesenen** Marken mit der Zahl, die die Schlusszeile **selbst nennt** — Form 1 "`<N>` gueltige Marken gezaehlt", Form 2 und Form 4 "alle `<N>` Kettenschritte durchlaufen"; Form 3 (abgebrochen) nennt keine solche Zahl und wird darauf nicht geprüft — und es verlangt **mindestens eine** Marke. Weicht die Zahl ab oder ist keine Marke vorhanden, blockiert es unter `KETTE ausgabe-unlesbar` |
+
+**Weshalb das 6.12.3 nicht widerspricht.** Dort ist entschieden, dass das Gate
+**keine eigene** Zahl führt — keine feste Erwartung "vierzehn Schritte", die mit
+dem nächsten Kettenschritt falsch würde (V13, und die Tautologie aus Befund A3).
+Dieser Entscheid führt keine solche Zahl ein. Er prüft die Kette **gegen sich
+selbst**: Ihre Schlusszeile behauptet eine Zahl, ihre Übersicht trägt die
+Marken, und beide müssen zusammenpassen. Das ist dasselbe Muster, das die Kette
+für ihre eigenen Schritte längst anwendet — zwei Kriterien statt eines — und das
+G7 mit der Baumzeile für den Baum eingeführt hat: Eine Selbstaussage wird erst
+dann zum Nachweis, wenn sie sich gegen den Inhalt prüfen lässt.
+
+**Weshalb "mindestens eine Marke".** Ohne diese Untergrenze bliebe der teuerste
+Fall offen: eine Ausgabe, die null Marken behauptet und null Marken trägt — in
+sich stimmig und ohne jedes Urteil. Ein belegtes Grün setzt nach 6.12.4 voraus,
+dass die Kette **gelaufen** ist; eine Ausgabe ohne eine einzige Marke belegt
+keinen Lauf, sondern nur, dass jemand Zeilen gedruckt hat.
+
+**Weshalb `KETTE ausgabe-unlesbar` und kein neuer Schlüssel.** Der Fall gehört
+zur Art "nicht nachweisbar gelaufen", wie eine fehlende Übersichtszeile oder
+eine fehlende Schlusszeile (6.12.4). Ein eigener Schlüssel spaltete das
+Kriterium des Zählers, ohne dem Bearbeiter etwas anderes zu sagen: Die Ausgabe
+der Kette ist unbrauchbar, und der nächste Schritt ist derselbe. Dieselbe
+Rangfolge gilt gegenüber `D19 B-widerspruch`, der nach S-01 **vorgeht** — dort
+ist die Ausgabe lesbar, und der Widerspruch hat einen Namen.
+
+**Was diese Nachträge nicht ändern.** Kein Entscheid G1 bis G17 wird
+zurückgenommen. Die Kernarchitektur aus 5.1, die Entscheide A1 bis A13, der
+Modulschnitt aus Abschnitt 4 und die Verankerung der Verfahrensgarantien in 4.2
+und 4.3 bleiben unberührt; das Gate steht an keiner Stelle zwischen Freigabe und
+Ausführung (5.2). Keine D-Nummer wird vergeben, und die Nummernregel aus 6.1.2
+bleibt in Kraft. Die sechs Selbstprüfungen der terminierten Lagen bleiben in
+Zahl, Inhalt und Wirkung unverändert — h) ordnet allein ihre Reihenfolge. Die
+vier Schlusszeilen aus G7 und ihre Zuordnung aus 6.12.23 a bleiben unverändert.
+Kein Kettenschritt wechselt seine Lage, und kein roter Lauf wird grün. Nichts
+hier bereitet Gestrichenes vor (5.17, 5.18, 9.1, 5.10, 5.1). Und nichts hier
+ist eine Freigabe: Der Bau läuft auf die Weisung vom 2026-09-02, die förmliche
+Freigabe der Entscheidpunkte E-A bis E-K steht aus (Abschnitt 10).
+
+#### 6.12.25 O-24 — die Prüftabelle in Zusicherungen zerlegt (Entscheid des Auftraggebers vom 2026-09-03)
+
+**a) Die Form der Zerlegung**
+
+| | |
+|---|---|
+| **Vorher galt** | Die Tabelle 6.12.19 führte je Zeile einen **Fall** und eine **mehrteilige Erwartung** — "2, mit Nennung des Mittels", "0, mit `systemMessage`, die den Schritt nennt", "Durchlass beim vierten Mal", "genannt werden alle". Der Selbsttest führte je Fall **eine** Prüfung. Wo eine Zeile mehr versprach als Rückgabewert und Schlüssel, blieb der Rest ungemessen, und der Fall war grün, ohne seine Behauptung zu belegen |
+| **Jetzt gilt** | Die Tabelle 6.12.19 trägt die Spalten **Kennung, Fall, Zusicherung, Herkunft**. Jede Zeile trägt **genau eine** messbare Zusicherung: ein Rückgabewert, ein Zählschlüssel, ein Zählerstand, ein Textbestandteil der Meldung, eine leere Standard- oder Fehlerausgabe, das Bestehen oder Nichtbestehen einer Datei an einem benannten Ort. Mehrteilige Erwartungen sind in ihre Einzelzusicherungen zerlegt: "2, mit Nennung des Mittels und des Beschaffungswegs" wird zu drei Zeilen, "0, mit `systemMessage`, die den Schritt nennt" zu drei Zeilen, "Durchlass beim vierten Mal" zu Rückgabewert 0 und Zählerstand 4 |
+
+**Die Kennungen sind dauerhaft.** `Z-001`, `Z-002`, … dreistellig, in
+Tabellenreihenfolge vergeben. Sie werden **nie** umnummeriert; neue
+Zusicherungen werden **angehängt**; eine zurückgezogene Zusicherung behält ihre
+Kennung, wird in der Spalte Zusicherung mit `zurückgezogen` gekennzeichnet und
+trägt den Grund. Das ist dieselbe Regel wie für die D-Nummern (6.1.2) und aus
+demselben Grund: Eine Kennung, die wandert, taugt weder als Verweis noch als
+Nachweis. Die Spalte **Herkunft** trägt den bisherigen Vermerk der Zeile — die
+Prüfrunde, den Nachtrag oder den Befund —, damit mit der Zerlegung keine
+Beleglage verlorengeht.
+
+**Weshalb überhaupt.** Die Fehlerklasse "ein Selbsttestfall besteht, ohne seine
+Behauptung zu belegen" ist **dreimal** aufgetreten: **DT-B4** in Runde 1 (der
+Fall zur Übergabedatei behauptete, sie sei in `HEAD`, und hatte sie nicht dort),
+**S-01** in Runde 2 (die D19-Lage B bei Rückgabewert 0 wurde unter dem falschen
+Schlüssel gezählt, während der Fall grün war), **S3-01** in Runde 3 (die
+Blockmeldung nannte nur die gezählte Abweichung, während die Tabellenzeile
+"genannt werden alle" verlangt, und der Fall war grün). Dreimal ist dieselbe
+Ursache berichtigt worden, dreimal ist sie an anderer Stelle wiedergekehrt. Das
+ist kein Fehler des einzelnen Falls, sondern des Schnitts: Eine Zeile, die vier
+Dinge verspricht und einen Fall bekommt, misst eines und schweigt über drei.
+Nach 3.4 wird an dieser Stelle nicht ein viertes Mal nachgebessert, sondern der
+Schnitt geändert.
+
+**Der Selbsttest trägt je Kennung genau eine Prüfung** *(zweiter Teil des
+Entscheids a; er bekommt keinen eigenen Buchstaben, weil Zerlegung und Deckung
+eine Festlegung sind — eine Tabelle ohne mechanische Deckung wäre wieder nur
+eine Absichtserklärung)*
+
+Je Kennung **eine** Prüfung, nicht mehr und nicht weniger. Je Prüfung **eine**
+Zeile auf der Ausgabe, in einer der beiden Formen
+
+```
+BESTANDEN Z-nnn <Kurztext>
+FEHLGESCHLAGEN Z-nnn <Kurztext>
+```
+
+Am Ende liest der Selbsttest die Kennungen aus der Tabelle 6.12.19 **dieser
+ADR-Datei** — alle Zeilen, die mit `| Z-` beginnen — und vergleicht sie mit den
+Kennungen, die seine eigenen Prüfungen ausgegeben haben. Er endet mit einem
+**Rückgabewert ungleich 0**, wenn
+
+1. eine Kennung der Tabelle keine Prüfung hat, oder
+2. eine Prüfung eine Kennung trägt, die nicht in der Tabelle steht.
+
+Die Deckung wirkt also **in beide Richtungen**. Zurückgezogene Kennungen sind
+von der Deckung ausgenommen und werden als solche ausgegeben, damit ihr Wegfall
+sichtbar bleibt und nicht als Lücke erscheint.
+
+**Die Kopplung von Test und ADR ist gewollt.** Die Tabelle ist die
+Spezifikation, und der Test liest die Spezifikation, statt sie zu wiederholen.
+Das ist V13 in seiner strengen Form: Eine Angabe, die nichts steuert, sondern
+etwas anderes wiederholt, wird gestrichen — hier wird sie nicht gestrichen,
+sondern zur einzigen Quelle gemacht. Wer eine Zusicherung in die Tabelle
+schreibt, ohne sie zu prüfen, macht den Selbsttest rot; wer eine Prüfung
+schreibt, die in der Tabelle nicht steht, ebenso.
+
+**Was das strukturell schliesst.** Die **stumme Lücke**. Bisher konnte eine
+Zusicherung ungemessen bleiben, ohne dass irgendetwas rot wurde — sie stand in
+einer Zeile, die einen anderen Teil ihrer selbst maass, und nur ein aufmerksamer
+Prüfer fand sie; dreimal hat es einen Prüfer und eine ganze Runde gebraucht.
+Nach diesem Entscheid ist "ungemessen" ein Zustand, den die **Maschine** findet:
+Die Kennung steht in der Tabelle, keine Prüfung trägt sie, der Selbsttest endet
+ungleich 0. Der Befund entsteht damit im Bau und nicht erst im Review.
+
+**Was das nicht schliesst.** Eine **schwache Prüfung**, die ihre Zusicherung nur
+scheinbar misst — die etwa den Rückgabewert prüft und ihn `Z-051` nennt, oder
+die einen Text sucht, den die Meldung immer trägt. Die Deckung ist mechanisch
+und zählt Kennungen; sie kann nicht beurteilen, ob eine Prüfung ihren Gegenstand
+wirklich misst. Das bleibt Sache des Static und des Dynamic Software Testers auf
+einem anderen Modell als die Umsetzung (3.4), und es bleibt der Grund, weshalb
+die Rolle, die das Gate baut, es nicht selbst abnimmt. Der Entscheid verkleinert
+die Prüffläche des Menschen, er beseitigt sie nicht: Zu beurteilen ist neu, **ob
+eine Prüfung misst, was ihre Zeile sagt** — und nicht mehr, **ob überhaupt
+gemessen wird**.
+
+**Erweitert am 2026-09-03 um die Messvorschrift je Zusicherung** *(Buchstabe f
+unten, Befunde S4-01 und DT4-02 aus Runde 4)*. Die Zerlegung nach a) macht
+sichtbar, **dass** eine Kennung eine Prüfung hat; sie sagt nichts darüber, **ob**
+die Prüfung den Wortlaut der Zeile ausschöpft. Genau an dieser Stelle ist
+`Z-129` gescheitert. Seit dem 2026-09-03 nennt deshalb jede Zusicherung ihren
+Messumfang, und die Prüfung misst genau diesen Umfang; die Einzelheiten stehen
+in f).
+
+**b) Zu S3-01: Die Blockmeldung nennt alle Abweichungen**
+
+| | |
+|---|---|
+| **Vorher galt** | 6.12.9 und die Tabellenzeile aus Runde 1 (B7) verlangen: gezählt wird eine, verschwiegen wird keine. Der Bau nannte nur den **gezählten** Schlüssel; ausgeführt belegt an einem Lauf mit zwei ungedeckten Lagen C, einem `A_FAIL` und D19 `VERLETZT`, genannt wurde allein D7 |
+| **Jetzt gilt** | Die Blockmeldung führt **jede** Abweichung des Laufs auf: jede `A_FAIL`-Marke, jede ungedeckte Lage C mit ihrem `FEHLT=`-Wert und den D19-Befund. **Gezählt** wird weiterhin **eine** — die erste in Kettenreihenfolge (G8, 6.12.9), damit der Zähler ein Kriterium zählt und nicht ein Bündel |
+
+Gemessen wird das über `Z-049` bis `Z-053`. Der Grund für die Trennung von
+Nennen und Zählen bleibt unverändert: Wer weiterarbeiten soll, muss alles sehen,
+was ihn aufhält; wer nach 3.4 abbricht, muss wissen, **welches** Kriterium
+dreimal gescheitert ist.
+
+**c) Zu DT3-B1: Das Zielverzeichnis der Wegwerfdatei wird vor dem Anlegen bestimmt**
+
+| | |
+|---|---|
+| **Vorher galt** | 6.12.24 f prüft den Pfad der Wegwerfdatei **nach** dem Anlegen und verlagert sie, wenn er im Baum liegt. Ausgeführt belegt: Zeigt `TMPDIR` in den geprüften Baum, entsteht die Datei zuerst **dort** und wird erst nach rund 6,9 ms verlagert. Der Wortlaut von f) ist erfüllt, sein Zweck — der Kettengrundsatz aus 6.1.3 — verfehlt |
+| **Jetzt gilt** | Das Zielverzeichnis wird **vor** dem Anlegen bestimmt: `TMPDIR` wird physisch aufgelöst; liegt es im geprüften Baum **oder** ist es nicht auflösbar, gilt `/tmp`. Erst dann legt das Gate die Datei mit `mktemp -p <verzeichnis>` an. Die Prüfung **nach** dem Anlegen bleibt als Wache stehen und wird nicht ersetzt |
+
+Ein Entscheid, dessen Wortlaut erfüllt und dessen Zweck verfehlt ist, ist ein
+Mangel des Entscheids und nicht des Baus — deshalb wird hier der Entscheid
+geändert und nicht der Bau gerügt. Dass die Wache bleibt, ist kein Misstrauen
+gegen die Bestimmung, sondern V12 in der eigenen Sache: Ein genannter Massstab,
+den niemand prüft, ist keiner; und die Bestimmung selbst kann durch einen Symlink
+oder ein späteres Einhängen falsch werden. **6.12.24 f ist damit
+fortgeschrieben, nicht umgeschrieben** — der dortige Vermerk verweist an Ort
+hierher, und die frühere Fassung bleibt lesbar (6.1.2, 6.11.5). Gemessen wird
+über `Z-109` bis `Z-111`.
+
+**d) Zu S3-05: Ein unauflösbares Verzeichnis fällt geschlossen aus**
+
+| | |
+|---|---|
+| **Vorher galt** | Bleibt das Verzeichnis der Wegwerfdatei physisch unauflösbar, fiel die Wache **offen** aus — das Gate arbeitete weiter, ohne zu wissen, wo es schreibt |
+| **Jetzt gilt** | Ist das Verzeichnis physisch nicht auflösbar, endet das Gate mit **2** und dem Schlüssel `GATE mktemp`. Dieselbe Behandlung wie bei einer nicht anlegbaren Wegwerfdatei, aus demselben Grund: Ohne sie ist die Ausgabe der Kette nicht auffangbar und es gibt kein belegtes Grün (6.12.4) |
+
+Gemessen wird über `Z-114` und `Z-115`.
+
+**e) Zu S3-02 und S3-07: Zwei ungemessene Zusicherungen erhalten Zeilen**
+
+Beide Befunde sind keine neuen Festlegungen, sondern Zusicherungen, die längst
+gelten und bisher keine Prüfung hatten — genau die Lücke, die Entscheid a)
+schliessen soll:
+
+- **S3-02**: Die Prüfung der Markenzahl gegen die Selbstaussage der Kette
+  (6.12.24 k) gilt für die Formen 1, 2 und 4; geprüft war nur Form 1. Neu je
+  eine Zusicherung für Form 2 (`Z-137`, `Z-138`) und Form 4 (`Z-139`, `Z-140`)
+  sowie eine für die Gegenprobe, dass **Form 3 nicht auf die Zahl geprüft wird**
+  (`Z-141`).
+- **S3-07**: Der Entscheid 6.12.24 d sagt, die Forderung nach der Übergabedatei
+  werde nach dem vierten Durchlass **nicht ein zweites Mal** erhoben; gemessen
+  wurde bisher nur das Weiterzählen. Neu als `Z-129`.
+
+**f) Zu S4-01 und DT4-02: Jede Zusicherung nennt ihren Messumfang**
+
+| | |
+|---|---|
+| **Vorher galt** | Nach a) trägt jede Zeile genau eine messbare Zusicherung und jede Kennung genau eine Prüfung. Womit gemessen wird, sagte die Zeile nicht: "Die Meldung nennt `jq`" nennt keinen Kanal, "der Zählerstand ist 4" keine Zählerdatei, "nach dem vierten Durchlass enthält keine weitere Meldung …" kein Ereignis und keinen Kanal. Die Prüfung durfte sich deshalb eine Teilmenge des Wortlauts aussuchen und war grün |
+| **Jetzt gilt** | Jede Zusicherung der Tabelle 6.12.19 nennt ihren **Messumfang** ausdrücklich: den **Kanal** — Rückgabewert, Standardausgabe, Fehlerausgabe, Zählerdatei, eine Datei an einem benannten Ort, ein Beobachter ohne Wartezeit —, das **Ereignis** oder die **Ereignisse**, auf die sie sich bezieht, und, wo es darauf ankommt, die **Anzahl**. Die Prüfung im Selbsttest misst genau diesen Umfang, **nicht weniger**. Eine Zusicherung ohne Kanal- und Ereignisangabe ist **unvollständig** und wird nicht in die Tabelle aufgenommen |
+
+**Weshalb.** Die Zerlegung nach a) schliesst die stumme Lücke "keine Prüfung",
+nicht die stumme Lücke "zu enge Prüfung". `Z-129` ist genau daran gescheitert:
+Die Zeile sprach von "keiner weiteren Meldung", gemessen wurde die
+**Fehlerausgabe des vierten Ereignisses** — ein Kanal und ein Ereignis von
+mehreren. Der Fall war grün, und das Verhalten widerlegte den Wortlaut. Vierter
+Auftritt derselben Fehlerklasse, und wieder nicht am einzelnen Fall zu heilen,
+sondern am Schnitt: Solange eine Zeile ihren Messumfang offenlässt, entscheidet
+ihn die Prüfung — also die Seite, die belegen soll.
+
+**Wo die Anzahl entfällt.** Umfasst ein Fall genau ein Ereignis, ist das
+Ereignis mit dem Fall benannt und wird in der Spalte Zusicherung nicht
+wiederholt; umfasst er mehrere — die Eskalationsreihe `Z-125` bis `Z-129`, die
+Zählreihen `Z-146` bis `Z-151` —, nennt die Zusicherung das Ereignis. Das ist
+V13 in der eigenen Sache: Eine Angabe, die nichts steuert, weil sie in der
+Nachbarspalte schon steht, wird nicht dupliziert.
+
+**Umfang der Nachführung.** Die Tabelle 6.12.19 ist am 2026-09-03 Zeile für
+Zeile durchgegangen worden. **75** Zeilen sind rein präzisiert — aus "Die
+Meldung nennt X" wird "Die Fehlerausgabe nennt X", aus "der Zählerstand ist n"
+wird "Die Zählerdatei trägt nach dem n-ten Ereignis den Stand n", aus "der
+Schlüssel ist X" wird "Die Zählerdatei trägt den Schlüssel X", aus "die Attrappe
+verzeichnet einen Aufruf" wird "Das Aufrufprotokoll der Attrappe (Datei im
+Prüfaufbau) verzeichnet einen Aufruf", aus "die Auswertung ordnet zu" wird der
+Kanal, an dem die Zuordnung sichtbar ist. **Der Sinn jeder Zeile bleibt
+unverändert, die Kennungen bleiben.** Deshalb tragen die präzisierten Zeilen
+auch **keinen** neuen Herkunftsvermerk: Herkunft der Präzisierung ist dieser
+Buchstabe, und er gilt für die ganze Tabelle; ein Vermerk in 75 Zeilen wäre
+Rauschen ohne Steuerwirkung. Eigene Herkunft tragen allein die beiden Zeilen,
+deren **Aussage** sich ändert (`Z-129` nach g, `Z-110` und `Z-111` nach h).
+
+**g) Zu S4-01: `Z-129` wird berichtigt, nicht zurückgezogen**
+
+| | |
+|---|---|
+| **Vorher galt** | "Nach dem vierten Durchlass enthält keine weitere Meldung die Zeile `Eskalation 3.4:` — die Forderung wird nicht ein zweites Mal erhoben". Gemessen wurde die Fehlerausgabe des vierten Ereignisses. Ausgeführt belegt: Die Durchlassmeldungen des fünften und des sechsten Ereignisses tragen die Zeichenfolge `Eskalation 3.4: <Schlüssel>` wörtlich auf der Standardausgabe — als **Zitat der Übergabezeile**, die den Durchlass begründet |
+| **Jetzt gilt** | Der Wortlaut ist auf das Gemeinte zurückgeführt: Bei **jedem** Ereignis nach dem vierten Durchlass — geprüft am fünften Ereignis (`Stop`) und an einem `TaskCompleted` im selben Zustand — enthält **weder** die Standardausgabe **noch** die Fehlerausgabe die **Forderung** nach der Übergabedatei (Zeichenfolge "verlangt die Übergabedatei"). Das wörtliche Zitat der Zeile `Eskalation 3.4: <Schlüssel>` als Begründung des Durchlasses ist ausdrücklich **zulässig** |
+
+Zurückgezogen wird die Zusicherung nicht, weil die Sache richtig und weiterhin
+zu prüfen ist: Wer die Übergabedatei geschrieben hat, darf nicht ein zweites Mal
+aufgefordert werden, sie zu schreiben — das war der Entscheid 6.12.24 d und
+bleibt es. Falsch war allein der **Messgegenstand**: Die Zeile prüfte eine
+Zeichenfolge, die auch das Zitat trägt, statt die Forderung selbst. Das ist ein
+Mangel des Entscheids, nicht des Baus; deshalb wird der Entscheid berichtigt und
+der Bau nicht gerügt — dieselbe Begründung wie in c). Die Herkunft der Zeile
+lautet neu "Runde 3, S3-07 (6.12.25 e); Runde 4, S4-01/DT4-02 berichtigt
+(6.12.25 g)", damit beide Runden am Nachweis sichtbar bleiben.
+
+**h) Zu S4-02 und DT4-01: `Z-110` zurückgezogen, `Z-111` präzisiert**
+
+| | |
+|---|---|
+| **Vorher galt** | `Z-110` sagte "D19 meldet `OHNE_BEFUND`", wenn `TMPDIR` in den geprüften Baum zeigt. `Z-111` sagte, ein Beobachter finde "zu keinem Zeitpunkt eine Datei des Gates im Baum" |
+| **Jetzt gilt** | `Z-110` ist **zurückgezogen**: Im Attrappenaufbau stammt die D19-Zeile aus der Ausgabe, die der Selbsttest selbst schreibt; die Prüfung misst dann die eigene Vorgabe und nicht das Verhalten des Gates. `Z-111` misst neu den **ganzen** geprüften Baum: Ein Beobachter ohne Wartezeit findet während des **gesamten** Laufs in allen Verzeichnissen ausser `.git` keine Datei mit dem Muster `tmp.*` |
+
+Die Kennung `Z-110` bleibt mit dem Wort "zurückgezogen", dem Grund und ihrer
+Herkunft in der Tabelle stehen und ist von der Deckung ausgenommen (a). Sie wird
+nicht gelöscht, weil eine gelöschte Zeile als Lücke erschiene und die Frage
+"wurde das je gemessen?" beim nächsten Leser erneut aufwürfe. Die Sache, um die
+es `Z-110` ging — das Gate schreibt nicht in den Baum, den es beurteilt (6.1.3)
+—, ist mit `Z-109`, `Z-111` und `Z-132` gedeckt, und zwar an Kanälen, die der
+Selbsttest nicht selbst gesetzt hat. `Z-111` beobachtete bisher nur das
+Verzeichnis, auf das `TMPDIR` zeigt; das ist enger als "im Baum" und liesse eine
+Datei an jeder anderen Stelle des Baums durch.
+
+**i) Zu S4-04: Jeder Block mit Schlüssel `GATE <Prüfmittel>` wird gezählt**
+
+| | |
+|---|---|
+| **Vorher galt** | 6.12.9 führt `GATE <Prüfmittel>` als Zählschlüssel, 6.12.23 c benennt `GATE jq` als die **eine** terminierte Ausnahme. Im Bau enden die Blöcke mit `GATE mktemp` und weitere `GATE`-Blöcke mit unmittelbarem `exit 2` und laufen nicht über die Zählung — eine zweite, nicht entschiedene Ausnahme |
+| **Jetzt gilt** | **Jeder** Block mit einem Schlüssel `GATE <Prüfmittel>` läuft über die Zählung nach 6.12.9, auch `GATE mktemp` und die übrigen bisher unmittelbar endenden Blöcke. Die **einzige** Ausnahme bleibt `GATE jq` (6.12.23 c) |
+
+Der Grund für die Ausnahme bei `jq` ist eine Unmöglichkeit, kein Ermessen: Ohne
+`jq` ist `session_id` nicht lesbar, und das Gate weiss nicht, wofür es den Block
+anschreiben soll. Bei `mktemp`, `sha256sum`, `flock`, `make`, `timeout` und
+`git` liegt die Eingabe gelesen vor; dort ist der unmittelbare Ausstieg
+Bequemlichkeit und kostet genau das, wofür der Zähler da ist — dreimal dasselbe
+fehlende Prüfmittel läuft sonst nie in die Eskalation nach 3.4, und die Rolle
+probiert weiter an einem Problem, das sich von innen nicht lösen lässt.
+Gemessen wird über `Z-146` bis `Z-151`, je Prüfmittel drei Zusicherungen:
+Schlüssel auf der Fehlerausgabe, Zählerstand `|1` nach dem ersten und `|2` nach
+dem zweiten Ereignis. Der Rückgabewert 2 dieser Blöcke ist bereits über `Z-112`,
+`Z-114`, `Z-116` und `Z-119` gedeckt und wird nicht ein zweites Mal zugesichert
+(V13). Geprüft werden zwei Prüfmittel stellvertretend — `mktemp` als der von
+S4-04 benannte Fall und `sha256sum` als zweiter, unabhängig gebauter Zweig;
+gälte die Regel nur für den beanstandeten Block, wäre sie keine Regel.
+
+**j) Zu S4-03: Der Selbsttest ist gegen Nebenläufigkeit gesperrt**
+
+| | |
+|---|---|
+| **Vorher galt** | Die Fälle `Z-104` bis `Z-108` verschieben das feste Ausweichverzeichnis `/tmp/r3cosint-dod-gate` beiseite und wieder zurück. Zwei gleichzeitig laufende Selbsttests stören sich dabei; ausgeführt belegt mit 144 von 145 bestandenen Fällen im gestörten Lauf — ein **Scheinbefund**, der weder auf einen Fehler des Gates noch auf einen des Selbsttests zeigt |
+| **Jetzt gilt** | Der Selbsttest hält für seine **gesamte** Laufzeit eine Sperre (`flock`) auf einer festen Datei unter `/tmp` (`/tmp/r3cosint-dod-gate-selbsttest.lock`). Er nimmt sie **ohne Wartezeit**; erhält er sie nicht, schreibt er die Zeile `Selbsttest laeuft bereits` auf die Fehlerausgabe und endet mit **Rückgabewert 3**, statt anzulaufen und Scheinbefunde zu erzeugen |
+
+Ein Prüfmittel, dessen Ergebnis davon abhängt, ob gerade ein zweites Exemplar
+seiner selbst läuft, ist als Nachweis untauglich — dieselbe Überlegung wie beim
+Determinismus in 6.12.19. Der Rückgabewert 3 ist bewusst weder 0 noch 2: Der
+Lauf hat **nicht** stattgefunden, und ein nicht stattgefundener Lauf darf weder
+als bestanden noch als durchgefallen erscheinen. Die feste Datei liegt unter
+`/tmp` und nicht im Arbeitsbaum, weil auch der Selbsttest den Baum nicht
+beschreibt, den die Kette beurteilt (6.1.3); sie trägt einen anderen Namen als
+das Ausweichverzeichnis des Gates, damit die Fälle `Z-104` bis `Z-108` sie nicht
+mitverschieben. Gemessen wird über `Z-152` und `Z-153`.
+
+**k) Beleglage: der Stand nach der vierten Prüfrunde**
+
+Die vierte Prüfrunde ist am 2026-09-03 durch den Static und den Dynamic Software
+Tester auf einem anderen Modell als die Umsetzung gelaufen (3.4). Ihr Ergebnis
+ist **Fremdbeleg** und von dieser Rolle nicht nachgeprüft:
+
+- **Ohne Beanstandung:** Deckung 145 zu 145 in beide Richtungen, beide
+  Manipulationsproben erkannt, die Behebungen b) bis d) im Code und mit Läufen
+  belegt, Rückgabewerte des Gates nur 0 und 2, Ausgabedisziplin gewahrt,
+  Arbeitsbaum unverändert; **dynamisch alle acht Prüfpunkte bestanden**.
+- **Statisch nicht bestanden.** Blockierend ist **S4-01** — `Z-129` besteht,
+  ohne seine Behauptung zu belegen. Das ist der **vierte** Auftritt derselben
+  Fehlerklasse, und er sitzt an einer Zeile, die in genau der Arbeitseinheit neu
+  geschrieben wurde, die die Fehlerklasse beseitigen sollte. Nicht blockierend:
+  S4-02, S4-03, S4-04, DT4-01, DT4-02.
+- **Antwort dieses ADR:** die Entscheide f) bis j). f) greift die Ursache an
+  (der Messumfang stand nicht in der Zeile), g), h), i) und j) die fünf
+  benannten Einzelbefunde.
+
+Der Stand **nach** dieser Nachführung ist damit nicht belegt. Eine **fünfte**
+Prüfrunde folgt; sie belegt ihn, nicht dieser ADR. Bis dahin gilt die
+Arbeitseinheit als nicht abgeschlossen, und nichts hier ist eine Abnahme.
+
+**Fünfte Prüfrunde vom 2026-09-03 (Fremdbeleg)**
+
+Die fünfte Prüfrunde ist am 2026-09-03 durch den Static und den Dynamic Software
+Tester auf einem anderen Modell als die Umsetzung gelaufen (3.4). Ihr Ergebnis
+ist **Fremdbeleg** und von dieser Rolle nicht nachgeprüft:
+
+- **Statisch nicht bestanden.** Blockierend ist **S5-01**: 16 Zusicherungen
+  messen einen **anderen Kanal** als den, den ihre Zeile nennt — `Z-054`,
+  `Z-080`, `Z-083`, `Z-086`, `Z-089`, `Z-092`, `Z-093`, `Z-104`, `Z-124`,
+  `Z-130`, `Z-134`, `Z-136`, `Z-138`, `Z-140`, `Z-141`, `Z-143`. Beispiele:
+  "Zählerdatei" gemessen auf der Fehlerausgabe; "Baumzeile" gemessen als leere
+  Fehlerausgabe; "Fehlerausgabe" gemessen auf der Standardausgabe oder in der
+  Kettenausgabe; "Beobachter während des Laufs" gemessen nach dem Lauf. Nicht
+  blockierend: **S5-02** — der Ausweichname der Zählerdatei bei fehlendem
+  `sha256sum` (bereinigte Rohform der `session_id`, `.claude/hooks/dod-gate.sh`)
+  ist in diesem ADR nicht terminiert; **S5-03** — `Z-018` misst die
+  **Abwesenheit** der Zählerdatei statt einen gleichgebliebenen Stand.
+- **Dynamisch nicht bestanden.** Blockierend ist **DT5-01**: `Z-111` besteht
+  **ohne Beobachtungsfenster**, weil die Attrappenkette ihre Wegwerfdatei sofort
+  löscht. Eine Mutation genau **einer** Zeile des Gates — Wegfall der
+  TMPDIR-Zuweisung vor `make` — wird von `Z-111` nur in 1 von 3 Durchgängen
+  erkannt, von `Z-109` und `Z-131` in 3 von 3.
+- **Ohne Beanstandung: alle acht dynamischen Prüfpunkte.** Selbsttest 152 von
+  152 unabhängig reproduziert; Sperre Rückgabewert 3 nach 9 ms; Eskalation sechs
+  Ereignisse; Beobachter über den ganzen Baum 0 Treffer bei 38 458 Runden mit
+  belegter Empfindlichkeit; `GATE mktemp` und `GATE sha256sum` je unter `|1` und
+  `|2` gezählt; alle vier Abweichungen genannt; echter Baum Form 2 und Gate 0;
+  Ausgabeform 11 Läufe ohne Fehler.
+
+**Fünfter Auftritt derselben Fehlerklasse.** Beide Prüfer benennen S5-01 und
+DT5-01 als **fünften** Auftritt von "ein Selbsttestfall besteht, ohne seine
+Behauptung zu belegen". Der Koordinator hat die Arbeitseinheit nach 3.4
+abgebrochen; der Stand steht in
+`docs/uebergaben/2026-09-03_r3-q-001-o-24-zusicherungen.md`.
+
+**Vorschlag beider Prüfer — als Vorschlag gekennzeichnet und hier nicht
+entschieden.** Beide schlagen dasselbe vor: den **Messumfang maschinell
+erzwingen** — (1) eine Tabellenspalte "Kanal" mit festem Wertevorrat, die der
+Selbsttest liest und gegen die je Kennung tatsächlich benutzte Messart abgleicht;
+(2) je Zusicherung eine **Mutationsprobe** — welche Änderung am Gate lässt sie
+fehlschlagen —, die der Selbsttest in einem Mutationsmodus ausführt. Der Punkt
+ist als **O-25** in Abschnitt 8 geführt und liegt beim Auftraggeber; dieser ADR
+entscheidet ihn nicht.
+
+**Wer was tut.** Diese Rolle legt die Zerlegung und die Regel fest und schreibt
+sie in diesen ADR. Den Selbsttest und das Gate ändert der **DevOps Engineer**;
+die Verifikation liegt beim **Static und beim Dynamic Software Tester** auf
+einem anderen Modell als die Umsetzung (3.4). Diese Rolle hat nichts ausgeführt
+und prüft ihre eigene Arbeit nicht.
+
+**Was dieser Entscheid nicht ändert.** Kein Entscheid G1 bis G17 und kein
+Entscheid a) bis k) aus 6.12.23 und 6.12.24 wird zurückgenommen; keine
+Zusicherung der bisherigen Tabelle entfällt, sie werden ausschliesslich zerlegt
+und mit Kennungen versehen. *(Nachtrag vom 2026-09-03: Mit h) entfällt erstmals
+eine Zusicherung — `Z-110`, weil sie im Prüfaufbau nicht messbar ist. Sie
+entfällt nicht als Sache, sondern als Prüfung; ihre Kennung bleibt mit Grund
+stehen, und ihr Gegenstand ist über `Z-109`, `Z-111` und `Z-132` gedeckt.)* Die
+Kernarchitektur aus 5.1, die Entscheide A1 bis
+A13, der Modulschnitt aus Abschnitt 4 und die Verankerung der
+Verfahrensgarantien in 4.2 und 4.3 bleiben unberührt; das Gate steht an keiner
+Stelle zwischen Freigabe und Ausführung (5.2). Keine D-Nummer wird vergeben.
+Nichts hier bereitet Gestrichenes vor (5.17, 5.18, 9.1, 5.10, 5.1). Und nichts
+hier ist eine Freigabe oder eine Abnahme: Der Entscheid des Auftraggebers vom
+2026-09-03 betrifft **O-24**; die förmliche Freigabe der Entscheidpunkte E-A bis
+E-K und die Abnahme des Gates stehen unverändert aus (Abschnitt 10). Den Stand
+nach der Umsetzung belegt erst eine weitere Prüfrunde, nicht dieser ADR — nach
+den Nachträgen f) bis k) vom 2026-09-03 die **fünfte**.
+
+#### 6.12.26 O-25 — Kanal und Mutationsprobe je Zusicherung (Entscheid des Auftraggebers vom 2026-09-03)
+
+Der Auftraggeber hat **O-25** am 2026-09-03 entschieden. Die Weisung im
+Wortlaut: "O-25 entscheiden: beides umsetzen, dann sechste Runde." **Beides**
+sind die beiden Mittel, die beide Prüfer übereinstimmend vorgeschlagen haben
+(6.12.25 k): (1) die Kanalspalte mit festem Wertevorrat, maschinell
+abgeglichen, und (2) die Mutationsprobe je Zusicherung. Sie werden hier
+festgelegt; die Umsetzung und die sechste Prüfrunde bleiben offen.
+
+**a) Die Kanalspalte — der Messumfang wird maschinell abgeglichen**
+
+| | |
+|---|---|
+| **Vorher galt** | Nach 6.12.25 f nennt jede Zusicherung ihren Messumfang, und die Prüfung misst genau diesen Umfang. Das stand als **Text** in der Tabellenzeile. Ob die Prüfung den genannten Kanal auch benutzt, prüfte nichts — ausgeführt belegt an **16** Zusicherungen, die einen anderen Kanal massen als den, den ihre Zeile nennt (S5-01), und die dennoch grün waren |
+| **Jetzt gilt** | Die Tabelle 6.12.19 trägt die Spalten **Kennung, Fall, Kanal, Zusicherung, Mutation, Herkunft**. **Kanal** ist ein Wert aus einem festen, abschliessenden Vorrat (unten). Jede Messhülle des Selbsttests trägt genau einen dieser Werte und **meldet ihn mit**; die Deckungsprüfung vergleicht je Kennung den Kanal der Tabelle mit dem gemeldeten Kanal und endet bei Abweichung mit einem **Rückgabewert ungleich 0** — zusätzlich zur bisherigen Deckung in beide Richtungen nach 6.12.25 a |
+
+**Der Vorrat, abschliessend.** Ein anderer Wert ist unzulässig; ein neuer Kanal
+entsteht nur durch eine Fortschreibung dieses Abschnitts.
+
+| Wert | Was gemessen wird |
+|---|---|
+| `rc` | Rückgabewert des Gates |
+| `stdout` | Standardausgabe des Gates (JSON) |
+| `stderr` | Fehlerausgabe des Gates |
+| `zaehler` | Inhalt der Zählerdatei |
+| `datei` | Bestehen oder Nichtbestehen einer Datei an einem benannten Ort |
+| `beobachter` | Nebenläufiger Beobachter ohne Wartezeit **während** des Laufs |
+| `kette` | Erste Zeile oder eine benannte Zeile der **direkt aufgerufenen** Kettenausgabe — `make` wird vom Selbsttest selbst mit demselben `cwd` aufgerufen |
+| `selbsttest` | Rückgabewert oder Ausgabe eines zweiten Selbsttestaufrufs |
+| `dauer` | Gemessene Zeit |
+
+**Zwei Klarstellungen, damit der Vorrat trägt.** Erstens: Nennt eine Zusicherung
+ausdrücklich den **Inhalt** einer Datei an einem benannten Ort — das
+Aufrufprotokoll der Attrappe, der Prüfsummenvergleich der Rollendateien —, ist
+das der Kanal `datei`; "Bestehen oder Nichtbestehen" schliesst den Befund an
+diesem Ort ein und meint nicht allein die Existenz. Zweitens: Nennt eine
+Zusicherung ausdrücklich **zwei** Kanäle, trägt sie **zwei** Messhüllen — je
+eine je Kanal —, und die Spalte führt beide Werte mit `+` verbunden; die
+Deckungsprüfung vergleicht dann die **Menge** der gemeldeten Kanäle mit der
+Menge der Tabelle. Das betrifft genau zwei Zeilen: `Z-129` (`stdout+stderr`,
+weil der Wortlaut "weder … noch" beide Ausgabekanäle umfasst) und `Z-152`
+(`selbsttest+dauer`, Rückgabewert **und** Zeitgrenze). Der Satz "jede Messhülle
+trägt genau einen Wert" bleibt davon unberührt — er gilt der Messhülle, nicht
+der Zeile.
+
+**Weshalb das trägt und was es nicht leistet.** Der Abgleich schliesst die
+Lücke "die Prüfung sucht sich ihren Kanal selbst aus". Er sagt nichts darüber,
+ob die Prüfung auf dem richtigen Kanal auch das Richtige sucht — dafür steht
+b). Beide zusammen sind der Ersatz für das, was bisher nur eine Prüfrunde
+gefunden hat.
+
+**b) Die Mutationsprobe — jede Zusicherung erkennt ihre eigene Verneinung**
+
+| | |
+|---|---|
+| **Vorher galt** | Die Deckung nach 6.12.25 a zählt Kennungen, der Abgleich nach a) vergleicht Kanäle. Ob eine Prüfung **trennscharf** ist — ob sie rot würde, wenn das Gate sich anders verhielte —, prüfte nichts. Ausgeführt belegt an `Z-111`: Die Zusicherung bestand, obwohl der Prüfaufbau gar kein Beobachtungsfenster herstellte, und erkannte eine Mutation genau einer Zeile des Gates nur in 1 von 3 Durchgängen (DT5-01) |
+| **Jetzt gilt** | Jede nicht zurückgezogene Zusicherung nennt in der Spalte **Mutation** in Worten die Änderung am Prüfgegenstand, die **genau diese** Zusicherung fehlschlagen lassen muss. Die ausführbare Form steht in der versionierten Datei `scripts/dod-gate-mutationen.txt`. Der Selbsttest hat einen **Mutationsmodus** (Aufruf mit `--mutationen`) |
+
+**Aufbau der Datei.** Je Zeile, durch Tabulator getrennt: **Kennung**, **Ziel**
+(`dod-gate.sh` \| `Makefile` \| `dod-gate-terminierte-lagen.txt` \|
+`selbsttest`), **Mutation** als `sed`-Ausdruck für eine **Kopie** des Ziels
+oder das Wort `keine`, **Grund**. Zeilen, die mit `#` beginnen, sind
+Kommentar. Der Prüfgegenstand selbst wird nie verändert — mutiert wird
+ausschliesslich eine Kopie im Prüfaufbau.
+
+**Was der Mutationsmodus tut, in dieser Reihenfolge.**
+
+1. Er prüft, dass **jede** nicht zurückgezogene Kennung der Tabelle genau
+   **einen** Eintrag hat und **jeder** Eintrag eine Kennung der Tabelle trägt —
+   dieselbe Deckung in beide Richtungen wie in 6.12.25 a, angewandt auf die
+   Mutationen.
+2. Er wendet jede Mutation auf eine Kopie des Ziels an und verlangt, dass die
+   Kopie sich vom Original **unterscheidet**. Ein `sed`-Ausdruck, der nichts
+   trifft, ist damit selbst ein Befund und keine stille Nulloperation.
+3. Er lässt den Fall der Kennung gegen die **mutierte Kopie** laufen und
+   verlangt, dass genau diese Kennung `FEHLGESCHLAGEN` meldet. Andere
+   Zusicherungen dürfen mitfallen — eine Mutation, die mehr trifft als eine
+   Zeile, ist zulässig; eine, die die eigene Zeile **nicht** trifft, ist es
+   nicht.
+
+**Wann `keine` zulässig ist — geschlossene Liste.** Eine Zusicherung darf
+`keine` tragen ausschliesslich mit einem dieser drei Gründe, und die Zeile
+nennt den Grund:
+
+1. Die Zusicherung beschreibt den **Selbsttest selbst** (die Sperre, `Z-152`
+   und `Z-153`). Eine Mutation daran mutierte das Messinstrument, nicht den
+   Gegenstand.
+2. Die Zusicherung ist eine **Vorbedingung des Aufbaus** — etwa die
+   Empfindlichkeit eines Beobachters oder die Feststellung, dass der Fall die
+   Übergabedatei wirklich in `HEAD` hat. Sie behauptet nichts über das
+   Verhalten des Gates, sondern stellt fest, dass der Fall den Fall herstellt.
+3. Die Zusicherung ist ein **Rückgabewert 0 eines Durchlasses**, dessen
+   Verneinung bereits durch die Mutation einer **Schwesterzusicherung desselben
+   Falls** gedeckt ist — dann nennt die Zeile die Schwesterkennung. Dieser
+   Grund ist in der heutigen Fassung von keiner Zeile in Anspruch genommen; er
+   bleibt zulässig, weil er beim Wachsen der Tabelle sonst durch eine
+   Scheinmutation ersetzt würde.
+
+Alles andere braucht eine Mutation. **Grundsatz: Eine Prüfung ist erst dann
+Beleg, wenn sie ihre eigene Verneinung erkennt.** Das ist V12 auf das
+Prüfmittel selbst angewandt — ein genannter Massstab, den niemand prüft, ist
+keiner; eine Prüfung, die nie rot werden kann, ist keine.
+
+**c) Die vier Befunde der Runde 5 als Entscheide**
+
+| Befund | Entscheid |
+|---|---|
+| **S5-01** (blockierend) | Die **16** beanstandeten Zusicherungen messen neu auf dem Kanal, den ihre Zeile nennt. `Z-124`, `Z-134`, `Z-136`, `Z-138`, `Z-140`, `Z-141`, `Z-143` lesen die **Zählerdatei** (der Wrapper `pruefe_zaehler_schluessel` besteht bereits) statt die Zeile `Schluessel: …` auf der Fehlerausgabe; `Z-083`, `Z-086`, `Z-089`, `Z-092`, `Z-093` lesen die **Baumzeile der Kettenausgabe** (Kanal `kette`) statt Rückgabewert 0 mit leerer Fehlerausgabe; `Z-054`, `Z-080`, `Z-130` lesen die **Fehlerausgabe** des Gates statt der Standardausgabe beziehungsweise der direkten Kettenausgabe; `Z-104` misst mit einem **Beobachter während des Laufs** statt mit `[ -f ]` danach. **Der Wortlaut der 16 Zeilen bleibt unverändert** — falsch war die Messung, nicht die Zusicherung; deshalb tragen sie keinen neuen Herkunftsvermerk (dieselbe Regel wie in 6.12.25 f) |
+| **DT5-01** (blockierend) | `Z-111` stellt ein **Beobachtungsfenster** her: Die Attrappenkette hält ihre Wegwerfdatei **mindestens 300 ms**, statt sie im selben Befehl wieder zu löschen. Die Zusicherung selbst bleibt; ergänzt ist der Fall um die Bedingung des Aufbaus. Die zugehörige Mutation ist die in Runde 5 benannte: **die Zeile mit der `TMPDIR`-Zuweisung vor `make` entfernt** — dieselbe Mutation, die `Z-109` und `Z-131` in 3 von 3 Durchgängen erkennen |
+| **S5-02** (nicht blockierend) | Der **Ausweichname der Zählerdatei bei fehlendem `sha256sum`** ist hiermit terminiert: die **bereinigte Rohform** der `session_id` — nur die Zeichen `A-Za-z0-9_-`, jedes andere Zeichen wird zu `_` —, bei vorhandener `agent_id` ergänzt um dieselbe Bildung über sie. Er gilt **ausschliesslich** für den Fall, dass genau `GATE sha256sum` gemeldet wird; im Regelfall bleibt es bei der gehashten Form. Nachgeführt an Ort in 6.12.9 und 6.12.11 |
+| **S5-03** (nicht blockierend) | `Z-018` misst neu den **Stand** statt der Abwesenheit: Der Fall legt vor dem Aufruf eine Zählerdatei mit einem Schlüssel und dem Stand **2** an; nach dem Aufruf trägt sie unverändert denselben Schlüssel und den Stand 2. "Unverändert" ist damit an einem Wert gemessen und nicht am Fehlen einer Datei |
+
+**d) Beleglage der fünften Prüfrunde — Fremdbeleg, nicht von dieser Rolle geprüft**
+
+Beide Prüfer, Static und Dynamic Software Tester, auf einem anderen Modell als
+die Umsetzung (3.4), am 2026-09-03:
+
+- **Ohne Beanstandung:** Selbsttest **152 von 152** Zusicherungen (`Z-001` bis
+  `Z-153`, `Z-110` zurückgezogen), mechanische Deckung 152/152/0/0; **alle
+  acht** dynamischen Prüfpunkte.
+- **Nicht bestanden**, blockierend: **S5-01** — 16 Zusicherungen messen einen
+  anderen Kanal als den, den ihre Zeile nennt; **DT5-01** — `Z-111` besteht
+  ohne Beobachtungsfenster und erkennt die Mutation einer einzigen Zeile des
+  Gates nur in 1 von 3 Durchgängen. Nicht blockierend: **S5-02** und
+  **S5-03**.
+- **Fünfter Auftritt derselben Fehlerklasse** "ein Selbsttestfall besteht, ohne
+  seine Behauptung zu belegen". Der Koordinator hat die Arbeitseinheit nach
+  3.4 abgebrochen; der Stand steht in
+  `docs/uebergaben/2026-09-03_r3-q-001-o-24-zusicherungen.md`.
+
+**Umfang dieser Fortschreibung.** Die Tabelle 6.12.19 ist Zeile für Zeile um
+Kanal und Mutation ergänzt: **153** Zeilen, davon `Z-110` zurückgezogen und
+ohne beide Werte. Verteilung der **154** Messhüllen auf **152** Zusicherungen
+(`Z-129` und `Z-152` tragen zwei): `rc` 61, `stderr` 34, `zaehler` 22,
+`stdout` 12, `datei` 12, `beobachter` 5, `kette` 5, `selbsttest` 2, `dauer` 1.
+**Sechs** Zeilen tragen `keine`: `Z-152` und `Z-153` nach Grund 1,
+`Z-043`, `Z-045`, `Z-048` und `Z-068` nach Grund 2. `scripts/dod-gate-mutationen.txt`
+führt dazu **152** Einträge — je nicht zurückgezogener Kennung genau einen,
+`Z-110` ohne Eintrag —, davon **146** mit `sed`-Ausdruck (140 gegen
+`.claude/hooks/dod-gate.sh`, 6 gegen das `Makefile`) und die sechs mit `keine`.
+
+**Wer was tut.** Diese Rolle legt Kanalvorrat, Mutationsregel und die Einträge
+der Tabelle fest und schreibt sie in diesen ADR und in
+`scripts/dod-gate-mutationen.txt`. Den Selbsttest und das Gate ändert der
+**DevOps Engineer**; die Verifikation liegt beim **Static und beim Dynamic
+Software Tester** auf einem anderen Modell als die Umsetzung (3.4). **Diese
+Rolle hat nichts ausgeführt** — weder das Gate noch den Selbsttest noch eine
+Mutation — und prüft ihre eigene Arbeit nicht.
+
+**Was dieser Entscheid nicht ändert.** Kein Entscheid G1 bis G17, keiner aus
+6.12.23, 6.12.24 und 6.12.25 wird zurückgenommen; keine Zusicherung entfällt,
+keine Kennung wandert. Die Kernarchitektur aus 5.1, die Entscheide A1 bis A13,
+der Modulschnitt aus Abschnitt 4 und die Verankerung der Verfahrensgarantien
+bleiben unberührt; das Gate steht an keiner Stelle zwischen Freigabe und
+Ausführung (5.2). Keine D-Nummer wird vergeben. Nichts hier bereitet
+Gestrichenes vor (5.17, 5.18, 9.1, 5.10, 5.1). Und nichts hier ist eine
+Freigabe oder eine Abnahme: Der Entscheid des Auftraggebers vom 2026-09-03
+betrifft **O-25**; die förmliche Freigabe der Entscheidpunkte E-A bis E-K und
+die Abnahme des Gates stehen unverändert aus (Abschnitt 10). Den Stand nach der
+Umsetzung belegt erst die **sechste** Prüfrunde, nicht dieser ADR.
+
+**e) Sechste Prüfrunde und der Bau in drei Phasen — Fremdbeleg, nicht von dieser Rolle geprüft**
+
+Die sechste Prüfrunde lief am 2026-09-03 gegen einen **unfertigen Bau**: Der
+DevOps Engineer hatte nach sechs Instanzen keinen Abschluss gemeldet. Sie ist
+**statisch nicht bestanden** (12 Befunde, `S6-01` bis `S6-12`) und **dynamisch
+nicht bestanden** (6 Befunde, `DT6-01` bis `DT6-06`). Im Einzelnen:
+
+- Die Umstellung der Messungen aus **S5-01** war für **9** Kennungen nicht
+  ausgeführt (fünfmal Kanal `kette`, dazu `Z-054`, `Z-080`, `Z-130`, `Z-141`).
+- **DT5-01** (`Z-111`) und **S5-03** (`Z-018`) waren nicht behoben.
+- Der Mutationsmodus zerlegte das Skript mechanisch in Zeilenbereiche und brach
+  für **13** Kennungen mit `unbound variable` ab.
+- **31** Mutationen wurden nicht erkannt, **3** waren wirkungslos.
+- Der Kanalparser las bei **vier** Zeilen mit maskiertem Rohrzeichen das falsche
+  Feld.
+- Die Sperre des Selbsttests wurde an Beobachterprozesse vererbt.
+
+Der Koordinator hat den Bau daraufhin in **drei kontrollierten Phasen** zu Ende
+führen lassen — (1) Fallfunktionen mit Register, (2) Messungen, (3) Mutationen
+—, je mit Zwischenkontrolle durch den **Static Software Tester**. Ergebnis,
+ebenfalls Fremdbeleg:
+
+| Phase | Stand | Belegt |
+|---|---|---|
+| **1 Fallfunktionen** | erledigt | Alle Fallfunktionen stehen in fester Reihenfolge in einem Register; `mutationsmodus_ausfuehren` lässt je Kennung **nur die registrierte Funktion** isoliert laufen — `env -i` mit `timeout 30` gegen eine mutierte Kopie in einem eigenen `mktemp -d`-Arbeitsverzeichnis. Die Prüfungen des Modus bleiben: Deckung Mutationsdatei/Tabelle beidseitig, Kopie muss sich vom Original unterscheiden (sonst "wirkungslos"), genau die Kennung meldet `MUTATION ERKANNT`/`MUTATION NICHT ERKANNT`, Schlusszeile mit allen fünf Zählern und Dauer, Rückgabewert 0 nur bei `nicht_erkannt=0` **und** `wirkungslos=0`. Kein Fall bricht mehr mit `unbound variable` ab; ein nicht lauffähiger Fall würde als `FALL NICHT LAUFFAEHIG Z-nnn` gezählt (im Lauf: 0). Der Sperrdeskriptor wird vor dem Kindprozess in einer Subshell geschlossen (`exec {SELBSTTEST_SPERRE_FD}>&-`), weil `env` und `timeout` ihn sonst erben; Sperrtest: Abbruch nach 5 s (Rückgabewert 124), danach `flock -n` erfolgreich. `bash -n` fehlerfrei; Normalmodus Rückgabewert 0, **152 von 152**, Deckung 152/152/0/0. Mutationsmodus Rückgabewert 2 — erwartet — mit "146 geprueft, 125 erkannt, 18 nicht erkannt, 6 ohne Mutation (keine), 3 wirkungslos, Dauer 153s", 0 Treffer `unbound variable` |
+| **2 Messungen** | erledigt | `Z-083`, `Z-086`, `Z-089`, `Z-092`, `Z-093` über die neue Messhülle `pruefe_kette_zeile`; `Z-054` über `pruefe_stderr_enthaelt`; `Z-080` und `Z-130` als `kette`-Messung **mit Bericht statt verbogener Messung**; `Z-141` über `pruefe_zaehler_schluessel`; `Z-018` über eine vorbelegte Zählerdatei; `Z-111` mit 300 ms Haltezeit in der Attrappenkette; Parserfix für maskierte Rohrzeichen (`\|` über einen Platzhalter). **DT6-05** ist ein Codefix im Gate: Der Block `GATE sha256sum` läuft neu als **allererster** Block in `.claude/hooks/dod-gate.sh`. Gegenbeweis zu `Z-111` neu geführt: isolierter Lauf gegen eine Kopie des Gates ohne die Zeile `TMPDIR="$ausgabe_verz_phys"` — **3 von 3** Durchgängen `FEHLGESCHLAGEN`. Normalmodus Rückgabewert 0, 152 von 152; der Kanalabgleich meldet **genau zwei** Abweichungen, `Z-080` und `Z-130` |
+| **3 Mutationen** | **unvollständig** | Negativbefund der Zwischenkontrolle: Der Arbeitsbaum ist vor und nach beiden Läufen zeichengleich — weder Selbsttest noch Gate schreiben in den Baum. Beanstandet sind zwei Mutationen: `Z-124` (der `sed`-Ausdruck ist nicht trennscharf, 10 Treffer einschliesslich einer Kommentarzeile) und `Z-133` (der Ausdruck trifft die gemeinte Stelle, die Messung isoliert die zerstörte Eigenschaft aber nicht, weil der zweite Disjunkt den geforderten Rückgabewert 2 weiterträgt). Beide erklären zugleich, weshalb diese Mutationen unerkannt bleiben. Die Zahlen **18 nicht erkannt** und **3 wirkungslos** sind damit nicht abgetragen |
+
+**Was daraus entschieden ist.**
+
+1. **`Z-080` und `Z-130` messen den Kanal `kette`.** Die Tabelle 6.12.19 ist
+   entsprechend fortgeschrieben. Grund in der Sache: Bei `Z-080` nennt die
+   Fehlerausgabe des Gates den Beschaffungsweg nicht — sie führt die Lage C mit,
+   der Beschaffungsweg `git fetch --unshallow` steht in der Kettenausgabe; bei
+   `Z-130` blockiert das Gate im Fall des Prüfaufbaus mit `GATE git`, bevor die
+   Kette läuft, sodass die Marke von D12 allein auf der direkt aufgerufenen
+   Kettenausgabe zu lesen ist. Der Kanal ist damit nicht "der bequemere", sondern
+   der einzige, auf dem die Zusicherung überhaupt Gegenstand hat.
+2. **Berichtigung zu c).** Der Entscheid zu **S5-01** hält fest, der Wortlaut der
+   16 Zeilen bleibe unverändert, weil dort die Messung falsch war und nicht die
+   Zusicherung. Für `Z-080` und `Z-130` trifft das nicht zu: Beide Zeilen nannten
+   mit "Die Fehlerausgabe nennt …" den falschen Gegenstand. Ihr Wortlaut ist
+   deshalb auf die Kettenausgabe präzisiert und ihr Herkunftsvermerk um diesen
+   Abschnitt ergänzt. Für die übrigen 14 Zeilen bleibt c) unverändert gültig.
+3. **Verteilung der Messhüllen.** Der Absatz "Umfang dieser Fortschreibung" liest
+   sich damit neu: `stderr` **32** statt 34, `kette` **7** statt 5; alle übrigen
+   Werte unverändert. Zahl der Zeilen, der Zusicherungen, der Messhüllen und der
+   Einträge in `scripts/dod-gate-mutationen.txt` ändern sich nicht.
+4. **Die Ausnahmeliste im Selbsttest entfällt.** Der Bau hat die beiden
+   Abweichungen vorläufig über eine benannte Liste (`kanal_ausnahmen_bekannt`)
+   geduldet, damit der Normalmodus überhaupt einen Rückgabewert 0 erreichen kann.
+   Mit dieser Fortschreibung stimmen Tabelle und Messung überein; die Liste ist
+   **ersatzlos zu entfernen**, sonst dulden zwei Zeilen eine Abweichung, die es
+   nicht mehr gibt — und der Abgleich nach a) verlöre für sie seine Wirkung.
+   Auszuführen durch den DevOps Engineer, nicht durch diese Rolle.
+5. **`keine` mit Grund 3: nichts nachzuziehen.** Der Bestand von
+   `scripts/dod-gate-mutationen.txt` führt **sechs** Zeilen mit `keine` — `Z-152`
+   und `Z-153` nach Grund 1, `Z-043`, `Z-045`, `Z-048` und `Z-068` nach Grund 2.
+   **Keine** Zeile nimmt Grund 3 in Anspruch. Damit deckt sich der Bestand mit
+   b), und die dort festgehaltene Aussage bleibt zutreffend.
+6. **DT6-05 wie belegt festgehalten:** `GATE sha256sum` als erster Block des
+   Gates. Das ist die Reihenfolge, die der DevOps Engineer gemessen hat; ein
+   Ausweichname der Zählerdatei nach c)/S5-02 kann nur greifen, wenn die
+   Feststellung des fehlenden Prüfmittels **vor** jeder Zählung steht.
+
+**Was offen bleibt.** Phase 3 ist nicht abgeschlossen: `Z-124` und `Z-133`
+brauchen trennscharfe Mutationen, und die 18 nicht erkannten sowie 3
+wirkungslosen Mutationen sind abzutragen. Erst danach ist eine **siebte**
+Prüfrunde sinnvoll; sie belegt den Stand, nicht dieser ADR. **O-25 ist
+weiterhin nicht förmlich abgenommen**, ebenso wenig die Entscheidpunkte E-A bis
+E-K (Abschnitt 10) — dieser Entscheid liegt beim Product Owner und beim
+Auftraggeber. **Diese Rolle hat nichts ausgeführt** — weder Gate noch Selbsttest
+noch eine Mutation —, hat nichts committet und prüft ihre eigene Arbeit nicht
+(3.4). Alle Zahlen und Läufe dieses Abschnitts sind Fremdbeleg aus den Berichten
+des DevOps Engineers und des Static Software Testers.
+
+**f) Nachträge aus der siebten Prüfrunde — Beleglage Fremdbeleg, Entscheide dieser Rolle**
+
+Die siebte Prüfrunde lief am 2026-09-03, Static und Dynamic Software Tester auf
+einem anderen Modell als die Umsetzung (3.4). **Alle Zahlen und Läufe dieses
+Abschnitts sind Fremdbeleg aus ihren Berichten**; diese Rolle hat nichts
+ausgeführt — weder Gate noch Selbsttest noch eine Mutation — und prüft ihre
+eigene Arbeit nicht.
+
+**Beleglage, Fremdbeleg.**
+
+- **Normalmodus:** Rückgabewert 2 aus **zwei** Ursachen. `Z-089` wird **doppelt**
+  gemeldet, weshalb die Schlusszeile 153 statt 152 nennt; und `Z-130` misst den
+  Kanal `stderr`, während die Tabelle seit e) `kette` trägt. Der Kanalabgleich
+  ist sonst ohne Abweichung, die Deckung 152/152/0/0.
+- **Mutationsmodus:** Rückgabewert 2 — 146 geprüft, 141 erkannt, **5 nicht
+  erkannt** (`Z-114`, `Z-124`, `Z-132`, `Z-133`, `Z-139`), 6 ohne Mutation, **0
+  wirkungslos**.
+- **Befunde:** `S7-01`/`DT7-01` (Kanal `Z-130`), `S7-02`/`DT7-02` (die fünf nicht
+  erkannten Mutationen), `S7-03` (die Ausnahmeliste `kanal_ausnahmen_bekannt`
+  besteht mit `Z-080` weiter, obwohl e) Punkt 4 ihre Entfernung anordnet),
+  `S7-04`/`DT7-04` (`Z-089` doppelt), `S7-05` (`pruefe_wahr` nimmt den Kanal als
+  freies Argument, 33 Aufrufstellen), `S7-06` (feste Sperrdatei unter `/tmp`),
+  **`DT7-03` (blockierend, eigene Mutation des Prüfers)** und `DT7-05` (Hinweis,
+  der Beobachter von `Z-111` sucht nur `tmp.*`).
+
+`DT7-03` wiegt am schwersten und ist neu: Wird im Gate der gesuchte Text der
+Übergabedatei von `Eskalation 3.4: $primaer_schluessel` auf `Eskalation 3.4:`
+verkürzt (Zeile 273, ausgewertet 294 und 308), fällt **keine** der 152
+Zusicherungen. Die Bindung des Durchlasses an **den gezählten** Schlüssel ist
+damit heute nicht zugesichert — ein Loch in der Eskalationsregel 3.4 selbst,
+nicht bloss im Prüfmittel.
+
+**Die Entscheide.**
+
+1. **`Z-139` trägt neu `keine` mit Grund 3.** Die Verneinung — Form 4 von der
+   Markenzahl-Prüfung ausgenommen — ist im selben Fall durch die Schwester
+   `Z-140` gedeckt, deren Mutation der Schlüssel ist: Fiele die Prüfung weg,
+   trüge die Zählerdatei `KETTE ausgabe-unlesbar` nicht mehr. Der Kanal `rc`
+   dieser Zeile kann sie nicht trennen, weil der Rückgabewert 2 im Prüfaufbau
+   auch aus `D19 VERLETZT` folgt. Die Spalte Mutation ist entsprechend gesetzt;
+   `scripts/dod-gate-mutationen.txt` folgt der Tabelle.
+2. **Grund 3 ist damit weiter gefasst als in b).** b) beschreibt ihn als
+   "Rückgabewert 0 eines Durchlasses"; das trifft weder auf `Z-139` noch auf
+   `Z-155` zu. Grund 3 lautet neu: *Die Zusicherung teilt den Fall mit einer
+   Schwesterzusicherung, und ihr eigener Kanal kann die Verneinung nicht von
+   anderen Ursachen desselben Messwerts trennen, während die Schwester sie
+   trennscharf misst; die Zeile nennt die Schwesterkennung und den Grund der
+   Nichttrennbarkeit.* Die Feststellung in b) und in e) Punkt 5, **keine** Zeile
+   nehme Grund 3 in Anspruch, ist mit dieser Fortschreibung überholt: `Z-139`
+   und `Z-155` nehmen ihn. Der Grundsatz bleibt unberührt — eine Zeile, die
+   `keine` trägt, muss belegen, **wer sonst** die Verneinung sieht; ohne
+   benannte Schwester ist `keine` unzulässig.
+3. **`Z-133` ist auf den Fall präzisiert, in dem die Bedingung allein trägt.**
+   Die Schlusszeile nennt Form 1 mit genau `0 gueltige Marken gezaehlt`, und es
+   liegen null Marken vor: gelesene und genannte Zahl stimmen überein, der
+   zweite Disjunkt greift nicht, allein die Forderung nach mindestens einer
+   Marke trägt den Block. Die Mutation — Entfernen dieses Disjunkts — lässt den
+   Lauf dann durch, und `Z-133` fällt. Bisher nannte der Fall eine Zahl grösser
+   0 in der Schlusszeile; dort trug der zweite Disjunkt den Rückgabewert 2
+   weiter, und die Mutation blieb unsichtbar (`S7-02`).
+4. **`Z-114` misst neu, was die Wache leistet, auf `rc+datei`.** Zugesichert ist:
+   Bei physisch nicht auflösbarem Verzeichnis der Wegwerfdatei endet das Gate mit
+   2 **und** die Kette ist **nicht** gelaufen — belegt daran, dass die Spurdatei,
+   die die Attrappenkette bei jedem Lauf an einem benannten Ort ausserhalb des
+   geprüften Baums hinterlässt, **fehlt**. Erst damit erkennt die Zeile die
+   Mutation "die Wache fällt offen aus" (`if false`): Der Rückgabewert 2 allein
+   trennt nicht, weil er im Prüfaufbau ohnehin fällt; die gelaufene Kette trennt.
+   Der dritte Teil des Verhaltens — Schlüssel `GATE mktemp` — bleibt bei der
+   Schwester `Z-115` (Kanal `zaehler`) und wird **nicht** doppelt geführt; eine
+   Kennung misst, was keine andere misst.
+   *Berichtigt durch Punkt 13 (Bau 4): Die Prämisse, die Kette liefe unter der
+   Verneinung, trifft in der herstellbaren Lage nicht zu; `Z-114` bleibt bei
+   `rc`, Mutation `keine` (Grund 3, Schwester `Z-115`).*
+5. **`Z-132` misst neu auf `datei`, nicht mit einem Beobachter.** Zugesichert ist:
+   Die Kette **erhält** ein `TMPDIR` ausserhalb des geprüften Baums. Gemessen wird
+   das an einer Spurdatei ausserhalb des Baums, in die die Attrappenkette das ihr
+   wirksam übergebene `TMPDIR` schreibt und die der Fall danach liest. Die
+   Abgrenzung zur Schwester `Z-131`: `Z-131` liest das **Aufrufprotokoll** und
+   sagt, was das Gate übergeben hat; `Z-132` liest die Spur der Kette und sagt,
+   was in der Kette **angekommen** ist. Mutation für beide: die Zeile mit der
+   `TMPDIR`-Zuweisung vor `make` entfernt.
+6. **`Z-124` bekommt eine verankerte Mutation und einen Fall, an dem "die erste"
+   messbar ist.** Der Fall trägt neu **zwei** fehlerhafte Zeilen mit
+   **verschiedenen** Schlüsseln (Selbstprüfung 2 und 6); erst dann unterscheidet
+   sich "erste in Dateireihenfolge" von "letzte". Die Mutation ist auf die
+   **Abbruchanweisung der strukturellen Selbstprüfungen (2, 4, 6)** beschränkt —
+   das `break` innerhalb des Blocks, der den Schlüssel der Strukturprüfung setzt.
+   Der `sed`-Ausdruck ist über diesen Block zu verankern, durch Bereichsadresse
+   oder mitgeführtes Kontextmuster; ein Ausdruck wie `s#break$#continue#`, der 10
+   Zeilen des Skripts trifft, ist ein **Befund** und keine Mutation. Der
+   Mutationsmodus prüft heute nur, dass die Kopie sich vom Original
+   unterscheidet; ergänzend gilt: Die Mutation trifft **genau die Stelle, die die
+   Spalte nennt**, und keine Zeile ausserhalb.
+7. **Neu `Z-154` und `Z-155` — die Bindung des Durchlasses an den Schlüssel
+   (`DT7-03`).** Fall: vierter Stop nach drei Blocks am selben Kriterium mit
+   einer Übergabedatei in `HEAD`, deren Eskalationszeile einen **anderen**
+   Schlüssel nennt als den gezählten. `Z-154` (Kanal `rc`): Rückgabewert 2 — der
+   Durchlass öffnet sich **nicht**; Mutation: der im Gate gesuchte Text auf
+   `Eskalation 3.4:` ohne Schlüssel verkürzt. `Z-155` (Kanal `zaehler`): Die
+   Zählerdatei trägt nach dem vierten Ereignis den gezählten Schlüssel mit dem
+   Stand 4 — der Zähler zählt weiter. `Z-155` trägt **`keine`** nach dem in
+   Punkt 2 gefassten Grund 3: Der Stand 4 gilt nach `Z-125` auch beim Durchlass,
+   der Kanal `zaehler` kann die verkürzte Suche also nicht von der richtigen
+   trennen; die Trennung leistet `Z-154`. Diese Rolle schreibt `Z-155`
+   ausdrücklich **nicht** mit einer Mutation, die sie nicht erkennen kann — das
+   wäre der sechste Auftritt derselben Fehlerklasse, diesmal im ADR statt im
+   Skript.
+8. **`Z-130` bleibt beim Kanal `kette`** (e), Entscheid 1, in der Sache
+   unverändert: Im Prüfaufbau blockiert das Gate mit `GATE git`, bevor die Kette
+   läuft; die Marke von D12 ist allein auf der direkt aufgerufenen Kettenausgabe
+   zu lesen. Zu ändern ist die **Messung**, nicht die Zeile (`S7-01`/`DT7-01`).
+   Die Ausnahmeliste `kanal_ausnahmen_bekannt` ist **ersatzlos zu entfernen** —
+   das ordnet e) Punkt 4 bereits an, und `S7-03` belegt, dass es nicht ausgeführt
+   ist. Sie duldet heute eine Abweichung, die es nach der Tabelle nicht mehr
+   geben darf, und nimmt dem Abgleich nach a) für diese Zeile die Wirkung.
+9. **`Z-089` wird genau einmal gemessen (`S7-04`/`DT7-04`).** Die doppelte
+   Messhülle ist zu entfernen. Zusätzlich gilt für den Selbsttest als
+   Bauvorschrift: Die Deckungsprüfung zählt **eindeutige** Kennungen, und eine
+   Kennung, die mehr als eine Meldung trägt, ist selbst eine Abweichung mit
+   Rückgabewert ungleich 0 — sonst kann eine falsche Schlusszahl aus einer
+   Doppelmeldung wie eine erfüllte Deckung aussehen.
+10. **`pruefe_wahr` und der freie Kanal (`S7-05`) — entschieden.** Die freie
+    Kanalangabe ist zulässig **ausschliesslich** für `beobachter`, `dauer`,
+    `selbsttest` und `datei`; das sind die Messungen ohne typisierte Standardhülle.
+    Für `rc`, `stdout`, `stderr`, `zaehler` und `kette` **müssen** die typisierten
+    Hüllen verwendet werden, die den Kanal aus dem Messmittel selbst melden. Der
+    Kanalabgleich **verwirft** eine Meldung von `pruefe_wahr`, die einen dieser
+    fünf Kanäle nennt, als **Abweichung**. Grund: Die Selbstauskunft eines Falls
+    ist keine mechanische Bindung — sie sagt, was der Fall zu messen behauptet,
+    nicht, was er misst; genau diese Lücke war `S5-01`. Für die vier übrigen
+    Kanäle bleibt die freie Angabe, weil dort das Messmittel je Fall verschieden
+    ist; sie sind mit heute 4, 1, 2 und 14 Messhüllen die Minderheit und einzeln
+    im Blick.
+11. **Die Sperre unter `/tmp` (`S7-06`) — kein Befund.** Die feste Sperrdatei
+    `/tmp/r3cosint-dod-gate-selbsttest.lock` bleibt (6.12.25 j). Dass zwei
+    Prüfrollen auf derselben Maschine sich **serialisieren**, ist gewollt und
+    nicht unerwünscht: Zwei gleichzeitige Selbsttests teilen sich Zählerdateien,
+    Wegwerfverzeichnisse und Beobachterfenster und belegen einander gegenseitig
+    nicht. Die Meldung `Selbsttest laeuft bereits` mit Rückgabewert 3 ist die
+    **vorgesehene** Antwort; Prüfrollen warten und wiederholen den Aufruf. Ein
+    parallelisierbarer Selbsttest wäre eine Änderung am Messinstrument ohne
+    Gewinn an Aussage.
+12. **`DT7-05` (Hinweis) — kein Handlungsbedarf an `Z-111`.** Der Beobachter sucht
+    `tmp.*`, und genau dieses Muster erzeugt `mktemp`; Wortlaut und Messung
+    stimmen überein. Die weitergehende, musterfreie Beobachtung fällt mit der
+    Umstellung von `Z-132` nach Punkt 5 weg; die Frage "schreibt die Kette
+    irgendetwas in den Baum" trägt die Rahmenprüfung D19 und der Negativbefund
+    der Zwischenkontrolle aus e). Diese Rolle hält das ausdrücklich fest, statt
+    es stillschweigend zu verlieren.
+
+13. **Berichtigungen aus Bau 4 — Fremdbeleg, entschieden am 2026-09-04.** Der
+    Koordinator hat am 2026-09-04 gegen **Kopien** des Gates und des `Makefile`
+    isolierte Läufe einzelner Fälle wie im Mutationsmodus gefahren. **Alle
+    Zahlen und Läufe dieses Punktes sind Fremdbeleg**; diese Rolle hat nichts
+    davon ausgeführt und prüft ihre eigene Arbeit nicht (3.4). Zwei Stellen
+    dieser Fortschreibung tragen eine Prämisse, die in der herstellbaren Lage
+    nicht zutrifft; sie werden **an Ort berichtigt** (6.1.2, 6.11.5) — nichts
+    wird gelöscht, die berichtigten Stellen tragen einen Vermerk.
+
+    **Bestätigt ohne Änderung** sind die übrigen Proben: `Z-133` und `Z-134`
+    schlagen unter ihrer Mutation (entfernter Disjunkt) fehl; die
+    Bereichsadresse für `Z-124` —
+    `/^declare -A deckung_pfad=()$/,/^done < /` — trifft genau die sieben
+    `break`-Zeilen der Strukturprüfung und keine Zeile ausserhalb, und `Z-124`
+    schlägt unter der Mutation mit dem erhaltenen Schlüssel `LISTE 6 2` statt
+    `LISTE 2 D7 abnahme` fehl; der Prototyp der Fallfunktion zu `Z-154`
+    (Ausgangscommit, drei Blocks, committete Übergabedatei mit der Zeile
+    "Eskalation 3.4: D5 typen A_FAIL" bei gezähltem Schlüssel
+    "D3 linter A_FAIL", vierter Stop) besteht ohne Mutation mit Rückgabewert 2
+    und Zählerstand 4 und schlägt unter der Mutation — der gesuchte Text auf
+    `Eskalation 3.4:` verkürzt — mit Rückgabewert 0 fehl, während `Z-155` mit
+    Stand 4 weiter besteht. Das belegt Punkt 7: `Z-155` trägt `keine` mit
+    Grund 3, weil ihr eigener Kanal die Verneinung nicht sieht.
+
+    **a) `Z-114` misst wieder allein den Kanal `rc`; die Spalte Mutation trägt
+    `keine` nach Grund 3 mit der Schwester `Z-115`.** Punkt 4 setzt voraus, die
+    Kette liefe unter der Verneinung und hinterliesse ihre Spur. Diese Prämisse
+    trifft in der herstellbaren Lage nicht zu. Die einzige als `root`
+    herstellbare Lage "physisch nicht auflösbar" ist ein **nicht vorhandenes**
+    Verzeichnis: Die Attrappe von `mktemp` gibt
+    `/dod-gate-selbsttest-s3-05-nicht-vorhanden-<pid>/tmp.attrappe` aus,
+    fehlende Durchquerungsrechte umgeht `root`, und ein Pfad tiefer als
+    `PATH_MAX` wird von `getcwd` der glibc dennoch aufgelöst (geprüft mit 4934
+    Zeichen; `pwd -P` mit Rückgabewert 0). Unter der Mutation `if false` läuft
+    das Gate zwar weiter, aber die Umleitung der Kettenausgabe
+    `>"$ausgabe_datei"` in das nicht vorhandene Verzeichnis scheitert: `make`
+    startet **nie**, `kette_rc=1`, und das Gate blockiert mit dem Schlüssel
+    `KETTE rueckgabewert=1` und Rückgabewert 2. Der isolierte Lauf von
+    `fall_z114_115` gegen die mutierte Kopie meldet für `Z-114` (Kanal `rc`)
+    `BESTANDEN` mit Rückgabewert 2 und für `Z-115` (Kanal `zaehler`)
+    `FEHLGESCHLAGEN` — erwartet `GATE mktemp`, erhalten
+    `KETTE rueckgabewert=1`. Folge: Die Spurdatei der Attrappenkette **fehlt in
+    beiden Fällen**, beim richtigen Code wie unter der Mutation. Der Kanal
+    `datei` ist in dieser Lage **unfalsifizierbar** und darf nach dem Grundsatz
+    aus b) — "eine Prüfung ist erst dann Beleg, wenn sie ihre eigene Verneinung
+    erkennt" — nicht als Messumfang geführt werden. Die Verneinung sieht allein
+    die Schwester `Z-115` über den Schlüssel; das ist genau die in Punkt 2
+    gefasste Lage des Grundes 3. `Z-114` bleibt daher beim Kanal `rc` mit der
+    Zusicherung "Rückgabewert 2 — die Wache fällt geschlossen aus" und trägt in
+    der Spalte Mutation `keine`. Die Aufzählung in Punkt 2 erweitert sich damit
+    auf **drei** Zeilen mit Grund 3: `Z-114`, `Z-139` und `Z-155`.
+
+    **b) Die Mutation von `Z-130` wird auf das `Makefile` verlegt.** Kanal
+    (`kette`) und Zusicherung der Zeile bleiben unverändert; Punkt 8 und
+    Entscheid 1 aus e) bleiben in der Sache stehen. Widersprüchlich war allein
+    die Spalte Mutation: Sie nannte eine Änderung **am Gate** — der
+    `FEHLT=`-Wert aus der falschen Gruppe des Markenmusters (`BASH_REMATCH`) —,
+    während die Zeile auf der **direkt aufgerufenen** Kettenausgabe misst. Ein
+    direkter Kettenaufruf durchläuft die Markenauswertung des Gates nie; diese
+    Mutation ist auf dem Kanal `kette` grundsätzlich unerkennbar. Genau das ist
+    in Runde 6 und Runde 7 beobachtet worden, weshalb der Bau auf `stderr`
+    auswich (`S7-01`) — die Zeile hat den Bau in einen unauflösbaren
+    Widerspruch geführt. Die Probe der `kette`-Messung (Fremdbeleg): das echte
+    `Makefile` als `Makefile.echt` in einen Scheinbaum kopiert, in dem
+    `scripts/nachweise-erzeugen.sh` und `scripts/nachweise-vollstaendig.sh`
+    fehlen; `make -s -C <baum> -f Makefile.echt nachweise` liefert die Marke
+    `::LAGE ohne-lauf-kennung D12 nachweise C FEHLT=scripts/nachweise-erzeugen.sh::`,
+    also den **ersten** Gegenstand. Entfällt im `Makefile` die Wache
+    `[ -n "$fehlt" ] ||` vor dem zweiten Gegenstand, nennt die Marke
+    `FEHLT=scripts/nachweise-vollstaendig.sh` — den **letzten** statt den
+    ersten Gegenstand, und die Zusicherung fällt. Damit erkennt `Z-130` ihre
+    eigene Verneinung auf ihrem eigenen Kanal. Die **gate-seitige** Lesart der
+    `FEHLT=`-Gruppe verliert dadurch nichts: Sie bleibt durch `Z-054` gedeckt
+    (Kanal `stderr`, Mutation "der `FEHLT=`-Wert wird aus der ganzen Marke
+    gelesen").
+
+    **c) Umfang nach Bau 4.** Die Tabelle 6.12.19 führt unverändert `Z-001` bis
+    `Z-155` — 155 Zeilen, davon `Z-110` zurückgezogen, also **154**
+    Zusicherungen. Weil `Z-114` ihre `datei`-Hülle verliert, sind mehrkanalig
+    wieder **zwei** Zeilen: `Z-129` (`stdout+stderr`) und `Z-152`
+    (`selbsttest+dauer`). Verteilung der **156** Messhüllen: `rc` 62,
+    `stderr` 32, `zaehler` 23, `datei` 13, `stdout` 12, `kette` 7,
+    `beobachter` 4, `selbsttest` 2, `dauer` 1.
+    `scripts/dod-gate-mutationen.txt` führt **154** Einträge — je nicht
+    zurückgezogener Kennung genau einen —, davon **145** mit `sed`-Ausdruck und
+    **neun** mit `keine`: `Z-152` und `Z-153` (Grund 1), `Z-043`, `Z-045`,
+    `Z-048` und `Z-068` (Grund 2) sowie `Z-114`, `Z-139` und `Z-155`
+    (Grund 3). Gegenüber der Fassung vor Bau 4 wechselt allein `Z-114` von
+    `sed` zu `keine`; der Eintrag für `Z-130` bleibt ein `sed`-Eintrag, nennt
+    als Gegenstand aber das `Makefile` und nicht das Gate. Trägt das Format der
+    Mutationsdatei den Gegenstand heute nicht, ist das beim Bau als **Befund**
+    zu melden statt stillschweigend anzugleichen. Die Zahlen dieses Punktes
+    sind vom DevOps Engineer beim Bau zu bestätigen und bei Abweichung als
+    Befund zu melden.
+
+**Umfang nach dieser Fortschreibung.** Die Tabelle 6.12.19 führt `Z-001` bis
+`Z-155` — **155** Zeilen, davon `Z-110` zurückgezogen, also **154**
+Zusicherungen. Mehrkanalig sind neu **drei** Zeilen: `Z-129` (`stdout+stderr`),
+`Z-152` (`selbsttest+dauer`) und `Z-114` (`rc+datei`); die Aufzählung "genau zwei
+Zeilen" in a) ist damit fortgeschrieben. Verteilung der **157** Messhüllen:
+`rc` 62, `stderr` 32, `zaehler` 23, `datei` 14, `stdout` 12, `kette` 7,
+`beobachter` 4, `selbsttest` 2, `dauer` 1. `scripts/dod-gate-mutationen.txt`
+führt **154** Einträge — je nicht zurückgezogener Kennung genau einen —, davon
+**146** mit `sed`-Ausdruck und **acht** mit `keine`: `Z-152` und `Z-153`
+(Grund 1), `Z-043`, `Z-045`, `Z-048` und `Z-068` (Grund 2), `Z-139` und `Z-155`
+(Grund 3). Gegenüber e) kommt `Z-154` als `sed`-Eintrag hinzu, `Z-155` als
+`keine`, und `Z-139` wechselt von `sed` zu `keine`. Die Zahlen sind vom DevOps Engineer beim Bau zu
+bestätigen und, falls sie abweichen, als Befund zu melden statt anzugleichen.
+*Berichtigt durch Punkt 13: 156 Messhüllen, `datei` 13, zwei mehrkanalige
+Zeilen, neun Zeilen mit `keine`.*
+
+**Wer was tut.** Diese Rolle legt die Tabelleneinträge und die Regeln fest und
+schreibt sie in diesen ADR. Selbsttest, Mutationsdatei und Gate ändert der
+**DevOps Engineer**; die Verifikation liegt beim **Static und beim Dynamic
+Software Tester** auf einem anderen Modell als die Umsetzung (3.4). Der
+Koordinator hat entschieden: **Bau 4 mit Zwischenkontrolle, danach die achte
+Prüfrunde**; tritt die Fehlerklasse "eine Zusicherung besteht, ohne ihre
+Behauptung zu belegen" dort erneut auf, wird nach 3.4 abgebrochen, der Stand in
+die Übergabedatei geschrieben und die Sache vorgelegt.
+
+**Was dieser Nachtrag nicht ändert.** Kein Entscheid G1 bis G17, keiner aus
+6.12.23 bis 6.12.26 a bis e wird zurückgenommen; die Kernarchitektur aus 5.1, die
+Entscheide A1 bis A13, der Modulschnitt aus Abschnitt 4 und die Verankerung der
+Verfahrensgarantien bleiben unberührt, und das Gate steht an keiner Stelle
+zwischen Freigabe und Ausführung (5.2). Keine D-Nummer wird vergeben. Nichts hier
+bereitet Gestrichenes vor (5.17, 5.18, 9.1, 5.10, 5.1). **Und nichts hier ist
+eine Freigabe oder eine Abnahme:** O-25, die Entscheidpunkte E-A bis E-K und die
+Abnahme des Gates stehen unverändert aus (Abschnitt 10). Den Stand nach Bau 4
+belegt erst die **achte** Prüfrunde, nicht dieser ADR.
+
+**g) Achte Prüfrunde — Beleglage (Fremdbeleg), Abbruch nach 3.4 und Vorlage O-26**
+
+Die achte Prüfrunde ist am 2026-09-04 gelaufen: Static und Dynamic Software
+Tester, beide auf einem anderen Modell als die Umsetzung (3.4), je in einer
+Wegwerfkopie, der geprüfte Bestand prüfsummengleich. **Alle Zahlen, Läufe und
+Befunde dieses Abschnitts sind Fremdbeleg**; diese Rolle hat nichts davon
+ausgeführt, nichts nachgemessen und prüft ihre eigene Arbeit nicht (3.4). Was
+hier steht, ist das Protokoll der gemeldeten Lage und der Entscheid des
+Koordinators dazu — keine Bestätigung, keine Freigabe und keine Abnahme.
+
+**1. Statische Prüfung: bestanden; die Fehlerklasse ist nicht aufgetreten.**
+Ausgeführt sind beide Modi des Selbsttests. Normalmodus: Rückgabewert 0, **154
+von 154** Prüfungen bestanden, Deckung 154 Kennungen in der Tabelle / 154
+Prüfungen / 0 ohne Prüfung / 0 ohne Tabellenzeile, Kanalabgleich **0
+Abweichungen**, keine doppelt gemeldete Kennung. Mutationsmodus: Rückgabewert 0,
+**145 geprüft, 145 erkannt, 0 nicht erkannt, 9 ohne Mutation, 0 wirkungslos**,
+Laufzeit 152 s. Von Hand hat der Prüfer **51 Zeilen** Wort für Wort gegen ihre
+Messung gelesen, **alle 145 `sed`-Ausdrücke** einzeln angewandt (105 ändern genau
+eine Zeile, 2 fügen eine ein, 38 ändern mehrere — nach 6.12.26 b zulässig, weil
+die Trennschärfe an der fehlschlagenden Kennung hängt und nicht an der Zahl der
+berührten Zeilen), alle drei Bereichs- und `/g`-Ausdrücke nachgemessen und alle
+**19** `pruefe_wahr`-Aufrufe auf ein nach Punkt 9 der fünfzehnten Fortschreibung
+zulässiges Kanalliteral geprüft. Kanalverteilung und Mutationszahlen stimmen mit
+Punkt 13 überein (156 Messhüllen; 154 Einträge, davon 145 mit `sed` und 9 mit
+`keine`). Damit ist die in 6.12.26 f, Punkt 13 c) verlangte Bestätigung der
+Zahlen erbracht.
+
+Sieben **nachrangige** Befunde, keiner blockierend:
+
+- **S8-01** — die Rückzugserkennung (Muster "zurückgezogen") liest die ganze
+  Tabellenzeile statt einer Spalte; heute nicht ausgelöst, weil keine andere
+  Spalte das Wort trägt. Latente Fehlerquelle, kein Befund am Ergebnis.
+- **S8-02** — Abschnitt 9 führe die Berichtigung vom 2026-09-04 nicht. **Am
+  aktuellen Stand nicht reproduzierbar**: Die Zeile "Fünfzehnte Fortschreibung"
+  trägt den Vermerk "Berichtigt am 2026-09-04 durch 6.12.26 f Punkt 13"; der
+  Koordinator hat das geprüft. Der Befund wird als gegenstandslos verzeichnet und
+  nicht abgetragen.
+- **S8-03** — der Block `GATE sha256sum` steht im Gate zweimal: die neu
+  vorgezogene Fassung in den Zeilen 363 bis 367 und die alte, unerreichbare
+  Fassung in den Zeilen 478 bis 482; der Diff war rein additiv. Verhaltensneutral;
+  die alte Fassung ist zu entfernen.
+- **S8-04** — `scripts/dod-gate-mutationen.txt` steht noch nicht unter
+  Versionskontrolle; die Datei wird mit dem Commit dieser Einheit hinzugefügt.
+- **S8-05** — `Z-080` misst `git fetch --unshallow` über die ganze Fehlerausgabe
+  des direkten D20-Aufrufs statt isoliert in der Marke. Gedeckt, weil der
+  Messgegenstand nur D20 enthält, aber nicht gesondert isoliert.
+- **S8-06** — der Kanalabgleich vergleicht Zeichenketten (und damit bei
+  `stdout+stderr` auch die Reihenfolge), während der ADR von Mengen spricht. Der
+  Abgleich ist damit **strenger** als verlangt und fällt geschlossen aus.
+- **S8-07** — fünf Nicht-ASCII-Stellen in den Skripten, zwei davon funktional
+  (das Muster "zurückgezogen").
+
+**2. Dynamische Prüfung: nicht bestanden; die Fehlerklasse ist erneut
+aufgetreten.** Ausgeführt sind beide Modi mit denselben Zahlen wie oben. Der
+Beobachter über den kopierten Baum meldet **2651 Runden, 0 Treffer**, und **254
+Dateien** vorher und nachher prüfsummengleich. Das Gate gegen die Kopie als
+echten Baum: `Stop` Rückgabewert 0 in 10,28 s, `TaskCompleted` Rückgabewert 0 in
+9,68 s, `SubagentStop` mit `agent_type` `static-software-tester` Rückgabewert 0
+in 0,14 s **ohne Kettenlauf** (Attrappenprotokoll 0 Bytes), ohne
+`CLAUDE_PROJECT_DIR` Rückgabewert 2 und damit geschlossen ausfallend. Die
+Eskalationsfolge über neun Ereignisse: Zähler 1 bis 9 lückenlos, die Forderung
+der Übergabedatei genau beim **dritten**, der Block mit "erwartet eine Datei" ab
+dem **vierten**, eine Übergabedatei mit fremdem Schlüssel blockt (siebtes
+Ereignis), mit richtigem Schlüssel Durchlass mit Rückgabewert 0 (achtes), und
+`TaskCompleted` danach blockt wieder (neuntes). Zwei nebenläufige Gate-Aufrufe
+werden sauber serialisiert (4,11 s und 8,16 s), Zählerstand 2, kein falsches
+Grün. Über **alle 28** Gate-Läufe traten ausschliesslich die Rückgabewerte 0 und
+2 auf; die Standardausgabe war bei Rückgabewert 2 leer und bei Rückgabewert 0
+genau ein Objekt mit dem einzigen Feld `systemMessage`.
+
+Dazu **sechzehn eigene Mutationen** des Prüfers am Gate, **keine davon in
+`scripts/dod-gate-mutationen.txt`**, jede gegen den ganzen Normalmodus gefahren.
+
+**Negativbefund — was gehalten hat.** Zehn dieser Fremdmutationen sind vom
+Selbsttest erkannt worden, und zwar mit der jeweils zuständigen Kennung: `M-02`
+(Eskalationsschwelle 3 auf 2) über `Z-040`; `M-03` (HEAD-Zweig entfernt) über
+`Z-044` und `Z-128`; `M-04` (status-Zweig entfernt) über `Z-041`; `M-05`
+(`TaskCompleted` durchlassen) über `Z-047`; `M-06` (D19-Auswertung aus) über acht
+Kennungen; `M-08` (`stop_hook_active` ignoriert) über `Z-017` und `Z-018`; `M-09`
+(Rollenprüfung invertiert) über sieben Kennungen; `M-10` (Schlüssel ohne Lage)
+über `Z-040`, `Z-141` und `Z-155`; `M-12` (`exit 1` statt `exit 2`) über 42
+Kennungen; `M-13` (jq-Feld umbenannt) über `Z-006` und `Z-102`. `M-11` (`TMPDIR`
+fest auf `/tmp`) verletzt keine Zusicherung der Tabelle und ist ausdrücklich
+**kein Befund**. Der Prüfbericht spricht an dieser Stelle von **elf** erkannten
+Mutationen, seine Aufzählung nennt **zehn**; da die übrigen sechs der sechzehn
+benannt sind (fünf nicht erkannt, `M-11` ohne verletzte Zusicherung), geht die
+Rechnung nur mit zehn auf. Die Abweichung um eins ist eine Zähldifferenz im
+Bericht, vom Prüfer zu klären; sie wird hier **festgehalten und nicht
+angeglichen** (6.1.2).
+
+Die **drei blockierenden** Befunde:
+
+- **DT8-01 (blockierend, achter Auftritt der Fehlerklasse).** Mutation `M-01` —
+  die Eskalationsschwelle von `-ge 4` auf `-ge 3` — lässt **keine** Kennung
+  fallen. `Z-040` sagt im Wortlaut, die Fehlerausgabe des dritten Ereignisses
+  enthalte die Zeile "Eskalation 3.4: <Schlüssel>" **wörtlich**; gemessen wird
+  eine Teilzeichenkette (`grep -qF`), und die bleibt unter der Mutation im Satz
+  "erwartet eine Datei ... mit der wörtlichen Zeile 'Eskalation 3.4: ...'"
+  erhalten, während die Zeile **als Zeile** verschwindet. Zudem sichert keine
+  Zeile der Tabelle zu, dass der Durchlass **frühestens beim vierten** Ereignis
+  greift: Unter der Mutation lässt das Gate mit vorhandener Übergabedatei schon
+  beim dritten Ereignis durch (Rückgabewert 0), und der Selbsttest meldet
+  weiterhin 154 von 154. Die Ausprägung ist dieselbe wie bei `DT7-03`:
+  Teilzeichenkette statt Zeile.
+- **DT8-02 (blockierend).** Der Zählschlüssel `KETTE schlusszeile-widerspruch`
+  aus 6.12.4 in Verbindung mit 6.12.23 a ("Rückgabewert 0 nur mit Form 1") ist
+  von **keiner** Zusicherung gedeckt — die Suche im Selbsttest, in der
+  Mutationsdatei und in der Tabelle 6.12.19 findet ihn je **null** mal. Mutation
+  `M-07` (Form 4 bei Rückgabewert 0 von der Prüfung ausgenommen) lässt keine
+  Kennung fallen; das Gate blockt dann unter dem **falschen** Schlüssel `KETTE
+  ausgabe-unlesbar`. Ursache ist eine Lücke im Deckungsprüfer: Er gleicht
+  Tabelle gegen Selbsttest ab, nicht die Klassifizierungstabelle 6.12.4 gegen die
+  Tabelle 6.12.19.
+- **DT8-03 (blockierend).** Die Trennschärfe der Markengrammatik aus 6.12.7 — das
+  **schliessende** `::` — ist von keiner Zusicherung gedeckt. Mutation `M-14`
+  (schliessendes `::` optional) lässt keine Kennung fallen; ein direkter
+  Gate-Lauf mit einer Marke ohne schliessendes `::` endet im Original mit
+  Rückgabewert 2 und `KETTE ausgabe-unlesbar`, unter der Mutation dagegen mit
+  Rückgabewert 0 und sauberem Grün.
+
+Drei weitere, **nachrangige** Befunde:
+
+- **DT8-04** — die **physische Auflösung** des Baums auf dem Rückfallpfad über
+  `CLAUDE_PROJECT_DIR` (B-02/B-03) ist ungedeckt. `M-16` (Baum roh aus dem
+  Projektfeld) lässt keine Kennung fallen, macht das Gate aber **strenger**:
+  falsch rot mit `GATE Makefile`, wenn das Arbeitsverzeichnis ausserhalb liegt
+  und `CLAUDE_PROJECT_DIR` auf ein Unterverzeichnis zeigt.
+- **DT8-05** — der **Wert** der inneren Zeitgrenze von 600 s ist ungemessen;
+  `M-15` (600 auf 6000) bleibt unerkannt, weil `Z-037` nur den Zweig **nach**
+  Überschreitung misst. Vorschlag des Prüfers: Kanal `selbsttest`, statische
+  Lesung der Bedingung "innen kleiner als aussen" gegen `.claude/settings.json`.
+- **DT8-06** — die Ausgabeform (genau ein Objekt mit dem einzigen Feld
+  `systemMessage`) ist nur für **zwei der fünf** Durchlasspfade gemessen
+  (`Z-006`, `Z-102`); `M-13` lässt genau diese beiden fallen.
+
+**3. Die Analyse des Prüfers zum Muster aller acht Runden** ist im Prüfbericht
+ausdrücklich **als Vorschlag** gekennzeichnet und wird hier ebenso wiedergegeben:
+Ursache sei nicht die einzelne Zeile, sondern die **Messhülle**. Der Wortlaut
+einer Zusicherung ("die Zeile ... wörtlich", "genau ein Objekt", "ausserhalb des
+Baums") und das Prädikat, mit dem gemessen wird (`grep -qF`, Teilzeichenkette,
+Zählvergleich), würden von keinem Mechanismus gegeneinander gehalten. Die
+Deckungsprüfung gleiche Kennung gegen Kennung und seit O-25 Kanal gegen Kanal ab,
+aber nicht **Aussage gegen Prädikat**. Und die Mutationsprobe prüfe nur die
+Mutationen, die die Tabelle selbst nennt — die **Vollständigkeit der Tabelle
+gegenüber dem ADR-Text** (Schlüssel aus 6.12.4, Grammatik aus 6.12.7, Schwellen
+aus 6.12.9) prüfe nichts.
+
+**4. Entscheid des Koordinators: Abbruch nach 3.4.** Die Fehlerklasse "eine
+Zusicherung besteht, ohne ihre Behauptung zu belegen" ist in der achten Runde
+erneut aufgetreten. Wie in 6.12.26 f ("Wer was tut") und in der Zeile "Fünfzehnte
+Fortschreibung ... achte Prüfrunde" in Abschnitt 9 vorab festgelegt, wird die
+Arbeitseinheit damit nach Projektauftrag **3.4 abgebrochen**: **Kein Befund der
+achten Runde wird in dieser Einheit behoben**, der Stand wird mit Übergabedatei
+committet und dem Auftraggeber vorgelegt. Vorgelegt wird **O-26**. Diese Rolle
+protokolliert diesen Entscheid; sie bewertet ihn nicht und setzt ihn nicht um.
+
+**5. O-26 — Vorschlag dieser Rolle, nicht entschieden.** Was folgt, ist ein
+**Vorschlag** an den Auftraggeber und in Abschnitt 8 als O-26 geführt. Er wird
+hier nicht entschieden, und nichts davon ist gebaut. Fünf Bausteine:
+
+**(a) Prädikatbindung — die Messart wird geführt wie heute der Kanal.** Die
+Spalte Zusicherung trägt je Zeile zusätzlich ein **Prädikat** aus einem
+geschlossenen Vorrat; vorgeschlagen sind `zeile-woertlich`, `enthaelt`, `gleich`,
+`einzelfeld`, `leer`, `existiert`, `fehlt` und `ausserhalb`. Jede Messhülle
+meldet ihr Prädikat mit, so wie sie heute nach 6.12.26 a ihren Kanal meldet, und
+der Selbsttest gleicht beides ab; eine Abweichung endet ungleich 0. Die Bindung
+ist die eigentliche Regel: Der Wortlaut "die Zeile ... wörtlich" ist **nur** mit
+einer Zeilenhülle (`grep -x`) zulässig, "enthält" nur mit `grep -F`, "genau ein
+Objekt mit einzigem Feld" nur mit der Einzelfeldhülle. Damit wird `DT8-01`
+maschinell sichtbar statt von einer Prüfrunde gefunden — genau die Wirkung, die
+6.12.25 a für Kennungen und 6.12.26 a für Kanäle hat.
+
+**(b) Schlüsseldeckung — die Klassifizierungstabelle wird gegen die Prüftabelle
+gehalten.** Jeder Zählschlüssel der Klassifizierungstabelle 6.12.4 muss als
+**erwarteter Schlüssel** in mindestens einer Zeile der Tabelle 6.12.19 vorkommen;
+der Selbsttest prüft das mechanisch und endet ungleich 0, wenn ein Schlüssel ohne
+Zeile bleibt. Heute fehlt genau ein Schlüssel: `KETTE schlusszeile-widerspruch`
+(`DT8-02`). Der Abgleich läuft in **eine** Richtung; ein Schlüssel in 6.12.19,
+den 6.12.4 nicht führt, ist ein eigener Befund und keine erlaubte Erweiterung.
+
+**(c) Grammatikdeckung — je Element der Marke eine verneinende Zeile.** Für jedes
+Element der Markengrammatik aus 6.12.7 — Präfix `::LAGE`, die Felder, `FEHLT=`,
+`SCHWELLE=`, das **schliessende** `::` und die Rückgabewertklammer — trägt die
+Tabelle 6.12.19 mindestens eine Zeile, die den **Verstoss** misst: eine Marke
+ohne dieses Element wird abgewiesen. Heute fehlt die Zeile für das schliessende
+`::` (`DT8-03`). Auch diese Deckung ist maschinell zu prüfen, sonst verschiebt
+sie den Befund nur von der Prüfrunde in die Tabellenpflege.
+
+**(d) Die sechs Befunde als neue oder geänderte Zeilen.** Vorgeschlagen sind, je
+mit Kanal, Prädikat und einer Mutation in `scripts/dod-gate-mutationen.txt`:
+`Z-040` auf die Zeilenhülle umgestellt (Prädikat `zeile-woertlich`, `grep -x`,
+Mutation `M-01`); **neu** eine Zeile "der Durchlass greift frühestens beim
+vierten Ereignis" (Kanal `rc`, Rückgabewert 2 beim dritten Ereignis **trotz**
+vorhandener und passender Übergabedatei, Mutation `M-01`); **neu** eine Zeile für
+`KETTE schlusszeile-widerspruch` (Kanal `stderr`, Form 4 bei Rückgabewert 0,
+Mutation `M-07`); **neu** eine Zeile "Marke ohne schliessendes `::` wird
+abgewiesen" (Kanal `stderr`, erwarteter Schlüssel `KETTE ausgabe-unlesbar`,
+Mutation `M-14`); **neu** eine Zeile "der Rückfallpfad über `CLAUDE_PROJECT_DIR`
+löst den Baum physisch auf" (Kanal `rc`, Durchlass bei Arbeitsverzeichnis
+ausserhalb und Projektfeld auf einem Unterverzeichnis, Mutation `M-16`); **neu**
+eine Zeile "die innere Zeitgrenze ist kleiner als die äussere" (Kanal
+`selbsttest`, statische Lesung gegen `.claude/settings.json`, Mutation `M-15`);
+und die Ausgabeform **je Durchlasspfad** statt für zwei von fünf (Kanal `stdout`,
+Prädikat `einzelfeld`, Mutation `M-13`). Die Zeilen erhalten neue, nie
+umnummerierte Kennungen; `Z-040` wird **berichtigt, nicht zurückgezogen** (6.1.2,
+6.12.25 g).
+
+**(e) Ein Abnahmekriterium, das die Runde beendet statt sie zu verlängern.**
+Vorgeschlagen ist: Der Selbsttest gilt als abgenommen, wenn **erstens** die
+tabelleneigenen Mutationen zu **100 Prozent** erkannt werden (`nicht_erkannt=0`,
+`wirkungslos=0`) und **zweitens** eine **Fremdmutationsrunde** ohne blockierenden
+Befund in den vier Kategorien **Schlüssel** (6.12.4), **Grammatik** (6.12.7),
+**Schwellen und Ereignisfolge** (6.12.9) und **Ausgabeform** (6.12.15) durchläuft.
+Weitere Fremdmutationen **danach** sind Backlog-Einträge und **kein
+Abbruchgrund**. Die Begründung ist der Grund, aus dem acht Runden nicht
+konvergiert sind: Die Tabelle kann nie alle denkbaren Mutationen aufzählen, und
+das offene Kriterium "keine neue Lücke" macht die Abnahme unendlich — jede Runde
+findet eine weitere ungedeckte Stelle, jede Behebung ist richtig, und das Ende
+kommt nicht. Vier benannte Kategorien sind abzählbar, ihr Bestehen ist belegbar,
+und was danach kommt, ist Verbesserung statt Abnahmehindernis. **Der Entscheid
+liegt beim Auftraggeber**; diese Rolle schlägt vor und entscheidet nicht.
+
+**Was dieser Nachtrag nicht ändert.** Kein Entscheid G1 bis G17, keiner aus
+6.12.23 bis 6.12.26 a bis f wird zurückgenommen; die Zahlen aus Punkt 13 bleiben
+massgeblich, und keine Zeile der Tabelle 6.12.19 wird durch diesen Abschnitt
+geändert — O-26 ist ein Vorschlag, keine Anweisung an den Bau. Die Kernarchitektur
+aus 5.1, die Entscheide A1 bis A13, der Modulschnitt aus Abschnitt 4 und die
+Verankerung der Verfahrensgarantien bleiben unberührt; das Gate steht an keiner
+Stelle zwischen Freigabe und Ausführung (5.2). Keine D-Nummer wird vergeben.
+Nichts hier bereitet Gestrichenes vor (5.17, 5.18, 9.1, 5.10, 5.1). **Und nichts
+hier ist eine Freigabe oder eine Abnahme:** O-25 und das neue O-26, die
+Entscheidpunkte E-A bis E-K und die Abnahme des Gates stehen unverändert aus
+(Abschnitt 10).
+
 
 ## 7. Konsequenzen
 
@@ -1975,21 +5342,25 @@ O-14, O-15 und O-17 bleiben offen. O-16 bleibt geschlossen. O-18 ist neu.
 | O-5 | Erzeugung und Prüfung von PDF/A-3 mit eingebetteten Daten (R3-F-074) | Die Wahl entscheidet über zusätzliche Abhängigkeiten und möglicherweise eine zweite Laufzeitumgebung im Prüfcontainer | Software Architect mit Backend Engineer; eigener ADR | vor Etappe 4 |
 | O-6 | Verwaltung der fallbezogenen Schlüssel (4.4, Problem B): wo das Schlüsselmaterial liegt und wie es getrennt von den verschlüsselten Daten gesichert wird | Berührt Sicherung und Wiederherstellung (Bereitschaft 3) und ist mit SecDevOps und Datenschutz gemeinsam zu entscheiden | Software Architect mit SecDevOps und Datenschutzexperte; eigener ADR | vor R3-F-020, Etappe 1 |
 | O-7 | Schwellenwerte in D3, D6 und D8 | Sind am Gate als E-07 und E-08 offen | Auftraggeber mit SecDevOps | mit R3-Q-001 beziehungsweise der ersten Umsetzungseinheit mit Code |
-| O-8 | Betriebsart für D10 und Form von D12 (Befunde in Abschnitt 6) | Betrifft bestehende Skripte, die anderen Rollen gehören | DevOps Engineer mit Protocol Master | mit R3-Q-001. **Fortschreibung 2026-08-30:** Für D12 kommt die Bindung an den Kettengrundsatz aus 6.1.3 hinzu — die gewählte Form schreibt nicht in den Arbeitsbaum |
+| O-8 | Betriebsart für D10 und Form von D12 (Befunde in Abschnitt 6) | Betrifft bestehende Skripte, die anderen Rollen gehören | DevOps Engineer mit Protocol Master | mit R3-Q-001. **Fortschreibung 2026-08-30:** Für D12 kommt die Bindung an den Kettengrundsatz aus 6.1.3 hinzu — die gewählte Form schreibt nicht in den Arbeitsbaum. **Zwölfte Fortschreibung 2026-09-02 (6.12.20, Bau auf Weisung vom 2026-09-02 begonnen, förmliche Freigabe ausstehend):** Termin neu **mit dem Grundgerüst** statt mit R3-Q-001. Weder `scripts/prototyp-trennung-pruefen.sh` noch `scripts/nachweise-vollstaendig.sh` bestehen; ein Entscheid über die Betriebsart eines nicht vorhandenen Skripts wäre eine Absichtserklärung. Der vierte Punkt des Achtung-Hinweises zu R3-Q-001 (Prüfmodus für den Nachweiserzeuger) fällt unter diesen Punkt und erhält keine eigene Nummer |
 | O-9 | Anbindungsdaten des Entra-ID-Mandanten | Liegen bei der Informatik der Kantonspolizei Bern | KapoBE Informatik | blockiert nur den Mandantenwechsel, nicht die Entwicklung |
 | O-10 — **überholt, siehe die Zeile „O-10 (neu gefasst)" darunter (ADR 0002, Abschnitt 6.11)** | Prüffläche des Arbeitsbaumlaufs in D11: welche Dateien er beurteilt, wie er sich gegenüber `.gitignore` verhält, und wie ein belegter Fehlalarm behandelt wird, dessen Fingerabdruck in den beiden Läufen verschieden ist (6.1.1) | **Neu am 2026-08-30, am selben Tag neu gefasst — diese Zeile bleibt stehen, weil Nummern nicht umnummeriert und Historie nicht umgeschrieben wird (6.1.2), ist aber durch die Zeile darunter ersetzt.** Mit einem ausgeführten Lauf der eingesetzten Werkzeugfassung festzustellen, nicht durch Annahme; berührt Laufzeit und Aussagekraft des Schrittes | DevOps Engineer mit SecDevOps | mit R3-Q-001 |
-| O-10 (neu gefasst) | **Beantwortet am 2026-08-30 mit einem ausgeführten Lauf (gitleaks 8.21.2):** `--no-git` beachtet `.gitignore` nicht; eine ignorierte `.env` oder `*.pem` blockiert die ganze Kette. Entschieden in 6.2.3: Zugangsdaten liegen nicht im Arbeitsbaum (3.11), ausgeschlossen wird ausschliesslich, was kein Repository-Inhalt sein kann, der Schutz wird nicht abgestuft. **Offen bleiben zwei Restfragen:** (a) die namentliche Ausschlussliste für Abhängigkeits- und Bauverzeichnisse samt ihrer technischen Form — Werkzeugkonfiguration oder Aufrufparameter; (b) die betriebliche Form der Ablage von Zugangsdaten ausserhalb des Arbeitsbaums, einschliesslich Einhängung im Prüfstapel und Eintrag in die Betriebsdokumentation | (a) hängt an der eingesetzten Werkzeugfassung und ist mit einem ausgeführten Lauf zu belegen; (b) ist Betrieb und Sicherheit, nicht Architektur | (a) DevOps Engineer mit SecDevOps; (b) SecDevOps mit DevOps Engineer | (a) mit R3-Q-001; (b) mit dem Grundgerüst, vor der ersten Umsetzungseinheit mit Code |
-
+| O-10 (neu gefasst) | **Beantwortet am 2026-08-30 mit einem ausgeführten Lauf (gitleaks 8.21.2):** `--no-git` beachtet `.gitignore` nicht; eine ignorierte `.env` oder `*.pem` blockiert die ganze Kette. Entschieden in 6.2.3: Zugangsdaten liegen nicht im Arbeitsbaum (3.11), ausgeschlossen wird ausschliesslich, was kein Repository-Inhalt sein kann, der Schutz wird nicht abgestuft. **Offen bleiben zwei Restfragen:** (a) die namentliche Ausschlussliste für Abhängigkeits- und Bauverzeichnisse samt ihrer technischen Form — Werkzeugkonfiguration oder Aufrufparameter; (b) die betriebliche Form der Ablage von Zugangsdaten ausserhalb des Arbeitsbaums, einschliesslich Einhängung im Prüfstapel und Eintrag in die Betriebsdokumentation | (a) hängt an der eingesetzten Werkzeugfassung und ist mit einem ausgeführten Lauf zu belegen; (b) ist Betrieb und Sicherheit, nicht Architektur | (a) DevOps Engineer mit SecDevOps; (b) SecDevOps mit DevOps Engineer | (a) **zwölfte Fortschreibung 2026-09-02 (6.12.21, Bau auf Weisung vom 2026-09-02 begonnen, förmliche Freigabe ausstehend):** Termin neu **mit der Installation von `gitleaks`, spätestens mit dem Grundgerüst** — die Restfrage ist nur mit einem ausgeführten Lauf der eingesetzten Werkzeugfassung zu belegen, und `gitleaks` ist nicht installiert; (b) mit dem Grundgerüst, vor der ersten Umsetzungseinheit mit Code |
 | O-11 | Abgleich für D18: Jedes oberste Paket unterhalb `backend/src/` ist in `backend/importvertraege.toml` als Wurzelpaket genannt — und wo dieser Abgleich sitzt, im Aufruf oder als Vertrag im Prüfer selbst | **Neu am 2026-08-30 (6.3.4).** Nicht baubar, solange `backend/importvertraege.toml` nicht besteht; heute im Makefile nur als Kommentar hinterlegt, und ein Kommentar ist keine Prüflogik. Ohne den Abgleich meldet D18 Lage A, ohne etwas beurteilt zu haben — der Befund aus 6.2.2 | DevOps Engineer mit Backend Engineer | mit dem Anlegen von `backend/importvertraege.toml`, also mit dem Grundgerüst und vor der ersten Umsetzungseinheit mit Fachlogik |
-
 | O-13 — **entschieden am 2026-08-31, siehe 6.7** | Ob die Kette den Zwischenspeicher von `uv` benutzen darf oder ob D1 ohne ihn läuft. **Entscheid des Auftraggebers: ohne.** Umgesetzt mit `UV_NO_CACHE=1` in `$(UV)`, wirksam für jeden `uv`-Aufruf der Kette und von aussen nicht abschaltbar | **Neu am 2026-08-31 (6.6.1).** `--locked` prüft die Prüfsumme beim Herunterladen, nicht noch einmal für ein bereits entpacktes Archiv im Zwischenspeicher; ausgeführt belegt. Wer `HOME` setzen oder in `~/.cache/uv` schreiben kann, erhält damit ein falsches `A_OK` in D1. `--no-cache` schliesst das, kostet aber je Lauf einen vollständigen Ladevorgang und macht die Kette netzabhängig — eine Abwägung zwischen Laufzeit und Beweiskraft, die der Auftraggeber trifft, nicht die Umsetzung | Auftraggeber mit SecDevOps und DevOps Engineer | mit R3-Q-001; spätestens mit dem Lauf auf der Gegenseite (O-12), der denselben Punkt betrifft |
-
 | O-14 | Der Belegprüfer liest das Methodik-Repository an einem **fest verdrahteten, nicht konfigurierbaren Ort ausserhalb dieses Repositories** mit. Offen ist, wie der Ort bestimmt wird, ohne die Aussage des Kettenschrittes an einen einzelnen Arbeitsplatz zu binden | **Neu am 2026-09-01 (6.8.3).** Auf einer Maschine ohne diesen Arbeitsbaum zählt das Skript die betroffenen Zeilen als "nicht prüfbar"; die Zählung geht nicht in den Rückgabewert ein. D20 wird dadurch nicht falsch, aber schwächer — und wie viel schwächer, hängt an der Maschine. `.claude/rules/dokumentation.md` untersagt absolute Pfade der Arbeitsumgebung ausdrücklich für Architecture Decision Records; für ein Skript sagt die Regel nichts, weshalb dieser Punkt eine Abwägung ist und kein Regelverstoss. Die Behebung ist Umsetzung (Umgebungsvariable, Suchpfad oder ausdrückliche Lage-Meldung), nicht Architektur | DevOps Engineer mit dem Protocol Master (Verfolgbarkeit über beide Repositories, 6.6) | mit R3-Q-001 |
-| O-15 | **Abnahme des Belegprüfers.** Das Werkzeug ist nach Eskalationsregel 3.4 abgebrochen und nicht abgenommen; seine Selbstauskunft erklärt die Liste ihrer Grenzen ausdrücklich für unvollständig. Offen ist, welches Abnahmekriterium für ein Werkzeug gilt, das eine Nachweiskette blockiert | **Neu am 2026-09-01 (6.8.4).** Die Aufnahme in die Kette hängt nicht an der Abnahme — ein Schritt, der nur Funde hinzufügt und nichts darüber hinaus behauptet, macht die Kette nicht schwächer. Die Abnahme selbst ist damit nicht erledigt: Sie verlangt eine Prüfung auf einem anderen Modell als die Umsetzung (3.4) und eine Entscheidung darüber, ob "die Liste der Grenzen ist unvollständig" als Abnahmekriterium ausreicht. Dazu gehören die beiden benannten, nicht gebauten Prüfungen | Static und Dynamic Software Tester, Entscheid über das Abnahmekriterium beim Auftraggeber | vor der Freigabe des Grundgerüsts |
-
+| O-15 | **Abnahme des Belegprüfers.** Das Werkzeug ist nach Eskalationsregel 3.4 abgebrochen und nicht abgenommen; seine Selbstauskunft erklärt die Liste ihrer Grenzen ausdrücklich für unvollständig. Offen ist, welches Abnahmekriterium für ein Werkzeug gilt, das eine Nachweiskette blockiert | **Neu am 2026-09-01 (6.8.4).** Die Aufnahme in die Kette hängt nicht an der Abnahme — ein Schritt, der nur Funde hinzufügt und nichts darüber hinaus behauptet, macht die Kette nicht schwächer. Die Abnahme selbst ist damit nicht erledigt: Sie verlangt eine Prüfung auf einem anderen Modell als die Umsetzung (3.4) und eine Entscheidung darüber, ob "die Liste der Grenzen ist unvollständig" als Abnahmekriterium ausreicht. Dazu gehören die beiden benannten, nicht gebauten Prüfungen. **Zwölfte Fortschreibung 2026-09-02 (6.12.18, Bau auf Weisung vom 2026-09-02 begonnen, förmliche Freigabe ausstehend):** Das Gate aus R3-Q-001 stützt sich auf die ganze Kette und damit auf dieses nicht abgenommene Werkzeug; ein Befund von D20 blockiert damit jede Arbeitseinheit. Seit dem 2026-09-02 ist zudem belegt, dass D20 rote Läufe erzeugt, deren Ursache die Umgebung ist (flacher Klon, lokaler Zweig-Ref in einer Übergabe). Die Aufnahme in die Kette hängt weiterhin nicht an der Abnahme; die Dringlichkeit steigt | Static und Dynamic Software Tester, Entscheid über das Abnahmekriterium beim Auftraggeber | vor der Freigabe des Grundgerüsts |
 | O-16 — **beantwortet am 2026-09-01, siehe 6.10** | Reichweite der Index-Maskierung gegenüber dem zweiten Teil des D19-Instruments: Macht die Maskierung D19 halb oder ganz blind? **Antwort, mit ausgeführtem Lauf belegt: halb.** Die Statusliste ist für die maskierte Datei blind, die Inhaltsprüfsumme erfasst die Änderung weiterhin | **Neu und geschlossen am 2026-09-01 (6.9.4, 6.10.1).** Die Frage war nur durch einen Lauf zu beantworten und ist in diesem ADR bis dahin in keine Richtung behauptet worden. Folge: Der Entscheid bleibt unverändert, eine Begründungszeile aus 6.9.2 ist berichtigt (6.10.3), und die Befundmeldung ist auf die schwächere, richtige Aussage festgelegt (6.10.2) | beantwortet durch den Koordinator, übernommen als Fremdbeleg | erledigt |
 | O-17 | **Löschung einer maskierten, verfolgten Datei.** Die Aufzählung der verfolgten Dateien führt sie weiter, weil sie im Index steht; die Prüfsummenbildung findet die Datei nicht vor. Ob die Aufnahme dadurch abweicht — die Löschung also trotz Maskierung sichtbar wird — oder nicht, ist offen | **Neu am 2026-09-01 (6.10.4).** Der Versuch zu O-16 deckt die Inhaltsänderung einer vorhandenen Datei ab, nicht die Löschung. Dieser ADR behauptet dazu nichts. Am Entscheid ändert die Antwort nichts — die Maskierung bleibt ein Befund, der Ausgang Lage C; sie bestimmt allein, wie weit die Meldung nach 6.10.2 sagen darf, der Inhalt sei beurteilt | DevOps Engineer, Verifikation Static und Dynamic Software Tester (3.4) | mit R3-Q-001 |
-| O-18 | Ob die drei Bezugsdokumente in der Prüfmittelspalte von D20 künftig auch auf **Aktualität** und nicht nur auf Vorhandensein zu prüfen sind — eine veraltete Referenzmenge fällt heute durch kein Netz | **Neu am 2026-09-01 (6.11.6).** Der Belegprüfer prüft seit der elften Fortschreibung, dass `docs/05_Product_Backlog.md` und `docs/00_Projektauftrag.md` bestehen, lesbar sind und eine nicht leere Referenzmenge hergeben — nicht, ob diese Referenzmenge noch dem aktuellen Stand entspricht | Software Architect mit dem Static Software Tester | mit R3-Q-001 |
+| O-18 | Ob die drei Bezugsdokumente in der Prüfmittelspalte von D20 künftig auch auf **Aktualität** und nicht nur auf Vorhandensein zu prüfen sind — eine veraltete Referenzmenge fällt heute durch kein Netz | **Neu am 2026-09-01 (6.11.6).** Der Belegprüfer prüft seit der elften Fortschreibung, dass `docs/05_Product_Backlog.md` und `docs/00_Projektauftrag.md` bestehen, lesbar sind und eine nicht leere Referenzmenge hergeben — nicht, ob diese Referenzmenge noch dem aktuellen Stand entspricht. **Zwölfte Fortschreibung 2026-09-02 (6.12.21, Bau auf Weisung vom 2026-09-02 begonnen, förmliche Freigabe ausstehend):** Der Punkt bleibt offen, mit geschärfter Frage. Ob eine Anforderungskennung noch **gilt**, ist eine Aussage über den Inhalt am Fundort, und die hat 6.8.4 dem menschlichen Review zugewiesen. Maschinell prüfbar wird sie erst, wenn der Backlog je Eintrag ein **maschinenlesbares Statusfeld** trägt — das ist die eigentliche, bisher nicht benannte Vorbedingung und eine Änderung am Format des Backlogs, nicht am Belegprüfer | Software Architect mit dem Static Software Tester; für das Statusfeld Requirements Engineer mit Product Owner | mit R3-Q-001. **Zwölfte Fortschreibung 2026-09-02 (Entwurf):** Termin neu **mit dem Grundgerüst** |
+| O-19 | **Die Umgebungsvariable `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` ist nicht belegt.** **Drei** Stellen des Repositories nennen sie und behandeln sie als gegeben *(dritte Fundstelle ergänzt in Runde 1)*: Projektauftrag 3.4, Ebene 4 ("Die Grenze ist über `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` anpassbar"), `docs/06_Definition_of_Ready_und_Done.md`, Abschnitt "Durchsetzung", und `docs/adr/0001-rollenmodell.md` ("Ebenso verbindlich sind der Reentranz-Schutz über `stop_hook_active` und die harte Obergrenze über `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`") — die dritte Stelle erklärt sie sogar für **verbindlich**. In der am 2026-09-02 gelesenen offiziellen Hook-Dokumentation kommt dieser Name nicht vor (selbst geprüft über eine Textsuche in `hooks.md`); dass er auch im Leitfaden fehlt, ist Fremdbeleg. Die Obergrenze 8 steht dort ohne Variablennamen. Offen ist, wie beide Dokumente damit umgehen | **Neu am 2026-09-02 (6.12.2, Bau auf Weisung vom 2026-09-02 begonnen, förmliche Freigabe ausstehend).** Der Entwurf des Gates stützt sich an keiner Stelle auf die Variable und braucht sie auch nicht: Mit dem Reentranz-Schutz aus 3.4 ist eine Folge von acht Blockaden innerhalb eines Beendigungsversuchs ohnehin unerreichbar. Der Befund ist damit nicht dringlich, aber er steht in einem Dokument, das verbindliche Grundlage ist, und wird deshalb nicht stillschweigend übergangen. Diese Rolle ändert weder den Projektauftrag noch `docs/06_Definition_of_Ready_und_Done.md` | Requirements Engineer mit Protocol Master, Entscheid über eine Änderung des Projektauftrags beim Auftraggeber; die Nachführung von `docs/adr/0001-rollenmodell.md` liegt beim Software Architect als Fortschreibung jenes ADR | mit der nächsten Nachführung von `docs/06_Definition_of_Ready_und_Done.md` |
+| O-20 | **Laufzeit der Kette und die beiden Zeitgrenzen des Gates.** Festgelegt sind 900 s in `.claude/settings.json`, 600 s für `make dod` im Skript und 120 s Wartezeit auf die Sperre. Ob 600 s reichen, sobald Bau, Containerbau, Testsuite, Abdeckung und die durchgehenden Oberflächenläufe dazukommen, ist nicht gemessen | **Neu am 2026-09-02 (6.12.12 und 6.12.16, Bau auf Weisung vom 2026-09-02 begonnen, förmliche Freigabe ausstehend).** Der heutige Lauf dauert 5,8 s (Fremdbeleg); die Grössenordnung wechselt mit dem Grundgerüst von Sekunden zu Minuten. Reichen 600 s nicht, wäre das Gate regelmässig falsch rot, und ein regelmässig falsch rotes Gate wird entfernt. Reicht die Laufzeit je Beendigungsversuch insgesamt nicht aus, ist auch der Entscheid gegen einen Zwischenspeicher des Urteils (G15) neu zu bewerten. Beides ist mit einem ausgeführten Lauf zu beantworten und als Fortschreibung zu entscheiden, nicht im Skript stillschweigend anzupassen. **Nachtrag 6.12.24 j (Fremdbeleg aus der dynamischen Prüfung vom 2026-09-02, nicht von dieser Rolle nachgeprüft):** Gemessen wurden 6,4 bis 7,0 s je Lauf des Gates auf dem echten Baum (Mittel 6,65 s) und 7,6 bis 8,2 s für einen vollständigen Lauf im Klon. Das ist der Stand **ohne** `backend/` und `deploy/` und beantwortet die Frage nicht — sie lautet, ob 600 s **mit** dem Grundgerüst reichen. **O-20 bleibt offen**, die Grenzen von 600 s und 900 s bleiben unverändert, bis der Auftraggeber entscheidet | DevOps Engineer mit einem ausgeführten Lauf, Verifikation Static und Dynamic Software Tester (3.4); Änderung der Werte als Fortschreibung durch den Software Architect | mit dem Grundgerüst, sobald `backend/` und `deploy/` bestehen |
+| O-21 | **Kettenschritt gegen Schwachstellenklassen im eigenen Code** (ruff-Regelgruppe `S`): als Regelgruppe in der bestehenden Konfiguration und damit in D3, oder als eigener Kettenschritt mit eigener Nummer | **Neu am 2026-09-02 (6.12.20, Bau auf Weisung vom 2026-09-02 begonnen, förmliche Freigabe ausstehend).** Punkt 2 des zweiten Achtung-Hinweises bei R3-Q-001, dort ausdrücklich dem Software Architect zugewiesen. Heute nicht entscheidbar, weil es keinen eigenen Python-Code gibt: D3 ist Lage B. Für D3 spricht, dass kein neues Werkzeug entsteht; dagegen das Argument aus 6.1.2 für D18 — eine Aussage über eine Sicherheitseigenschaft soll einen eigenen Rückgabewert haben und nicht mit einem Schwellenwert für Stilwarnungen (E-08, O-7) zusammenfallen | Software Architect mit SecDevOps Engineer; Bau beim Backend Engineer | mit dem Anlegen von `backend/pyproject.toml`, vor der ersten Umsetzungseinheit mit Fachlogik |
+| O-22 | **Markdown-Struktur- und Tabellenprüfer** über den Dokumentenbestand: eigener Kettenschritt oder Aufnahme in ein bestehendes Werkzeug, und welche Prüfungen er trägt | **Neu am 2026-09-02 (6.12.20, Bau auf Weisung vom 2026-09-02 begonnen, förmliche Freigabe ausstehend).** Punkt 3 des zweiten Achtung-Hinweises bei R3-Q-001. Der Gegenstand besteht heute — eine verrutschte Spalte in der Rollentabelle ist eine falsch gelesene Bauvorschrift. Er geht **nicht** in D20 auf: D20 urteilt über Herkunfts- und Fundortangaben, ein Strukturprüfer über den Aufbau des Dokuments; das sind zwei Sachen (6.2.2). Eine D-Nummer ist bewusst **nicht** vergeben, weil eine Nummer für einen nicht entschiedenen Schritt eine Absichtserklärung wäre und nach 6.8.1 mit der Nennung vergeben wäre | Software Architect (Schnitt), DevOps Engineer (Bau) | mit der nächsten Fortschreibung von Abschnitt 6, spätestens vor der Freigabe des Grundgerüsts |
+| O-23 | **Wovon die harte Zusicherung des Gates abhängt: dass eine Aufgabenliste geführt wird.** `TaskCompleted` ist nach 6.12.2 das einzige der drei Ereignisse, das die Zusicherung "die Aufgabe lässt sich nicht abschliessen" trägt. Nach der gelesenen Referenz feuert es aber nur, "when any agent explicitly marks a task as completed through the TaskUpdate tool, or when an agent team teammate finishes its turn with in-progress tasks". In einer Sitzung ohne Aufgabenliste feuert es nie, und die Zusicherung gilt dann für nichts | **Neu am 2026-09-02 (6.12.2, Bau auf Weisung vom 2026-09-02 begonnen, förmliche Freigabe ausstehend; Befund aus Runde 1 der Prüfung).** Zwei Wege stehen offen, und beide sind Vorgehen, nicht Architektur: (1) eine Vorschrift, dass jede Arbeitseinheit als Aufgabe geführt wird — Ort `CLAUDE.md` oder `.claude/rules/claude-konfiguration.md`, in Abschnitt 9 als bedingte Nachführung vorgemerkt; oder (2) es bleibt bei fakultativen Aufgabenlisten, dann ist auszusprechen, dass die Kette in solchen Sitzungen nur angemahnt und nicht erzwungen wird und der Nachweis dort am menschlichen Review hängt. Diese Rolle nimmt die Wahl nicht vorweg: Eine Zusicherung, deren Voraussetzung ungeklärt ist, wäre die Zusicherung ohne Deckung aus V12 | Auftraggeber; Umsetzung der gewählten Fassung durch den Protocol Master (CLAUDE.md) beziehungsweise den DevOps Engineer (Regeldatei) | mit der Freigabe von 6.12, weil der Entwurf ohne diese Wahl nicht beurteilbar ist |
+| O-24 — **entschieden am 2026-09-03, siehe 6.12.25** | **Abbildung der Tabelle 6.12.19 auf einzeln prüfbare Zusicherungen. Entscheid des Auftraggebers: Tabellenzeilen zerlegen** — je Zeile genau eine messbare Zusicherung mit dauerhafter Kennung `Z-nnn`, je Kennung genau eine Prüfung im Selbsttest, mechanische Deckung in beide Richtungen (6.12.25 a). Die Frage im Wortlaut, wie sie am 2026-09-03 vorgelegt wurde: Die Tabelle führt je Zeile **mehrteilige** Erwartungen ("2, mit Nennung des Mittels"; "0, mit `systemMessage`, die den Schritt nennt"), der Selbsttest je Fall **eine** Zusicherung. Wo eine Zeile mehr verspricht als Rückgabewert und Schlüssel, bleibt der Rest ungemessen, und der Fall ist grün, ohne seine Behauptung zu belegen. Offen ist die Form der Zerlegung — eine Zeile je Erwartung, eine eigene Spalte mit den einzeln zu messenden Zusicherungen, oder die Regel, dass jeder Selbsttestfall genau eine Zusicherung trägt | **Neu am 2026-09-03 (6.12.24 j, Punkt 15).** Die Fehlerklasse "ein Selbsttestfall besteht, ohne seine Behauptung zu belegen" ist **dreimal** aufgetreten (DT-B4, S-01, S3-01). Nach 3.4 ist die Arbeitseinheit am 2026-09-03 abgebrochen und **dieser Punkt** vorgelegt worden statt einer vierten Einzelbehebung: Die Frage ist nicht, ob der einzelne Fall nachgebessert wird — das ist er dreimal worden —, sondern wie die Prüftabelle so geschnitten wird, dass eine unvollständig gemessene Zeile auffällt statt grün zu sein | Auftraggeber; Vorbereitung durch den Software Architect, Umsetzung durch den DevOps Engineer, Verifikation durch Static und Dynamic Software Tester (3.4) | **vor der Abnahme des Gates** aus R3-Q-001. **Entscheid erteilt am 2026-09-03** und in 6.12.25 festgeschrieben; offen bleiben die Umsetzung in `scripts/dod-gate-selbsttest.sh` und `.claude/hooks/dod-gate.sh` sowie eine **vierte** Prüfrunde, die den Stand danach belegt. **Nachtrag vom 2026-09-03 (6.12.25 f bis k):** Die vierte Prüfrunde ist gelaufen — dynamisch bestanden, **statisch nicht bestanden** (S4-01 blockierend, vierter Auftritt der Fehlerklasse, und zwar an einer in dieser Einheit neu geschriebenen Zeile). Auf Weisung des Auftraggebers vom 2026-09-03 sind die Befunde als **f) bis j)** entschieden: Messvorschrift je Zusicherung mit Kanal, Ereignis und Anzahl (f, S4-01/DT4-02), Berichtigung von `Z-129` (g), Rücknahme von `Z-110` und Präzisierung von `Z-111` (h), Zählung **jedes** `GATE <Prüfmittel>`-Blocks ausser `GATE jq` (i, S4-04), Sperre des Selbsttests gegen Nebenläufigkeit (j, S4-03); k) hält die Beleglage der vierten Runde fest. Offen bleiben die Umsetzung und eine **fünfte** Prüfrunde |
+| O-25 — **entschieden am 2026-09-03, siehe 6.12.26** | **Messumfang und Trennschärfe je Zusicherung maschinell erzwingen.** Die Messvorschrift aus 6.12.25 f — Kanal, Ereignis und Anzahl je Zusicherung — steht heute als **Text** in der Tabellenzeile. Ob eine Zusicherung den dort genannten Kanal auch tatsächlich misst und ob sie überhaupt trennscharf ist, prüft nichts. Vorgeschlagen sind zwei Mittel: (1) eine Tabellenspalte "Kanal" mit **festem Wertevorrat**, die der Selbsttest liest und gegen die je Kennung tatsächlich benutzte Messart abgleicht; (2) je Zusicherung eine **Mutationsprobe** — welche Änderung am Gate lässt sie fehlschlagen —, die der Selbsttest in einem Mutationsmodus ausführt (6.12.25 k, fünfte Runde) | **Neu am 2026-09-03 (6.12.25 k).** Die fünfte Prüfrunde hat die Fehlerklasse "ein Selbsttestfall besteht, ohne seine Behauptung zu belegen" zum **fünften** Mal gefunden: 16 Zusicherungen messen einen anderen Kanal als den in ihrer Zeile genannten (S5-01, blockierend), und `Z-111` besteht ohne Beobachtungsfenster (DT5-01, blockierend). Der mechanische Deckungsprüfer nach O-24 kann diese Klasse nicht finden — er sieht **Kennungen**, nicht **Messumfang** und nicht **Trennschärfe**. Beide Prüfer schlagen dasselbe Mittel vor; ihr Vorschlag ist als Vorschlag gekennzeichnet und in 6.12.25 k nicht entschieden | Auftraggeber; Vorbereitung durch den Software Architect, Umsetzung durch den DevOps Engineer, Verifikation durch Static und Dynamic Software Tester (3.4) | **vor der Abnahme des Gates** aus R3-Q-001. **Entscheid erteilt am 2026-09-03** (Weisung im Wortlaut: "O-25 entscheiden: beides umsetzen, dann sechste Runde.") und in **6.12.26** festgeschrieben: Kanalspalte mit abschliessendem Wertevorrat samt maschinellem Abgleich (a), Mutationsprobe je Zusicherung in `scripts/dod-gate-mutationen.txt` mit eigenem Modus `--mutationen` (b), dazu die vier Befunde der fünften Runde als Entscheide (c). **Offen bleiben** die Umsetzung in `scripts/dod-gate-selbsttest.sh`, `.claude/hooks/dod-gate.sh` und `Makefile` sowie die **sechste** Prüfrunde, die den Stand danach belegt. **Nachtrag vom 2026-09-03 (6.12.26 e und f):** Die sechste Runde ist statisch und dynamisch nicht bestanden; der Bau lief in drei kontrollierten Phasen weiter, Phase 3 blieb unvollständig (e). Die **siebte** Runde meldet Normalmodus Rückgabewert 2 (`Z-089` doppelt, Kanal von `Z-130`) und Mutationsmodus Rückgabewert 2 (5 von 146 Mutationen nicht erkannt), dazu den blockierenden Befund `DT7-03`: Der Durchlass nach der Eskalation ist **nicht** an den gezählten Schlüssel gebunden. Entschieden in **6.12.26 f**: `Z-114`, `Z-124`, `Z-132`, `Z-133` und `Z-139` präzisiert, neu `Z-154` und `Z-155`, Grund 3 weiter gefasst, typisierte Messhüllen für fünf Kanäle verbindlich (`S7-05`), Sperre unter `/tmp` bestätigt (`S7-06`). **Offen bleiben** die Umsetzung (Bau 4 mit Zwischenkontrolle) und die **achte** Prüfrunde; **O-25 ist weiterhin nicht abgenommen**. **Nachtrag vom 2026-09-04 (6.12.26 g):** achte Runde **statisch bestanden** (154 von 154, Mutationsmodus 145 von 145 erkannt, Kanalabgleich ohne Abweichung, sieben nachrangige Befunde), **dynamisch nicht bestanden** (`DT8-01` bis `DT8-03`, alle drei aus Fremdmutationen, die keine Kennung fallen lassen); die Einheit ist nach 3.4 **abgebrochen** und **O-26** vorgelegt. **O-25 bleibt offen und nicht abgenommen** |
+| O-26 — **vorgelegt am 2026-09-04, siehe 6.12.26 g** | **Die Messhülle maschinell binden und die Prüftabelle gegen den ADR-Text vollständig halten — mit einem Abnahmekriterium, das die Prüfrunden beendet.** Fünf Bausteine als Vorschlag: (a) **Prädikatbindung** — je Zeile ein Prädikat aus geschlossenem Vorrat (`zeile-woertlich`, `enthaelt`, `gleich`, `einzelfeld`, `leer`, `existiert`, `fehlt`, `ausserhalb`), von der Messhülle mitgemeldet und abgeglichen wie heute der Kanal; "die Zeile ... wörtlich" nur mit einer Zeilenhülle (`grep -x`). (b) **Schlüsseldeckung** — jeder Zählschlüssel aus 6.12.4 kommt als erwarteter Schlüssel in mindestens einer Zeile von 6.12.19 vor, maschinell geprüft; heute fehlt `KETTE schlusszeile-widerspruch`. (c) **Grammatikdeckung** — je Element der Markengrammatik aus 6.12.7 (Präfix `::LAGE`, Felder, `FEHLT=`, `SCHWELLE=`, schliessendes `::`, Rückgabewertklammer) eine verneinende Zeile. (d) Die sechs Befunde `DT8-01` bis `DT8-06` als neue oder geänderte Zeilen samt Mutationen. (e) Ein **Abnahmekriterium**: tabelleneigene Mutationen zu 100 Prozent erkannt **und** eine Fremdmutationsrunde ohne blockierenden Befund in den Kategorien Schlüssel (6.12.4), Grammatik (6.12.7), Schwellen und Ereignisfolge (6.12.9) und Ausgabeform (6.12.15); weitere Fremdmutationen danach sind Backlog, kein Abbruchgrund | **Neu am 2026-09-04 (6.12.26 g).** Die Fehlerklasse "eine Zusicherung besteht, ohne ihre Behauptung zu belegen" ist zum **achten** Mal aufgetreten, diesmal an `Z-040` (Ausprägung wie `DT7-03`: Teilzeichenkette statt Zeile) und zusätzlich als **ungedeckte Stellen** — ein Zählschlüssel aus 6.12.4 und ein Element der Grammatik aus 6.12.7 ohne jede Zusicherung. Weder die Deckungsprüfung nach O-24 (Kennung gegen Kennung) noch der Kanalabgleich nach O-25 (Kanal gegen Kanal) findet diese Klasse: Keiner hält **Aussage gegen Prädikat**, und keiner hält die **Tabelle gegen den ADR-Text**. Der Punkt ist heute nicht von dieser Rolle entscheidbar, weil er über eine Behebung hinausgeht — er ändert den Prüfmassstab und, mit (e), den Massstab der Abnahme selbst; und weil acht Runden gezeigt haben, dass das offene Kriterium "keine neue Lücke" nicht konvergiert, ist die Frage, wann genug geprüft ist, eine Entscheidung des Auftraggebers und keine der Umsetzung | Auftraggeber; Vorbereitung durch den Software Architect, Umsetzung durch den DevOps Engineer, Verifikation durch Static und Dynamic Software Tester auf einem anderen Modell als die Umsetzung (3.4) | **vor der Abnahme des Gates** aus R3-Q-001 |
 
 Nicht offen, sondern entschieden und hier nur zur Klarstellung: `pgvector` (A4), Suchindex (A3), Orchestrierung (A11). Nicht offen, weil gestrichen: VirusTotal, Gesichtserkennung samt biometrischer Vektoren, Open WebUI, CASE/UCO, Fernsteuerung von Maltego; seit der Fortschreibung vom 2026-08-21 auch TheHive und Cortex (5.17).
 
@@ -2030,6 +5401,34 @@ Nicht offen, sondern entschieden und hier nur zur Klarstellung: `pgvector` (A4),
 | **Zehnte Fortschreibung 2026-09-01:** Die Benennung des Befundtextes (Lage C, mitgeführtes Messergebnis) ist umgesetzt und hiermit gedeckt. Zu prüfen bleibt allein, dass die Meldung nicht mehr behauptet, der Arbeitsbaum sei unbeobachtet, sondern nennt, **welche Hälfte** des Instruments stumm ist und was die andere gemessen hat (6.10.2) | `Makefile` | DevOps Engineer, Verifikation Static und Dynamic Software Tester (3.4) |
 | **Zehnte Fortschreibung 2026-09-01:** ausgeführter Lauf zur Beantwortung von **O-17** — weicht die Aufnahme ab, wenn eine maskierte, verfolgte Datei gelöscht wird? Ergebnis in die Übergabedatei; fällt es ungünstig aus, ist die Aussage über maskierte Dateien in der Meldung enger zu fassen | ausgeführter Lauf | DevOps Engineer, Verifikation Static und Dynamic Software Tester (3.4) |
 | **Zehnte Fortschreibung 2026-09-01:** Kriterium D19 — die Meldung bei stummgeschaltetem Instrument nennt die betroffene Hälfte und das Ergebnis der anderen; sie behauptet nicht, der Arbeitsbaum sei unbeobachtet | `docs/06_Definition_of_Ready_und_Done.md` | Requirements Engineer mit DevOps Engineer, Bestätigung Auftraggeber mit R3-Q-001 |
+| **Zwölfte Fortschreibung 2026-09-02 — Entwurf, erst nach der Freigabe von 6.12 auszuführen:** vier Änderungen am Ziel `dod` und an den Kettenschritten. (1) Die Schleife bricht bei Lage C nicht mehr ab, sondern vermerkt Kennung, Ziel und fehlendes Prüfmittel und läuft weiter; abgebrochen wird bei `A_FAIL`, bei fehlender oder mehrfacher Marke und bei jedem anderen Rückgabewert ungleich 0 (G5, 6.12.6). (2) Feste Grammatik der Lage-Marke: `<Lage>[ FEHLT=<wert>][ SCHWELLE=…\|OHNE_SCHWELLE]`. Jeder der 53 Lage-C-Zweige setzt neben `hat_lage_c=1` eine **Shell-Variable zur Laufzeit** mit dem fehlenden Prüfmittel; `KLASSIFIZIEREN` hängt daraus im C-Zweig selbst `FEHLT=<wert>` an, vor dem Zusatz aus dem vierten Parameter, und bei leerer Variable lautet der Wert `FEHLT=unbenannt`. Der vierte Parameter wird **nicht** umgewidmet — D3, D6 und D8 belegen ihn statisch mit `SCHWELLE=`/`OHNE_SCHWELLE`, und bei Lage C stehen beide Zusätze nebeneinander (G6, 6.12.7; Fassung nach Runde 1 der Prüfung, die erste Fassung dieser Zeile sprach vom vierten Parameter und übersah dessen Belegung sowie den Unterschied zwischen Expansions- und Laufzeit). (3) **Vier** eindeutige Schlusszeilen (die vierte für den vollständig gelaufenen Lauf mit D19-Befund — Nachtrag aus dem Bau, 6.12.23 a; die Zeile hiess bis dahin "drei"), eine eigenständige D19-Zeile in **jedem** Ausgang mit fester Grammatik `make dod: D19: <OHNE_BEFUND\|VERLETZT\|B\|C>[ -- <Text>].` — heute fünf freie Befundtexte mit zwei Schreibweisen für Lage C und eine Lage-B-Zeile, die nicht mit `D19:` beginnt — und eine erste Zeile `make dod: geprueft wird <PROJ>.`; die D19-Angabe fällt aus der Erfolgszeile weg statt dort zusätzlich zu stehen (G7, 6.12.8). (4) Im Ziel `belege` prüft der Wächter-Block zusätzlich, ob der Klon flach ist; ist er es, ist das Lage C mit `git fetch --unshallow` als Beschaffungsweg (G16, 6.12.17). Kein Kettenschritt wechselt dadurch seine Lage, und kein roter Lauf wird grün | `Makefile` | DevOps Engineer; Verifikation Static und Dynamic Software Tester auf einem anderen Modell (3.4) |
+| **Zwölfte Fortschreibung 2026-09-02 — Entwurf:** neues Hook-Skript nach 6.12, das `Stop`, `SubagentStop` und `TaskCompleted` bedient und über `hook_event_name` verzweigt; es fängt Standard- und Fehlerausgabe von `make dod` gemeinsam ab und lässt auf die eigene Standardausgabe ausschliesslich ein JSON-Objekt oder nichts | `.claude/hooks/dod-gate.sh` (neu) | DevOps Engineer; Verifikation Static und Dynamic Software Tester (3.4) |
+| **Zwölfte Fortschreibung 2026-09-02 — Entwurf:** die Liste der terminierten Lagen C, versioniert, in der Form aus 6.12.5. Sie enthält beim Anlegen ausschliesslich Einträge für Artefakte, die dieser ADR als noch nicht entstanden führt; `gitleaks` und jedes Prüfmittel von D20 sind darin unzulässig | `.claude/hooks/dod-gate-terminierte-lagen.txt` (neu) | Software Architect legt die Einträge an (Fortschreibung dieses Abschnitts); DevOps Engineer baut die Auswertung; Verifikation Static und Dynamic Software Tester (3.4) |
+| **Zwölfte Fortschreibung 2026-09-02 — Entwurf:** drei Hook-Einträge in der **versionierten** Datei, für `Stop`, `SubagentStop` und `TaskCompleted`, ohne Matcher, in Exec-Form mit `args`, das Skript über `${CLAUDE_PROJECT_DIR}` angesprochen, `timeout: 900` je Eintrag (G11, 6.12.12). Cloud-Sitzungen lesen die lokale `~/.claude/settings.json` nicht (3.4) | `.claude/settings.json` | DevOps Engineer |
+| **Zwölfte Fortschreibung 2026-09-02 — Entwurf:** Abschnitt "Durchsetzung" um das Gate nachführen — die drei Ereignisse und wer die Zusicherung trägt (6.12.2), die Unterscheidung Befund/Ausfall (6.12.4), die terminierten Lagen C samt ihren sechs Selbstprüfungen (6.12.5), die Zählung und die Eskalation (6.12.9), das Verhalten bei `stop_hook_active` (6.12.10) und die Aussage eines Durchlasses (6.12.18). Zusätzlich: der Satz zur Obergrenze nennt heute eine Umgebungsvariable, die in der gelesenen Dokumentation nicht vorkommt (O-19); die Kriterienzeilen D7 bis D12 und D20 sind um das strukturierte `FEHLT=` und um das Weiterlaufen bei Lage C zu ergänzen; D20 zusätzlich um die Vollständigkeit der Historie als siebtes Prüfmittel | `docs/06_Definition_of_Ready_und_Done.md` | Requirements Engineer mit DevOps Engineer, Bestätigung Auftraggeber mit R3-Q-001 |
+| **Zwölfte Fortschreibung 2026-09-02 — Entwurf:** Tabelle "Aktive Gates" um das Definition-of-Done-Gate ergänzen; der Absatz "Noch nicht vorhanden" ist für `Stop`, `SubagentStop` und `TaskCompleted` überholt, sobald das Gate steht (R3-Q-005 bleibt offen). In der Lieferreihenfolge ist R3-Q-001 als erledigt zu führen, sobald Abnahme und Verifikation vorliegen | `CLAUDE.md` | Protocol Master |
+| **Zwölfte Fortschreibung 2026-09-02 — Entwurf:** Abschnitt "Hooks" um zwei belegte Sätze ergänzen, die dort fehlen und beide gegen ein wirkungsloses Gate schützen: Ein Hook, der seine Zeitgrenze reisst, wird abgebrochen und **lässt durch** — die Zeitgrenze ist deshalb im Skript selbst zu ziehen, kürzer als in `settings.json`; und die Standardausgabe eines Hooks darf ausschliesslich das JSON-Objekt tragen, weil eine misslungene Auswertung als Fehler erscheint. Beides ist der Referenz vom 2026-09-02 entnommen | `.claude/rules/claude-konfiguration.md` | DevOps Engineer mit Protocol Master |
+| **Zwölfte Fortschreibung 2026-09-02 — Entwurf, Befund aus Runde 1 (B13):** Der Abschnitt zu den Hooks erklärt die harte Obergrenze "über `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`" für **verbindlich**. Die Variable ist in der am 2026-09-02 gelesenen Hook-Dokumentation nicht belegt (O-19); die Obergrenze 8 steht dort ohne Variablennamen. Die Stelle ist nachzuführen, sobald O-19 entschieden ist — eine verbindlich erklärte Einstellung, die es möglicherweise nicht gibt, ist als Bauvorschrift untauglich | `docs/adr/0001-rollenmodell.md` | Software Architect als Fortschreibung jenes ADR, nach dem Entscheid zu O-19 |
+| **Zwölfte Fortschreibung 2026-09-02 — Entwurf, bedingt auf den Entscheid zu O-23 (Befund B4 aus Runde 1):** Wählt der Auftraggeber Weg (1), ist eine Vorschrift nachzuführen, dass **jede Arbeitseinheit als Aufgabe geführt wird** — sonst feuert `TaskCompleted` nicht, und die einzige harte Zusicherung des Gates trägt nichts (6.12.2, 6.12.18 Punkt 5). Wählt er Weg (2), ist an derselben Stelle festzuhalten, dass die Kette in Sitzungen ohne Aufgabenliste nur angemahnt und nicht erzwungen wird. Eine der beiden Fassungen ist zu schreiben, keine ist wegzulassen | `CLAUDE.md` oder `.claude/rules/claude-konfiguration.md` | Protocol Master (CLAUDE.md) beziehungsweise DevOps Engineer (Regeldatei), nach dem Entscheid des Auftraggebers |
+| **Zwölfte Fortschreibung 2026-09-02 — Entwurf:** Das Abnahmekriterium `R3-Q-001_gate_blockiert` ist zu präzisieren. Es setzt heute "roter Prüflauf" mit "Rückgabewert ungleich 0" gleich; mit den terminierten Lagen C endet `make dod` mit 2, während das Gate mit 0 endet. Vorschlag: "rot" ersetzen durch "Befund — `A_FAIL`, D19 `VERLETZT` oder nicht nachweisbar gelaufen"; als eigener, ebenfalls zu prüfender Fall aufnehmen, dass ein Lauf, dessen einzige Abweichungen gedeckte terminierte Lagen C sind, mit 0 endet und sich über `systemMessage` meldet; dazu die weiteren Fälle aus 6.12.19. Der Eintrag trägt weiterhin keinen benannten Stakeholder (offener Punkt 12 des Backlogs) | `docs/05_Product_Backlog.md` | Product Owner mit Requirements Engineer, Bestätigung Auftraggeber |
+| **Zwölfte Fortschreibung 2026-09-02 — Entwurf:** **drei** ortsgebundene Ausnahmeeinträge, jeder mit Tatsachengrund, jeder Umsetzung nach 6.8.5 und **kein** Architekturentscheid. (1) Für den Fund auf `origin/main` — der lokale Zweig-Ref als Beleg in einer Übergabedatei; die Übergabedatei selbst wird nicht geändert (siehe den letzten Absatz dieses Abschnitts). (2) und (3) Für die beiden Pfade `.claude/hooks/dod-gate.sh` und `.claude/hooks/dod-gate-terminierte-lagen.txt`, die dieser Abschnitt nennt und die erst mit dem Bau entstehen; Form `datei\|wert`, gebunden an `docs/adr/0002-architekturentscheid-ziel-stack.md`. **Die Einträge (2) und (3) sind mit dem Entstehen der beiden Dateien wieder zu entfernen** — die Selbstprüfung "der Gegenstand existiert inzwischen" macht sie dann selbst zum Befund (6.8.5, Eigenschaft 3), und genau das ist ihre Sollbruchstelle | `scripts/belege-ausnahmen.txt` | Die Rolle, deren Dokument den Fund ausgelöst hat; Verifikation durch eine andere Rolle (3.4) |
+| **Zwölfte Fortschreibung 2026-09-02 — Entwurf:** Zeile für das neue Hook-Skript und die Liste der terminierten Lagen in der Artefaktliste des Nachweiserzeugers; Neuerzeugung des Nachweisverzeichnisses; Changelog | `scripts/nachweise-erzeugen.sh`, `docs/NACHWEISE.md`, `CHANGELOG.md` | Protocol Master (4.2, 6.6) |
+| **Zwölfte Fortschreibung 2026-09-02 — Entwurf:** zu prüfen, ob ein methodischer Entscheid festzuhalten ist — die Unterscheidung zwischen einer Kette, die streng bleibt, und einem Gate der Arbeitsumgebung, das einen abzählbaren, selbstprüfenden und terminierten Ausfall duldet, während die Gegenseite ihn nicht kennt (6.12.5). Diese Rolle schlägt ihn vor und trägt ihn nicht selbst ein | `methodik/entscheide.md` im Methodik-Repository | Protocol Master mit dem Auftraggeber |
+| **Nachträge aus der Verifikation 2026-09-02 (6.12.24, Bau auf Weisung begonnen, förmliche Freigabe ausstehend):** Entscheide zu den Befunden B-01, B-02, B-03, N-01, N-04 bis N-07 und N-09 — im Gate umgesetzt, N-01 und N-07 allein durch den Entscheid ohne Codeänderung — der geprüfte Baum als **physisch aufgelöste Wurzel** des Arbeitsbaums (a); der Schlüssel `KETTE baum-widerspruch` (b); kein Ausgang 1 mehr bei nicht bestimmbarem Zustandsverzeichnis, sondern dieselbe Behandlung wie bei einem nicht beschreibbaren (c); der Zähler bleibt beim Durchlass nach der Eskalation stehen (d); Sperrdatei unter `/tmp`, wenn das Zustandsverzeichnis ausfällt, und Lauf ohne Sperre mit Meldung, wenn auch das nicht geht (e); die Wegwerfdatei nachweislich ausserhalb des Baums, sonst `GATE mktemp` (f); `sha256sum` und `mktemp` als Prüfmittel mit eigenem Schlüssel (g); die Selbstprüfungen 2, 4 und 6 vor dem Lauf der Kette, Schlüssel aus der kleinsten Zeilennummer (h). **Nach Runde 2 zusätzlich:** der Zähler zählt beim Durchlass nach der Eskalation **weiter** statt still zu stehen, und die Meldung nennt das n-te Mal (d, DT2-B1); der Hinweis auf ein ausgefallenes Zählwerk steht in **jeder** Meldung, bei sauberem Grün als einzige, und unterscheidet "nicht bestimmbar" von "nicht beschreibbar" (c, S-13); der Kettenlauf erhält `TMPDIR` gleich dem Verzeichnis der geprüften Wegwerfdatei, damit auch die Kette nicht in den Baum schreibt (f, DT2-B2); die Zahl der gelesenen Marken wird gegen die Zahl der Schlusszeile geprüft, mindestens eine Marke verlangt, Abweichung `KETTE ausgabe-unlesbar` (k, S-11); `D19 B-widerspruch` geht der Konsistenzwache vor (S-01), eine fehlende Baumzeile ist `KETTE ausgabe-unlesbar` (S-10) | `.claude/hooks/dod-gate.sh` | DevOps Engineer; Verifikation Static und Dynamic Software Tester auf einem anderen Modell (3.4) |
+| **Nachträge aus der Verifikation 2026-09-02 (6.12.24 i):** Selbsttest — alle **acht** Kombinationen der D19-Zeile (N-02); der G13-Fall mit den **echten** Rollendateien `static-software-tester.md` und `pentester.md` samt Gegenfall `devops-engineer.md` (N-03); eigene Fälle für G12 (Unterverzeichnis, Schrägstrich am Ende, Symlink, `cwd` ausserhalb des Repositories, zweiter Arbeitsbaum — DT-B5); die Übergabedatei des Falls zur Eskalation nachweislich in `HEAD` (DT-B4); je ein Fall für die Entscheide a), c), e), f), g) und h) sowie für D12 mit mehreren fehlenden Gegenständen (N-08). **Nach Runde 2 zusätzlich** die dort als fehlend beanstandeten Fälle (S-03, S-04, S-05) und je ein Fall für: null Marken bei Form-1-Schlusszeile und Rückgabewert 0 sowie abweichende Markenzahl (k, S-11); D19 Lage B bei Rückgabewert 0 unter `D19 B-widerspruch` (S-01); fehlende Baumzeile unter `KETTE ausgabe-unlesbar` (S-10); `TMPDIR` in den Baum, wobei die **Kette selbst** eine Wegwerfdatei anlegt (f, DT2-B2); Weiterzählen des Zählers nach dem vierten Durchlass (d, DT2-B1); die Meldung zum ausgefallenen Zählwerk bei grüner Kette (c, S-13) | `scripts/dod-gate-selbsttest.sh` | DevOps Engineer; Verifikation Static und Dynamic Software Tester (3.4) |
+| **Nachträge aus der Verifikation 2026-09-02 (6.12.24 i, Befund N-08):** In D12 gewinnt bei mehreren fehlenden Gegenständen der **erste** in `FEHLT=`; kein späterer `if`-Block überschreibt ihn. Anwendung von G6, keine neue Regel | `Makefile` | DevOps Engineer |
+| **Nachträge aus der Verifikation 2026-09-02 (6.12.24, Befunde B-04 und B-05) — bereits ausgeführt (Fremdbeleg, nicht von dieser Rolle geprüft):** die ortsgebundene Ausnahme für `CLAUDE.md`, deren Zeilenangabe durch das Wachsen der Datei überholt war, ist nachgeführt; vier Ausnahmen der Form `datei\|wert` decken die in `docs/06_Definition_of_Ready_und_Done.md` genannten, noch nicht gebauten Skripte. Umsetzung nach 6.8.5, **kein** Architekturentscheid; die vier Einträge sind mit dem Entstehen der Skripte wieder zu entfernen (6.8.5, Eigenschaft 3) | `scripts/belege-ausnahmen.txt` | Koordinator, ausgeführt am 2026-09-02; Verifikation durch eine andere Rolle (3.4) |
+| **Nachträge aus der Verifikation 2026-09-02 (6.12.24 j):** **Drei** Prüfrunden sind gelaufen und in 6.12.24 j verzeichnet. Runde 3 (2026-09-03, Fremdbeleg): alle dreizehn Befunde aus Runde 2 sind mit eigenen Läufen **beider** Prüfer als behoben belegt, der Selbsttest besteht **81 von 81** Fällen, unabhängig reproduziert — und dennoch ist die Runde **nicht bestanden** (S3-01 statisch, DT3-B1 dynamisch, dazu sechs nicht blockierende Befunde). Weil dieselbe Fehlerklasse zum dritten Mal auftrat, ist die **Arbeitseinheit am 2026-09-03 nach 3.4 abgebrochen**, die Übergabedatei `docs/uebergaben/2026-09-02_r3-q-001-gate-gebaut.md` mit der Eskalationszeile geschrieben und **O-24** vorgelegt worden. Nachzuführen bleiben: der Entscheid zu O-24, danach die fünf in 6.12.24 j, Punkt 16, als Vorschlag festgehaltenen Behebungen und eine **vierte** Prüfrunde; erst sie belegt den Stand danach, dieser ADR belegt ihn nicht. Die Forderung aus 6.12.23 d — der grüne Lauf gegen das **echte** `Makefile` mit **Rückgabewert 0 der Kette** — ist nach Fremdbeleg beider Prüfer in beiden Runden durch Selbsttestfall 28 erfüllt; der Lauf am echten Bestand endete erwartungsgemäss mit Form 2 und Rückgabewert 2 (terminierte Lage C bei D7, D10 und D12) | Prüfbericht, Ergebnis in die Übergabedatei | Static und Dynamic Software Tester auf einem anderen Modell als die Umsetzung (3.4) |
+| **Dreizehnte Fortschreibung 2026-09-03 (6.12.25, Entscheid des Auftraggebers zu O-24):** (1) Der Selbsttest trägt **je Kennung `Z-nnn` der Tabelle 6.12.19 genau eine Prüfung** und gibt je Prüfung eine Zeile `BESTANDEN Z-nnn …` oder `FEHLGESCHLAGEN Z-nnn …` aus; am Ende liest er die Kennungen aus der Tabelle dieser ADR-Datei (Zeilen, die mit `\| Z-` beginnen) und endet ungleich 0, wenn eine Kennung ohne Prüfung ist **oder** eine Prüfung eine Kennung trägt, die nicht in der Tabelle steht (zurückgezogene Kennungen ausgenommen und als solche ausgegeben). (2) Im Gate: die Blockmeldung nennt **alle** Abweichungen, gezählt wird weiterhin die erste in Kettenreihenfolge (b, S3-01); das Zielverzeichnis der Wegwerfdatei wird **vor** dem Anlegen bestimmt, die Prüfung danach bleibt als Wache (c, DT3-B1); ein physisch nicht auflösbares Verzeichnis endet mit 2 und `GATE mktemp` (d, S3-05). (3) Neue Zusicherungen `Z-137` bis `Z-141` (Markenzahl bei Form 2 und 4, Gegenprobe Form 3) und `Z-129` (keine zweite Forderung nach der Übergabedatei) — e), S3-02 und S3-07. Erst eine **vierte** Prüfrunde belegt den Stand danach; dieser ADR belegt ihn nicht. **Nachtrag vom 2026-09-03 nach der vierten Runde (6.12.25 f bis k):** (4) Die Tabelle 6.12.19 nennt je Zeile den **Messumfang** — Kanal, Ereignis und, wo es darauf ankommt, Anzahl —, und die Prüfung misst genau diesen Umfang; **75** Zeilen sind daraufhin präzisiert (f). (5) `Z-129` ist berichtigt: keine **Forderung** nach der Übergabedatei bei irgendeinem Ereignis nach dem vierten Durchlass, auf **keinem** der beiden Kanäle; das Zitat der Zeile `Eskalation 3.4: <Schlüssel>` als Begründung des Durchlasses bleibt zulässig (g). (6) `Z-110` ist zurückgezogen, `Z-111` misst den ganzen Baum (h). (7) Im Gate: **jeder** Block mit Schlüssel `GATE <Prüfmittel>` läuft über die Zählung nach 6.12.9, einzige Ausnahme `GATE jq`; neue Zusicherungen `Z-146` bis `Z-151` (i). (8) Im Selbsttest: Sperre (`flock`) auf `/tmp/r3cosint-dod-gate-selbsttest.lock` für die ganze Laufzeit, ohne Wartezeit genommen, sonst `Selbsttest laeuft bereits` auf der Fehlerausgabe und Rückgabewert 3; neue Zusicherungen `Z-152` und `Z-153` (j). Die Tabelle führt damit `Z-001` bis `Z-153`, davon `Z-110` zurückgezogen. Erst eine **fünfte** Prüfrunde belegt den Stand danach | `scripts/dod-gate-selbsttest.sh`, `.claude/hooks/dod-gate.sh`; Spezifikation in `docs/adr/0002-architekturentscheid-ziel-stack.md` (6.12.19, 6.12.25) | DevOps Engineer; Verifikation Static und Dynamic Software Tester auf einem anderen Modell als die Umsetzung (3.4) |
+| **Vierzehnte Fortschreibung 2026-09-03 (6.12.26, Entscheid des Auftraggebers zu O-25):** (1) Die Tabelle 6.12.19 trägt die Spalten **Kennung, Fall, Kanal, Zusicherung, Mutation, Herkunft**. Der Selbsttest meldet je Kennung den **tatsächlich benutzten Kanal** mit und endet ungleich 0, wenn er vom Kanal der Tabelle abweicht — zusätzlich zur Deckung in beide Richtungen aus 6.12.25 a. Der Wertevorrat ist abschliessend: `rc`, `stdout`, `stderr`, `zaehler`, `datei`, `beobachter`, `kette`, `selbsttest`, `dauer`. (2) Neue versionierte Datei `scripts/dod-gate-mutationen.txt` (Kennung, Ziel, `sed`-Ausdruck oder `keine`, Grund) und ein **Mutationsmodus** `--mutationen` des Selbsttests: Deckung der Einträge in beide Richtungen, die mutierte Kopie muss sich vom Original unterscheiden, und genau die Kennung der Mutation muss `FEHLGESCHLAGEN` melden. (3) Behebungen der fünften Runde: die 16 Zeilen aus S5-01 messen auf dem in ihrer Zeile genannten Kanal (Wortlaut unverändert); die Attrappenkette hält ihre Wegwerfdatei mindestens 300 ms, damit `Z-111` ein Beobachtungsfenster hat (DT5-01); `Z-018` misst den Stand 2 vor und nach dem Aufruf statt der Abwesenheit der Zählerdatei (S5-03). (4) Im `Makefile`: nichts zu ändern ausser den Mutationszielen des Prüfaufbaus — die Baumzeile und der Beschaffungsweg `git fetch --unshallow` sind Gegenstand von Mutationen, nicht von Änderungen. Erst eine **sechste** Prüfrunde belegt den Stand danach; dieser ADR belegt ihn nicht | `scripts/dod-gate-selbsttest.sh`, `scripts/dod-gate-mutationen.txt` (neu), `.claude/hooks/dod-gate.sh`; Spezifikation in `docs/adr/0002-architekturentscheid-ziel-stack.md` (6.12.19, 6.12.26) | DevOps Engineer; Verifikation Static und Dynamic Software Tester auf einem anderen Modell als die Umsetzung (3.4) |
+| **Vierzehnte Fortschreibung 2026-09-03 (6.12.26 c, Befund S5-02):** Der Ausweichname der Zählerdatei bei fehlendem `sha256sum` — die bereinigte Rohform der `session_id`, nur `A-Za-z0-9_-`, alles andere zu `_` — ist in 6.12.9 und 6.12.11 terminiert. Im Gate bereits so gebaut; hiermit gedeckt, **keine** Codeänderung | `.claude/hooks/dod-gate.sh` | DevOps Engineer, nichts auszuführen; Verifikation Static Software Tester (3.4) |
+| **Vierzehnte Fortschreibung 2026-09-03:** neue Zeile für `scripts/dod-gate-mutationen.txt` in der Artefaktliste des Nachweiserzeugers; Neuerzeugung des Nachweisverzeichnisses; Changelog | `scripts/nachweise-erzeugen.sh`, `docs/NACHWEISE.md`, `CHANGELOG.md` | Protocol Master (4.2, 6.6) |
+| **Vierzehnte Fortschreibung 2026-09-03 (6.12.26 e, Entscheide 1 und 4):** Die Ausnahmeliste `kanal_ausnahmen_bekannt` mit `Z-080` und `Z-130` ist **ersatzlos zu entfernen** — die Tabelle 6.12.19 führt für beide Kennungen neu den Kanal `kette`, Tabelle und Messung stimmen damit überein, und eine geduldete Abweichung nähme dem Abgleich nach 6.12.26 a für diese beiden Zeilen die Wirkung. Am Kanal `kette` selbst und an den Messhüllen ist nichts zu ändern | `scripts/dod-gate-selbsttest.sh` | DevOps Engineer; Verifikation Static Software Tester (3.4) |
+| **Vierzehnte Fortschreibung 2026-09-03 (6.12.26 e, Phase 3 unvollständig):** trennscharfe Mutationen für `Z-124` (Ausdruck trifft 10 Stellen einschliesslich einer Kommentarzeile) und `Z-133` (der zweite Disjunkt trägt den geforderten Rückgabewert 2 weiter, die Messung isoliert die zerstörte Eigenschaft nicht); Abtragen der **18** nicht erkannten und **3** wirkungslosen Mutationen. Ziel bleibt Rückgabewert 0 des Mutationsmodus bei `nicht_erkannt=0` und `wirkungslos=0` | `scripts/dod-gate-mutationen.txt`, `scripts/dod-gate-selbsttest.sh` | DevOps Engineer; Verifikation Static und Dynamic Software Tester auf einem anderen Modell (3.4) |
+| **Vierzehnte Fortschreibung 2026-09-03 (6.12.26 e):** **siebte Prüfrunde** — die sechste ist statisch (12 Befunde) und dynamisch (6 Befunde) nicht bestanden, der Bau danach in drei Phasen fortgeführt, Phase 3 unvollständig. Erst die siebte Runde belegt den Stand nach den beiden vorstehenden Zeilen; dieser ADR belegt ihn nicht. **O-25**, die Entscheidpunkte E-A bis E-K und die Abnahme des Gates bleiben offen (Abschnitt 10) | Prüfbericht, Ergebnis in die Übergabedatei | Static und Dynamic Software Tester auf einem anderen Modell als die Umsetzung (3.4) |
+| **Fünfzehnte Fortschreibung 2026-09-03 (6.12.26 f, Runde 7):** (1) `Z-114` misst neu `rc+datei` — Rückgabewert 2 **und** fehlende Spurdatei der Attrappenkette, damit die offen ausfallende Wache (`if false`) erkannt wird; (2) `Z-132` misst neu `datei` an einer Spurdatei ausserhalb des Baums, in die die Attrappenkette das ihr wirksam übergebene `TMPDIR` schreibt; (3) `Z-133` läuft gegen eine Form-1-Schlusszeile mit genau `0 gueltige Marken gezaehlt`, damit allein die Forderung nach mindestens einer Marke den Block trägt; (4) `Z-124` erhält zwei fehlerhafte Zeilen mit verschiedenen Schlüsseln und eine über den Block **verankerte** Mutation der Abbruchanweisung der Selbstprüfungen 2, 4 und 6; (5) `Z-139` trägt `keine` (Grund 3, Schwester `Z-140`); (6) neu `Z-154` und `Z-155` zur Bindung des Durchlasses an den **gezählten** Schlüssel (`DT7-03`), `Z-155` mit `keine` (Grund 3, Schwester `Z-154`); (7) `Z-089` genau **einmal** messen, und die Deckungsprüfung zählt eindeutige Kennungen — eine doppelt gemeldete Kennung ist selbst eine Abweichung (`S7-04`); (8) die Ausnahmeliste `kanal_ausnahmen_bekannt` ersatzlos entfernen (`S7-03`, bereits in e angeordnet); (9) für `rc`, `stdout`, `stderr`, `zaehler` und `kette` sind die **typisierten** Messhüllen verbindlich, eine `pruefe_wahr`-Meldung mit einem dieser fünf Kanäle verwirft der Abgleich als Abweichung (`S7-05`); (10) an der Sperre unter `/tmp` ist nichts zu ändern (`S7-06`). Ziel bleibt Rückgabewert 0 in beiden Modi bei `nicht_erkannt=0` und `wirkungslos=0`; die Zahlen aus 6.12.26 f ("Umfang nach dieser Fortschreibung") sind beim Bau zu bestätigen und bei Abweichung zu melden, nicht anzugleichen. **Berichtigt am 2026-09-04 durch 6.12.26 f Punkt 13 (Bau 4):** (1) entfällt — `Z-114` bleibt bei `rc`, Mutation `keine` (Grund 3, Schwester `Z-115`); die Mutation von `Z-130` ist auf das `Makefile` verlegt; Umfang 156 Messhüllen, neun Zeilen mit `keine`. | `scripts/dod-gate-selbsttest.sh`, `scripts/dod-gate-mutationen.txt`, `.claude/hooks/dod-gate.sh`; Spezifikation in `docs/adr/0002-architekturentscheid-ziel-stack.md` (6.12.19, 6.12.26 f) | DevOps Engineer; Verifikation Static und Dynamic Software Tester auf einem anderen Modell als die Umsetzung (3.4) |
+| **Fünfzehnte Fortschreibung 2026-09-03 (6.12.26 f):** **achte Prüfrunde** nach Bau 4 mit Zwischenkontrolle. Sie belegt den Stand, dieser ADR belegt ihn nicht. Tritt die Fehlerklasse "eine Zusicherung besteht, ohne ihre Behauptung zu belegen" dort erneut auf, wird nach 3.4 abgebrochen, die Übergabedatei geschrieben und die Sache vorgelegt (Entscheid des Koordinators). **O-25**, die Entscheidpunkte E-A bis E-K und die Abnahme des Gates bleiben offen (Abschnitt 10) | Prüfbericht, Ergebnis in die Übergabedatei | Static und Dynamic Software Tester auf einem anderen Modell als die Umsetzung (3.4) |
+| **Sechzehnte Fortschreibung 2026-09-04 (6.12.26 g, Runde 8):** Die achte Prüfrunde ist gelaufen (Fremdbeleg, beide Prüfer auf einem anderen Modell als die Umsetzung, je in einer Wegwerfkopie, Bestand prüfsummengleich). **Statisch bestanden:** Normalmodus Rückgabewert 0 mit 154 von 154, Deckung 154/154/0/0, Kanalabgleich 0 Abweichungen, keine Doppelmeldung; Mutationsmodus Rückgabewert 0 mit 145 geprüft, 145 erkannt, 0 nicht erkannt, 9 ohne Mutation, 0 wirkungslos; die Zahlen aus Punkt 13 sind damit bestätigt. **Dynamisch nicht bestanden:** von sechzehn **eigenen** Mutationen des Prüfers, keine davon in der Mutationsdatei, lässt ein Teil keine Kennung fallen — `DT8-01` (`Z-040` misst eine Teilzeichenkette statt der Zeile, und der Durchlass frühestens beim vierten Ereignis ist ungedeckt; achter Auftritt der Fehlerklasse), `DT8-02` (der Zählschlüssel `KETTE schlusszeile-widerspruch` aus 6.12.4 ist von keiner Zusicherung gedeckt) und `DT8-03` (das schliessende `::` der Markengrammatik aus 6.12.7 ist ungedeckt), alle drei blockierend. **Die Arbeitseinheit ist nach 3.4 abgebrochen**, kein Befund der achten Runde wird in ihr behoben, der Stand ist mit Übergabedatei committet und vorgelegt; vorgelegt ist **O-26** (Prädikatbindung, Schlüsseldeckung, Grammatikdeckung, die sechs Befunde als Zeilen, Abnahmekriterium). **Nachführungsposten der nächsten Einheit** — nicht in dieser: `S8-01` (Rückzugserkennung liest die Zeile statt der Spalte), `S8-03` (der Block `GATE sha256sum` steht zweimal, die alte Fassung ist unerreichbar und zu entfernen), `S8-05` (`Z-080` misst nicht isoliert in der Marke), `S8-06` (Kanalabgleich vergleicht Zeichenketten statt Mengen — strenger als verlangt), `S8-07` (fünf Nicht-ASCII-Stellen in den Skripten) sowie `DT8-04` (Rückfallpfad über `CLAUDE_PROJECT_DIR` physisch aufgelöst), `DT8-05` (Wert der inneren Zeitgrenze ungemessen) und `DT8-06` (Ausgabeform nur für zwei von fünf Durchlasspfaden gemessen). `S8-02` ist am aktuellen Stand nicht reproduzierbar und gegenstandslos; `S8-04` (Mutationsdatei noch nicht unter Versionskontrolle) erledigt sich mit dem Commit dieser Einheit. **O-25**, das neue **O-26**, die Entscheidpunkte E-A bis E-K und die Abnahme des Gates bleiben offen (Abschnitt 10) | Übergabedatei der Einheit (`docs/uebergaben/2026-09-04_r3-q-001-o-25-kanal-und-mutation.md`); `scripts/dod-gate-selbsttest.sh`, `scripts/dod-gate-mutationen.txt`, `.claude/hooks/dod-gate.sh`; Spezifikation in `docs/adr/0002-architekturentscheid-ziel-stack.md` (6.12.19, 6.12.26 g) | Entscheid zu O-26 beim Auftraggeber; Vorbereitung Software Architect, Umsetzung DevOps Engineer, Verifikation Static und Dynamic Software Tester auf einem anderen Modell als die Umsetzung (3.4); Changelog und Nachweisverzeichnis beim Protocol Master (4.2, 6.6) |
 | Backlog-Eintrag für TheHive/Cortex (O-4) — **entfallen am 2026-08-21**, O-4 gestrichen (5.17 neu); bleibt: Formulierung der Abnahme von R3-C-001 gegenüber 5.6 (O-1) | `docs/05_Product_Backlog.md` | Product Owner |
 | Zeile für diesen ADR in der Artefaktliste des Erzeugers; Neuerzeugung des Nachweisverzeichnisses; Changelog | `scripts/nachweise-erzeugen.sh`, `docs/NACHWEISE.md`, `CHANGELOG.md` | Protocol Master (4.2, 6.6) |
 | Statustabelle und Verweis auf den Ziel-Stack | `CLAUDE.md` | Protocol Master |
@@ -2056,5 +5455,30 @@ R3-C-001 gilt erst als abgenommen, wenn hier die schriftliche Freigabe des Auftr
 zweiten Formweg erteilt (Anweisung an die Session) und von der Session in
 diesen Vermerk übertragen; Urheber und Zeitpunkt belegt die Commit-Historie
 des Arbeitszweigs.
+
+### Vorlage der zwölften Fortschreibung (Abschnitt 6.12) und Weisung vom 2026-09-02
+
+| | |
+|---|---|
+| **Vorgelegt am** | 2026-09-02, Commit `21cc3ddbf45668c2e185958f8e2a8d42eeaf0150`, mit `docs/uebergaben/2026-09-02_r3-q-001-entwurf-dod-gate.md` und den elf Entscheidpunkten E-A bis E-K |
+| **Weisung des Auftraggebers, Wortlaut** | "Gehe nach der besten Lösung und Schritte. Einfach keine Annahmen und sei vollkommen sicher." |
+| **Lesart des Koordinators** | Der Bau beginnt auf diese Weisung; je Entscheidpunkt wird die vom Software Architect empfohlene Option umgesetzt. Die Weisung entscheidet die elf Punkte nicht einzeln |
+| **Förmliche Freigabe** | **steht aus.** Formweg wie beim Freigabe-Gate Schritt 4: Merge des Pull Requests dieses Arbeitszweigs oder Anweisung an die nächste Sitzung mit dem exakten Wortlaut; jede der unten umgesetzten Optionen kann dabei zurückgewiesen werden |
+
+Vom Koordinator umgesetzte Optionen, je die Empfehlung des Architects:
+
+| Nr. | Punkt | Umgesetzte Option |
+|---|---|---|
+| E-A | 6.12 als Ganzes | Bau nach 6.12 |
+| E-B | Terminierte Lagen C (G4) | (a) |
+| E-C | Kette bricht bei Lage C nicht mehr ab (G5) | (a) |
+| E-D | `FEHLT=` strukturiert in der Marke (G6) | (a) |
+| E-E | `gitleaks` bleibt blockierend | (a), verbunden mit (b): gitleaks 8.21.2 am 2026-09-02 in der Sitzungsumgebung installiert, Prüfsumme des Release-Archivs gegen die veröffentlichte Prüfsummendatei geprüft; die dauerhafte Bereitstellung in der Umgebung liegt beim Auftraggeber |
+| E-F | Flacher Klon blockiert (G16) | (a) |
+| E-G | Laufzeit je Beendigungsversuch (G15, O-20) | (a) |
+| E-H | Reichweite der Zusicherung, Voraussetzung Aufgabenliste (G9, O-23) | (a): Wortlaut befolgen und vorschreiben, dass jede Arbeitseinheit als Aufgabe geführt wird |
+| E-I | Abnahmekriterium `R3-Q-001_gate_blockiert` | (a) präzisieren |
+| E-J | Durchlass nach der Eskalation | (a): nur `Stop` und `SubagentStop`; `TaskCompleted` blockiert weiter |
+| E-K | `Bash` zählt nicht als Schreibwerkzeug (G13) | (a), mit benannter Lücke bis R3-Q-005 |
 
 Formweg wie beim Freigabe-Gate Schritt 4: entweder direkte Bearbeitung dieser Datei über einen Pull Request oder Anweisung an die nächste Sitzung mit dem exakten Wortlaut des Entscheids. Massgeblich ist der committete Stand; Urheber und Zeitpunkt belegt die Commit-Historie.

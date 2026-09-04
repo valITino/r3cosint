@@ -4,7 +4,7 @@
 |---|---|
 | **Arbeitsprodukt nach** | Projektauftrag 6.5, 6.8, 3.4 |
 | **Verantwortlich** | Scrum Master (Prozess), Requirements Engineer (Ready), Static und Dynamic Software Tester (Done) |
-| **Stand** | 2026-08-20, nachgeführt am 2026-08-30 (ADR 0002, Abschnitt 6.1: D18 ergänzt, D11 auf zwei Gegenstände erweitert, Kettengrundsatz aufgenommen; Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`), ergänzt am 2026-08-31 um die Notation der Abnahmekriterien zu R6 — Vorschlag zur Bestätigung, am selben Tag nach Prüfbefund berichtigt (drittes Glied heisst "Nachbedingung" wie die Quelle; Ermessensanteil der Zählungen offengelegt), nachgeführt am 2026-09-01 (Rahmenprüfung **D19** aus der zweiten und vierten Fortschreibung von ADR 0002 vom 2026-08-30 nachgetragen — diese Nachführung stand seither offen; Kettenschritt **D20** aus der achten Fortschreibung vom 2026-09-01 aufgenommen; Kettengrundsatz zum Rückgabewert 0 übernommen), am selben Tag ein zweites Mal nachgeführt (neunte und zehnte Fortschreibung von ADR 0002: Beobachtbarkeit des Index als zweiter Teil des D19-Prüfmittels, Lage C für **alle** Schritte geschärft, Aussagegrenze der D19-Meldung, O-17 als offener Punkt aufgenommen), am selben Tag ein drittes Mal nachgeführt (Behebung eines blockierenden Befunds am Programmstand: D20 prüft jetzt alle sechs im Kriterium genannten Prüfmittel statt drei, geschärfte Lage C als nicht leere Referenzmenge bei den beiden Bezugsdokumenten, dritter Rückgabewert des Belegprüfers für Lage C von den Befunden am Bestand unterschieden; D19 mit einem ausgeführten Verletzungstest und einer laufbezogenen Aussage bei stummgeschaltetem Index ergänzt; O-18 als offener Punkt aufgenommen) |
+| **Stand** | 2026-08-20, nachgeführt am 2026-08-30 (ADR 0002, Abschnitt 6.1: D18 ergänzt, D11 auf zwei Gegenstände erweitert, Kettengrundsatz aufgenommen; Commit `84450a71569120e8deb30ecb0349ea8a92f6d736`), ergänzt am 2026-08-31 um die Notation der Abnahmekriterien zu R6 — Vorschlag zur Bestätigung, am selben Tag nach Prüfbefund berichtigt (drittes Glied heisst "Nachbedingung" wie die Quelle; Ermessensanteil der Zählungen offengelegt), nachgeführt am 2026-09-01 (Rahmenprüfung **D19** aus der zweiten und vierten Fortschreibung von ADR 0002 vom 2026-08-30 nachgetragen — diese Nachführung stand seither offen; Kettenschritt **D20** aus der achten Fortschreibung vom 2026-09-01 aufgenommen; Kettengrundsatz zum Rückgabewert 0 übernommen), am selben Tag ein zweites Mal nachgeführt (neunte und zehnte Fortschreibung von ADR 0002: Beobachtbarkeit des Index als zweiter Teil des D19-Prüfmittels, Lage C für **alle** Schritte geschärft, Aussagegrenze der D19-Meldung, O-17 als offener Punkt aufgenommen), am selben Tag ein drittes Mal nachgeführt (Behebung eines blockierenden Befunds am Programmstand: D20 prüft jetzt alle sechs im Kriterium genannten Prüfmittel statt drei, geschärfte Lage C als nicht leere Referenzmenge bei den beiden Bezugsdokumenten, dritter Rückgabewert des Belegprüfers für Lage C von den Befunden am Bestand unterschieden; D19 mit einem ausgeführten Verletzungstest und einer laufbezogenen Aussage bei stummgeschaltetem Index ergänzt; O-18 als offener Punkt aufgenommen), nachgeführt am 2026-09-02 (zwölfte Fortschreibung von ADR 0002, Abschnitt 6.12 samt Nachtrag 6.12.23: der Abschnitt "Durchsetzung" beschreibt das am 2026-09-02 gebaute Definition-of-Done-Gate — drei Ereignisse und wer die Zusicherung trägt, Unterscheidung Befund/Ausfall an der Lage der Marke, terminierte Lagen C mit sechs Selbstprüfungen, Zählung und Eskalation, `stop_hook_active`, Rollen ohne Schreibwerkzeug, Aussage eines Durchlasses, drei Zeitgrenzen; der Satz zur harten Obergrenze auf das Belegte zurückgenommen, O-19; die Kriterienzeilen D7 bis D12 und D20 um `FEHLT=` in der Marke und das Weiterlaufen der Kette bei Lage C ergänzt, D20 um die Vollständigkeit der Git-Historie; feste Grammatik der D19-Zeile und vier Schlusszeilen von `make dod`; die seit dem 2026-08-30 terminierten Befunde zu D10 und D12 eingearbeitet — Bestätigung Auftraggeber ausstehend) |
 
 Beide sind zu unterscheiden: **Ready gilt für den Eingang in den Sprint, Done
 für den Ausgang** (6.8).
@@ -27,6 +27,11 @@ für den Ausgang** (6.8).
 | 2026-09-01, dritte Nachführung des Tages | D20 nannte sechs Prüfmittel, deren Fehlen Lage C ergibt — `git`, den Arbeitsbaum, `scripts/belege-pruefen.sh`, `scripts/belege-ausnahmen.txt` sowie die beiden Bezugsdokumente `docs/05_Product_Backlog.md` und `docs/00_Projektauftrag.md`. Geprüft hatten das Makefile-Ziel `belege` und `scripts/belege-pruefen.sh` bis dahin nur die ersten drei. Ohne Bezugsdokument blieb die Referenzmenge leer, jede gültige Anforderungskennung im Bestand wurde zum Scheinfund, und das gemessene Ergebnis war A_FAIL mit hunderten Funden statt Lage C | Das Makefile-Ziel `belege` prüft jetzt vorab alle sechs Prüfmittel, `scripts/belege-pruefen.sh` zusätzlich vor jeder Verwendung. Für die beiden Bezugsdokumente genügt Vorhandensein allein nicht mehr: Sie müssen eine **nicht leere Referenzmenge** hergeben — mindestens eine Anforderungskennung als Überschrift im Backlog, mindestens eine Abschnittsnummer als Überschrift im Projektauftrag. Für `scripts/belege-ausnahmen.txt` gilt das nicht: eine vorhandene, leere Liste bleibt zulässig, nur eine fehlende ist Lage C. Der Belegprüfer gibt jetzt drei Rückgabewerte aus statt zwei: 0 keine Beanstandung, 2 mindestens ein Befund am Bestand, 3 Lage C; das Makefile führt beide roten Ausgänge getrennt als A_FAIL beziehungsweise Lage C weiter | Blockierender Befund einer unabhängigen Prüfung auf einem anderen Modell als die Umsetzung (2026-09-01). Das Kriterium D20 war richtig formuliert und nicht erfüllt, nicht umgekehrt. Behoben und mit drei ausgeführten Gegenproben belegt (Ausnahmeliste beiseitegelegt, Backlog beiseitegelegt, Backlog vorhanden aber ohne jede Anforderungskennung — je Lage C, Rückgabewert 3, Arbeitsbaum vorher/nachher gleich) |
 | 2026-09-01, dritte Nachführung des Tages | Dass D19 bei einer tatsächlichen Verletzung meldet — und nicht nur bei Unverändertheit schweigt —, war nicht ausgeführt belegt; die unabhängige Prüfung liess genau diese Lücke ausdrücklich offen | Ausgeführter Test: `make dod` im Hintergrund gestartet, nach drei Sekunden eine verfolgte Datei geändert. D19 meldete "VERLETZT -- versionierter Bestand veraendert", nannte die geänderte Datei und zeigte beide Hälften des Prüfmittels — die Statuszeile und die abweichende Inhaltsprüfsumme | Erstmals ausgeführt belegt, dass D19 nicht nur schweigt, wenn nichts ist, sondern auch spricht, wenn etwas ist. Ein Instrument, das nur die Abwesenheit einer Veränderung feststellt, wäre von einem nicht messenden nicht unterscheidbar |
 | 2026-09-01, dritte Nachführung des Tages | Bei stummgeschaltetem Index stand nur die allgemeine Aussage über die externe Messung des Koordinators vom 2026-09-01; keine Aussage bezog sich auf den jeweils laufenden Lauf selbst | Die Meldung bei stummgeschaltetem Index nennt zusätzlich, **laufbezogen**, ob Statusliste und Inhaltsprüfsummen vorher und nachher in diesem Lauf gleich waren — mit dem ausdrücklichen Zusatz, dass diese Gleichheit den Lauf **nicht entlastet**, weil sie nicht ausschliessen kann, was die blinde Hälfte gar nicht meldet | Schweigen ist keine Messung: eine laufbezogene Aussage ist stärker als eine allgemeine, darf aber nicht mehr behaupten, als sie trägt — deshalb der ausdrückliche Zusatz |
+| 2026-09-02 | Der Abschnitt "Durchsetzung" nannte `TaskCompleted`, `Stop` und `SubagentStop` mit je einer Zeile Wirkung und schloss mit dem Satz, diese Hooks entstünden als R3-Q-001 und hätten vor dieser Definition nicht gebaut werden können. Welches der drei Ereignisse welche Zusicherung trägt, wie das Gate die Ausgabe von `make dod` liest und was bei einem fehlenden Prüfmittel geschieht, stand nirgends | Der Abschnitt beschreibt das am 2026-09-02 gebaute Gate: ein Skript für alle drei Ereignisse ohne Matcher; die harte Zusicherung trägt **allein `TaskCompleted`**, `Stop` und `SubagentStop` erzwingen je Beendigungsversuch eine Fortsetzung mit Begründung; Befund und Ausfall werden an der **Lage der Marke** unterschieden, jede Beobachtung trägt einen Schlüssel; terminierte Lagen C in einer versionierten Liste mit sechs Selbstprüfungen; Zählung ausserhalb des Arbeitsbaums je Kriterium, drittes Mal Übergabedatei, ab dem vierten Mal Durchlass nur bei `Stop` und `SubagentStop`; `stop_hook_active` ergibt 0 ohne Änderung am Zähler; für Rollen ohne `Edit`, `Write` oder `NotebookEdit` läuft die Kette nicht; drei Zeitgrenzen (900 s, 600 s, 120 s) | ADR 0002, 6.12 (Entscheide G1 bis G17) mit dem Nachtrag 6.12.23; Nachführung dieser Datei terminiert in ADR 0002, Abschnitt 9. Der Bau ist am 2026-09-02 auf Weisung des Auftraggebers erfolgt; die förmliche Freigabe der Entscheidpunkte E-A bis E-K und die Verifikation durch Static und Dynamic Software Tester stehen aus (ADR 0002, Abschnitt 10) |
+| 2026-09-02 | "Acht Blockaden in Folge ohne Fortschritt übersteuert Claude Code selbst; anpassbar über `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`" | Der Satz nennt allein die belegte Obergrenze von acht Blockaden in Folge und hält ausdrücklich fest, dass für ihre Anpassung **kein** Einstellungsname belegt ist | Der Name kommt in der am 2026-09-02 gelesenen offiziellen Hook-Dokumentation nicht vor (ADR 0002, O-19). Eine Einstellung, die es möglicherweise nicht gibt, ist als Bauvorschrift untauglich; der Entwurf des Gates stützt sich an keiner Stelle auf sie. Der Projektauftrag 3.4 nennt sie ebenfalls — seine Änderung entscheidet der Auftraggeber, diese Datei nimmt sie nicht vorweg |
+| 2026-09-02 | Die Kriterienzeilen sagten nichts darüber, wie ein Schritt sein fehlendes Prüfmittel meldet, und die Kette endete "bei der ersten Abweichung ungleich 0" — also auch bei Lage C | Die Lage-Marke trägt bei Lage C das fehlende Prüfmittel **strukturiert** als `FEHLT=<wert>`, bei leerem Wert `FEHLT=unbenannt`; die Kette **bricht bei Lage C nicht mehr ab**, sondern sammelt und endet am Ende trotzdem mit 2. Abgebrochen wird bei `A_FAIL`, bei fehlender oder mehrfacher Marke und bei jedem anderen Rückgabewert ungleich 0. Die Zeilen D7 bis D12 und D20 nennen dazu je ihre eigene Lage-C-Ursache | ADR 0002, 6.12.6 (G5) und 6.12.7 (G6). Ohne das Weiterlaufen liesse eine einzige gedeckte Lage C einen Lauf durch, in dem die nachfolgenden Schritte — darunter D11 und D12 — nie gelaufen sind; das wäre ein falsches Grün, das gerade dann entsteht, wenn jemand die Liste sorgfältig pflegt. Ohne das strukturierte `FEHLT=` müsste das Gate 53 deutsche Meldungstexte lesen und entschiede beim nächsten Umformulieren anders |
+| 2026-09-02 | D19 stand je nach Ausgang in zwei verschiedenen Formen, und `make dod` kannte für den Abschluss keine festgelegten Zeilen | Die D19-Aussage steht in **jedem** Ausgang in genau einer eigenständigen Zeile mit fester Grammatik `make dod: D19: <OHNE_BEFUND\|VERLETZT\|B\|C>[ -- <Text>].`; die Schlusszeile kennt **vier** eindeutige Formen, eine erste Zeile nennt den geprüften Arbeitsbaum, und **Rückgabewert 0 gilt nur zusammen mit Form 1** | ADR 0002, 6.12.8 (G7) und der Nachtrag 6.12.23 a. Die vierte Form gilt für den Lauf, der vollständig und ohne Befund und ohne Lage C durchgelaufen ist, in dem aber D19 anschlägt; ohne sie passte keine der drei ursprünglichen Formen, und die Übergangslösung "abgebrochen bei" benannte einen Schritt als Abbruchstelle, der durchgelaufen war. Eine Nachweiszeile, die das Falsche behauptet, ist so untauglich wie eine fehlende (5.3) |
+| 2026-09-02 | D10 verlangte, dass "der Prüflauf des Gates `block-prototype-import.sh`" keinen Verstoss findet; D12 verlangte, dass `docs/NACHWEISE.md` "neu erzeugt ist und der Commit-Verweis stimmt" | D10 nennt als Prüfmittel die **Stapelprüfung** `scripts/prototyp-trennung-pruefen.sh` über den Bestand, nicht den `PreToolUse`-Hook. D12 verlangt, dass der Erzeuger fehlerfrei über die **vollständige Artefaktliste** in eine **Wegwerfdatei** läuft und sein Rückgabewert geprüft wird; `docs/NACHWEISE.md` wird von der Kette nicht mehr neu erzeugt. Beides mit dem Vermerk **Bestätigung Auftraggeber ausstehend** | Die beiden Befunde stehen seit dem 2026-08-20 in ADR 0002, Abschnitt 6, Zeilen D10 und D12, und sind seit dem 2026-08-30 in dessen Abschnitt 9 für diese Datei terminiert. Der Hook liest ein JSON-Ereignis von der Standardeingabe und urteilt je Werkzeugaufruf — eine Stapelprüfung über den Bestand leistet er nicht. Ein Abgleich über `git diff --exit-code docs/NACHWEISE.md` kann nicht funktionieren, weil die erzeugte Datei den Stand des Repositories trägt, der sich mit dem Commit ändert, der sie enthält; dazu kommt der Kettengrundsatz — die Kette schreibt nicht in den Arbeitsbaum. Die Form der schreibfreien Betriebsart bleibt bei O-8 |
 
 Quelle für die drei Zeilen vom 2026-08-30: ADR 0002, Abschnitt 6.1
 (`docs/adr/0002-architekturentscheid-ziel-stack.md`), Fortschreibung vom
@@ -47,6 +52,13 @@ Quelle für die drei Zeilen der dritten Nachführung vom 2026-09-01: `Makefile`
 von ADR 0002, weil diese Nachführung eine Korrektur am Programmstand
 nachzeichnet, keine neue Festlegung. Einzelheiten unten unter "Die
 Befehlskette", Absatz "Woraus die dritte Nachführung vom 2026-09-01 schöpft".
+
+Quelle für die fünf Zeilen vom 2026-09-02: ADR 0002, Abschnitt **6.12**
+vollständig einschliesslich des Nachtrags **6.12.23**, dazu Abschnitt 8
+(O-19, O-20, O-23), die Nachführungszeilen der zwölften Fortschreibung in
+Abschnitt 9 und der Freigabevermerk in Abschnitt 10. Einzelheiten und
+Beleglage unten unter "Die Befehlskette", Absatz "Woraus die Nachführung vom
+2026-09-02 schöpft".
 
 ---
 
@@ -216,6 +228,16 @@ Bestätigung durch den DevOps Engineer und die abschliessende Bestätigung durch
 den Auftraggeber — samt der Schwellenwerte aus E-07 und E-08 — erfolgen mit
 R3-Q-001; dort werden auch die Befunde des ADR zu D10 und D12 behandelt.
 
+**Nachgeführt am 2026-09-02.** Die Befehle stehen seit dem 2026-08-31 im
+`Makefile`, und `make dod` wird seit dem 2026-09-02 vom Gate aufgerufen
+(`.claude/hooks/dod-gate.sh`, Abschnitt "Durchsetzung"). Die beiden Befunde
+des ADR zu **D10** und **D12** sind mit dieser Nachführung in die Kriterien
+unten eingearbeitet — **Bestätigung Auftraggeber ausstehend**. Offen bleiben
+die Schwellenwerte aus E-07 und E-08, die förmliche Freigabe der
+Entscheidpunkte E-A bis E-K (ADR 0002, Abschnitt 10) und die Verifikation
+durch Static und Dynamic Software Tester (nachgeführt 2026-09-02, ADR 0002,
+6.12).
+
 Die Kette bestand bis zur Fortschreibung von ADR 0002, Abschnitt 6, am
 2026-08-30 aus den Schritten D1 bis D12; seither ist sie um **D18** ergänzt,
 und D11 prüft zwei statt einem Gegenstand. Die Nummer eines Kettenschritts ist
@@ -294,6 +316,27 @@ zu D19 (Hintergrundlauf, Änderung nach drei Sekunden) sind **Fremdbeleg** aus
 der unabhängigen Prüfung vom 2026-09-01; sie sind hier nicht selbst
 nachvollzogen und werden nicht als eigene Beobachtung geführt.
 
+**Woraus die Nachführung vom 2026-09-02 schöpft.** Der Abschnitt
+"Durchsetzung", die Ergänzungen an D7 bis D12 und D20, die feste Grammatik der
+D19-Zeile und die vier Schlusszeilen sind aus **ADR 0002, Abschnitt 6.12**
+geschrieben — 6.12.2 bis 6.12.19 und der Nachtrag 6.12.23 —, nicht aus einer
+Zusammenfassung davon; dazu gelesen sind die offenen Punkte O-19, O-20 und
+O-23 in Abschnitt 8, die Nachführungszeilen der zwölften Fortschreibung in
+Abschnitt 9 und der Freigabevermerk mit den Entscheidpunkten E-A bis E-K in
+Abschnitt 10. Am Bestand nachgeschlagen sind ausschliesslich die Existenz und
+der Kopf von `.claude/hooks/dod-gate-terminierte-lagen.txt` samt seinen drei
+Einträgen (D7, D10, D12), die drei Hook-Einträge in `.claude/settings.json`
+und die Schlusszeilen im Ziel `dod` des `Makefile`. **Nicht ausgeführt** hat
+diese Rolle `make dod`, `.claude/hooks/dod-gate.sh` und
+`scripts/dod-gate-selbsttest.sh` — dieselbe Einschränkung wie bei den
+Nachführungen vom 2026-08-30 und 2026-09-01 (3.4). Jede Aussage über einen
+ausgeführten Lauf — die Umgebung der Sitzung, der flache Klon mit seinen 31
+Funden gegenüber einem nach `git fetch --unshallow`, der gemessene Lauf von
+5,8 s, der Ausgang des Selbsttests und der nicht grün gewordene Lauf gegen das
+echte `Makefile` im Scheinbaum — ist **Fremdbeleg** aus ADR 0002, 6.12 und
+6.12.23 d und wird hier nicht als eigene Beobachtung geführt. Was der ADR
+nicht festlegt, steht hier nicht.
+
 | Nr. | Schritt | Kriterium |
 |---|---|---|
 | D1 | Bau | Der Programmstand baut fehlerfrei — aus der Sperrdatei und **ohne Zwischenspeicher**: jedes Paket wird geladen und dabei gegen `uv.lock` geprüft. Eine Abweichung zwischen `pyproject.toml` und `uv.lock` macht den Schritt rot (Entscheid des Auftraggebers vom 2026-08-31 zu O-13, ADR 0002, 6.7) |
@@ -302,14 +345,14 @@ nachvollzogen und werden nicht als eigene Beobachtung geführt.
 | D4 | Typprüfung | Null Fehler |
 | D5 | Testsuite | Alle Tests grün, keine übersprungenen Tests ohne begründete Markierung |
 | D6 | Testabdeckung | Über dem vereinbarten Schwellenwert; **Vorschlag zur Bestätigung: 80 Prozent Zeilenabdeckung, 100 Prozent für Module, die Protokoll, Klassifizierung oder Freigabesperre umsetzen** |
-| D7 | Aufgabenspezifische Abnahmekriterien | Jedes Abnahmekriterium des Backlog-Eintrags liegt als bestandener Test mit der Anforderungskennung im Testnamen vor (6.6) |
-| D8 | Abhängigkeitsprüfung | Keine Abhängigkeit mit bekannter Schwachstelle oberhalb der vereinbarten Schwelle |
-| D9 | Kein Rückkanal | Der Prüfschritt aus R3-C-004 endet mit 0 |
-| D10 | Prototyp-Trennung | Der Prüflauf des Gates `block-prototype-import.sh` findet keinen Verstoss |
-| D11 | Geheimnisse | Secret-Scanning findet keinen Schlüssel und kein Token — geprüft in zwei eigenständigen Läufen, Arbeitsbaum und Git-Historie; keiner der beiden Läufe ersetzt den anderen (vorher: nur die Historie; Fortschreibung 2026-08-30, ADR 0002, Abschnitt 6.1.1) |
-| D12 | Nachweise | Das Nachweisverzeichnis `docs/NACHWEISE.md` ist neu erzeugt und der Commit-Verweis stimmt |
+| D7 | Aufgabenspezifische Abnahmekriterien | Jedes Abnahmekriterium des Backlog-Eintrags liegt als bestandener Test mit der Anforderungskennung im Testnamen vor (6.6). **Lage C** — das Prüfmittel `scripts/abnahme-abgleich.sh` fehlt, das Suchmuster findet keine Backlog-Datei oder die gefundene führt keine Abnahmekriterien: Die Marke trägt das fehlende Prüfmittel strukturiert als `FEHLT=<wert>`, und die Kette bricht nicht mehr ab, sondern läuft weiter und endet am Ende trotzdem mit 2 (nachgeführt 2026-09-02, ADR 0002, 6.12) |
+| D8 | Abhängigkeitsprüfung | Keine Abhängigkeit mit bekannter Schwachstelle oberhalb der vereinbarten Schwelle. **Lage C** — `uv` oder das aufgerufene Werkzeug (`pip-audit`) fehlt, auf der Oberflächenseite `node` beziehungsweise `npm`: Marke mit `FEHLT=<wert>`, die Kette läuft weiter und endet trotzdem mit 2. Bei Lage C stehen `FEHLT=` und der Schwellenzusatz nebeneinander in der Marke (nachgeführt 2026-09-02, ADR 0002, 6.12) |
+| D9 | Kein Rückkanal | Der Prüfschritt aus R3-C-004 endet mit 0. **Lage C** — `scripts/rueckkanal-pruefen.sh` fehlt: Marke mit `FEHLT=<wert>`, die Kette läuft weiter und endet trotzdem mit 2 (nachgeführt 2026-09-02, ADR 0002, 6.12) |
+| D10 | Prototyp-Trennung | **Neu gefasst am 2026-09-02 — Bestätigung Auftraggeber ausstehend.** Prüfmittel ist die **Stapelprüfung über den Bestand**, `scripts/prototyp-trennung-pruefen.sh`; sie findet keinen Verstoss gegen die Trennung zwischen `prototype/` und dem Produktionscode, in beide Richtungen (5.6). **Nicht** das bestehende `.claude/hooks/block-prototype-import.sh`: Das ist ein `PreToolUse`-Hook, der ein JSON-Ereignis von der Standardeingabe liest und je Werkzeugaufruf urteilt — eine Stapelprüfung über den Bestand leistet er nicht (Befund in ADR 0002, Abschnitt 6, Zeile D10, seit dem 2026-08-20; für diese Datei terminiert seit dem 2026-08-30 in Abschnitt 9). Ob die Stapelprüfung eine Betriebsart des bestehenden Skripts wird oder ein eigenes Skript bleibt, ist als **O-8** offen. Die benannte Lage B (`prototype/` fehlt) tritt nach 5.6 nicht ein, der Schritt läuft immer. **Lage C** — `scripts/prototyp-trennung-pruefen.sh` fehlt: Marke mit `FEHLT=<wert>`, die Kette läuft weiter und endet trotzdem mit 2 (nachgeführt 2026-09-02, ADR 0002, 6.12) |
+| D11 | Geheimnisse | Secret-Scanning findet keinen Schlüssel und kein Token — geprüft in zwei eigenständigen Läufen, Arbeitsbaum und Git-Historie; keiner der beiden Läufe ersetzt den anderen (vorher: nur die Historie; Fortschreibung 2026-08-30, ADR 0002, Abschnitt 6.1.1). **Lage C** — das Prüfmittel fehlt, also `gitleaks` und für den Historienlauf zusätzlich `git`: Marke mit `FEHLT=<wert>`, die Kette läuft weiter und endet trotzdem mit 2. Diese Lage C ist **nicht terminierbar**, weil ein installierbares Werkzeug nicht fehlt, weil es noch nicht gebaut ist (nachgeführt 2026-09-02, ADR 0002, 6.12) |
+| D12 | Nachweise | **Neu gefasst am 2026-09-02 — Bestätigung Auftraggeber ausstehend.** Verlangt ist **nicht** mehr, dass `docs/NACHWEISE.md` neu erzeugt ist und der Commit-Verweis stimmt. Verlangt ist, dass der Erzeuger `scripts/nachweise-erzeugen.sh` **fehlerfrei über die vollständige Artefaktliste** läuft und sein Ergebnis in eine **Wegwerfdatei** ausserhalb des versionierten Bestandes schreibt; geprüft wird sein Rückgabewert — er endet ungleich 0, wenn ein Artefakt fehlt oder nicht committet ist. Zusätzlich belegt `scripts/nachweise-vollstaendig.sh`, dass kein nachweispflichtiges Artefakt in der Liste fehlt. Zwei Gründe, jeder für sich tragend: Ein Abgleich über `git diff --exit-code docs/NACHWEISE.md` kann nicht funktionieren, weil die erzeugte Datei den Stand des Repositories trägt, der sich mit dem Commit ändert, der sie enthält; und nach dem Kettengrundsatz schreibt kein Kettenschritt in den Arbeitsbaum — das Erzeugen der Datei bleibt Sache der Automatik (6.6). Welche Form die schreibfreie Betriebsart erhält, ist als **O-8** offen (Befund in ADR 0002, Abschnitt 6, Zeile D12, seit dem 2026-08-20; für diese Datei terminiert seit dem 2026-08-30 in Abschnitt 9). Die benannte Lage B tritt nicht ein, `docs/` ist Bestandteil des Repositories. **Lage C** — `git`, `scripts/nachweise-erzeugen.sh` oder `scripts/nachweise-vollstaendig.sh` fehlt: Marke mit `FEHLT=<wert>`, die Kette läuft weiter und endet trotzdem mit 2 (nachgeführt 2026-09-02, ADR 0002, 6.12) |
 | D18 | Architekturverträge | Der Importprüfer findet keinen Verstoss gegen die Modulgrenzen aus ADR 0002, Abschnitt 4.3; läuft in der Zielliste von `make dod` nach D4 und vor D5. Nummer D18, nicht D13: D13 bis D17 sind unten an die menschlich zu bestätigenden Bedingungen vergeben (Fortschreibung 2026-08-30, ADR 0002, Abschnitt 6.1.2) |
-| D20 | Belege | Über die versionierten Markdown-Dateien der Wurzel, unter `docs/` und unter `.claude/` zeigt kein Zeilenverweis, keine Commit-Prüfsumme, keine Anforderungskennung, kein Pfadverweis und keine Abschnittsangabe des Projektauftrags auf etwas Nichtvorhandenes, und keine Stelle verwendet die nach 6.6 unzulässige Zweigform statt der Commit-Prüfsumme. **Ein grüner Lauf sagt, dass keine der geprüften Angaben ins Leere zeigt. Er sagt nicht, dass der Fundort die Behauptung trägt, die ihm zugeschrieben wird — das prüft kein Werkzeug, und es bleibt beim menschlichen Review.** Läuft als **erster** Schritt der Kette, vor D1. **Keine Lage B**: ein leerer Bestand wäre ein Befund und kein leerer Gegenstand. **Sechs Prüfmittel tragen die Prüfung, und alle sechs werden geprüft** — im Makefile-Ziel `belege` vorab, in `scripts/belege-pruefen.sh` zusätzlich vor jeder Verwendung: `git`, der Arbeitsbaum, `scripts/belege-pruefen.sh` selbst, `scripts/belege-ausnahmen.txt` sowie die beiden Bezugsdokumente `docs/05_Product_Backlog.md` und `docs/00_Projektauftrag.md`. Fehlt eines der sechs, ist das Lage C und endet ungleich 0 (Fortschreibung 2026-09-01, dritte Nachführung des Tages; zuvor prüften Makefile-Ziel und Skript nur die ersten drei — Befund einer unabhängigen Prüfung, das Kriterium war richtig formuliert und nicht erfüllt). **Für die beiden Bezugsdokumente genügt Vorhandensein allein nicht** (geschärfte Lage C: das Prüfmittel fehlt oder trägt die Aussage nicht): Sie müssen zusätzlich eine **nicht leere Referenzmenge** hergeben — mindestens eine Anforderungskennung als Überschrift in `docs/05_Product_Backlog.md`, mindestens eine Abschnittsnummer als Überschrift in `docs/00_Projektauftrag.md` —, sonst ist die vorhandene Datei derselbe Ausfall wie eine fehlende. **Für `scripts/belege-ausnahmen.txt` gilt das nicht**: eine vorhandene, leere Liste ist ein zulässiger Zustand — es gibt dann keine Ausnahmen —, nur eine fehlende Liste ist Lage C, weil sie jede begründete Ausnahme stumm wegfallen liesse. Das Skript gibt dabei **drei** Rückgabewerte aus, nicht zwei: 0 keine Beanstandung, 2 mindestens ein Befund am Bestand, 3 Lage C; das Makefile-Ziel führt beide roten Ausgänge getrennt weiter — A_FAIL beziehungsweise Lage C —, weil "etwas gefunden" und "nicht gemessen werden konnte" verschiedene Aussagen sind (ADR 0002, Abschnitt 6.11). Das Prüfmittel ist nach Eskalationsregel 3.4 abgebrochen und **nicht abgenommen** (offener Punkt 5 unten); die Aufnahme in die Kette hängt nicht an der Abnahme. Nummer D20, nicht D13 und nicht D19: beide sind vergeben (Fortschreibung 2026-09-01, ADR 0002, Abschnitt 6.8) |
+| D20 | Belege | Über die versionierten Markdown-Dateien der Wurzel, unter `docs/` und unter `.claude/` zeigt kein Zeilenverweis, keine Commit-Prüfsumme, keine Anforderungskennung, kein Pfadverweis und keine Abschnittsangabe des Projektauftrags auf etwas Nichtvorhandenes, und keine Stelle verwendet die nach 6.6 unzulässige Zweigform statt der Commit-Prüfsumme. **Ein grüner Lauf sagt, dass keine der geprüften Angaben ins Leere zeigt. Er sagt nicht, dass der Fundort die Behauptung trägt, die ihm zugeschrieben wird — das prüft kein Werkzeug, und es bleibt beim menschlichen Review.** Läuft als **erster** Schritt der Kette, vor D1. **Keine Lage B**: ein leerer Bestand wäre ein Befund und kein leerer Gegenstand. **Sechs Prüfmittel tragen die Prüfung, und alle sechs werden geprüft** — im Makefile-Ziel `belege` vorab, in `scripts/belege-pruefen.sh` zusätzlich vor jeder Verwendung: `git`, der Arbeitsbaum, `scripts/belege-pruefen.sh` selbst, `scripts/belege-ausnahmen.txt` sowie die beiden Bezugsdokumente `docs/05_Product_Backlog.md` und `docs/00_Projektauftrag.md`. Fehlt eines der sechs, ist das Lage C und endet ungleich 0 (Fortschreibung 2026-09-01, dritte Nachführung des Tages; zuvor prüften Makefile-Ziel und Skript nur die ersten drei — Befund einer unabhängigen Prüfung, das Kriterium war richtig formuliert und nicht erfüllt). **Für die beiden Bezugsdokumente genügt Vorhandensein allein nicht** (geschärfte Lage C: das Prüfmittel fehlt oder trägt die Aussage nicht): Sie müssen zusätzlich eine **nicht leere Referenzmenge** hergeben — mindestens eine Anforderungskennung als Überschrift in `docs/05_Product_Backlog.md`, mindestens eine Abschnittsnummer als Überschrift in `docs/00_Projektauftrag.md` —, sonst ist die vorhandene Datei derselbe Ausfall wie eine fehlende. **Für `scripts/belege-ausnahmen.txt` gilt das nicht**: eine vorhandene, leere Liste ist ein zulässiger Zustand — es gibt dann keine Ausnahmen —, nur eine fehlende Liste ist Lage C, weil sie jede begründete Ausnahme stumm wegfallen liesse. Das Skript gibt dabei **drei** Rückgabewerte aus, nicht zwei: 0 keine Beanstandung, 2 mindestens ein Befund am Bestand, 3 Lage C; das Makefile-Ziel führt beide roten Ausgänge getrennt weiter — A_FAIL beziehungsweise Lage C —, weil "etwas gefunden" und "nicht gemessen werden konnte" verschiedene Aussagen sind (ADR 0002, Abschnitt 6.11). Das Prüfmittel ist nach Eskalationsregel 3.4 abgebrochen und **nicht abgenommen** (offener Punkt 5 unten); die Aufnahme in die Kette hängt nicht an der Abnahme. Nummer D20, nicht D13 und nicht D19: beide sind vergeben (Fortschreibung 2026-09-01, ADR 0002, Abschnitt 6.8). **Ergänzt am 2026-09-02 um ein siebtes Prüfmittel: die Vollständigkeit der Git-Historie.** Ist der Klon flach (`git rev-parse --is-shallow-repository` meldet wahr), trägt die lokale Historie die Aussage über Commit-Prüfsummen nicht; das ist nach der geschärften Bedingung **Lage C**, und der Beschaffungsweg `git fetch --unshallow` gehört in die Meldung. Geprüft wird das im Wächter-Block des Makefile-Ziels `belege`, dort, wo auch die sechs übrigen Prüfmittel vorab geprüft werden. **Kein Prüfmittel von D20 ist als Lage C terminierbar** — D20 prüft die Nachweisführung selbst, eine Ausnahme an ihm wäre eine Ausnahme an der Nachweiskette. **Lage C** — eines der sieben Prüfmittel fehlt oder trägt die Aussage nicht: Die Marke trägt es strukturiert als `FEHLT=<wert>`, und die Kette bricht nicht mehr ab, sondern läuft weiter und endet am Ende trotzdem mit 2 (nachgeführt 2026-09-02, ADR 0002, 6.12) |
 
 ## Wann ein Schritt urteilt, wann er entfällt, wann er ausfällt
 
@@ -337,6 +380,64 @@ erledigt, wenn ein Schritt zwar lief, aber nicht messen konnte.** Und die Lage
 wird ausgegeben, nicht erschlossen — ein Schritt, der mit 0 endet, muss von
 einem unterscheidbar sein, der nichts geprüft hat.
 
+## Wie ein Lauf seine Lagen ausgibt — Marke, Weiterlaufen, Schlusszeilen
+
+*(Aufgenommen am 2026-09-02 aus ADR 0002, 6.12.6 bis 6.12.8 und dem Nachtrag
+6.12.23 a. Gebaut am 2026-09-02 auf Weisung des Auftraggebers; die förmliche
+Freigabe der Entscheidpunkte steht aus, ADR 0002, Abschnitt 10.)*
+
+**Die Lage-Marke trägt das fehlende Prüfmittel, nicht der Meldungstext.** Jeder
+Kettenschritt gibt seine Lage in einer Marke mit fester Grammatik aus:
+
+```
+::LAGE <lauf-kennung> <D-Nummer> <ziel> <Lage>[ FEHLT=<wert>][ SCHWELLE=…|OHNE_SCHWELLE]::
+```
+
+Bei Lage C steht der fehlende Gegenstand strukturiert in `FEHLT=` — ein
+repository-relativer Pfad oder ein Werkzeugname. Der Zusatz wird **immer**
+gesetzt; ist der Wert leer, lautet er `FEHLT=unbenannt`. Ein Lage-C-Zweig, an
+den niemand gedacht hat, erzeugt damit eine Marke, die keine Ausnahme decken
+kann, und fällt zu statt auf. Der Meldungstext bleibt die Erklärung für den
+Menschen und wird von keinem Werkzeug gemessen: Er ist Fliesstext und würde
+sich mit der nächsten Umformulierung ändern, ohne dass jemand die Auswertung
+angefasst hätte (nachgeführt 2026-09-02, ADR 0002, 6.12).
+
+**Bei Lage C bricht die Kette nicht mehr ab.** Sie merkt sich Kennung, Ziel und
+fehlendes Prüfmittel, läuft weiter und endet am Ende trotzdem mit 2.
+Abgebrochen wird weiterhin bei `A_FAIL`, bei fehlender oder mehrfacher Marke
+und bei jedem anderen Rückgabewert ungleich 0. Der Grund: Ein Befund ist ein
+Urteil, und alles danach liefe gegen einen Stand, der ohnehin geändert wird —
+ein Schritt in Lage C dagegen hat nichts gemessen und nichts verändert. Bräche
+die Kette bei Lage C ab, bliebe alles dahinter ungeprüft, und ein Durchlass
+erklärte einen Stand für in Ordnung, von dem er die späteren Schritte nicht
+angesehen hat (nachgeführt 2026-09-02, ADR 0002, 6.12).
+
+**Vier Schlusszeilen, eine eigenständige D19-Zeile, ein genannter Baum.** Der
+Lauf beginnt mit `make dod: geprueft wird <PROJ>.`, die Aussage von D19 steht
+in **jedem** Ausgang in genau einer Zeile mit fester Grammatik, und danach
+folgt genau eine der vier Schlusszeilen:
+
+```
+make dod: D19: <OHNE_BEFUND|VERLETZT|B|C>[ -- <Text>].
+
+make dod: alle <N> Kettenschritte durchlaufen, keiner ungleich 0, <N> gueltige Marken gezaehlt.
+make dod: alle <N> Kettenschritte durchlaufen, <k> davon ohne Urteil (Lage C): <Liste>, Rueckgabewert 2.
+make dod: abgebrochen bei <D-Nummer> <ziel>, Rueckgabewert <N>.
+make dod: alle <N> Kettenschritte durchlaufen, Rahmenpruefung D19 <VERLETZT|C>, Rueckgabewert 2.
+```
+
+Welche Form gilt, wird in dieser Reihenfolge entschieden: abgebrochen →
+Form 3; sonst mindestens ein Schritt in Lage C → Form 2; sonst D19 mit
+`VERLETZT` oder `C` → Form 4; sonst Form 1. **Daraus folgt die Regel, an der
+sich ein Lauf prüfen lässt: Rückgabewert 0 gilt nur zusammen mit Form 1.** Ein
+Lauf, der 0 mit einer anderen Schlusszeile verbindet, ist ein Widerspruch und
+blockiert. Die vierte Form ist am 2026-09-02 hinzugekommen, weil auf den
+vollständig und ohne Befund durchgelaufenen Lauf mit D19-Befund keine der drei
+ursprünglichen Formen passte; "abgebrochen bei" hätte einen Schritt als
+Abbruchstelle benannt, der durchgelaufen ist. Eine Nachweiszeile, die das
+Falsche behauptet, ist so untauglich wie eine fehlende (5.3) (nachgeführt
+2026-09-02, ADR 0002, 6.12).
+
 ## Ein Prüflauf verändert den Gegenstand nicht, über den er urteilt
 
 Kein Kettenschritt ändert eine versionierte Datei des Arbeitsbaums — weder
@@ -361,7 +462,7 @@ beobachtend durch D19.
 
 | Nr. | Prüfung | Kriterium |
 |---|---|---|
-| D19 | Unverändertheit des Arbeitsbaums | `make dod` nimmt unmittelbar **vor** dem ersten und unmittelbar **nach** dem letzten ausgeführten Kettenschritt den Bestand auf — die Statusliste `git status --porcelain --untracked-files=all` **und** eine Inhaltsprüfsumme je verfolgter Datei — und vergleicht beide Aufnahmen zeilenweise, einschliesslich der unverfolgten Einträge. Massstab ist vorher gegen nachher, **nicht** gegen einen sauberen Arbeitsbaum: Die Kette läuft vor dem Commit und trifft regelmässig einen bereits veränderten Arbeitsbaum an; das ist zulässig, ihn zu verändern nicht. Bei Abweichung endet `make dod` ungleich 0 und nennt die abweichenden Zeilen. Der Befund **kann einen grünen Lauf rot machen, nie einen roten grün**. Die Nachher-Aufnahme läuft auch dann, wenn die Kette an einem früheren Schritt abgebrochen ist — sonst bliebe gerade der Schritt unbeobachtet, der schreibt und zugleich scheitert. **Ergänzt am 2026-09-01 um den zweiten Teil des Prüfmittels (ADR 0002, 6.9): die Beobachtbarkeit des Index.** Vor und nach dem Lauf wird zusätzlich der Bestand der Maskierungsmerkmale verfolgter Dateien erhoben (`assume-unchanged`, `skip-worktree`). Für den **Gegenstand** gilt der relative Massstab oben, für das **Instrument** ein absoluter: Ein gesetztes Maskierungsmerkmal ist ein Befund, **auch wenn es schon vor dem Lauf gesetzt war**. Der Ausgang ist dann **Lage C** mit eigenem Befundtext und ungleich 0 — nicht eine Verletzung des Kettengrundsatzes, denn eine Verletzung ist damit gerade nicht festgestellt. Der Befundtext nennt, **welche Hälfte** des Instruments stumm ist, für welche Dateien, und was die andere Hälfte gemessen hat; er behauptet nicht, der Arbeitsbaum sei unbeobachtet (ADR 0002, 6.10.2) |
+| D19 | Unverändertheit des Arbeitsbaums | `make dod` nimmt unmittelbar **vor** dem ersten und unmittelbar **nach** dem letzten ausgeführten Kettenschritt den Bestand auf — die Statusliste `git status --porcelain --untracked-files=all` **und** eine Inhaltsprüfsumme je verfolgter Datei — und vergleicht beide Aufnahmen zeilenweise, einschliesslich der unverfolgten Einträge. Massstab ist vorher gegen nachher, **nicht** gegen einen sauberen Arbeitsbaum: Die Kette läuft vor dem Commit und trifft regelmässig einen bereits veränderten Arbeitsbaum an; das ist zulässig, ihn zu verändern nicht. Bei Abweichung endet `make dod` ungleich 0 und nennt die abweichenden Zeilen. Der Befund **kann einen grünen Lauf rot machen, nie einen roten grün**. Die Nachher-Aufnahme läuft auch dann, wenn die Kette an einem früheren Schritt abgebrochen ist — sonst bliebe gerade der Schritt unbeobachtet, der schreibt und zugleich scheitert. **Ergänzt am 2026-09-01 um den zweiten Teil des Prüfmittels (ADR 0002, 6.9): die Beobachtbarkeit des Index.** Vor und nach dem Lauf wird zusätzlich der Bestand der Maskierungsmerkmale verfolgter Dateien erhoben (`assume-unchanged`, `skip-worktree`). Für den **Gegenstand** gilt der relative Massstab oben, für das **Instrument** ein absoluter: Ein gesetztes Maskierungsmerkmal ist ein Befund, **auch wenn es schon vor dem Lauf gesetzt war**. Der Ausgang ist dann **Lage C** mit eigenem Befundtext und ungleich 0 — nicht eine Verletzung des Kettengrundsatzes, denn eine Verletzung ist damit gerade nicht festgestellt. Der Befundtext nennt, **welche Hälfte** des Instruments stumm ist, für welche Dateien, und was die andere Hälfte gemessen hat; er behauptet nicht, der Arbeitsbaum sei unbeobachtet (ADR 0002, 6.10.2). **Ergänzt am 2026-09-02 um die feste Grammatik der Meldezeile (ADR 0002, 6.12.8):** Die D19-Aussage steht in **jedem** Ausgang in genau einer eigenständigen Zeile der Form `make dod: D19: <OHNE_BEFUND\|VERLETZT\|B\|C>[ -- <Text>].` Das Schlüsselwort steht unmittelbar hinter `D19:` und ist eines von genau vier; alles danach ist Erklärung für den Menschen und wird von keinem Werkzeug gemessen. Vorher stand die Aussage je nach Ausgang in zwei verschiedenen Formen, mit fünf freien Befundtexten, darunter zwei Schreibweisen für dieselbe Lage C, und einer Lage-B-Zeile, die gar nicht mit `D19:` begann. D19 ist **nicht terminierbar**: Es ist kein Kettenschritt, sondern das Instrument, mit dem der Kettengrundsatz beobachtet wird (nachgeführt 2026-09-02, ADR 0002, 6.12) |
 
 **Erstmals ausgeführt belegt (2026-09-01, dritte Nachführung des Tages).**
 Dass D19 nicht nur schweigt, wenn nichts ist, sondern auch spricht, wenn etwas
@@ -510,27 +611,284 @@ Rollen bestätigt, nicht von einem Rückgabewert:
 
 ## Durchsetzung
 
-Die Kette wird über Hooks erzwungen, nicht über eine Absichtserklärung:
+Die Kette wird über Hooks erzwungen, nicht über eine Absichtserklärung. Das
+Gate aus R3-Q-001 ist am 2026-09-02 auf Weisung des Auftraggebers gebaut
+worden: `.claude/hooks/dod-gate.sh`, eingetragen in der versionierten
+`.claude/settings.json`. Die förmliche Freigabe der Entscheidpunkte E-A bis
+E-K und die Verifikation durch Static und Dynamic Software Tester auf einem
+anderen Modell als die Umsetzung stehen aus (ADR 0002, Abschnitt 10). Alles
+Folgende ist aus ADR 0002, 6.12 samt Nachtrag 6.12.23 nachgeführt
+(nachgeführt 2026-09-02, ADR 0002, 6.12).
 
-| Hook | Wirkung |
+**Ein Skript, drei Ereignisse, kein Matcher.** `.claude/hooks/dod-gate.sh`
+bedient `Stop`, `SubagentStop` und `TaskCompleted` und verzweigt über das
+Eingabefeld `hook_event_name`. Drei Dateien wären drei Stellen, an denen
+dieselbe Aussage verschieden stehen kann; ein Matcher mit Rollennamen wäre eine
+zweite Kopie der Rechtetabelle aus ADR 0001 und veraltete mit der ersten
+Rollenänderung. Das Gate ruft `make dod` im geprüften Arbeitsbaum auf und
+wertet **zwei** voneinander unabhängige Dinge aus: den Rückgabewert **und** die
+Ausgabe — die Lage-Marken der Übersicht, die D19-Zeile und die Schlusszeile.
+Fehlt eines von beiden oder widersprechen sie sich, blockiert es. Ein
+Rückgabewert allein liesse sich erzeugen; das ist derselbe Grund, aus dem die
+Kette schon für ihre eigenen Schritte zwei Kriterien verlangt.
+
+| Ereignis | Welche Zusicherung es trägt |
 |---|---|
-| `TaskCompleted` | Rückgabewert 2 verhindert, dass eine Aufgabe als abgeschlossen markiert wird, solange die Kette rot ist |
-| `Stop` und `SubagentStop` | Rückgabewert 2 verhindert das Beenden und gibt über stderr zurück, was noch fehlt |
+| `TaskCompleted` | **Die harte Zusicherung.** Rückgabewert 2 verhindert, dass eine Aufgabe als abgeschlossen markiert wird, solange die Kette rot ist. Das Ereignis kennt keinen Reentranz-Schutz und prüft jeden Abschlussversuch erneut. Wer das Gate beurteilt, beurteilt zuerst dieses Ereignis |
+| `Stop` und `SubagentStop` | Rückgabewert 2 verhindert das Beenden und gibt über die Fehlerausgabe zurück, was fehlt. Zusammen mit dem Reentranz-Schutz aus 3.4 ist das **je Beendigungsversuch genau eine erzwungene Fortsetzung mit Begründung** — nicht mehr. Sie sind die laute, frühe Rückmeldung, nicht die Sperre |
+
+**Die harte Zusicherung hängt an einer Voraussetzung.** `TaskCompleted` feuert
+nur, wenn eine Aufgabe über das Aufgabenwerkzeug abgeschlossen wird oder ein
+Mitglied eines Teams seinen Zug mit offenen Aufgaben beendet. In einer Sitzung,
+in der **keine Aufgabenliste geführt wird**, feuert es nie — dann trägt die
+Zusicherung nichts, und es bleiben `Stop` und `SubagentStop` mit je einer
+Fortsetzung. Welcher Weg gilt — jede Arbeitseinheit als Aufgabe führen oder
+aussprechen, dass die Kette in solchen Sitzungen nur angemahnt und nicht
+erzwungen wird —, entscheidet der Auftraggeber (ADR 0002, **O-23**); umgesetzt
+ist am 2026-09-02 der erste Weg (Entscheidpunkt E-H), die Freigabe steht aus.
 
 **Nur Rückgabewert 2 blockiert.** Rückgabewert 1 ist ein nicht blockierender
 Fehler; ein Gate, das mit `exit 1` endet, ist wirkungslos, ohne dass das
 auffällt (3.4).
 
+### Befund oder Ausfall — unterschieden an der Lage der Marke
+
+Der Massstab ist die **Lage**, nicht der Rückgabewert und nicht der
+Meldungstext. Jede Beobachtung trägt einen Schlüssel, und dieser Schlüssel ist
+zugleich das Kriterium, das gezählt wird (ADR 0002, 6.12.4, mit dem Nachtrag
+6.12.23 b).
+
+| Beobachtung in der Ausgabe von `make dod` | Art | Schlüssel | Ausgang |
+|---|---|---|---|
+| Eine Marke endet auf `A_FAIL` | Befund | `<D> <ziel> A_FAIL` | blockiert |
+| Eine Marke endet auf `C` und ist durch einen gültigen Eintrag der terminierten Lagen gedeckt | Ausfall, terminiert | — | lässt durch, mit Meldung |
+| Eine Marke endet auf `C` und ist nicht gedeckt | Ausfall | `<D> <ziel> C <fehlendes Prüfmittel>` | blockiert |
+| Eine Zeile der Übersicht trägt keine Marke | nicht nachweisbar gelaufen | `KETTE marke-fehlt <D> <ziel>` | blockiert |
+| Die D19-Zeile meldet `VERLETZT` | Befund | `D19 VERLETZT` | blockiert |
+| Die D19-Zeile meldet Lage C | Ausfall | `D19 C` | blockiert |
+| Die D19-Zeile meldet Lage B, obwohl das Gate einen Arbeitsbaum bestimmt hat | Widerspruch | `D19 B-widerspruch` | blockiert |
+| Keine Übersichtszeile oder keine der vier Schlusszeilen | nicht nachweisbar gelaufen | `KETTE ausgabe-unlesbar` | blockiert |
+| Rückgabewert 0, aber eine andere Schlusszeile als Form 1 | Widerspruch | `KETTE schlusszeile-widerspruch` | blockiert |
+| Rückgabewert weder 0 noch 2 | nicht nachweisbar gelaufen | `KETTE rueckgabewert=<N>` | blockiert |
+| Die Kette reisst die innere Zeitgrenze | nicht nachweisbar gelaufen | `KETTE zeitueberschreitung` | blockiert |
+| Eine Zeile der terminierten Lagen verletzt die Selbstprüfung 2, 3 oder 5 | Fehler der Liste | `LISTE <Nummer der Selbstpruefung> <D> <ziel>` | blockiert |
+| Eine Zeile der terminierten Lagen verletzt die Selbstprüfung 4 oder 6 | Fehler der Liste | `LISTE <Nummer der Selbstpruefung> <Zeilennummer>` | blockiert |
+| Ein Prüfmittel des Gates fehlt | Lage C des Gates | `GATE <fehlendes Prüfmittel>` | blockiert |
+
+Die Selbstprüfung 1 — eine gemeldete Lage C ohne Eintrag — braucht keinen
+eigenen Schlüssel: Sie ist kein Fehler der Liste, sondern eine ungedeckte
+Lage C und zählt unter `<D> <ziel> C <fehlendes Prüfmittel>`.
+
+**Alles ausser einem belegten Grün blockiert.** Ein belegtes Grün liegt vor,
+wenn die Kette **vollständig gelaufen** ist, **keine** Marke `A_FAIL` zeigt,
+die D19-Zeile ohne Befund ist und **jede** Marke der Lage C durch einen
+gültigen Eintrag gedeckt ist. Jeder andere Ausgang blockiert — auch der, den
+niemand vorhergesehen hat. Das ist die Richtung, in die ein Gate irren darf:
+falsch rot ist sichtbar, ortsgebunden behandelbar und unterliegt der
+Eskalation aus 3.4; falsch grün ist die gefährliche Richtung.
+
+Die Unterscheidung steuert dreierlei: den Schlüssel des Zählers — ein Befund
+und ein Ausfall am selben Schritt sind nicht dasselbe Kriterium; die Meldung an
+die Rolle — bei einem Befund ist etwas zu beheben, bei einem Ausfall ein
+Prüfmittel zu beschaffen; und den einen Fall, in dem das Gate durchlässt.
+
+### Terminierte Lagen C
+
+Ein Schritt in Lage C hat nichts gemessen, weil sein Prüfmittel fehlt. Bis zum
+Grundgerüst ist das für mehrere Schritte der Regelfall — ein Gate, das jeden
+Wert ungleich 0 als "nicht abschliessbar" liest, blockierte ab seiner
+Einführung jede Arbeitseinheit, auch die, die das fehlende Prüfmittel gerade
+anlegt. Ein Gate, das nichts mehr durchlässt, wird nicht befolgt, sondern
+entfernt. Deshalb gilt eine **Positivliste**:
+`.claude/hooks/dod-gate-terminierte-lagen.txt`, versioniert, neben dem Hook, in
+der Form Schlüssel, Tabulator, Grund (ADR 0002, 6.12.5):
+
+```
+<D-Nummer> <ziel>|<fehlendes Prüfmittel als repository-relativer Pfad>	<Grund>
+```
+
+**Sechs Selbstprüfungen, jede für sich blockierend:**
+
+1. Ein Schritt meldet Lage C **ohne** Eintrag — das Gate blockiert. Die Liste
+   ist eine Positivliste, keine Ausschlussregel.
+2. Ein Eintrag, dessen Prüfmittel **inzwischen existiert** — veraltet, das Gate
+   blockiert. Sonst deckte er beim nächsten Mal etwas Echtes zu.
+3. Ein Eintrag zu einem Schritt, der eine **andere Lage als C** meldet —
+   veraltet, das Gate blockiert.
+4. Ein Eintrag **ohne Grund** — das Gate blockiert. Eine Ausnahme ohne
+   Begründung ist eine Lücke mit Deckmantel.
+5. Die Marke des Schrittes nennt in `FEHLT=` ein **anderes Prüfmittel** als der
+   Schlüssel — das Gate blockiert. Sonst deckte ein Eintrag für ein fehlendes
+   Skript auch den ganz anderen Fall, dass die Fundstelle die Aussage nicht
+   trägt.
+6. Der Schlüssel nennt **kein terminierbares Prüfmittel** — das Gate blockiert.
+
+**Terminierbar** ist ausschliesslich ein Projektartefakt dieses Repositories,
+das ADR 0002 in Abschnitt 5 oder 6 als noch nicht entstanden führt. **Nicht
+terminierbar** sind: ein installierbares Werkzeug — es fehlt nicht, weil es
+noch nicht gebaut ist, sondern weil es nicht installiert ist, weshalb **D11
+blockierend bleibt**; jedes Prüfmittel von D20, weil eine Ausnahme dort eine
+Ausnahme an der Nachweiskette wäre; und D19, weil D19 kein Kettenschritt ist,
+sondern das Instrument des Kettengrundsatzes. Die Liste führt am 2026-09-02
+drei Einträge: D7, D10 und D12.
+
+Einträge hinzuzufügen oder zu entfernen und die Form, die sechs
+Selbstprüfungen oder den Begriff des Terminierbaren zu ändern, ist Sache des
+Software Architects als Fortschreibung von ADR 0002; eine ganze Lage-Art von
+der Prüfung auszunehmen kann niemand über diese Liste, das wäre keine
+Ausnahme, sondern eine Änderung des Gates. Was das Gate maschinell prüft, ist
+die Form des Schlüssels, die D-Nummer, die Nichtexistenz des genannten Pfades,
+den nicht leeren Grund mit einer ADR-Stelle und die Übereinstimmung mit
+`FEHLT=`; **ob der Grund inhaltlich zutrifft, prüft es nicht** — das bleibt
+beim menschlichen Review.
+
+**Und die Gegenseite bleibt streng.** `make dod` selbst kennt diese Liste
+**nicht** und wird durch sie nicht weicher: Eine terminierte Lage C ist für die
+Kette unverändert Lage C und ergibt Rückgabewert 2. Die Ausnahme lebt
+ausschliesslich im Gate der Arbeitsumgebung.
+
+### Zählung und Eskalation
+
+Gezählt wird **ausserhalb des Arbeitsbaums**, unter
+`${XDG_STATE_HOME:-$HOME/.local/state}/r3cosint/dod-gate/`, je Sitzung und,
+wenn vorhanden, je Subagent. Eine Zählerdatei im Arbeitsbaum wäre eine Datei,
+die das Gate während des Laufs schreibt, den es beurteilt — D19 sähe sie, und
+das Gate erzeugte den Befund, den es meldet. Das Gate schreibt ausschliesslich
+lokal und sendet nichts nach aussen (5.4).
+
+**Gezählt wird das Kriterium, nicht das Ereignis.** Schlüssel ist die
+Klassifizierung aus der Tabelle oben. Gleicher Schlüssel wie beim letzten Block
+erhöht den Zähler um eins, ein anderer setzt ihn auf eins, ein Durchlass löscht
+ihn. Blocks aus `Stop` und aus `TaskCompleted` laufen in denselben Zähler: 3.4
+spricht von derselben Prüfung am gleichen Kriterium, nicht von demselben
+Ereignis. Zeigt ein Lauf mehrere Abweichungen, wird **eine** gezählt und
+**keine** verschwiegen; die Rangfolge lautet `GATE …`, dann `LISTE …`, dann die
+erste Abweichung in Kettenreihenfolge, dann `D19 …`.
+
+**Beim dritten Mal** verlangt die Blockmeldung, was 3.3 und 3.4 ohnehin
+verlangen: die Übergabedatei unter `docs/uebergaben/`, mit einer wörtlich zu
+übernehmenden Zeile
+
+```
+Eskalation 3.4: <Schlüssel>
+```
+
+**Ab dem vierten Mal** lässt das Gate durch, wenn eine Datei unterhalb
+`docs/uebergaben/` diese Zeile trägt und entweder nach `git status` neu oder
+geändert oder im jüngsten Commit enthalten ist — **und nur bei `Stop` und
+`SubagentStop`**. Bei `TaskCompleted` blockiert es weiter, auch nach der
+Eskalation: Der Durchlass bei `Stop` ist nötig, damit die Rolle die Übergabe
+abliefern kann, und sagt nichts über die Aufgabe; ein Durchlass bei
+`TaskCompleted` sagte, die Aufgabe sei erledigt. Sie ist es nicht — sie ist
+abgebrochen und liegt dem Auftraggeber vor. **Die Eskalation beendet die
+Iteration, nicht die Aufgabe.**
+
+Zwei benannte Grenzen: Über **Sitzungsgrenzen hinweg zählt das Gate nicht** —
+dort trägt die Übergabedatei, nicht ein Zähler. Und **fehlt `jq`**, blockiert
+das Gate zwar (`GATE jq`), kann diesen Block aber nicht zählen, weil Sitzungs-
+und Subagentenkennung in der Eingabe stehen, die es ohne `jq` nicht lesen kann;
+ein Ersatzschlüssel wird nicht erfunden, weil ein falsch geführter Zähler
+schlechter ist als ein fehlender. In beiden Fällen zählt die Rolle selbst
+(3.4).
+
+### Reentranz, Rollen ohne Schreibwerkzeug, Zeitgrenzen
+
 Schutz vor der Endlosschleife, verbindlich (3.4, Ebene 4):
-- **Reentranz:** Ist `stop_hook_active` gesetzt, endet der Hook mit 0.
-- **Obergrenze:** Acht Blockaden in Folge ohne Fortschritt übersteuert Claude Code
-  selbst; anpassbar über `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`. Notbremse, kein
-  Ersatz für den Reentranz-Schutz.
+
+- **Reentranz:** Ist `stop_hook_active` gesetzt, endet der Hook mit **0**,
+  meldet, dass er wegen des Reentranz-Schutzes nicht durchgesetzt hat, und
+  **verändert den Zähler nicht** — er löscht ihn nicht, weil der Zähler sonst
+  nie über eins stünde und die Eskalation unerreichbar wäre, und er erhöht ihn
+  nicht, weil das Gate diesen Block nicht ausgesprochen hat.
+- **Obergrenze:** Acht Blockaden in Folge ohne Fortschritt übersteuert Claude
+  Code selbst und beendet den Zug. **Ob sich diese Grenze über eine Einstellung
+  ändern lässt, ist nicht belegt:** Der hier früher genannte Name
+  `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` kommt in der am 2026-09-02 gelesenen
+  offiziellen Hook-Dokumentation nicht vor; dort steht die Zahl acht ohne
+  Variablennamen (ADR 0002, **O-19**, und offener Punkt 11 unten). Für das Gate
+  ist die Grenze ohne Bedeutung: Mit dem Reentranz-Schutz ist eine Folge von
+  acht Blockaden innerhalb eines Beendigungsversuchs unerreichbar, und der
+  Entwurf stützt sich an keiner Stelle auf sie.
 - **Turn-Begrenzung:** `maxTurns` je Rolle, gesetzt in allen 21 Rollendateien.
 - **Eskalation:** Scheitert dieselbe Prüfung dreimal am gleichen Kriterium, wird
   abgebrochen, die Übergabedatei geschrieben und die Aufgabe vorgelegt.
 
-Diese Hooks entstehen als Backlog-Eintrag R3-Q-001. Sie konnten vor dieser
+**Rollen ohne veränderndes Werkzeug lassen die Kette nicht laufen.** Das Gate
+bestimmt zuerst die Rolle — über das Frontmatter-Feld `name:` der Dateien unter
+`.claude/agents/`, nicht über den Dateinamen — und endet mit 0, ohne `make dod`
+aufzurufen, wenn deren `tools`-Feld **keines von `Edit`, `Write` und
+`NotebookEdit`** führt. Ein Block verlangte von diesen Rollen eine Behebung,
+die sie nicht leisten dürfen, und veränderte ihren Abschlussbericht; beim
+Prüfer wiegt das doppelt, weil seine Aufgabe gerade das Melden des roten
+Befunds ist. **`Bash` zählt nicht dazu**: Massgeblich ist die Menge der
+Werkzeuge, über die ADR 0001 Schreibrecht vergibt. Damit misst das Kriterium
+das **Recht**, nicht die Fähigkeit — eine Rolle mit `Bash` und ohne
+`Edit`/`Write` könnte schreiben und darf es nicht. Diese Lücke bleibt bis
+R3-Q-005 offen und wird von diesem Gate nicht geschlossen. Bei unbekanntem,
+leerem oder mehrdeutigem Rollennamen gilt die Rolle als schreibberechtigt und
+die Kette läuft; der Zähler bleibt in all diesen Fällen unverändert.
+
+**Drei Zeitgrenzen, und die innere ist die kleinere:** `timeout: 900` je
+Hook-Eintrag in `.claude/settings.json`, **600 s** für `make dod` im Skript
+selbst und **120 s** Wartezeit auf die Sperre, mit der das Gate seine eigenen
+Läufe serialisiert. Der Grund ist belegt und nicht vorsorglich: **Ein Hook, der
+seine Zeitgrenze reisst, wird abgebrochen, seine Ausgabe verworfen — er fällt
+also kein Urteil und lässt durch.** Für ein Gate ist das der schlechteste
+Ausgang, und er träte genau dann ein, wenn viel gebaut und getestet wurde.
+Deshalb zieht das Skript eine eigene, kürzere Grenze: Reisst sie, endet das
+Gate mit 2 unter `KETTE zeitueberschreitung` und behauptet nichts über den
+Arbeitsbaum. Ob 600 s mit dem Grundgerüst reichen, ist nicht gemessen (ADR
+0002, **O-20**); reichen sie nicht, werden **beide** Werte als Fortschreibung
+angehoben, und die innere Grenze wird nicht stillschweigend entfernt.
+
+**Die Prüfmittel des Gates.** Sieben, namentlich: `jq`, `git`, GNU Make samt
+`Makefile` im bestimmten Baum, `.claude/hooks/dod-gate-terminierte-lagen.txt`,
+`timeout`, `flock` und ein beschreibbares Zustandsverzeichnis. Die ersten
+**sechs** sind Lage C des Gates und enden mit 2, wenn sie fehlen — mit Nennung
+des Mittels und des Beschaffungswegs, wie es die bestehenden Gates bei
+fehlendem `jq` ebenfalls tun. Das siebte hat **keinen** eigenen Ausgang: Es
+trägt allein das Zählwerk und nicht das Urteil; fehlt es, urteilt das Gate
+unverändert und sagt in der Blockmeldung, dass es nicht zählen kann. Eine
+vorhandene, **leere** Liste terminierter Lagen ist ein zulässiger Zustand — es
+gibt dann keine terminierten Lagen; nur eine fehlende ist Lage C.
+
+### Was ein Durchlass des Gates aussagt — und was nicht
+
+> **Ein Durchlass heisst: `make dod` ist in dem genannten Arbeitsbaum
+> nachweisbar gelaufen und hat nichts von dem gefunden, was die Kette sucht —
+> bei terminierten Lagen C mit Ausnahme der genannten Schritte, die nicht
+> geurteilt haben. Er heisst nie: die Arbeit ist richtig.** Die menschlich
+> bestätigten Bedingungen D13 bis D17 stehen genau deshalb daneben und werden
+> durch keinen Durchlass ersetzt.
+
+Fünf Aussagen trägt ein Durchlass **nicht**:
+
+1. Nichts über einen anderen Arbeitsbaum als den genannten. Das Gate prüft den
+   Baum, in dem die Sitzung arbeitet, bestimmt über die Versionsverwaltung und
+   nicht über einen Verzeichnisnamen, und nennt ihn in jeder Meldung.
+2. Nichts, wenn er wegen `stop_hook_active` erfolgte — dort hat das Gate
+   überhaupt nicht durchgesetzt, es hat nur nicht blockiert.
+3. Nichts über die Arbeit einer Rolle, für die er wegen fehlender verändernder
+   Werkzeuge erfolgte.
+4. **Nichts, was D20 nicht selbst trägt.** Das Gate stützt sich auf die ganze
+   Kette und damit auf den Belegprüfer, der nach Eskalationsregel 3.4
+   abgebrochen und **nicht abgenommen** ist (offener Punkt 5 unten, ADR 0002,
+   O-15). Seit dem 2026-09-02 ist zudem belegt, dass D20 rote Läufe erzeugt,
+   deren Ursache die Umgebung ist. Die Aufnahme in die Kette hängt nicht an der
+   Abnahme; ein Gate, das jede Arbeitseinheit an dieses Werkzeug bindet, macht
+   sie dringender.
+5. **Nichts über eine Sitzung, in der `TaskCompleted` nie feuert.** Wird keine
+   Aufgabenliste geführt, bleiben `Stop` und `SubagentStop` mit je einer
+   erzwungenen Fortsetzung, und die Aussage "die Aufgabe war nicht
+   abschliessbar" hat keinen Träger (ADR 0002, O-23).
+
+Das Gate meldet sich bei **jedem Durchlass, der kein sauberes Grün ist** — bei
+terminierten Lagen C, bei `stop_hook_active` und beim Nichtlaufen für eine
+Rolle ohne veränderndes Werkzeug. Bei sauberem Grün schweigt es: Der Nachweis
+eines grünen Laufs entsteht dort, wo `make dod` geführt und sein Ergebnis
+festgehalten wird, nicht in einer Meldung an den Bildschirm.
+
+Diese Hooks sind der Backlog-Eintrag R3-Q-001. Sie konnten vor dieser
 Definition nicht gebaut werden, weil es kein Kriterium gab, das sie prüfen
 könnten.
 
@@ -551,7 +909,7 @@ für den Prototyp.
 |---|---|---|
 | 1 | Bestätigung der Abdeckungsschwelle in D6 | Auftraggeber |
 | 2 | Schwellenwert für Linter-Warnungen (D3) und für Abhängigkeitsschwachstellen (D8) | Auftraggeber mit SecDevOps |
-| 3 | Konkrete Befehle je Kettenschritt: eingesetzt am 2026-08-20 mit ADR 0002, Abschnitt 6 (Einstieg `make dod`), am 2026-08-30 fortgeschrieben (Abschnitt 6.1: D11 auf zwei Gegenstände erweitert, D18 ergänzt, Kettengrundsatz aufgenommen); offen bleibt die technische Bestätigung samt der Befunde zu D10 und D12 sowie der Prüffläche des Arbeitsbaumlaufs in D11 (O-10). **Nachgeführt am 2026-09-01:** dazu kommen die Rahmenprüfung D19 (ADR 0002, 6.2 und 6.4) und der Kettenschritt D20 (6.8); beide sind ebenso unbestätigt wie die übrige Kette. Dasselbe gilt für die Ergänzungen der neunten und zehnten Fortschreibung desselben Tages — zweiter Teil des D19-Prüfmittels, geschärfte Lage C, Aussagegrenze der Meldung — sowie für die dritte Nachführung desselben Tages: die Sechs-Prüfmittel-Prüfung und die geschärfte Referenzmengen-Bedingung bei D20, der ausgeführte Verletzungstest und die laufbezogene Aussage bei D19 | DevOps Engineer und Auftraggeber, mit R3-Q-001 |
+| 3 | **In der Sache erfüllt am 2026-09-02; offen bleibt allein die Bestätigung.** Die konkreten Befehle je Kettenschritt stehen seit dem 2026-08-31 im `Makefile`, und der Einstieg `make dod` wird seit dem 2026-09-02 vom Gate `.claude/hooks/dod-gate.sh` aufgerufen; die beiden Befunde zu **D10** und **D12** sind mit der Nachführung vom 2026-09-02 in die Kriterien eingearbeitet — **Bestätigung Auftraggeber ausstehend**. Ebenfalls ausstehend: die technische Bestätigung durch den DevOps Engineer, die förmliche Freigabe der Entscheidpunkte E-A bis E-K (ADR 0002, Abschnitt 10) und die Verifikation durch Static und Dynamic Software Tester. **O-10 ist in seinem ersten Teil seit dem 2026-08-30 beantwortet** (ADR 0002, 6.2.3: `--no-git` beachtet `.gitignore` nicht, Zugangsdaten liegen nicht im Arbeitsbaum, der Schutz wird nicht abgestuft); offen bleiben die beiden Restfragen — (a) die namentliche Ausschlussliste des Arbeitsbaumlaufs samt ihrer technischen Form, umterminiert auf die Installation von `gitleaks`, spätestens das Grundgerüst, und (b) die betriebliche Ablage der Zugangsdaten ausserhalb des Arbeitsbaums, mit dem Grundgerüst. *(Diese Nachführung von Punkt 3 stand aus der zweiten Fortschreibung von ADR 0002 vom 2026-08-30 offen und ist am 2026-09-02 erledigt.)* — Frühere Fassung dieses Punktes: eingesetzt am 2026-08-20 mit ADR 0002, Abschnitt 6 (Einstieg `make dod`), am 2026-08-30 fortgeschrieben (Abschnitt 6.1: D11 auf zwei Gegenstände erweitert, D18 ergänzt, Kettengrundsatz aufgenommen). **Nachgeführt am 2026-09-01:** dazu kommen die Rahmenprüfung D19 (ADR 0002, 6.2 und 6.4) und der Kettenschritt D20 (6.8); beide sind ebenso unbestätigt wie die übrige Kette. Dasselbe gilt für die Ergänzungen der neunten und zehnten Fortschreibung desselben Tages — zweiter Teil des D19-Prüfmittels, geschärfte Lage C, Aussagegrenze der Meldung — sowie für die dritte Nachführung desselben Tages: die Sechs-Prüfmittel-Prüfung und die geschärfte Referenzmengen-Bedingung bei D20, der ausgeführte Verletzungstest und die laufbezogene Aussage bei D19. **Nachgeführt am 2026-09-02:** ebenso unbestätigt sind die Ergänzungen der zwölften Fortschreibung — das strukturierte `FEHLT=` in der Marke, das Weiterlaufen der Kette bei Lage C, die vier Schlusszeilen samt eigenständiger D19-Zeile, die Vollständigkeit der Git-Historie als siebtes Prüfmittel von D20 und das Gate selbst samt der Liste terminierter Lagen C | DevOps Engineer und Auftraggeber, mit R3-Q-001 |
 | 4 | Bestätigung der Notation der Abnahmekriterien zu R6 (Teil 1): die vier Glieder **samt ihrer dort erstmals gegebenen Bestimmung** — die Namen stammen wörtlich aus Befund F, die Bestimmungen nicht —, die Pflicht zur Gegenprobe und die Geltung nur für neue und ohnehin geänderte Kriterien | Auftraggeber |
 | 5 | **Abnahme des Prüfmittels von D20.** Es ist nach Eskalationsregel 3.4 abgebrochen und nicht abgenommen; seine Selbstauskunft erklärt die Liste der eigenen Grenzen ausdrücklich für unvollständig. Offen ist, welches Abnahmekriterium für ein Werkzeug gilt, das eine Nachweiskette blockiert (ADR 0002, O-15) | Static und Dynamic Software Tester, auf einem anderen Modell als die Umsetzung (3.4); Entscheid über das Abnahmekriterium beim Auftraggeber |
 | 6 | **Aussagekraft von D20 je Arbeitsplatz.** Das Prüfmittel liest ein zweites Repository an einem fest verdrahteten Ort mit; fehlt es dort, zählt es die betroffenen Zeilen als nicht prüfbar, ohne dass diese Zählung in den Rückgabewert eingeht (ADR 0002, O-14) | DevOps Engineer mit Protocol Master |
@@ -559,3 +917,4 @@ für den Prototyp.
 | 8 | **Erledigt am 2026-09-01.** Befund der ersten Nachführung desselben Tages: ADR 0002 datierte seine achte Fortschreibung uneinheitlich. Die vier abweichenden Stellen — Kriterium K5, D20-Zeile der Objekttabelle, offene Punkte O-14 und O-15 — tragen jetzt ebenfalls den 2026-09-01; am 2026-09-01 einzeln nachgeschlagen | erledigt durch den Software Architect |
 | 9 | **Löschung einer maskierten, verfolgten Datei (ADR 0002, O-17).** Die Aufzählung der verfolgten Dateien führt sie weiter, weil sie im Index steht; die Prüfsummenbildung findet die Datei dann nicht vor. Ob die Aufnahme dadurch abweicht — die Löschung also trotz Maskierung sichtbar wird — oder unverändert bleibt, ist **nicht gemessen**. Am Ausgang ändert die Antwort nichts, die Maskierung bleibt Lage C; sie bestimmt allein, wie weit die Meldung sagen darf, der Inhalt sei beurteilt | DevOps Engineer mit einem ausgeführten Lauf, Verifikation Static und Dynamic Software Tester (3.4) |
 | 10 | **Aktualität der Bezugsdokumente (ADR 0002, O-18).** D20 prüft `docs/05_Product_Backlog.md` und `docs/00_Projektauftrag.md` seit der dritten Nachführung vom 2026-09-01 auf Vorhandensein und auf eine nicht leere Referenzmenge — auf Aktualität prüft es nicht. Eine Anforderungskennung, die als Überschrift stehen bleibt, obwohl der Eintrag längst zurückgezogen ist, oder eine Fassung des Projektauftrags, die nicht mehr die geltende ist, fällt durch kein Netz dieses Kriteriums | DevOps Engineer mit Requirements Engineer |
+| 11 | **Die Einstellung für die harte Obergrenze ist nicht belegt (ADR 0002, O-19).** Der Abschnitt "Durchsetzung" nannte bis zum 2026-09-02 `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` als Weg, die Obergrenze von acht Blockaden in Folge anzupassen; in der am 2026-09-02 gelesenen offiziellen Hook-Dokumentation kommt dieser Name nicht vor, die Zahl acht steht dort ohne Variablennamen. Die Stelle in dieser Datei ist mit der Nachführung vom 2026-09-02 auf das Belegte zurückgenommen. Offen bleiben die beiden anderen Fundstellen: **Projektauftrag 3.4**, Ebene 4 — dessen Änderung entscheidet der Auftraggeber, diese Datei nimmt sie nicht vorweg — und `docs/adr/0001-rollenmodell.md`, das die Einstellung sogar für verbindlich erklärt; dort ist sie als Fortschreibung jenes ADR nachzuführen. Für das Gate ist die Grenze ohne Bedeutung, der Punkt ist deshalb nicht dringlich, steht aber in Dokumenten, die verbindliche Grundlage sind | Requirements Engineer mit Protocol Master; Entscheid über eine Änderung des Projektauftrags beim Auftraggeber, Nachführung von ADR 0001 beim Software Architect |

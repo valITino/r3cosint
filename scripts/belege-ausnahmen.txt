@@ -42,6 +42,13 @@ docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/abnahme-abgleich.sh	Fol
 docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/rueckkanal-pruefen.sh	Folgt mit R3-C-004. Bis dahin meldet D9 Lage C.
 docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/prototyp-trennung-pruefen.sh	Folgt mit dem Grundgeruest; Betriebsart und Form sind als O-8 offen. Bis dahin meldet D10 Lage C.
 docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/nachweise-vollstaendig.sh	Folgt mit dem Grundgeruest; die Form ist als O-8 offen. Bis dahin meldet D12 Lage C.
+docs/06_Definition_of_Ready_und_Done.md|scripts/abnahme-abgleich.sh	Folgt mit dem Grundgeruest (D7, ADR 0002, Abschnitt 6). Die Kriterienzeile D7 nennt es seit der Nachfuehrung vom 2026-09-02 als das Pruefmittel, dessen Fehlen Lage C ausloest -- derselbe Gegenstand wie der Eintrag fuer ADR 0002.
+docs/06_Definition_of_Ready_und_Done.md|scripts/rueckkanal-pruefen.sh	Folgt mit R3-C-004 (D9, ADR 0002, Abschnitt 6). Die Kriterienzeile D9 nennt es seit dem 2026-09-02 als das Pruefmittel, dessen Fehlen Lage C ausloest -- derselbe Gegenstand wie der Eintrag fuer ADR 0002.
+docs/06_Definition_of_Ready_und_Done.md|scripts/prototyp-trennung-pruefen.sh	Folgt mit dem Grundgeruest; Betriebsart und Form sind als O-8 offen (D10, ADR 0002, Abschnitt 6). Die Kriterienzeile D10 und die Fortschreibungstabelle nennen es seit dem 2026-09-02 -- derselbe Gegenstand wie der Eintrag fuer ADR 0002.
+docs/06_Definition_of_Ready_und_Done.md|scripts/nachweise-vollstaendig.sh	Folgt mit dem Grundgeruest; die Form ist als O-8 offen (D12, ADR 0002, Abschnitt 6). Die Kriterienzeile D12 nennt es seit dem 2026-09-02 -- derselbe Gegenstand wie der Eintrag fuer ADR 0002.
+docs/uebergaben/2026-09-02_r3-q-001-gate-gebaut.md|scripts/abnahme-abgleich.sh	Uebergabe beschreibt den Eintrag D7 der Liste terminierter Lagen C; das Skript folgt mit dem Grundgeruest (ADR 0002, Abschnitt 6). Uebergaben belegen einen vergangenen Stand und werden nicht geaendert.
+docs/uebergaben/2026-09-02_r3-q-001-gate-gebaut.md|scripts/prototyp-trennung-pruefen.sh	Uebergabe beschreibt den Eintrag D10 der Liste terminierter Lagen C; das Skript folgt mit dem Grundgeruest, Form als O-8 offen (ADR 0002, Abschnitt 6). Uebergaben belegen einen vergangenen Stand und werden nicht geaendert.
+docs/uebergaben/2026-09-02_r3-q-001-gate-gebaut.md|scripts/nachweise-vollstaendig.sh	Uebergabe beschreibt den Eintrag D12 der Liste terminierter Lagen C; das Skript folgt mit dem Grundgeruest, Form als O-8 offen (ADR 0002, Abschnitt 6). Uebergaben belegen einen vergangenen Stand und werden nicht geaendert.
 docs/uebergaben/2026-08-25_eingangskanal-repariert.md|.claude/skills/einschleusung-pruefen/	Am 2026-08-25 zurueckgestellt. Der damalige Grund -- sie waere die erste Skill und loeste R3-C-007 halb aus -- ist am 2026-08-31 entfallen, weil R3-C-007 mit den ersten zwei Skills erfuellt ist. Die Skill ist wieder baubar; der Eintrag bleibt, bis der Product Owner sie terminiert.
 docs/uebergaben/2026-08-25_eingangskanal-repariert.md|.claude/rules/fremde-inhalte-im-harness.md	Entsteht mit Einheit E3 der freigegebenen Reihenfolge; am 2026-08-25 so festgehalten.
 
@@ -54,7 +61,7 @@ docs/uebergaben/2026-08-25_eingangskanal-abgesichert.md|11d5960a326750d5838078e3
 docs/uebergaben/2026-08-25_full-review-konfiguration.md|11d5960a326750d5838078e36cf38b85af677262	Gepinnter Commit der fremden GitHub-Action actions/checkout. Genau so verlangt es 6.6 -- ein Zweigname waere hier der Fehler.
 
 # --- blob/main als abschreckendes Beispiel, kein Verstoss -----------------
-CLAUDE.md:83	Nennt die verbotene Form als Beispiel ("nie über `blob/main/...`"), kein Verstoss.
+CLAUDE.md:88	Nennt die verbotene Form als Beispiel ("nie über `blob/main/...`"), kein Verstoss. Zeile am 2026-09-02 von 83 auf 88 nachgefuehrt, weil die Tabelle der Gates und die Regel zur Aufgabenfuehrung davor eingefuegt wurden.
 .claude/agents/devops-engineer.md:23	Nennt die verbotene Form als Beispiel ("nie über `blob/main`"), kein Verstoss.
 .claude/agents/protocol-master.md:16	Nennt die verbotene Form als Beispiel ("ein Verweis auf `blob/main/...` ist kein Nachweis"), kein Verstoss.
 .claude/rules/dokumentation.md:18	Nennt die verbotene Form als Beispiel ("`blob/main/...` ist kein Nachweis"), kein Verstoss.
@@ -62,3 +69,11 @@ docs/00_Projektauftrag.md:938	Nennt die verbotene Form als Beispiel ("Ein Verwei
 docs/08_Freigabe_Schritt_4.md:133	Nennt die verbotene Form als Beispiel ("kein Verweis auf `blob/main`"), kein Verstoss.
 docs/uebergaben/2026-08-25_full-review-konfiguration.md:16	Nennt die verbotene Form als Beispiel (deterministische Prüfung auf `blob/main` als Prüfgegenstand), kein Verstoss.
 docs/uebergaben/2026-09-01_belegpruefer-abbruch-nach-3-4.md:28	Nennt die beiden verbotenen Formen als Beschreibung dessen, was der Pruefer sucht -- kein Verstoss, sondern seine Fundstellenliste.
+
+# --- Lokale Zweig-Refs als Herkunftsangabe eines Arbeitsplatzes ---------
+docs/uebergaben/2026-08-30_dod-nachfuehrung-adr0002-abschnitt6-1.md|.git/refs/heads/claude/next-step-g8slnq	Pfad eines lokalen Zweig-Refs, aus dem der Protocol Master ohne Bash-Werkzeug die Commit-Pruefsumme abgelesen hat. Er beschreibt die Herkunft der Angabe auf dem damaligen Arbeitsplatz, nicht ein Artefakt des Repositories, und besteht in keinem frischen Klon (am 2026-09-02 in einem frischen Klon als einziger D20-Fund gemessen). Die dort genannte Pruefsumme 84450a71569120e8deb30ecb0349ea8a92f6d736 prueft Pruefung 2 weiterhin.
+
+# --- Zustandsbericht 2026-09-02: fremdes Repository ------------------------
+docs/10_Zustandsbericht_2026-09-02.md|882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf	Commit des angebundenen fremden Repositories valITino/claude-skills-fullstack, Stand der Skill-Auswertung. Dieses Skript kennt nur Objekte der beiden eigenen Arbeitsbaeume.
+docs/10_Zustandsbericht_2026-09-02.md|3d3c42e5aac5ba805825da76410c181273ba90b1	Gepinnter Commit der fremden GitHub-Action actions/checkout (v7.0.1), im Zustandsbericht als Negativbefund zitiert. Genau so verlangt es 6.6 -- ein Zweigname waere hier der Fehler.
+docs/10_Zustandsbericht_2026-09-02.md|11d5960a326750d5838078e36cf38b85af677262	Gepinnter Commit der fremden GitHub-Action actions/checkout (v4.4.0), im Zustandsbericht als Negativbefund zitiert. Genau so verlangt es 6.6 -- ein Zweigname waere hier der Fehler.
