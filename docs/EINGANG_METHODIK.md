@@ -202,3 +202,58 @@ Commit-Prüfsumme zurück nach Repo B.
 > [Gekuerzt: 53 weitere Zeilen. Vollstaendig im Nachweis-Commit.]
 
 **Nachweis:** https://github.com/valITino/r3coscrum/commit/833e89383176d61dee59e7e059a9b55f683bd35c
+
+## 2026-09-07 — Änderung an der Methodik
+
+**Was sich geändert hat:**
+
+- Geändert: `methodik/entscheide.md`
+
+**Warum:**
+
+> 3033352 — docs(R3-Q-001): O-24 als V14 eingetragen, Uebergabe zur O-24-Einheit, O-25 als offener Punkt
+> Methodischer Anteil der Einheit vom 2026-09-03 im Produkt-Repository
+> (Commit d96e3970b782c563fe8419cfc2c72200a85e6ec0): Entscheid des
+> Auftraggebers zu O-24 als V14; Uebergabevermerk mit dem erneuten Abbruch
+> nach 3.4; O-25 (Messumfang und Trennschaerfe maschinell erzwingen) als
+> offener Punkt.
+>
+> Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+> Claude-Session: https://claude.ai/code/session_01U7CismnmSgiveyY64ynJ15
+>
+> c8c3e79 — docs(R3-Q-001): O-25 als V15 eingetragen, Uebergabe zur O-25-Einheit, O-26 als offener Punkt
+> Methodischer Anteil der Einheit "O-25 umsetzen" (Produkt-Repository, Commit
+> ce8ed8a0487d6b7dc8b2f805d3110996fd50e765): V15 (eine Pruefung ist erst dann
+> Beleg, wenn sie ihre eigene Verneinung erkennt), O-25 geschlossen, O-26
+> vorgelegt (Praedikatbindung, Schluessel- und Grammatikdeckung,
+> Abnahmekriterium), Uebergabevermerk mit dem erneuten Abbruch nach 3.4.
+>
+> Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+> Claude-Session: https://claude.ai/code/session_01U7CismnmSgiveyY64ynJ15
+>
+> 2674ad6 — docs(R3-Q-001): O-26 als V16 eingetragen, Uebergabe zur O-26-Einheit (Runden 9 bis 11, Abbruch nach 3.4), O-27 als offener Punkt
+> Methodischer Anteil der Einheit vom 2026-09-06/07 im Produkt-Repository
+> (12402c82a11a5a0b7f6bb86c7b614d7580b68c72): Entscheid des Auftraggebers
+> zu O-26 als V16 mit Begruendung und belegter Grenze; O-26 geschlossen,
+> O-27 (Deckung am Gegenstand fuer Pfade und Grammatik oder
+> Abnahmekriterium auf falsches Gruen am Gate beziehen) als offener Punkt;
+> Uebergabevermerk mit drei Regelvorschlaegen (Sollmenge aus dem Gegenstand,
+> vorab festgelegter Ausgang des dritten Versuchs, Deckungen fail-closed).
+>
+> Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+> Claude-Session: https://claude.ai/code/session_01U7CismnmSgiveyY64ynJ15
+>
+> 0b0fbef — docs(R3-Q-001): O-27 entschieden (Wahl am 2026-09-07 an den Koordinator delegiert), Nachtrag zur Uebergabe, Merge empfohlen
+> Wortlaut des Auftraggebers: "Dann wähle den besten und korrektesten Weg
+> aus, ich vertraue dir und deiner Expertise." Gewaehlt: Weg (a) und (b)
+> zusammen in einer Einheit, Runde 12 als letzte Fremdmutationsrunde;
+> Umsetzung in der naechsten Sitzung nach dem Merge. Empfehlung des
+> Koordinators geaendert auf "jetzt mergen"; der Merge im
+> Produkt-Repository ist die foermliche Freigabe der Entscheidpunkte E-A
+> bis E-K, die Abnahme des Gates folgt nach Runde 12.
+>
+> Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+> Claude-Session: https://claude.ai/code/session_01U7CismnmSgiveyY64ynJ15
+>
+
+**Nachweis:** https://github.com/valITino/r3coscrum/commit/2ec4bc2047d0cd940f38481277433086c69b13be
