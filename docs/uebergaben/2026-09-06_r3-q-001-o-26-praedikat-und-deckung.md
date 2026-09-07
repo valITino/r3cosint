@@ -416,9 +416,10 @@ Zwei Wege, je mechanisch beschrieben; der Entscheid liegt beim Auftraggeber.
 | `scripts/nachweise-erzeugen.sh`, `docs/NACHWEISE.md` | Beschreibung des Selbsttests und der Mutationsdatei nachgeführt; Nachweise neu erzeugt |
 | Methodik-Repository | `UEBERGABE.md` (methodischer Anteil), `methodik/entscheide.md` V16 (O-26 als methodischer Entscheid), O-26 geschlossen, O-27 offen |
 
-Nicht nachgeführt, weil nicht Sache dieser Einheit: `docs/06` (Bestätigung der
-Neufassung von D10 und D12, Abnahmekriterium — Requirements Engineer,
-Abschnitt 9), `docs/04` (Software Architect, eigene Einheit).
+Nicht nachgeführt, weil nicht Sache dieser Einheit:
+`docs/06_Definition_of_Ready_und_Done.md` (Bestätigung der Neufassung von D10
+und D12, Abnahmekriterium — Requirements Engineer, Abschnitt 9),
+`docs/04_Kontextmodell.md` (Software Architect, eigene Einheit).
 
 ## Was offen ist
 
@@ -439,8 +440,8 @@ Abschnitt 9), `docs/04` (Software Architect, eigene Einheit).
    Empfehlung des Koordinators im Bericht an den Auftraggeber: noch nicht
    mergen, zuerst O-27 entscheiden.
 4. **Bestätigung der Neufassung von D10 und D12** in der Definition of Done;
-   `docs/06` zum Abnahmekriterium vom Requirements Engineer zu prüfen
-   (Abschnitt 9).
+   `docs/06_Definition_of_Ready_und_Done.md` zum Abnahmekriterium vom
+   Requirements Engineer zu prüfen (Abschnitt 9).
 5. **Wirkung über den Harness** (Antwort bei roter Kette in einer Sitzung mit
    Projektwurzel `r3cosint` beenden) — in dieser Sitzung nicht prüfbar, weil
    die Projektwurzel das übergeordnete Verzeichnis dreier Repositories ist.
@@ -473,4 +474,5 @@ Abschnitt 9), `docs/04` (Software Architect, eigene Einheit).
 | Selbsttest nach Phase 6, Teilschritt 6b, erster Lauf | "FEHLGESCHLAGEN Z-196" bei "206 von 206", Rückgabewert 0 (Zählerfehler, behoben); nach der Behebung "206 von 207", Rückgabewert 2; nach Gate-Zeile 110 "207 von 207", Rückgabewert 0 |
 | Selbsttest nach Phase 6, Endstand (22:55 UTC) | 207 von 207, alle Deckungen und Abgleiche 0, Gegenstandsdeckung 24/0, Rückgabewert 0, 41 s; Mutationen 197 von 197, 10 `keine`, 0 wirkungslos, Rückgabewert 0, 173 s; Prüfsummen gleich |
 | Prüfsummen der sechs Dateien vor Runde 11 und beim Abschluss (2026-09-07) | gleich: Gate `b35a0484…`, Selbsttest `d4c3dadf…`, Mutationsdatei `f27b2f4e…`, `Makefile` `ef30045f…`, Lagenliste `e853558b…` |
-| `make dod` im Arbeitsbaum vor dem Commit (2026-09-07, 03:55 UTC, 9,6 s) | Schlusszeile Form 2: alle 14 Kettenschritte durchlaufen, 3 ohne Urteil (Lage C, terminiert): D7 `FEHLT=scripts/abnahme-abgleich.sh`, D10 `FEHLT=scripts/prototyp-trennung-pruefen.sh`, D12 `FEHLT=scripts/nachweise-vollstaendig.sh`; D20 Belegprüfer `A_OK`, D11 `A_OK` (`gitleaks` vorhanden), D19 `OHNE_BEFUND`, Rückgabewert 2 |
+| `make dod` nach dem Commit, mit versionierter Übergabedatei (2026-09-07, 05:05 UTC) | D20 Belegprüfer `A_FAIL`, drei Funde der Art `pfad` in dieser Datei (die Kurzformen docs/06 und docs/04 standen in Rückwärtsakzenten und bezeichnen keine Datei); der Lauf vor dem Commit hatte die Datei nicht geprüft, weil der Belegprüfer nur versionierte Dateien liest — behoben mit dem nächsten Commit dieses Zweigs, danach Form 2 |
+| `make dod` im Arbeitsbaum vor dem Commit (2026-09-07, 03:55 UTC, 9,6 s; Übergabedatei noch nicht versioniert) | Schlusszeile Form 2: alle 14 Kettenschritte durchlaufen, 3 ohne Urteil (Lage C, terminiert): D7 `FEHLT=scripts/abnahme-abgleich.sh`, D10 `FEHLT=scripts/prototyp-trennung-pruefen.sh`, D12 `FEHLT=scripts/nachweise-vollstaendig.sh`; D20 Belegprüfer `A_OK`, D11 `A_OK` (`gitleaks` vorhanden), D19 `OHNE_BEFUND`, Rückgabewert 2 |

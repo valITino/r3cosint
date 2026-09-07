@@ -28,7 +28,8 @@ Regeln, unverändert: keine Annahmen, nichts erfinden; geraten Effizienz und
 Korrektheit in Konflikt, entscheidet die Korrektheit. Deutsch in Schweizer
 Schreibweise (`ss`, nie Eszett), gerade Anführungszeichen. Commit-Betreff nach
 Conventional Commits mit der Kennung R3-Q-001; in Dokumenten wird über die
-40-stellige Commit-Prüfsumme verwiesen, nie über `blob/main`. Über den
+40-stellige Commit-Prüfsumme verwiesen, nie über einen Pfad, der den Zweig
+`main` nennt (6.6). Über den
 Harness laufen keine echten Fall- oder Personendaten. Die Rolle, die
 umsetzt, prüft nicht ihre eigene Arbeit; jeder modellbasierte Prüfschritt
 läuft auf einem anderen Modell als die Umsetzung (3.4). Jede Arbeitseinheit
@@ -105,8 +106,9 @@ letzter Fremdmutationsrunde. Führe sie in dieser Reihenfolge durch:
    ist ein nachrangiger Befund für den Backlog. Ein falsches Grün wird
    behoben, statisch nachgeprüft und mit einer gezielten Wiederholung der
    betroffenen Fremdmutation belegt — keine Runde 13.
-6. **Abschluss**: Übergabedatei `docs/uebergaben/2026-MM-TT_r3-q-001-o-27-pfade-und-grammatik.md`
-   nach dem Muster der Übergabe vom 2026-09-06; Nachführung von `CLAUDE.md`,
+6. **Abschluss**: Übergabedatei unter `docs/uebergaben/` mit dem Datum der
+   Sitzung und der Kennung R3-Q-001 im Namen, nach dem Muster der Übergabe
+   vom 2026-09-06; Nachführung von `CLAUDE.md`,
    `docs/05_Product_Backlog.md` (Nachweis, Stand, Sammelposten),
    `scripts/nachweise-erzeugen.sh`, ADR 0002 Abschnitte 8 und 9 und, nach
    bestandener Runde 12, die **Abnahmevorlage** des Gates in Abschnitt 10
