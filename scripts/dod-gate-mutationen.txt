@@ -67,8 +67,8 @@ Z-017	dod-gate.sh	s#msg="dod-gate: Reentranz-Schutz#exit 3; &#	Der Durchlass weg
 Z-018	dod-gate.sh	s#msg="dod-gate: Reentranz-Schutz#loesche_zaehler; &#	Der Durchlass wegen stop_hook_active loescht den Zaehler
 Z-019	dod-gate.sh	s#      primaer_schluessel="D19 VERLETZT"#      exit 3#	Im D19-Zweig VERLETZT endet das Gate mit 3
 Z-020	dod-gate.sh	s#      primaer_schluessel="D19 C"#      exit 3#	Im D19-Zweig Lage C endet das Gate mit 3
-Z-021	dod-gate.sh	/GATE jq --/,/^fi$/s#^  exit 2$#  exit 3#	Der jq-Zweig endet mit 3 statt mit 2
-Z-022	dod-gate.sh	/GATE jq --/,/^fi$/s#jq#XX#g	Im jq-Block wird jede Nennung von jq ersetzt (Schluessel, Meldung, Beschaffungsweg)
+Z-021	dod-gate.sh	/^if ! command -v jq/,/^fi$/s#^  exit 2$#  exit 3#	Der jq-Zweig endet mit 3 statt mit 2
+Z-022	dod-gate.sh	/^if ! command -v jq/,/^fi$/s#jq#XX#g	Im jq-Block wird jede Nennung von jq ersetzt (Schluessel, Meldung, Beschaffungsweg)
 Z-023	dod-gate.sh	s#blockieren_mit_zaehlung "GATE git"#exit 3; &#	Der git-Block endet mit 3, bevor er blockiert
 Z-024	dod-gate.sh	/blockieren_mit_zaehlung "GATE git"/,+2s#git#XX#g	Im git-Block wird jede Nennung von git ersetzt (Schluessel, Meldung, Beschaffungsweg)
 Z-025	dod-gate.sh	s#blockieren_mit_zaehlung "GATE make"#exit 3; &#	Der make-Block endet mit 3, bevor er blockiert
@@ -86,7 +86,7 @@ Z-036	dod-gate.sh	s#zustand_hinweis=" Das Zustandsverzeichnis ist nicht beschrei
 Z-037	dod-gate.sh	s#blockieren_mit_zaehlung "KETTE zeitueberschreitung"#exit 3; &#	Der Zweig der inneren Zeitueberschreitung endet mit 3
 Z-038	dod-gate.sh	s#neue_zahl=$((alt_zahl + 1))#neue_zahl=1#	Der Zaehler wird bei gleichem Schluessel nicht mehr erhoeht (er bleibt auf 1)
 Z-039	dod-gate.sh	s#-eq 3 \]; then#-eq 3 ]; then exit 3;#	Der Zweig des dritten Ereignisses endet mit 3
-Z-040	dod-gate.sh	s#^    echo "Eskalation 3.4: $primaer_schluessel" >&2#    true#	Die Zeile Eskalation 3.4: <Schluessel> wird aus der Meldung des dritten Ereignisses entfernt
+Z-040	dod-gate.sh	s#-ge 4 \]#-ge 3 ]#	berichtigt 2026-09-06 (6.12.27 e, M-01): die Eskalationsschwelle wird von -ge 4 auf -ge 3 gesetzt
 Z-041	dod-gate.sh	s#msg="dod-gate: Eskalation 3.4 fuer#exit 3; &#	Der Eskalations-Durchlass endet mit 3
 Z-042	dod-gate.sh	s#"$primaer_schluessel" "$neue_zahl" > "$zaehler_datei"#"$primaer_schluessel" 1 > "$zaehler_datei"#	Die Zaehlerdatei traegt immer die Zahl 1 statt des erreichten Standes
 Z-043	selbsttest	keine	Vorbedingung des Aufbaus (Grund 2): die Zeile stellt fest, dass der Fall die Uebergabedatei wirklich in HEAD hat, und behauptet nichts ueber das Verhalten des Gates
@@ -201,3 +201,56 @@ Z-152	selbsttest	keine	Die Zusicherung beschreibt den Selbsttest selbst (Grund 1
 Z-153	selbsttest	keine	Die Zusicherung beschreibt den Selbsttest selbst (Grund 1): eine Mutation daran mutierte das Messinstrument, nicht den Gegenstand
 Z-154	dod-gate.sh	s#handoff_zeile="Eskalation 3.4: $primaer_schluessel"#handoff_zeile="Eskalation 3.4:"#	Der im Gate gesuchte Text der Uebergabedatei wird von "Eskalation 3.4: <gezaehlter Schluessel>" auf "Eskalation 3.4:" ohne Schluessel verkuerzt -- jede Uebergabedatei mit irgendeiner Eskalationszeile oeffnete den Durchlass (DT7-03)
 Z-155	dod-gate.sh	keine	Grund 3: teilt den Fall mit der Schwester Z-154; der Kanal zaehler kann die Verneinung nicht trennen, weil der Stand 4 nach Z-125 auch beim Durchlass gilt -- Z-154 sieht sie ueber den Rueckgabewert (6.12.26 f Entscheid 7)
+Z-156	dod-gate.sh	s#-ge 4 \]#-ge 3 ]#	M-01: die Eskalationsschwelle wird von -ge 4 auf -ge 3 gesetzt
+Z-157	dod-gate.sh	s#erwartet eine Datei unter docs/uebergaben/ mit der woertlichen Zeile .Eskalation 3.4: $primaer_schluessel.,#nennt eventuell eine Datei unter docs/uebergaben/ mit der woertlichen Zeile .Eskalation 3.4: $primaer_schluessel.,#	Der Forderungssatz im Block ab dem vierten Ereignis wird entschaerft, die Zusicherung findet ihn nicht mehr woertlich
+Z-158	dod-gate.sh	s#kette_abweichung_schluessel="$m_d $m_ziel A_FAIL"#kette_abweichung_schluessel="$m_d $m_ziel"#	Im A_FAIL-Zweig der Markenauswertung wird der Schluessel ohne die Lage gebildet
+Z-159	dod-gate.sh	s#kette_abweichung_schluessel="$m_d $m_ziel C ${m_fehlt:-unbenannt}"#kette_abweichung_schluessel="$m_d $m_ziel C"#	Im Zweig der ungedeckten Lage C entfaellt der FEHLT=-Wert aus dem Schluessel
+Z-160	dod-gate.sh	s#kette_abweichung_schluessel="KETTE marke-fehlt $abbruch_d_ziel"#kette_abweichung_schluessel="KETTE markenfehler $abbruch_d_ziel"#	Der Schluessel KETTE marke-fehlt wird umbenannt
+Z-161	dod-gate.sh	s#primaer_schluessel="D19 VERLETZT"#primaer_schluessel="D19 KAPUTT"#	Der Schluessel D19 VERLETZT wird umbenannt
+Z-162	dod-gate.sh	s#primaer_schluessel="D19 C"#primaer_schluessel="D19 KAPUTT"#	Der Schluessel D19 C wird umbenannt
+Z-163	dod-gate.sh	s#"KETTE zeitueberschreitung"#"KETTE ZEIT-UMBENANNT"#g	Der Schluessel KETTE zeitueberschreitung wird umbenannt
+Z-164	dod-gate.sh	s#blockieren_mit_zaehlung "KETTE rueckgabewert=$kette_rc"#exit 3; &#	Der Zweig fuer Rueckgabewerte ausser 0 und 2 endet mit 3, bevor er blockiert (eine spaetere, unabhaengige Konsistenzwache faengt den Widerspruch sonst unter einem ANDEREN Schluessel ab und haelt rc=2, was Z-164 nicht trennt)
+Z-165	dod-gate.sh	s#blockieren_mit_zaehlung "KETTE rueckgabewert=$kette_rc"#blockieren_mit_zaehlung "KETTE rueckgabewert="#	Der Schluessel wird ohne die Zahl gebildet (KETTE rueckgabewert= statt KETTE rueckgabewert=<N>)
+Z-166	dod-gate.sh	s#terminiert_fehler_schluessel="LISTE 2 $d_nummer $ziel_name"#terminiert_fehler_schluessel="LISTE 2"#	Der Schluessel der Selbstpruefung 2 wird ohne D-Nummer und Ziel gebildet
+Z-167	dod-gate.sh	s#terminiert_fehler_schluessel="LISTE 4 $terminiert_zeilennr"#terminiert_fehler_schluessel="LISTE 4"#	Der Schluessel der Selbstpruefung 4 wird ohne die Zeilennummer gebildet
+Z-168	dod-gate.sh	s#\[ "$schluss_form" != "erfolg" \]; then#[ "$schluss_form" != "erfolg" ] \&\& [ "$schluss_form" != "d19" ]; then#	M-07: Form 4 wird bei Rueckgabewert 0 von der Widerspruchspruefung ausgenommen
+Z-169	dod-gate.sh	keine	Grund 3: teilt den Fall mit der Schwester Z-168; der Kanal rc kann die Verneinung (M-07) nicht trennen, weil das Gate unter der Mutation ueber die Konsistenzwache weiterhin mit Rueckgabewert 2 blockiert, nur unter dem falschen Schluessel KETTE ausgabe-unlesbar -- Z-168 sieht das ueber den Schluessel
+Z-170	dod-gate.sh	s#/\^::LAGE /#/^(::)?LAGE /#;s#\^::LAGE (\[^ \]+) (\[^ \]+) (\[^ \]+) (A_OK#^(::)?LAGE ([^ ]+) ([^ ]+) ([^ ]+) (A_OK#	Im Gate wird das Praefix ::LAGE in der Auswahl der Uebersichtszeilen UND im marken_muster so gelockert, dass eine Marke ohne fuehrendes :: als Marke gilt
+Z-171	dod-gate.sh	s#\^::LAGE (\[^ \]+) (\[^ \]+) (\[^ \]+) (A_OK#^::LAGE ((\[^ \]+) )?([^ ]+) ([^ ]+) (A_OK#	Im marken_muster wird die Gruppe der Lauf-Kennung SAMT ihrem trennenden Leerzeichen als EINE Einheit optional (ein blosses (){}? hinter der Gruppe verlangte weiterhin das trennende Leerzeichen und traf ein Feld weniger deshalb nicht)
+Z-172	dod-gate.sh	s#\^::LAGE (\[^ \]+) (\[^ \]+) (\[^ \]+) (A_OK#^::LAGE ([^ ]+) ((\[^ \]+) )?([^ ]+) (A_OK#	Im marken_muster wird die Gruppe der D-Nummer SAMT ihrem trennenden Leerzeichen als EINE Einheit optional
+Z-173	dod-gate.sh	s#\^::LAGE (\[^ \]+) (\[^ \]+) (\[^ \]+) (A_OK#^::LAGE ([^ ]+) ([^ ]+) ((\[^ \]+) )?(A_OK#	Im marken_muster wird die Gruppe des Ziels SAMT ihrem trennenden Leerzeichen als EINE Einheit optional
+Z-174	dod-gate.sh	s#(A_OK|A_FAIL|B|C)#([^ ]+)#	Im marken_muster wird die Auswahl der vier Lage-Woerter durch ein beliebiges Wort ersetzt
+Z-175	dod-gate.sh	s#FEHLT=(\[^ :\]+)#FEHLT=([^ :]*)#	Im marken_muster wird die Wertgruppe von FEHLT= optional
+Z-176	dod-gate.sh	s#SCHWELLE=\[^ :\]+#SCHWELLE=[^ :]*#	Im marken_muster wird die Wertgruppe von SCHWELLE= optional
+Z-177	dod-gate.sh	s#))?:: #))?(::)? #	M-14: im marken_muster wird das schliessende :: optional
+Z-178	dod-gate.sh	s#))?:: #))?(::)? #	M-14: im marken_muster wird das schliessende :: optional (derselbe Fall wie Z-177)
+Z-179	dod-gate.sh	s#rueckgabewert=(-?\[0-9\]+)#rueckgabewert=(-?[0-9]*)#	Im marken_muster wird die Zifferngruppe der Rueckgabewertklammer optional
+Z-180	dod-gate.sh	s#baum=$(git -C "$proj_feld" rev-parse --show-toplevel 2>/dev/null || true)#baum="$proj_feld"#	M-16: der gepruefte Baum wird roh aus dem Projektfeld uebernommen statt ueber git auf die Wurzel aufgeloest
+Z-181	dod-gate.sh	s#timeout -k 10 600 make#timeout -k 10 6000 make#	M-15: die innere Zeitgrenze im Gate wird von 600 auf 6000 gesetzt
+Z-182	dod-gate.sh	/Eskalation 3.4 fuer/,/jq -nc/s#systemMessage#systemMessag#	Das Feld systemMessage wird allein in der jq-Zeile des Eskalations-Durchlasses umbenannt
+Z-183	dod-gate.sh	/Reentranz-Schutz/,/jq -nc/s#systemMessage#systemMessag#	Das Feld systemMessage wird allein in der jq-Zeile des Durchlasses wegen stop_hook_active umbenannt
+Z-184	dod-gate.sh	/msg="dod-gate: Rolle .$agent_type. hat unter/,/jq -nc/s#systemMessage#systemMessag#	Das Feld systemMessage wird allein in der jq-Zeile des Nichtlaufens fuer eine Rolle ohne Schreibrecht umbenannt
+Z-185	dod-gate.sh	s#rueckgabewert=(-?\[0-9\]+)\\)\$#rueckgabewert=(-?[0-9]+)\\)#	DT9-01: der Endanker $ des Markenmusters wird entfernt, ein beliebiger Anhang hinter der Rueckgabewertklammer gilt dann als Marke
+Z-186	dod-gate.sh	s#neue_zahl=1#neue_zahl=$((alt_zahl + 1))#	DT9-02: die Zuweisung neue_zahl=1 im Zweig des Schluesselwechsels wird durch Weiterzaehlen ersetzt
+Z-187	dod-gate.sh	s#^loesche_zaehler$#true#	DT9-03: der Aufruf loesche_zaehler vor dem gruenen Durchlass wird entfernt
+Z-188	dod-gate.sh	s#if \[ "$rolle_schreibt" -eq 0 \]; then#if [ "$rolle_schreibt" -eq 0 ]; then loesche_zaehler;#	eingefuegte Zeile: vor dem Ausgang fuer Rollen ohne Schreibrecht wird der Zaehler geloescht
+Z-189	dod-gate.sh	s#zaehler_datei="$zustand_basis/zaehler-$zaehler_schluessel_teil"#zaehler_datei="$zustand_basis/zaehler-$ereignis-$zaehler_schluessel_teil"#	der Name der Zaehlerdatei wird um den Namen des Ereignisses ergaenzt
+Z-190	dod-gate.sh	/if \[ "$sha256sum_vorhanden" -eq 1 \]; then/,/^else$/s#if \[ -n "$agent_id" \]; then#if false; then#	die agent_id faellt aus der Namensbildung der Zaehlerdatei (nur im sha256sum-Zweig, damit der Fallback-Zweig unberuehrt bleibt)
+Z-191	dod-gate.sh	s#zustand_basis="$XDG_STATE_HOME/r3cosint/dod-gate"#zustand_basis="${CLAUDE_PROJECT_DIR:-}/r3cosint/dod-gate"#	das Zustandsverzeichnis wird im Gate fest auf ein Verzeichnis innerhalb des geprueften Baums gesetzt
+Z-192	dod-gate.sh	/^if ! command -v jq/,/^fi$/s#^  exit 2$#  mkdir -p "${XDG_STATE_HOME:-}/r3cosint/dod-gate" 2>/dev/null; : > "${XDG_STATE_HOME:-}/r3cosint/dod-gate/zaehler-a7dc8e772f75c874c09fcce0e5f114eb049943cb08e176925de5a4d15526cc2d" 2>/dev/null; exit 2#	eingefuegte Zeile: im jq-Block wird vor dem Ausstieg eine Zaehlerdatei geschrieben
+Z-193	dod-gate.sh	/^  echo "dod-gate: Baum: /a cat "$ausgabe_datei" 2>/dev/null	eingefuegte Zeile: die aufgefangene Kettenausgabe wird vor dem blockierenden Ausgang auf die Standardausgabe geschrieben
+Z-194	dod-gate.sh	/if \[ "$neue_zahl" -ge 4 \]; then/,/^  fi$/s#^    exit 2$#    exit 1#	An einem blockierenden Ausgang des Gates (Zweig ab dem vierten Ereignis, ohne passende Uebergabedatei) wird exit 2 durch exit 1 ersetzt
+Z-195	dod-gate.sh	s#(drittes Mal in Folge, 3.4)." >&2$#(drittes Mal in Folge, 3.4)."#	Auf dem Pfad des dritten Ereignisses wird die Umleitung >&2 entfernt, sodass die Meldung auf die Standardausgabe geht (DT10-06)
+Z-196	dod-gate.sh	s#BLOCKIERT. Schluessel: $primaer_schluessel. $abweichung_text (${neue_zahl}. Mal in Folge)#BLOCKIERT. $abweichung_text (${neue_zahl}. Mal in Folge)#	Auf dem Pfad ab dem vierten Ereignis wird der Schluessel aus der Meldung entfernt (DT10-07)
+Z-197	dod-gate.sh	/Reentranz-Schutz/,/jq -nc/s#{systemMessage: $m}#{systemMessage: $m, zweitfeld: "x"}#	Das JSON-Objekt des stop_hook_active-Durchlasspfades erhaelt ein zweites Feld neben systemMessage
+Z-198	dod-gate.sh	s#/\^::LAGE /#/::LAGE /#;s#marken_muster=\(.\)^::LAGE #marken_muster=\1::LAGE #	DT10-04: der Zeilenanker im awk-Vorfilter der Uebersichtszeilen UND im marken_muster entfaellt (M08); das Hochkomma im Quelltext wird ueber . getroffen und per Rueckverweis erhalten
+Z-199	Makefile	s#^MARKE_SUFFIX := ::$#MARKE_SUFFIX := :#	DT10-05: MARKE_SUFFIX wird von :: auf : gesetzt; die Uebersicht traegt dann keine gueltige Marke mehr, sondern (keine Marke)
+Z-200	dod-gate.sh	s#blockieren_mit_zaehlung "GATE git"#blockieren_mit_zaehlung "GATE GIT-UMBENANNT"#	Der Schluessel GATE git wird an seiner Zeile umbenannt
+Z-201	dod-gate.sh	s#blockieren_mit_zaehlung "GATE make"#blockieren_mit_zaehlung "GATE MAKE-UMBENANNT"#	Der Schluessel GATE make wird an seiner Zeile umbenannt
+Z-202	dod-gate.sh	s#blockieren_mit_zaehlung "GATE Makefile"#blockieren_mit_zaehlung "GATE MAKEFILE-UMBENANNT"#	Der Schluessel GATE Makefile wird an seiner Zeile umbenannt
+Z-203	dod-gate.sh	s#blockieren_mit_zaehlung "GATE dod-gate-terminierte-lagen.txt"#blockieren_mit_zaehlung "GATE LISTE-UMBENANNT"#	Der Schluessel GATE dod-gate-terminierte-lagen.txt wird an seiner Zeile umbenannt
+Z-204	dod-gate.sh	s#blockieren_mit_zaehlung "GATE timeout"#blockieren_mit_zaehlung "GATE TIMEOUT-UMBENANNT"#	Der Schluessel GATE timeout wird an seiner Zeile umbenannt
+Z-205	dod-gate.sh	s#blockieren_mit_zaehlung "GATE flock"#blockieren_mit_zaehlung "GATE FLOCK-UMBENANNT"#	Der Schluessel GATE flock wird an seiner Zeile umbenannt
+Z-206	dod-gate.sh	s#liste_schluessel="LISTE 3 $schluessel_d_ziel"#liste_schluessel="LISTE-3-UMBENANNT $schluessel_d_ziel"#	Der Schluessel der Selbstpruefung 3 wird an seiner Zeile umbenannt
+Z-207	dod-gate.sh	s#liste_schluessel="LISTE 5 $kand_d_ziel"#liste_schluessel="LISTE-5-UMBENANNT $kand_d_ziel"#	Der Schluessel der Selbstpruefung 5 wird an seiner Zeile umbenannt
+Z-208	dod-gate.sh	s#LISTE 6#LISTE-6-UMBENANNT#	Der Schluessel der Selbstpruefung 6 wird an allen fuenf Stellen umbenannt

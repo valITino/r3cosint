@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# dod-gate.sh — Definition-of-Done-Gate fuer Stop, SubagentStop, TaskCompleted
+# dod-gate.sh -- Definition-of-Done-Gate fuer Stop, SubagentStop, TaskCompleted
 # =============================================================================
 #
 # Bau auf Weisung vom 2026-09-02, foermliche Freigabe ausstehend (ADR 0002,
@@ -42,7 +42,7 @@
 #     misst das Recht, nicht die Faehigkeit (6.12.14) -- die harte
 #     Durchsetzung der Schreibgrenzen ist R3-Q-005 und bleibt es.
 #
-# SELBSTTEST: scripts/dod-gate-selbsttest.sh (Formprüfungen gegen eine
+# SELBSTTEST: scripts/dod-gate-selbsttest.sh (Formpruefungen gegen eine
 # Attrappe von "make dod", dazu ein roter und ein gruener Lauf gegen das
 # ECHTE Makefile). Ein ungetestetes Gate ist kein Gate
 # (.claude/rules/claude-konfiguration.md, Abschnitt "Hooks").
@@ -107,7 +107,7 @@ set -uo pipefail
 #    der Zaehlung nach 6.12.9 (6.12.25 i).
 # -----------------------------------------------------------------------------
 if ! command -v jq >/dev/null 2>&1; then
-  echo "dod-gate: GATE jq -- 'jq' ist nicht installiert; die Eingabe auf der Standardeingabe kann nicht gelesen werden." >&2
+  echo "dod-gate: BLOCKIERT. Schluessel: GATE jq. 'jq' ist nicht installiert; die Eingabe auf der Standardeingabe kann nicht gelesen werden." >&2
   echo "Beschaffen: z. B. 'apt-get install -y jq' oder https://jqlang.org/download/." >&2
   echo "dod-gate: naechster Schritt: jq installieren, dann erneut versuchen." >&2
   exit 2
@@ -474,12 +474,10 @@ fi
 # (Wegwerfdatei fuer die Kettenausgabe) sind PRUEFMITTEL dieses Gates
 # (6.12.11), mit demselben Ausgang wie jq/git/make/timeout/flock.
 # sha256sum_vorhanden ist bereits oben bestimmt (fuer den Zaehler-Schluessel
-# selbst noetig, siehe dortiger Kommentar).
-if [ "$sha256sum_vorhanden" -eq 0 ]; then
-  blockieren_mit_zaehlung "GATE sha256sum" \
-    "'sha256sum' (coreutils) ist nicht installiert." \
-    "coreutils installieren, dann erneut versuchen."
-fi
+# selbst noetig, siehe dortiger Kommentar). Die aeltere, unerreichbare
+# Fassung dieses Blocks (vor dem Vorziehen nach 6.12.26 e, DT6-05) ist am
+# 2026-09-06 entfernt (S8-03, 6.12.27 h): zwei Stellen mit derselben Aussage
+# sind der Fehler aus 6.2.2, auch wenn eine davon tot war.
 if ! command -v mktemp >/dev/null 2>&1; then
   blockieren_mit_zaehlung "GATE mktemp" \
     "'mktemp' (coreutils) ist nicht installiert." \
