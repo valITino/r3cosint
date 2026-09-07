@@ -34,9 +34,13 @@
 #            nicht (z. B. backend/ fehlt). "Keine Beanstandung" ist wahr,
 #            aber kein Freispruch. Rueckgabewert 0, MIT sichtbarer Meldung,
 #            die nennt, welcher Schritt weshalb nicht anwendbar war.
-#   Lage C — das Pruefmittel fehlt, obwaehrend es etwas zu pruefen gaebe.
-#            Rueckgabewert 0 waere hier eine Luege. Der Schritt endet
-#            ungleich 0 und nennt das fehlende Werkzeug samt Beschaffungsweg.
+#   Lage C — das Pruefmittel fehlt ODER traegt die Aussage nicht (geschaerfte
+#            Fassung, ADR 0002, Abschnitt 6.9.2: unlesbar, unbrauchbar oder
+#            stummgeschaltet zaehlen wie fehlend), obwaehrend es etwas zu
+#            pruefen gaebe. Rueckgabewert 0 waere hier eine Luege. Der
+#            Schritt endet ungleich 0, traegt in seiner Lage-Marke strukturiert
+#            FEHLT=<wert> (ADR 0002, 6.12.7) und nennt das fehlende
+#            Pruefmittel samt Beschaffungsweg im Klartext.
 #
 # Praezedenzfall im Projekt: .claude/hooks/block-main-write.sh und
 # block-prototype-import.sh blockieren, wenn jq fehlt, statt stillschweigend
@@ -601,7 +605,7 @@ MARKE_SUFFIX := ::
 # -----------------------------------------------------------------------------
 # Gemeinsamer Abschluss eines Kettenschritts.
 #
-# Erwartet drei Shell-Variablen, die der Aufrufer vor dem Aufruf gesetzt hat:
+# Erwartet vier Shell-Variablen, die der Aufrufer vor dem Aufruf gesetzt hat:
 #   hat_objekt      1, wenn es fuer diesen Schritt ueberhaupt etwas zu
 #                   pruefen gibt (z. B. backend/ oder frontend/package.json
 #                   vorhanden); sonst 0.
@@ -610,27 +614,44 @@ MARKE_SUFFIX := ::
 #                   anderen — ein Rueckgabewert 0 waere sonst eine Luege.
 #   fehlgeschlagen  1, wenn ein tatsaechlich gelaufenes Werkzeug einen Fehler
 #                   gemeldet hat; sonst 0.
+#   fehlt           NUR bei hat_lage_c=1 ausgewertet (ADR 0002, 6.12.7): der
+#                   repository-relative Pfad eines fehlenden Projektartefakts,
+#                   der Programmname eines fehlenden Werkzeugs, oder ein
+#                   kurzer Name ohne Leerzeichen fuer jeden anderen Ausfall.
+#                   Jeder der C-Zweige setzt sie VOR dem Aufruf von
+#                   KLASSIFIZIEREN; leer bleibt sie zu "unbenannt" (Fail-
+#                   closed unten) -- ein vergessener Zweig faellt zu, nicht
+#                   auf.
 #
 # $(1) = Kennung (z. B. D2), $(2) = Zielname (z. B. format-pruefen),
 # $(3) = Begruendungstext fuer Lage B (ohne Komma, Komma trennt Call-
 # Argumente), $(4) = optionaler Zusatz fuer die Marke selbst, z. B.
 # "SCHWELLE=5" oder "OHNE_SCHWELLE" bei D3 (siehe dort) -- leer, wenn nicht
-# uebergeben; andere Aufrufer lassen $(4) weg.
+# uebergeben; andere Aufrufer lassen $(4) weg. $(4) wird bei Lage C NICHT
+# umgewidmet: FEHLT=<wert> aus "fehlt" steht VOR einem etwaigen $(4)-Zusatz,
+# beide koennen nebeneinander stehen (D3, D6, D8 in Lage C). Feste Grammatik
+# der Marke (ADR 0002, 6.12.7): "<Lage>[ FEHLT=<wert>][ <$(4)>]".
 # -----------------------------------------------------------------------------
 define KLASSIFIZIEREN
 	if [ "$$hat_lage_c" -eq 1 ]; then
 		lage="C"; marke_rc=1
+		# Fail-closed: eine leere oder vergessene "fehlt"-Variable ergibt
+		# "FEHLT=unbenannt" statt eine Marke ohne FEHLT= auszugeben.
+		zusatz_fehlt=" FEHLT=$${fehlt:-unbenannt}"
 	elif [ "$$hat_objekt" -eq 0 ]; then
 		echo "[$(1) $(2)] Lage B -- nicht anwendbar: $(3)"
 		lage="B"; marke_rc=0
+		zusatz_fehlt=""
 	elif [ "$$fehlgeschlagen" -eq 1 ]; then
 		echo "[$(1) $(2)] Lage A -- durchgefallen." >&2
 		lage="A_FAIL"; marke_rc=1
+		zusatz_fehlt=""
 	else
 		echo "[$(1) $(2)] Lage A -- bestanden."
 		lage="A_OK"; marke_rc=0
+		zusatz_fehlt=""
 	fi
-	echo "$(MARKE_PRAEFIX) $${LAUF_KENNUNG:-ohne-lauf-kennung} $(1) $(2) $${lage}$(if $(4), $(4))$(MARKE_SUFFIX)"
+	echo "$(MARKE_PRAEFIX) $${LAUF_KENNUNG:-ohne-lauf-kennung} $(1) $(2) $${lage}$${zusatz_fehlt}$(if $(4), $(4))$(MARKE_SUFFIX)"
 	exit $$marke_rc
 endef
 
@@ -666,24 +687,42 @@ endef
 belege:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D20 belege] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=1; hat_lage_c=0; fehlgeschlagen=0
+	hat_objekt=1; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	if [ ! -f scripts/belege-pruefen.sh ]; then
 		echo "[D20 belege] LAGE C: scripts/belege-pruefen.sh fehlt. Die Dokumentation besteht, die Pruefung kann nicht stattfinden." >&2
+		fehlt="scripts/belege-pruefen.sh"
 		hat_lage_c=1
 	elif ! command -v git >/dev/null 2>&1; then
 		echo "[D20 belege] LAGE C: 'git' ist nicht installiert. Der Bestand der Pruefflaeche wird ueber die Versionsverwaltung abgegrenzt; ohne sie faellt die Pruefung aus." >&2
+		fehlt="git"
 		hat_lage_c=1
 	elif ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 		echo "[D20 belege] LAGE C: kein Git-Arbeitsbaum. Die Dokumente bestehen, aber die Pruefflaeche laesst sich nicht abgrenzen." >&2
+		fehlt="git-arbeitsbaum"
+		hat_lage_c=1
+	elif [ "$$(git rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]; then
+		# G16 (ADR 0002, 6.12.17): die Vollstaendigkeit der Git-Historie ist
+		# Pruefmittel von D20. Ein flacher Klon traegt die Historie zwar, aber
+		# nicht vollstaendig -- geschaerfte Lage C nach 6.9.2 ("vorhanden, aber
+		# traegt die Aussage nicht"), nicht Lage B. Der Belegpruefer prueft
+		# Commit-Pruefsummen gegen die lokale Historie; ist sie unvollstaendig,
+		# ist ein A_FAIL-Fund kein Befund am Bestand, sondern ein ausgefallenes
+		# Pruefmittel.
+		echo "[D20 belege] LAGE C: flacher Klon. Die lokale Git-Historie ist unvollstaendig und traegt die Aussage ueber Commit-Pruefsummen nicht (ADR 0002, Abschnitt 6.9.2 und 6.12.17)." >&2
+		echo "Beschaffen: git fetch --unshallow" >&2
+		fehlt="git-historie"
 		hat_lage_c=1
 	elif [ ! -f scripts/belege-ausnahmen.txt ]; then
 		echo "[D20 belege] LAGE C: scripts/belege-ausnahmen.txt fehlt. Ohne sie faellt jede begruendete Ausnahme stumm weg; der Lauf waere rot mit falscher Begruendung." >&2
+		fehlt="scripts/belege-ausnahmen.txt"
 		hat_lage_c=1
 	elif [ ! -f docs/05_Product_Backlog.md ]; then
 		echo "[D20 belege] LAGE C: docs/05_Product_Backlog.md fehlt. Aus ihm bildet der Pruefer die Menge der gueltigen Anforderungskennungen; ohne ihn wird jede Kennung im Bestand zum Scheinfund." >&2
+		fehlt="docs/05_Product_Backlog.md"
 		hat_lage_c=1
 	elif [ ! -f docs/00_Projektauftrag.md ]; then
 		echo "[D20 belege] LAGE C: docs/00_Projektauftrag.md fehlt. Aus ihm bildet der Pruefer die Menge der gueltigen Abschnittsnummern; ohne ihn wird jede Abschnittsangabe im Bestand zum Scheinfund." >&2
+		fehlt="docs/00_Projektauftrag.md"
 		hat_lage_c=1
 	else
 		# Rueckgabewert getrennt auswerten (ADR 0002, Abschnitt 6.11): 3 heisst
@@ -694,6 +733,7 @@ belege:
 		bash scripts/belege-pruefen.sh; belege_rc=$$?
 		if [ "$$belege_rc" = 3 ]; then
 			echo "[D20 belege] LAGE C: der Belegpruefer meldet ein ausgefallenes Pruefmittel (Rueckgabewert 3). Seine Meldung steht darueber." >&2
+			fehlt="belege-pruefmittel"
 			hat_lage_c=1
 		elif [ "$$belege_rc" != 0 ]; then
 			fehlgeschlagen=1
@@ -716,13 +756,14 @@ belege:
 bau:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D1 bau] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0
+	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	if [ -f backend/pyproject.toml ]; then
 		hat_objekt=1
 		echo "[D1 bau] backend/pyproject.toml vorhanden -- Backend wird gebaut."
 		if ! command -v uv >/dev/null 2>&1; then
 			echo "[D1 bau] LAGE C: backend/pyproject.toml existiert, aber 'uv' ist nicht installiert." >&2
 			echo "Beschaffen: https://docs.astral.sh/uv/ (z. B. curl -LsSf https://astral.sh/uv/install.sh | sh)." >&2
+			[ -n "$$fehlt" ] || fehlt="uv"
 			hat_lage_c=1
 		else
 			# A2, berichtigt (ADR 0002, Abschnitt 6.2.1, zweite Fortschreibung
@@ -758,6 +799,9 @@ bau:
 		if ! command -v npm >/dev/null 2>&1 || ! command -v node >/dev/null 2>&1; then
 			echo "[D1 bau] LAGE C: frontend/package.json existiert, aber 'npm' und/oder 'node' sind nicht installiert." >&2
 			echo "Beschaffen: Node.js-Installation inklusive npm (https://nodejs.org)." >&2
+			# G6 (ADR 0002, 6.12.7): welches der beiden Werkzeuge fehlt,
+			# bestimmt FEHLT= in der Marke.
+			if ! command -v npm >/dev/null 2>&1; then [ -n "$$fehlt" ] || fehlt="npm"; else [ -n "$$fehlt" ] || fehlt="node"; fi
 			hat_lage_c=1
 		elif [ "$$(npm pkg get scripts.build --prefix frontend 2>/dev/null)" = "{}" ]; then
 			# E7 (Schlusspruefung 2026-08-30): D2 bis D5 pruefen das npm-Skript
@@ -766,6 +810,7 @@ bau:
 			# und der Hook aus R3-Q-001 liest die Lage (Regel 4 der Objekttabelle
 			# in ADR 0002, Abschnitt 6).
 			echo "[D1 bau] LAGE C: frontend/package.json existiert, aber das Skript 'build' ist darin nicht definiert." >&2
+			[ -n "$$fehlt" ] || fehlt="frontend-skript-build"
 			hat_lage_c=1
 		else
 			npm ci --prefix frontend && npm run build --prefix frontend || fehlgeschlagen=1
@@ -777,10 +822,12 @@ bau:
 		if ! command -v docker >/dev/null 2>&1; then
 			echo "[D1 bau] LAGE C: deploy/compose.test.yml existiert, aber 'docker' ist nicht installiert." >&2
 			echo "Beschaffen: Docker Engine (https://docs.docker.com/engine/install/)." >&2
+			[ -n "$$fehlt" ] || fehlt="docker"
 			hat_lage_c=1
 		elif ! docker info >/dev/null 2>&1; then
 			echo "[D1 bau] LAGE C: deploy/compose.test.yml existiert, aber der Docker-Daemon ist nicht erreichbar." >&2
 			echo "Docker-Dienst starten (z. B. sudo systemctl start docker, oder Docker Desktop starten)." >&2
+			[ -n "$$fehlt" ] || fehlt="docker-daemon"
 			hat_lage_c=1
 		else
 			docker compose -f deploy/compose.test.yml build || fehlgeschlagen=1
@@ -798,15 +845,17 @@ bau:
 format-pruefen:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D2 format-pruefen] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0
+	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	if [ -f backend/pyproject.toml ]; then
 		hat_objekt=1
 		if ! command -v uv >/dev/null 2>&1; then
 			echo "[D2 format-pruefen] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
+			[ -n "$$fehlt" ] || fehlt="uv"
 			hat_lage_c=1
 		elif ! $(UMFELD_PROBE) ruff >/dev/null 2>&1; then
 			echo "[D2 format-pruefen] LAGE C: backend/pyproject.toml existiert, aber 'ruff' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
 			echo "Beschaffen: ruff in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
+			[ -n "$$fehlt" ] || fehlt="ruff"
 			hat_lage_c=1
 		else
 			$(UV) run --project backend --locked ruff format --check backend || fehlgeschlagen=1
@@ -816,6 +865,9 @@ format-pruefen:
 		hat_objekt=1
 		if ! command -v npm >/dev/null 2>&1 || ! command -v node >/dev/null 2>&1; then
 			echo "[D2 format-pruefen] LAGE C: frontend/package.json existiert, aber 'npm' und/oder 'node' fehlen." >&2
+			# G6 (ADR 0002, 6.12.7): welches der beiden Werkzeuge fehlt,
+			# bestimmt FEHLT= in der Marke.
+			if ! command -v npm >/dev/null 2>&1; then [ -n "$$fehlt" ] || fehlt="npm"; else [ -n "$$fehlt" ] || fehlt="node"; fi
 			hat_lage_c=1
 		else
 			# A5: Ein fehlendes npm-Skript ist Lage C (Pruefmittel fehlt bei
@@ -825,6 +877,7 @@ format-pruefen:
 			skript_pruefung=$$(npm pkg get scripts.format-pruefen --prefix frontend 2>/dev/null)
 			if [ "$$skript_pruefung" = "{}" ]; then
 				echo "[D2 format-pruefen] LAGE C: frontend/package.json existiert, aber das Skript 'format-pruefen' ist darin nicht definiert." >&2
+				[ -n "$$fehlt" ] || fehlt="frontend-skript-format-pruefen"
 				hat_lage_c=1
 			else
 				npm run format-pruefen --prefix frontend || fehlgeschlagen=1
@@ -843,15 +896,17 @@ format-pruefen:
 linter:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D3 linter] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0
+	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	if [ -f backend/pyproject.toml ]; then
 		hat_objekt=1
 		if ! command -v uv >/dev/null 2>&1; then
 			echo "[D3 linter] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
+			[ -n "$$fehlt" ] || fehlt="uv"
 			hat_lage_c=1
 		elif ! $(UMFELD_PROBE) ruff >/dev/null 2>&1; then
 			echo "[D3 linter] LAGE C: backend/pyproject.toml existiert, aber 'ruff' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
 			echo "Beschaffen: ruff in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
+			[ -n "$$fehlt" ] || fehlt="ruff"
 			hat_lage_c=1
 		else
 			$(UV) run --project backend --locked ruff check backend || fehlgeschlagen=1
@@ -861,12 +916,16 @@ linter:
 		hat_objekt=1
 		if ! command -v npm >/dev/null 2>&1 || ! command -v node >/dev/null 2>&1; then
 			echo "[D3 linter] LAGE C: frontend/package.json existiert, aber 'npm' und/oder 'node' fehlen." >&2
+			# G6 (ADR 0002, 6.12.7): welches der beiden Werkzeuge fehlt,
+			# bestimmt FEHLT= in der Marke.
+			if ! command -v npm >/dev/null 2>&1; then [ -n "$$fehlt" ] || fehlt="npm"; else [ -n "$$fehlt" ] || fehlt="node"; fi
 			hat_lage_c=1
 		else
 			# A5: fehlendes npm-Skript ist Lage C, siehe Begruendung bei D2.
 			skript_pruefung=$$(npm pkg get scripts.linter --prefix frontend 2>/dev/null)
 			if [ "$$skript_pruefung" = "{}" ]; then
 				echo "[D3 linter] LAGE C: frontend/package.json existiert, aber das Skript 'linter' ist darin nicht definiert." >&2
+				[ -n "$$fehlt" ] || fehlt="frontend-skript-linter"
 				hat_lage_c=1
 			elif [ -n "$(LINT_MAX_WARNINGS)" ]; then
 				npm run linter --prefix frontend -- --max-warnings "$(LINT_MAX_WARNINGS)" || fehlgeschlagen=1
@@ -889,15 +948,17 @@ linter:
 typen:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D4 typen] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0
+	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	if [ -f backend/pyproject.toml ]; then
 		hat_objekt=1
 		if ! command -v uv >/dev/null 2>&1; then
 			echo "[D4 typen] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
+			[ -n "$$fehlt" ] || fehlt="uv"
 			hat_lage_c=1
 		elif ! $(UMFELD_PROBE) mypy >/dev/null 2>&1; then
 			echo "[D4 typen] LAGE C: backend/pyproject.toml existiert, aber 'mypy' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
 			echo "Beschaffen: mypy in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
+			[ -n "$$fehlt" ] || fehlt="mypy"
 			hat_lage_c=1
 		else
 			$(UV) run --project backend --locked mypy backend/src backend/tests || fehlgeschlagen=1
@@ -907,12 +968,16 @@ typen:
 		hat_objekt=1
 		if ! command -v npm >/dev/null 2>&1 || ! command -v node >/dev/null 2>&1; then
 			echo "[D4 typen] LAGE C: frontend/package.json existiert, aber 'npm' und/oder 'node' fehlen." >&2
+			# G6 (ADR 0002, 6.12.7): welches der beiden Werkzeuge fehlt,
+			# bestimmt FEHLT= in der Marke.
+			if ! command -v npm >/dev/null 2>&1; then [ -n "$$fehlt" ] || fehlt="npm"; else [ -n "$$fehlt" ] || fehlt="node"; fi
 			hat_lage_c=1
 		else
 			# A5: fehlendes npm-Skript ist Lage C, siehe Begruendung bei D2.
 			skript_pruefung=$$(npm pkg get scripts.typen --prefix frontend 2>/dev/null)
 			if [ "$$skript_pruefung" = "{}" ]; then
 				echo "[D4 typen] LAGE C: frontend/package.json existiert, aber das Skript 'typen' ist darin nicht definiert." >&2
+				[ -n "$$fehlt" ] || fehlt="frontend-skript-typen"
 				hat_lage_c=1
 			else
 				npm run typen --prefix frontend || fehlgeschlagen=1
@@ -963,7 +1028,7 @@ typen:
 architekturvertraege:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D18 architekturvertraege] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0
+	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	backend_py_datei=""
 	if [ -d backend/src ]; then
 		backend_py_datei=$$(find backend/src -type f -name '*.py' -print -quit 2>/dev/null)
@@ -973,19 +1038,23 @@ architekturvertraege:
 		if [ ! -f backend/importvertraege.toml ]; then
 			echo "[D18 architekturvertraege] LAGE C: mindestens eine *.py-Datei unterhalb backend/src/ existiert (z. B. $$backend_py_datei), aber backend/importvertraege.toml fehlt." >&2
 			echo "Das Pruefmittel fuer die Architekturvertraege aus ADR 0002 Abschnitt 4.3 fehlt bei vorhandenem Gegenstand (ADR 0002, Abschnitt 6, D18)." >&2
+			fehlt="backend/importvertraege.toml"
 			hat_lage_c=1
 		elif [ ! -r backend/importvertraege.toml ]; then
 			# A5: nicht lesbar ist Lage C (Pruefmittel vorhanden, aber unbrauchbar),
 			# nicht Lage A_FAIL -- sonst meldet ein Berechtigungsfehler faelschlich
 			# eine durchgefallene Pruefung statt eines fehlenden Pruefmittels.
 			echo "[D18 architekturvertraege] LAGE C: backend/importvertraege.toml existiert, ist aber nicht lesbar." >&2
+			fehlt="backend/importvertraege.toml"
 			hat_lage_c=1
 		elif ! command -v uv >/dev/null 2>&1; then
 			echo "[D18 architekturvertraege] LAGE C: Python-Quelltext unterhalb backend/src/ und backend/importvertraege.toml existieren, aber 'uv' ist nicht installiert." >&2
+			fehlt="uv"
 			hat_lage_c=1
 		elif ! $(UMFELD_PROBE) lint-imports >/dev/null 2>&1; then
 			echo "[D18 architekturvertraege] LAGE C: Python-Quelltext unterhalb backend/src/ und backend/importvertraege.toml existieren, aber 'lint-imports' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
 			echo "Beschaffen: import-linter als Abhaengigkeit von backend/ eintragen und 'uv sync' erneut ausfuehren." >&2
+			fehlt="lint-imports"
 			hat_lage_c=1
 		else
 			$(UV) run --project backend --locked lint-imports --config backend/importvertraege.toml || fehlgeschlagen=1
@@ -1000,15 +1069,17 @@ architekturvertraege:
 test:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D5 test] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0
+	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	if [ -f backend/pyproject.toml ]; then
 		hat_objekt=1
 		if ! command -v uv >/dev/null 2>&1; then
 			echo "[D5 test] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
+			[ -n "$$fehlt" ] || fehlt="uv"
 			hat_lage_c=1
 		elif ! $(UMFELD_PROBE) pytest >/dev/null 2>&1; then
 			echo "[D5 test] LAGE C: backend/pyproject.toml existiert, aber 'pytest' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
 			echo "Beschaffen: pytest in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
+			[ -n "$$fehlt" ] || fehlt="pytest"
 			hat_lage_c=1
 		else
 			$(UV) run --project backend --locked pytest -q --strict-markers || fehlgeschlagen=1
@@ -1018,6 +1089,9 @@ test:
 		hat_objekt=1
 		if ! command -v npm >/dev/null 2>&1 || ! command -v node >/dev/null 2>&1; then
 			echo "[D5 test] LAGE C: frontend/package.json existiert, aber 'npm' und/oder 'node' fehlen." >&2
+			# G6 (ADR 0002, 6.12.7): welches der beiden Werkzeuge fehlt,
+			# bestimmt FEHLT= in der Marke.
+			if ! command -v npm >/dev/null 2>&1; then [ -n "$$fehlt" ] || fehlt="npm"; else [ -n "$$fehlt" ] || fehlt="node"; fi
 			hat_lage_c=1
 		else
 			# A5: fehlendes npm-Skript ist Lage C, siehe Begruendung bei D2. Zwei
@@ -1026,6 +1100,7 @@ test:
 			test_skript=$$(npm pkg get scripts.test --prefix frontend 2>/dev/null)
 			if [ "$$test_skript" = "{}" ]; then
 				echo "[D5 test] LAGE C: frontend/package.json existiert, aber das Skript 'test' ist darin nicht definiert." >&2
+				[ -n "$$fehlt" ] || fehlt="frontend-skript-test"
 				hat_lage_c=1
 			else
 				npm run test --prefix frontend || fehlgeschlagen=1
@@ -1033,6 +1108,7 @@ test:
 			e2e_skript=$$(npm pkg get scripts.e2e --prefix frontend 2>/dev/null)
 			if [ "$$e2e_skript" = "{}" ]; then
 				echo "[D5 test] LAGE C: frontend/package.json existiert, aber das Skript 'e2e' ist darin nicht definiert." >&2
+				[ -n "$$fehlt" ] || fehlt="frontend-skript-e2e"
 				hat_lage_c=1
 			else
 				npm run e2e --prefix frontend || fehlgeschlagen=1
@@ -1050,18 +1126,21 @@ test:
 abdeckung:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D6 abdeckung] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0
+	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	if [ -f backend/pyproject.toml ]; then
 		hat_objekt=1
 		if ! command -v uv >/dev/null 2>&1; then
 			echo "[D6 abdeckung] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
+			fehlt="uv"
 			hat_lage_c=1
 		elif ! $(UMFELD_PROBE) pytest >/dev/null 2>&1; then
 			echo "[D6 abdeckung] LAGE C: backend/pyproject.toml existiert, aber 'pytest' ist keine gesperrte Abhaengigkeit von backend/ (B1)." >&2
+			fehlt="pytest"
 			hat_lage_c=1
 		elif ! $(UV) run --project backend --locked python -c "import pytest_cov" >/dev/null 2>&1; then
 			echo "[D6 abdeckung] LAGE C: backend/pyproject.toml existiert, aber 'pytest-cov' ist nicht installiert (uv run python -c 'import pytest_cov' schlaegt fehl)." >&2
 			echo "Beschaffen: pytest-cov als Abhaengigkeit von backend/ eintragen und 'uv sync' erneut ausfuehren." >&2
+			fehlt="pytest-cov"
 			hat_lage_c=1
 		else
 			# E2 (zusaetzlich): COVERAGE_FILE zeigt auf eine Wegwerfdatei, damit
@@ -1098,15 +1177,17 @@ abdeckung:
 abnahme:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D7 abnahme] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0
+	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	if [ -f backend/pyproject.toml ]; then
 		hat_objekt=1
 		if ! command -v uv >/dev/null 2>&1; then
 			echo "[D7 abnahme] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
+			[ -n "$$fehlt" ] || fehlt="uv"
 			hat_lage_c=1
 		elif ! $(UMFELD_PROBE) pytest >/dev/null 2>&1; then
 			echo "[D7 abnahme] LAGE C: backend/pyproject.toml existiert, aber 'pytest' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
 			echo "Beschaffen: pytest in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
+			[ -n "$$fehlt" ] || fehlt="pytest"
 			hat_lage_c=1
 		else
 			$(UV) run --project backend --locked pytest -q -m abnahme || fehlgeschlagen=1
@@ -1125,6 +1206,7 @@ abnahme:
 	backlog_treffer=$$(compgen -G "docs/05_Product_Backlog*.md" 2>/dev/null || true)
 	if [ -z "$$backlog_treffer" ]; then
 		echo "[D7 abnahme] LAGE C: kein Backlog gefunden (Muster docs/05_Product_Backlog*.md). Der Backlog besteht seit der Freigabe von Schritt 3 dauerhaft; sein Fehlen ist ein Befund, nicht ein leerer Gegenstand (ADR 0002, 6.3.2)." >&2
+		[ -n "$$fehlt" ] || fehlt="docs/05_Product_Backlog.md"
 		hat_lage_c=1
 	else
 		# "tr" macht auch aus dem abschliessenden Umbruch ein Leerzeichen; ohne
@@ -1134,6 +1216,7 @@ abnahme:
 		mit_kriterien=$$(grep -l -- '\*\*Abnahme:\*\*' $$backlog_treffer 2>/dev/null | tr '\n' ' ' | sed 's/[[:space:]]*$$//' || true)
 		if [ -z "$$mit_kriterien" ]; then
 			echo "[D7 abnahme] LAGE C: gefunden wurde $$backlog_liste, aber keine dieser Dateien fuehrt Abnahmekriterien (Muster '**Abnahme:**')." >&2
+			[ -n "$$fehlt" ] || fehlt="backlog-abnahmekriterien"
 			hat_lage_c=1
 		elif [ -f scripts/abnahme-abgleich.sh ]; then
 			bash scripts/abnahme-abgleich.sh || fehlgeschlagen=1
@@ -1141,6 +1224,7 @@ abnahme:
 			echo "[D7 abnahme] LAGE C: $$mit_kriterien fuehrt Abnahmekriterien, aber scripts/abnahme-abgleich.sh existiert nicht." >&2
 			echo "Der Abgleich Backlog gegen Testkennungen (Projektauftrag 6.6) kann deshalb nicht laufen; 'bestanden' waere hier nicht belegt." >&2
 			echo "Skript folgt mit dem Grundgeruest (ADR 0002, Abschnitt 5 und 6, D7)." >&2
+			[ -n "$$fehlt" ] || fehlt="scripts/abnahme-abgleich.sh"
 			hat_lage_c=1
 		fi
 	fi
@@ -1163,15 +1247,17 @@ abnahme:
 abhaengigkeiten:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D8 abhaengigkeiten] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0
+	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	if [ -f backend/pyproject.toml ]; then
 		hat_objekt=1
 		if ! command -v uv >/dev/null 2>&1; then
 			echo "[D8 abhaengigkeiten] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
+			[ -n "$$fehlt" ] || fehlt="uv"
 			hat_lage_c=1
 		elif ! $(UMFELD_PROBE) pip-audit >/dev/null 2>&1; then
 			echo "[D8 abhaengigkeiten] LAGE C: backend/pyproject.toml existiert, aber 'pip-audit' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
 			echo "Beschaffen: pip-audit als Abhaengigkeit von backend/ eintragen und 'uv sync' erneut ausfuehren." >&2
+			[ -n "$$fehlt" ] || fehlt="pip-audit"
 			hat_lage_c=1
 		else
 			$(UV) run --project backend --locked pip-audit --strict || fehlgeschlagen=1
@@ -1181,6 +1267,9 @@ abhaengigkeiten:
 		hat_objekt=1
 		if ! command -v npm >/dev/null 2>&1 || ! command -v node >/dev/null 2>&1; then
 			echo "[D8 abhaengigkeiten] LAGE C: frontend/package.json existiert, aber 'npm' und/oder 'node' fehlen." >&2
+			# G6 (ADR 0002, 6.12.7): welches der beiden Werkzeuge fehlt,
+			# bestimmt FEHLT= in der Marke.
+			if ! command -v npm >/dev/null 2>&1; then [ -n "$$fehlt" ] || fehlt="npm"; else [ -n "$$fehlt" ] || fehlt="node"; fi
 			hat_lage_c=1
 		else
 			if [ -n "$(AUDIT_LEVEL)" ]; then
@@ -1217,7 +1306,7 @@ abhaengigkeiten:
 rueckkanal:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D9 rueckkanal] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0
+	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	rueckkanal_baeume=""
 	for baum in backend frontend deploy; do
 		if [ -d "$$baum" ]; then
@@ -1235,6 +1324,7 @@ rueckkanal:
 			echo "[D9 rueckkanal] LAGE C: Es existiert mindestens eine Datei unterhalb:$$rueckkanal_baeume, aber scripts/rueckkanal-pruefen.sh fehlt." >&2
 			echo "Der Abgleich aller Ziele gegen die Positivliste (R3-C-004) kann deshalb nicht laufen." >&2
 			echo "Skript folgt mit R3-C-004 (ADR 0002, Abschnitt 5 und 6, D9)." >&2
+			fehlt="scripts/rueckkanal-pruefen.sh"
 			hat_lage_c=1
 		fi
 	fi
@@ -1266,7 +1356,7 @@ rueckkanal:
 prototyp-trennung:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D10 prototyp-trennung] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0
+	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	if [ -d prototype ]; then
 		hat_objekt=1
 	fi
@@ -1277,6 +1367,7 @@ prototyp-trennung:
 			echo "[D10 prototyp-trennung] LAGE C: prototype/ existiert, aber scripts/prototyp-trennung-pruefen.sh fehlt." >&2
 			echo "Der bestehende Hook block-prototype-import.sh deckt nur den Schreibweg ab (PreToolUse), nicht den bereits geschriebenen Bestand." >&2
 			echo "Betriebsart und Form sind mit DevOps und Protocol Master zu klaeren (ADR 0002, Abschnitt 8, O-8)." >&2
+			fehlt="scripts/prototyp-trennung-pruefen.sh"
 			hat_lage_c=1
 		fi
 	fi
@@ -1310,7 +1401,7 @@ prototyp-trennung:
 geheimnisse:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D11 geheimnisse] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=1; hat_lage_c=0; fehlgeschlagen=0
+	hat_objekt=1; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	# E2 (Schlusspruefung 2026-08-30): Die beiden Laeufe haben VERSCHIEDENE
 	# Pruefmittel. Lauf 1 durchsucht den Arbeitsbaum und braucht kein git; er
 	# entfaellt deshalb nicht, wenn git fehlt. ADR 0002, 6.3.3 verlangt das
@@ -1322,6 +1413,7 @@ geheimnisse:
 	if ! command -v gitleaks >/dev/null 2>&1; then
 		echo "[D11 geheimnisse] LAGE C: 'gitleaks' ist nicht installiert. Das Repository existiert bereits und koennte Geheimnisse enthalten." >&2
 		echo "Beschaffen: https://github.com/gitleaks/gitleaks (Release-Binary oder Paketmanager, z. B. 'brew install gitleaks')." >&2
+		fehlt="gitleaks"
 		hat_lage_c=1
 	else
 		echo "[D11 geheimnisse] Lauf 1/2 -- Arbeitsbaum (gitleaks detect --no-git):"
@@ -1329,9 +1421,11 @@ geheimnisse:
 		echo "[D11 geheimnisse] Lauf 2/2 -- Git-Historie (gitleaks detect):"
 		if ! command -v git >/dev/null 2>&1; then
 			echo "[D11 geheimnisse] LAGE C: 'git' ist nicht installiert; der Historienlauf kann nicht stattfinden. Lauf 1 ist gelaufen, sein Befund steht oben." >&2
+			fehlt="git"
 			hat_lage_c=1
 		elif ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 			echo "[D11 geheimnisse] LAGE C: kein Git-Arbeitsbaum -- der Historienlauf hat keinen Gegenstand. 'bestanden' waere hier nicht belegt." >&2
+			fehlt="git-arbeitsbaum"
 			hat_lage_c=1
 		else
 			gitleaks detect --redact --exit-code 1 || fehlgeschlagen=1
@@ -1362,9 +1456,10 @@ geheimnisse:
 nachweise:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D12 nachweise] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=1; hat_lage_c=0; fehlgeschlagen=0
+	hat_objekt=1; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	if ! command -v git >/dev/null 2>&1; then
 		echo "[D12 nachweise] LAGE C: 'git' ist nicht installiert; scripts/nachweise-erzeugen.sh braucht git (Commit-Pruefsummen je Artefakt)." >&2
+		[ -n "$$fehlt" ] || fehlt="git"
 		hat_lage_c=1
 	elif [ -f scripts/nachweise-erzeugen.sh ]; then
 		nachweis_tmp=$$(mktemp)
@@ -1372,6 +1467,7 @@ nachweise:
 		rm -f "$$nachweis_tmp"
 	else
 		echo "[D12 nachweise] LAGE C: scripts/nachweise-erzeugen.sh fehlt." >&2
+		[ -n "$$fehlt" ] || fehlt="scripts/nachweise-erzeugen.sh"
 		hat_lage_c=1
 	fi
 	if [ -f scripts/nachweise-vollstaendig.sh ]; then
@@ -1379,6 +1475,7 @@ nachweise:
 	else
 		echo "[D12 nachweise] LAGE C: scripts/nachweise-vollstaendig.sh fehlt. docs/NACHWEISE.md wird zwar erzeugt, aber dass kein nachweispflichtiges Artefakt in der Liste fehlt, ist damit nicht belegt." >&2
 		echo "Skript folgt mit dem Grundgeruest (ADR 0002, Abschnitt 6, D12; zu klaeren mit Protocol Master und DevOps, Abschnitt 9)." >&2
+		[ -n "$$fehlt" ] || fehlt="scripts/nachweise-vollstaendig.sh"
 		hat_lage_c=1
 	fi
 	$(call KLASSIFIZIEREN,D12,nachweise,entfaellt -- docs/ existiert immer.)
@@ -1521,6 +1618,10 @@ ifneq ($(findstring i,$(DOD_MAKEFLAGS_ERSTES_WORT)),)
 endif
 endif
 	set -uo pipefail
+	# G7 (ADR 0002, 6.12.8): erste Zeile jedes Ausgangs nennt den geprueften
+	# Baum, damit sich die Meldung des spaeteren Gates (R3-Q-001) gegen die
+	# Kette pruefen laesst, die tatsaechlich gelaufen ist.
+	echo "make dod: geprueft wird $(PROJ)."
 	# D19, Teil 1: Gegenstand und Pruefmittel feststellen, BEVOR irgendein
 	# Kettenschritt laeuft ("vor dem ersten ausgefuehrten Schritt").
 	# B2 (blockierend, Schlusspruefung 2026-08-30): Frueher "[ -d .git ]". In
@@ -1606,6 +1707,14 @@ endif
 	gesamt_rc=0
 	marken_zaehler=0
 	letzter_schritt=""
+	# G5 (ADR 0002, 6.12.6): schleife_abgebrochen unterscheidet einen echten
+	# Abbruch (A_FAIL, fehlende/mehrfache Marke, sonstiger Rueckgabewert
+	# ungleich 0) von einem vollstaendigen Durchlauf mit einer oder mehreren
+	# ungedeckten Lage-C-Schritten; ungeurteilt_zaehler/-liste sammeln
+	# Letztere fuer die mittlere Schlusszeile aus G7 (6.12.8).
+	schleife_abgebrochen=0
+	ungeurteilt_zaehler=0
+	ungeurteilt_liste=""
 	for eintrag in $$schritte_liste; do
 		kennung="$${eintrag%%:*}"
 		ziel="$${eintrag#*:}"
@@ -1627,7 +1736,12 @@ endif
 		# einen Negativbefund als bestanden aus (5.3), waehrend der Lauf nur
 		# ueber den Rueckgabewert rot blieb. Verlangt ist deshalb GENAU EINE
 		# passende Marke; mehr als eine ist selbst ein Befund.
-		alle_lagezeilen=$$(printf '%s\n' "$$out" | grep -oE "::LAGE $$lauf_kennung [^ ]+ [^ ]+ [A-Za-z_]+[^:]*::" || true)
+		# G6 (ADR 0002, 6.12.7): das Muster ist an die feste Grammatik der Marke
+		# angepasst, NICHT geschwaecht -- es verlangt jetzt genau eine der vier
+		# Lagen, FEHLT= vor einem etwaigen SCHWELLE=/OHNE_SCHWELLE-Zusatz, statt
+		# des fruehen "[A-Za-z_]+[^:]*" (das jede Buchstabenfolge samt
+		# beliebigem Anhang akzeptierte).
+		alle_lagezeilen=$$(printf '%s\n' "$$out" | grep -oE "::LAGE $$lauf_kennung [^ ]+ [^ ]+ (A_OK|A_FAIL|B|C)( FEHLT=[^ :]+)?( (SCHWELLE=[^ :]+|OHNE_SCHWELLE))?::" || true)
 		anzahl_marken=$$(printf '%s' "$$alle_lagezeilen" | grep -c . || true)
 		lagezeile=$$(printf '%s\n' "$$alle_lagezeilen" | tail -n1)
 		marke_ok=0
@@ -1648,20 +1762,45 @@ endif
 			echo "" >&2
 			echo "make dod: Schritt $$kennung $$ziel hat keine eigene, passende Lage-Marke mit der Lauf-Kennung dieses Aufrufs ausgegeben -- nicht nachweisbar gelaufen (moeglich: hart abgebrochen, MAKE_REKURSIV umgeleitet, Ausgabe leer, fremd oder ohne die Lauf-Kennung)." >&2
 			gesamt_rc=2
+			schleife_abgebrochen=1
 			break
 		fi
-		case "$$gefundene_lage" in
-			C|A_FAIL)
-				echo "" >&2
-				echo "make dod: Schritt $$kennung $$ziel meldet in der eigenen Marke Lage '$$gefundene_lage' -- ungleich 0, unabhaengig vom Rueckgabewert des Unterschritts ($$rc)." >&2
-				gesamt_rc=2
-				break
-				;;
-		esac
+		# G5 (ADR 0002, 6.12.6): A_FAIL bricht weiterhin ab -- ein Befund ist ein
+		# Urteil, alles danach liefe gegen einen Stand, der ohnehin geaendert
+		# wird.
+		if [ "$$gefundene_lage" = "A_FAIL" ]; then
+			echo "" >&2
+			echo "make dod: Schritt $$kennung $$ziel meldet in der eigenen Marke Lage 'A_FAIL' -- ungleich 0, unabhaengig vom Rueckgabewert des Unterschritts ($$rc)." >&2
+			gesamt_rc=2
+			schleife_abgebrochen=1
+			break
+		fi
+		# G5 (ADR 0002, 6.12.6): Lage C bricht NICHT mehr ab. Kennung, Ziel und
+		# das (G6) mitgelieferte FEHLT= werden vermerkt, gesamt_rc auf 2
+		# gesetzt, die Schleife laeuft weiter. Der unmittelbar folgende Abbruch
+		# wegen "rc -ne 0" (unten) darf hierfuer NICHT greifen -- KLASSIFIZIEREN
+		# endet bei Lage C mit 1, und GNU Make macht daraus beim Unter-Make-
+		# Aufruf selbst den Rueckgabewert 2 (siehe Kommentar bei "dod" weiter
+		# unten, "Rueckgabewert bei normalem Aufruf"); das wird durch das
+		# "continue" unten umgangen, nicht durch eine Ausnahme in der rc-Pruefung.
+		if [ "$$gefundene_lage" = "C" ]; then
+			fehlt_wert=$$(printf '%s\n' "$$lagezeile" | grep -oE 'FEHLT=[^ :]+' | head -n1)
+			fehlt_wert="$${fehlt_wert#FEHLT=}"
+			fehlt_wert="$${fehlt_wert:-unbenannt}"
+			echo "" >&2
+			echo "make dod: Schritt $$kennung $$ziel meldet in der eigenen Marke Lage 'C' (FEHLT=$$fehlt_wert) -- die Kette laeuft weiter (ADR 0002, 6.12.6), Rueckgabewert wird auf 2 gesetzt." >&2
+			gesamt_rc=2
+			ungeurteilt_zaehler=$$((ungeurteilt_zaehler + 1))
+			if [ -n "$$ungeurteilt_liste" ]; then ungeurteilt_liste="$${ungeurteilt_liste}, "; fi
+			ungeurteilt_liste="$${ungeurteilt_liste}$$kennung $$ziel FEHLT=$$fehlt_wert"
+			marken_zaehler=$$((marken_zaehler + 1))
+			continue
+		fi
 		if [ "$$rc" -ne 0 ]; then
 			echo "" >&2
 			echo "make dod: Schritt $$kennung $$ziel endete mit Rueckgabewert $$rc." >&2
 			gesamt_rc=$$rc
+			schleife_abgebrochen=1
 			break
 		fi
 		marken_zaehler=$$((marken_zaehler + 1))
@@ -1675,13 +1814,20 @@ endif
 	# G1: Die Schlusszeile verschmolz frueher "beobachtet und in Ordnung" mit
 	# "gar nicht beobachtet" ("Arbeitsbaum unveraendert oder kein .git/"). Als
 	# Nachweiszeile (5.3) ist das untauglich -- deshalb ein eigener Befundtext.
+	# G7 (ADR 0002, 6.12.8): d19_schluesselwort traegt eines von genau vier
+	# Woertern (OHNE_BEFUND|VERLETZT|B|C), d19_text den erklaerenden Freitext
+	# ohne Schlusspunkt; die D19-Zeile wird daraus in fester Grammatik
+	# zusammengesetzt und steht -- unabhaengig vom Ausgang -- genau einmal,
+	# als eigene Zeile, nicht mehr eingebettet in eine Schlusszeile.
 	d19_verletzt=0
-	d19_befund="ohne Befund, Arbeitsbaum unveraendert"
+	d19_schluesselwort="OHNE_BEFUND"
+	d19_text="Arbeitsbaum unveraendert"
 	if [ "$$d19_hat_repo" -eq 1 ]; then
 		if [ "$$d19_werkzeug_fehlt" -eq 1 ]; then
 			echo "" >&2
 			echo "make dod: D19 LAGE C: .git/ ist vorhanden, aber 'git' ist nicht installiert -- der Kettengrundsatz (ADR 0002, Abschnitt 6, D19) kann nicht beobachtet werden, kein stilles Durchwinken." >&2
-			d19_befund="Lage C -- git fehlt, nicht beobachtet"
+			d19_schluesselwort="C"
+			d19_text="git fehlt, nicht beobachtet"
 			if [ "$$gesamt_rc" -eq 0 ]; then gesamt_rc=2; fi
 		else
 			d19_status_nachher=$$(git -C "$(PROJ)" status --porcelain --untracked-files=all; git -C "$(PROJ)" ls-files -z | xargs -0 -r sha256sum 2>/dev/null)
@@ -1690,7 +1836,8 @@ endif
 				echo "" >&2
 				echo "make dod: D19 LAGE C -- nicht beobachtbar: fuer mindestens eine verfolgte Datei ist 'assume-unchanged' oder 'skip-worktree' gesetzt. Das Pruefmittel ist damit halb stummgeschaltet, und ein halb stummgeschaltetes Pruefmittel traegt die Aussage nicht (ADR 0002, 6.9)." >&2
 				echo "make dod: Ausgefuehrt belegt am 2026-09-01 (O-16): Die Statusliste meldet eine Aenderung an einer so markierten Datei NICHT mehr; die Inhaltspruefsumme erfasst sie weiterhin. Der Befund bleibt trotzdem einer -- die Kette ruht nicht auf der Annahme, die andere Haelfte fange es schon auf." >&2
-				d19_befund="LAGE C, nicht beobachtbar -- assume-unchanged/skip-worktree gesetzt"
+				d19_schluesselwort="C"
+				d19_text="nicht beobachtbar -- assume-unchanged/skip-worktree gesetzt"
 				printf '%s\n' "$$d19_masken_nachher" >&2
 				# ADR 0002, Abschnitt 6.10.2 sagt zu, dass die Meldung nennt,
 				# WAS DIE ANDERE HAELFTE GEMESSEN HAT. Bis zum 2026-09-01 tat
@@ -1707,7 +1854,8 @@ endif
 			fi
 			if [ "$$d19_status_vorher" != "$$d19_status_nachher" ]; then
 				d19_verletzt=1
-				d19_befund="VERLETZT -- versionierter Bestand veraendert"
+				d19_schluesselwort="VERLETZT"
+				d19_text="versionierter Bestand veraendert"
 				echo "" >&2
 				echo "make dod: D19 verletzt (ADR 0002, Abschnitt 6, Kettengrundsatz): der Bestand der versionierten Dateien hat sich zwischen dem ersten und dem letzten ausgefuehrten Schritt ($$letzter_schritt) veraendert." >&2
 				echo "make dod: Differenz der Aufnahme vorher/nachher (Statusliste und Inhaltspruefsummen der verfolgten Dateien):" >&2
@@ -1718,23 +1866,54 @@ endif
 		fi
 	else
 		echo ""
-		d19_befund="Lage B -- kein Git-Arbeitsbaum, nicht beobachtet"
+		d19_schluesselwort="B"
+		d19_text="kein Git-Arbeitsbaum, der Kettengrundsatz kann an einem nicht versionierten Bestand nicht beobachtet werden"
 		echo "make dod: D19 Lage B -- kein Git-Arbeitsbaum, der Kettengrundsatz kann an einem nicht versionierten Bestand nicht beobachtet werden."
 	fi
-	if [ "$$gesamt_rc" -ne 0 ]; then
+	# G7 (ADR 0002, 6.12.8): feste Grammatik, genau eine Zeile, in jedem
+	# Ausgang. OHNE_BEFUND/B sind kein Problem (stdout, wie die A_OK/B-Zeilen
+	# der Kettenschritte), C/VERLETZT sind ein Problem (stderr, wie A_FAIL).
+	if [ "$$d19_schluesselwort" = "OHNE_BEFUND" ] || [ "$$d19_schluesselwort" = "B" ]; then
+		echo ""
+		echo "make dod: D19: $${d19_schluesselwort} -- $${d19_text}."
+	else
 		echo "" >&2
-		# Gering-Befund der Nachpruefung: Die D19-Zeile stand nur im Erfolgspfad;
-		# bei einem Abbruch ohne D19-Verletzung erschien ueberhaupt keine
-		# Aussage zu D19. Als Nachweiszeile (5.3) war das unvollstaendig.
-		echo "make dod: D19: $$d19_befund." >&2
-		echo "make dod: abgebrochen, Rueckgabewert $$gesamt_rc." >&2
+		echo "make dod: D19: $${d19_schluesselwort} -- $${d19_text}." >&2
+	fi
+	# G7 (ADR 0002, 6.12.8), Vorrangregel aus 6.12.23 a (Nachtrag aus dem Bau
+	# vom 2026-09-02, dort abschliessend entschieden): genau eine der VIER
+	# Schlusszeilen, in dieser Reihenfolge geprueft --
+	#   1. abgebrochen (A_FAIL, fehlende/mehrfache Marke, sonstiger
+	#      Rueckgabewert ungleich 0)                            -> Form 3
+	#   2. sonst: mindestens ein Schritt in Lage C                -> Form 2
+	#   3. sonst: D19 meldet VERLETZT oder Lage C                 -> Form 4
+	#   4. sonst                                                  -> Form 1
+	# Die fruehere Uebergangsloesung (Form 3 mit dem zuletzt gelaufenen
+	# Schritt fuer einen vollstaendigen, D19-getruebten Lauf) entfaellt: sie
+	# behauptete einen Abbruch, der nicht stattfand (6.12.23 a).
+	if [ "$$schleife_abgebrochen" -eq 1 ]; then
+		echo "make dod: abgebrochen bei $$letzter_schritt, Rueckgabewert $$gesamt_rc." >&2
 		exit $$gesamt_rc
 	fi
 	if [ "$$marken_zaehler" -ne "$$erwartete_marken" ]; then
 		echo "" >&2
-		echo "make dod: nur $$marken_zaehler von $$erwartete_marken gueltigen Marken gezaehlt -- Abbruch trotz Rueckgabewert 0 je Schritt." >&2
+		echo "make dod: nur $$marken_zaehler von $$erwartete_marken gueltigen Marken gezaehlt -- Abbruch trotz vollstaendigem Schleifendurchlauf." >&2
+		exit 2
+	fi
+	if [ "$$ungeurteilt_zaehler" -gt 0 ]; then
+		echo ""
+		echo "make dod: alle $$erwartete_marken Kettenschritte durchlaufen, $$ungeurteilt_zaehler davon ohne Urteil (Lage C): $$ungeurteilt_liste, Rueckgabewert 2."
+		exit 2
+	fi
+	if [ "$$d19_schluesselwort" = "VERLETZT" ] || [ "$$d19_schluesselwort" = "C" ]; then
+		# Vierte Form (6.12.23 a): vollstaendig gelaufen, kein A_FAIL, keine
+		# Lage C -- aber die Rahmenpruefung D19 meldet einen Befund oder Lage
+		# C. gesamt_rc ist an dieser Stelle zwingend bereits 2 (von D19 selbst
+		# oben gehoben).
+		echo ""
+		echo "make dod: alle $$erwartete_marken Kettenschritte durchlaufen, Rahmenpruefung D19 $${d19_schluesselwort}, Rueckgabewert 2."
 		exit 2
 	fi
 	echo ""
-	echo "make dod: alle $$erwartete_marken Kettenschritte durchlaufen (D20, D1 bis D12, D18), keiner ungleich 0, $$erwartete_marken gueltige Marken gezaehlt, D19: $$d19_befund."
+	echo "make dod: alle $$erwartete_marken Kettenschritte durchlaufen, keiner ungleich 0, $$erwartete_marken gueltige Marken gezaehlt."
 	exit 0

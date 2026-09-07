@@ -1,0 +1,64 @@
+# Terminierte Lagen C fuer das Definition-of-Done-Gate (.claude/hooks/dod-gate.sh)
+#
+# Bau auf Weisung vom 2026-09-02, foermliche Freigabe ausstehend (ADR 0002,
+# Abschnitt 10). Grundlage: docs/adr/0002-architekturentscheid-ziel-stack.md,
+# Abschnitt 6.12.5 (G4).
+#
+# ZWECK: Ein Kettenschritt in Lage C hat nichts geurteilt, weil sein
+# Pruefmittel fehlt. Damit das Gate aus R3-Q-001 nicht ab dem Tag seiner
+# Einfuehrung dauerhaft blockiert -- auch fuer die Arbeitseinheit, die das
+# fehlende Pruefmittel gerade anlegt --, deckt diese Liste einzelne, benannte
+# Lagen C. Sie ist eine POSITIVLISTE: ein Schritt in Lage C OHNE Eintrag
+# blockiert weiterhin. `make dod` selbst kennt diese Liste NICHT und wird
+# durch sie nicht weicher -- die Ausnahme lebt ausschliesslich im Gate der
+# Arbeitsumgebung.
+#
+# FORM je Eintrag: Schluessel, EIN Tabulator, Grund. Leerzeilen und Zeilen,
+# die mit "#" beginnen, werden uebergangen.
+#   Schluessel: "<D-Nummer> <ziel>|<repository-relativer Pfad>"
+#   Grund:      Freitext, MUSS die Wendung "ADR 0002, <Abschnitt>" enthalten.
+#
+# DIE SECHS SELBSTPRUEFUNGEN (ADR 0002, 6.12.5), jede fuer sich blockierend:
+#   1. Ein Schritt meldet Lage C ohne passenden Eintrag hier -- das Gate
+#      blockiert (Positivliste, keine Ausschlussregel).
+#   2. Ein Eintrag, dessen Pfad im geprueften Baum bereits BESTEHT -- der
+#      Eintrag ist veraltet, das Gate blockiert.
+#   3. Ein Eintrag zu einem Schritt, der in diesem Lauf eine ANDERE Lage als
+#      C meldet -- der Eintrag ist veraltet, das Gate blockiert.
+#   4. Ein Eintrag OHNE Grund oder ohne die Wendung "ADR 0002, " im Grund --
+#      das Gate blockiert.
+#   5. Die Lage-Marke des Schrittes nennt in FEHLT= einen ANDEREN Wert als
+#      der Pfad im Schluessel -- das Gate blockiert (deckt nicht den falschen
+#      Fall zu).
+#   6. Der Schluessel nennt kein terminierbares Pruefmittel: kein
+#      repository-relativer Pfad (kein Verzeichnistrenner, absoluter Pfad
+#      oder blosser Programmname) oder eine D-Nummer D19/D20.
+#
+# WAS TERMINIERBAR IST: ausschliesslich ein Projektartefakt DIESES
+# Repositories, das ADR 0002 in Abschnitt 5 oder 6 als noch nicht entstanden
+# fuehrt. NICHT terminierbar: ein installierbares Werkzeug (gitleaks, git,
+# uv, node, ...) und jedes Pruefmittel von D20 (der Belegpruefer selbst, seine
+# Ausnahmeliste, die beiden Bezugsdokumente, git, der Arbeitsbaum, die
+# Vollstaendigkeit der Historie) sowie D19 (kein Kettenschritt, sondern das
+# Instrument des Kettengrundsatzes).
+#
+# WER PFLEGT: Software Architect, als Fortschreibung von ADR 0002, Abschnitt
+# 6.12.5 -- Eintraege hinzufuegen oder entfernen nur fuer ein Artefakt, das
+# jener ADR als noch nicht entstanden fuehrt, mit Grund (Tatsache und
+# ADR-Stelle). Die Form der Schluessel, die sechs Selbstpruefungen oder der
+# Begriff des Terminierbaren zu aendern, ist ebenfalls Sache dieser Rolle.
+# Niemand nimmt ueber diese Liste eine ganze Lage-Art von der Pruefung aus --
+# das waere keine Ausnahme, sondern eine Aenderung des Gates.
+#
+# Bau der Auswertung: DevOps Engineer. Verifikation: Static und Dynamic
+# Software Tester auf einem anderen Modell als die Umsetzung (3.4).
+#
+# Drei Eintraege zum Anlegen dieser Liste (2026-09-02) -- der aktuelle
+# Bestand des Makefile-Kopfkommentars (Stand nach der zwoelften Fortschreibung
+# von ADR 0002) fuehrt D7, D10 und D12 als Lage C; D9 ist heute Lage B
+# (kein Eintrag, siehe unten) und D11 ist ein Werkzeug (gitleaks), also nicht
+# terminierbar (kein Eintrag).
+
+D7 abnahme|scripts/abnahme-abgleich.sh	scripts/abnahme-abgleich.sh besteht heute nicht; ADR 0002, Abschnitt 6 fuehrt es als eigenes Projektartefakt, das mit dem Grundgeruest entsteht (Zeile D7 der Objekttabelle).
+D10 prototyp-trennung|scripts/prototyp-trennung-pruefen.sh	scripts/prototyp-trennung-pruefen.sh besteht heute nicht; ADR 0002, Abschnitt 6 fuehrt es als eigenes Projektartefakt, das mit dem Grundgeruest entsteht (Zeile D10 der Objekttabelle, Betriebsart als O-8 offen).
+D12 nachweise|scripts/nachweise-vollstaendig.sh	scripts/nachweise-vollstaendig.sh besteht heute nicht; ADR 0002, Abschnitt 6 fuehrt es als eigenes Projektartefakt, das mit dem Grundgeruest entsteht (Zeile D12 der Objekttabelle, Form als O-8 offen).

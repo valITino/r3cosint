@@ -42,6 +42,20 @@ durchsetzen will, braucht einen Hook.
   pfadgenau.
 - Bei `Stop`-Hooks: `stop_hook_active` prüfen und dann mit 0 enden, sonst
   blockiert ein nie erfüllbares Kriterium die Sitzung dauerhaft (3.4, Ebene 4).
+- Ein Hook, der seine Zeitgrenze aus `settings.json` reisst, wird abgebrochen
+  und **lässt durch**, ohne Entscheidung und ohne Ausgabe (offizielle
+  Hook-Dokumentation, gelesen am 2026-09-02). Ein Gate zieht seine Zeitgrenze
+  deshalb im Skript selbst, kürzer als in `settings.json` (ADR 0002, 6.12.12).
+- Die Standardausgabe eines Hooks trägt ausschliesslich das JSON-Objekt oder
+  nichts; jede andere Ausgabe wird als Fehler gemeldet oder verworfen. Die
+  Ausgabe einer aufgerufenen Kette gelangt nie auf die Standardausgabe des
+  Hooks (ADR 0002, 6.12.15).
+- Das Definition-of-Done-Gate (`dod-gate.sh`, ADR 0002, 6.12) erzwingt die
+  Kette hart nur über `TaskCompleted`, und dieses Ereignis feuert nur, wenn
+  eine Aufgabenliste geführt wird. Deshalb wird jede Arbeitseinheit als Aufgabe
+  geführt: beim Beginn mit dem Aufgabenwerkzeug anlegen, beim Abschluss auf
+  erledigt setzen (CLAUDE.md, "Vor jeder Arbeitseinheit"; ADR 0002, O-23,
+  Entscheid E-H).
 
 ## Skills (3.2 b)
 
