@@ -257,3 +257,33 @@ Commit-Prüfsumme zurück nach Repo B.
 >
 
 **Nachweis:** https://github.com/valITino/r3coscrum/commit/2ec4bc2047d0cd940f38481277433086c69b13be
+
+## 2026-09-08 — Änderung an der Methodik
+
+**Was sich geändert hat:**
+
+- Geändert: `methodik/entscheide.md`
+
+**Warum:**
+
+> 2652c3d — docs(R3-Q-001): O-27 als V17 eingetragen, Uebergabe 2026-09-07
+> - methodik/entscheide.md: neuer Entscheid V17 -- die Sollmenge einer Deckung
+>   wird aus dem Gegenstand selbst erhoben statt aus einer Aufzaehlung im Text,
+>   jede Deckung ist fail-closed, das Abnahmekriterium ist auf das falsche
+>   Gruen am Pruefling bezogen, und die Zahl der Pruefrunden wird vorab
+>   begrenzt. Die Begruendungsspalte nennt beide Grenzen, die in derselben
+>   Einheit sichtbar wurden.
+> - methodik/entscheide.md: O-27 von [OFFEN] auf [ERLEDIGT 2026-09-07];
+>   festgehalten ist, dass Teil 1 des Abnahmekriteriums erfuellt ist und
+>   Teil 2 nicht.
+> - UEBERGABE.md: Vermerk zur Arbeitseinheit vom 2026-09-07/08 mit dem
+>   methodischen Anteil.
+>
+> Verweise auf das Produkt-Repository ueber die 40-stellige Commit-Pruefsumme
+> 71596aae9b6fd20324c7e16863ca18a16b57794a.
+>
+> Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+> Claude-Session: https://claude.ai/code/session_01FzfSCQbnf58zYDL4NcSgvB
+>
+
+**Nachweis:** https://github.com/valITino/r3coscrum/commit/9c28499252ab3f42a96dc43bf096c3a6353ce0cb
