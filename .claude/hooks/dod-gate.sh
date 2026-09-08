@@ -116,7 +116,7 @@ fi
 eingabe=$(cat)
 
 if ! printf '%s' "$eingabe" | jq -e . >/dev/null 2>&1; then
-  echo "dod-gate: die Eingabe auf der Standardeingabe ist kein gueltiges JSON. Fail-closed." >&2
+  echo "dod-gate: BLOCKIERT. Schluessel: EINGABE json. Die Eingabe auf der Standardeingabe ist kein gueltiges JSON. Fail-closed." >&2
   exit 2
 fi
 
@@ -124,7 +124,7 @@ ereignis=$(printf '%s' "$eingabe" | jq -r '.hook_event_name // empty')
 case "$ereignis" in
   Stop|SubagentStop|TaskCompleted) ;;
   *)
-    echo "dod-gate: unbekanntes oder von diesem Gate nicht bedientes Ereignis '$ereignis'. Fail-closed (keine Fortsetzung ohne Pruefung)." >&2
+    echo "dod-gate: BLOCKIERT. Schluessel: EINGABE ereignis. Unbekanntes oder von diesem Gate nicht bedientes Ereignis '$ereignis'. Fail-closed (keine Fortsetzung ohne Pruefung)." >&2
     exit 2
     ;;
 esac
@@ -426,7 +426,7 @@ if [ -z "$baum" ] && [ -n "$proj_feld" ]; then
   fi
 fi
 if [ -z "$baum" ]; then
-  echo "dod-gate: weder CLAUDE_PROJECT_DIR noch das Eingabefeld 'cwd' ergeben einen bestimmbaren Arbeitsbaum. Fail-closed." >&2
+  echo "dod-gate: BLOCKIERT. Schluessel: EINGABE baum. Weder CLAUDE_PROJECT_DIR noch das Eingabefeld 'cwd' ergeben einen bestimmbaren Arbeitsbaum. Fail-closed." >&2
   exit 2
 fi
 
@@ -579,7 +579,7 @@ if [ "$sperre_aktiv" -eq 1 ]; then
   # belegt (leere Ausgabe, Rueckgabewert 2, keine Meldung).
   if exec {sperre_fd}>"$sperr_datei"; then
     if ! flock -w 120 "$sperre_fd"; then
-      echo "dod-gate: ein anderer Lauf haelt die Sperre fuer diesen Baum seit mehr als 120 s. Baum: $baum." >&2
+      echo "dod-gate: BLOCKIERT. Schluessel: SPERRE belegt. Ein anderer Lauf haelt die Sperre fuer diesen Baum seit mehr als 120 s. Baum: $baum." >&2
       echo "dod-gate: naechster Schritt: kurz abwarten und erneut versuchen; haengt die Sperre dauerhaft, $sperr_datei pruefen." >&2
       exit 2
     fi
