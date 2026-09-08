@@ -1,0 +1,46 @@
+# Pfadausnahmen fuer die Pfaddeckung des Definition-of-Done-Gates
+# (.claude/hooks/dod-gate.sh)
+#
+# Bau auf Weisung vom 2026-09-07 (O-27, Phase 1). Grundlage:
+# docs/adr/0002-architekturentscheid-ziel-stack.md, Abschnitt 6.12.28 b,
+# Punkt 5.
+#
+# ZWECK: Die Pfaddeckung (Z-230/Z-231) verlangt, dass jede Ausgangsstelle des
+# Gates -- jede "exit"-Anweisung und jede Aufrufstelle von
+# "blockieren_mit_zaehlung" -- in der Ausfuehrungsspur des Selbsttests
+# mindestens einmal beschritten wird. Eine nicht beschrittene Ausgangsstelle
+# ist AUSSCHLIESSLICH mit einem Eintrag hier zulaessig, und jeder Eintrag
+# ist zusaetzlich in ADR 0002, 6.12.28 b als Fortschreibung zu begruenden --
+# ein Eintrag allein in dieser Datei ist unzulaessig.
+#
+# FEHLT diese Datei, ist der Selbsttestlauf ein FEHLSCHLAG (damit ihr
+# Verschwinden nicht als "keine Ausnahmen" gelesen wird). Sie wird mit dieser
+# Einheit angelegt und bleibt ABSICHTLICH OHNE Ausnahmezeile: Nach der
+# Feststellung des Koordinators vom 2026-09-07 sind alle heute unbeschrittenen
+# Ausgangsstellen im Pruefaufbau herstellbar (Attrappen fuer mktemp und
+# flock, siehe ADR 0002, 6.12.28 b Punkte 6 und 7).
+#
+# FORM je Zeile, Felder durch EINEN Tabulator getrennt (Muster: die Liste der
+# terminierten Lagen, .claude/hooks/dod-gate-terminierte-lagen.txt):
+#   1 Zeilennummer   die Zeile in .claude/hooks/dod-gate.sh, an der die
+#                    Ausgangsstelle steht
+#   2 Wortlaut       der Wortlaut dieser Zeile OHNE fuehrenden Leerraum --
+#                    muss an der genannten Zeilennummer tatsaechlich stehen,
+#                    sonst ist der Lauf ein Fehlschlag
+#   3 Grundnummer    1, 2 oder 3, aus der geschlossenen Liste in
+#                    ADR 0002, 6.12.28 b Punkt 5:
+#                      1 Eigenschaft des Wirtssystems, die der Pruefaufbau
+#                        nicht stellen kann
+#                      2 nur ueber einen Wettlauf erreichbar, den der
+#                        Pruefaufbau nicht deterministisch herstellen kann
+#                      3 im Gate nachweislich unerreichbar (toter Zweig) --
+#                        dann ist die Stelle zu ENTFERNEN, nicht auf Dauer
+#                        auszunehmen; die Ausnahme gilt bis zur Entfernung
+#                        und nennt den Backlog-Posten
+#   4 Begruendung    Freitext, darf nicht leer sein
+# Zeilen, die mit "#" beginnen, und Leerzeilen werden uebergangen. Eine Zeile
+# ohne Grundnummer aus dieser Liste, mit leerer Begruendung oder mit einem
+# Wortlaut, der an der genannten Zeilennummer nicht steht, ist ein
+# FEHLSCHLAG.
+#
+# Heute keine Ausnahmezeile.

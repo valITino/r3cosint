@@ -65,6 +65,13 @@ REPO_WURZEL="$(cd "$SKRIPT_VERZEICHNIS/.." && pwd)"
 # Pruefgegenstand selbst zu veraendern. Ohne die Umgebungsvariablen bleibt
 # das Verhalten gegenueber dem Normalmodus unveraendert.
 # ::VORSPANN-START::
+# SST-P1-01 (Zwischenkontrolle nach Phase 1): SKRIPT_VERZEICHNIS stand vor
+# ::VORSPANN-START:: und war im isolierten Kindlauf unbekannt -- fall_z152_153
+# (Teil der von fall_z230_231/fall_z252_255 selbst ausgefuehrten
+# FALL_REIHENFOLGE) griff darauf zu und starb unter set -u. Hier aus dem
+# bereits eingebackenen REPO_WURZEL neu abgeleitet, identisch zur Definition
+# oben (Skriptverzeichnis ist "scripts/" unter der Repo-Wurzel).
+SKRIPT_VERZEICHNIS="$REPO_WURZEL/scripts"
 GATE="${GATE_UEBERSCHREIBUNG:-$REPO_WURZEL/.claude/hooks/dod-gate.sh}"
 ECHTES_MAKEFILE="${MAKEFILE_UEBERSCHREIBUNG:-$REPO_WURZEL/Makefile}"
 ECHTER_BELEGPRUEFER="$REPO_WURZEL/scripts/belege-pruefen.sh"
@@ -88,6 +95,55 @@ fehlgeschlagene_faelle=()
 GEMELDETE_KENNUNGEN=()
 declare -A KANAL_GEMELDET=()
 declare -A PRAEDIKAT_GEMELDET=()
+
+# DECKUNGSZEILEN (SST-P1-06/Z-260, O-27 Phase 3; S12-01/S12-02, Runde 12
+# statisch; berichtigt 2026-09-08, ADR 0002 6.12.28 f, Nachtrag "Messumfang
+# von Z-260, Reihenfolge der Buchhaltung und Vollstaendigkeit des Blocks"):
+# jede Deckungsfunktion haengt ihre Ausgabezeile ueber deckungszeile_-
+# registrieren hier an, ob im Normalmodus (kumulativ ueber den ganzen Lauf)
+# oder in einem isolierten Einzelfall-Kindlauf (dort leer, bis der Fall
+# selbst etwas anhaengt). Im Normalmodus laeuft die Buchhaltung der drei
+# Abgleichzeilen ("Deckung:", "Kanalabgleich:", "Praedikatabgleich:") ueber
+# buchhaltung_abgleich() in ZWEI Erhebungen aus EINER Funktion -- die erste
+# registriert sie, BEVOR Z-260 den Block misst (sonst fehlten sie ihm), die
+# zweite ERSETZT sie an derselben Stelle, NACHDEM Z-260 gemeldet ist (sonst
+# fehlte Z-260 in ihren eigenen Zahlen); eine Wache haelt fest, dass sich
+# die von Z-260 gemessenen ersten Zahlen dabei nicht aendern. Die
+# Blockdeckung (11 Pflichtetiketten, 6.12.28 f Punkt 7) haelt die Etiketten
+# des Feldes in beide Richtungen gegen diese Sollmenge und ist selbst die
+# letzte Zeile des Blocks. Der Block wird EINMAL aus diesem Feld ausgegeben
+# UND von Z-260 geprueft -- keine zweite, direkt echoende Quelle mehr
+# (S12-01: vorher fehlten vier der neun Blockzeilen im Feld, weil sie direkt
+# echoten statt zu registrieren; 6.12.28 f: zwei weitere Zeilen erschienen
+# ueberhaupt nicht mehr, weil das gelesene Feld nirgends befuellt wurde).
+declare -a DECKUNGSZEILEN=()
+
+# deckungszeile_registrieren <zeile> -- haengt EINE Zeile an DECKUNGSZEILEN
+# an und gibt ihren Index (0-basiert) auf stdout aus, damit ein Aufrufer,
+# der die Zeile SPAETER mit vollstaendigen Zahlen ersetzen muss (die drei
+# Abgleichzeilen unten, S12-01-Behebung), sie wiederfindet. Registriert nur
+# -- gibt NICHT selbst auf die eigentliche Standardausgabe aus; das macht
+# ausschliesslich der Block-Ausgabeschritt in zusammenfassung_und_deckung_-
+# ausgeben bzw. der isolierte Lauf von fall_z260 am Ende seiner Registrierung.
+deckungszeile_registrieren() {
+DECKUNGSZEILEN+=("$1")
+printf '%d\n' $(( ${#DECKUNGSZEILEN[@]} - 1 ))
+}
+
+# FALL_ZEITGRENZE (SST-P1-02): mechanische Zeitgrenze je Fallfunktion fuer
+# den isolierten Kindlauf des Mutationsmodus, statt eines fest verdrahteten
+# "timeout 30" fuer ALLE Faelle. Vorgabe 30s. fall_z230_231 fuehrt im
+# isolierten Lauf selbst die GANZE FALL_REIHENFOLGE aus (gemessen: einige
+# Sekunden je Einzelfall mal rund 90 Faelle) -- 900s Vorgabe plus Reserve.
+# fall_z252_255 fuehrt den ganzen Schwaechungslauf (bis zu 35 Schwaechungen
+# mal bis zu mehreren Grammatik-Fallfunktionen, je mit eigenem "timeout 30"
+# darunter) selbst im isolierten Lauf aus -- 600s, gemessen deutlich unter
+# dieser Grenze, mit Reserve fuer einen langsameren Rechner.
+declare -A FALL_ZEITGRENZE=(
+  ["fall_z230_231"]=900
+  ["fall_z252_255"]=600
+  ["fall_z260"]=120
+)
 
 # -----------------------------------------------------------------------------
 # 6.12.26 (Entscheid des Auftraggebers zu O-25): abschliessender Wertevorrat
@@ -128,6 +184,58 @@ for teil in "${_pt[@]}"; do
   esac
 done
 return 0
+}
+
+# -----------------------------------------------------------------------------
+# tabelle_lesen <adr_pfad> (O-27 Phase 3, SST-P1-06, Z-258/Z-260): liest
+# Tabelle 6.12.19 EINMAL und fuellt die globalen Arrays tabellen_kennungen,
+# zurueckgezogene_kennungen, KANAL_TABELLE, PRAEDIKAT_TABELLE, FALL_TABELLE
+# und ZUSICHERUNG_TABELLE. Vormals INLINE in zusammenfassung_und_deckung_aus-
+# geben, jetzt ausgelagert (6.2.2: eine Aussage, eine Stelle), damit sowohl
+# Z-258 als auch der eigene Einzelfall-Lauf von Z-260 dieselbe Lesung ohne
+# zweite Quelle wiederholen koennen. Die vier Assoziativfelder werden GLOBAL
+# deklariert ("-g"), weil eine blosse "declare -A" innerhalb dieser Funktion
+# sonst NUR fuer die Dauer dieses Aufrufs bestuende (anders als vorher, wo der
+# Block direkt im Rumpf von zusammenfassung_und_deckung_ausgeben stand und
+# seine "declare -A" bis zum Ende JENER Funktion lebte).
+# -----------------------------------------------------------------------------
+tabelle_lesen() {
+local adr_pfad_tl="$1"
+local zeile_tl kennung_tl zeile_maskiert_tl fall_zelle_tl kanal_zelle_tl praedikat_zelle_tl zusicherung_zelle_tl
+tabellen_kennungen=()
+zurueckgezogene_kennungen=()
+declare -gA KANAL_TABELLE=()
+declare -gA PRAEDIKAT_TABELLE=()
+declare -gA FALL_TABELLE=()
+declare -gA ZUSICHERUNG_TABELLE=()
+if [ -f "$adr_pfad_tl" ]; then
+  while IFS= read -r zeile_tl; do
+    kennung_tl=$(printf '%s' "$zeile_tl" | sed -n 's/^| \(Z-[0-9][0-9]*\).*/\1/p')
+    [ -n "$kennung_tl" ] || continue
+    # Seit 6.12.27 (O-26) traegt die Tabelle SIEBEN Spalten: Kennung, Fall,
+    # Kanal, Praedikat, Zusicherung, Mutation, Herkunft. Maskiertes "\|"
+    # (Item 7, Runde 6) wird vor der Aufteilung durch \x01 ersetzt.
+    zeile_maskiert_tl=$(printf '%s' "$zeile_tl" | sed 's/\\|/\x01/g')
+    fall_zelle_tl=$(printf '%s' "$zeile_maskiert_tl" | awk -F'|' '{print $3}' | sed -e 's/^ *//' -e 's/ *$//')
+    kanal_zelle_tl=$(printf '%s' "$zeile_maskiert_tl" | awk -F'|' '{print $4}' \
+      | sed -e 's/^ *//' -e 's/ *$//' -e 's/\*\*//g' -e 's/`//g')
+    praedikat_zelle_tl=$(printf '%s' "$zeile_maskiert_tl" | awk -F'|' '{print $5}' \
+      | sed -e 's/^ *//' -e 's/ *$//' -e 's/\*\*//g' -e 's/`//g')
+    zusicherung_zelle_tl=$(printf '%s' "$zeile_maskiert_tl" | awk -F'|' '{print $6}')
+    # S8-01 (6.12.27 h): eine Zeile ist zurueckgezogen, wenn ihre Kanal-
+    # spalte KEINEN Wert des Vorrats traegt (heute allein Z-110, deren
+    # Kanal-, Praedikat- und Mutationsspalte je "--" tragen).
+    if kanal_gueltig "$kanal_zelle_tl"; then
+      tabellen_kennungen+=("$kennung_tl")
+      KANAL_TABELLE["$kennung_tl"]="$kanal_zelle_tl"
+      PRAEDIKAT_TABELLE["$kennung_tl"]="$praedikat_zelle_tl"
+      FALL_TABELLE["$kennung_tl"]="$fall_zelle_tl"
+      ZUSICHERUNG_TABELLE["$kennung_tl"]="$zusicherung_zelle_tl"
+    else
+      zurueckgezogene_kennungen+=("$kennung_tl")
+    fi
+  done < <(grep '^| Z-' "$adr_pfad_tl")
+fi
 }
 
 # -----------------------------------------------------------------------------
@@ -246,7 +354,31 @@ for ku8 in "${kuerzel_liste[@]}"; do
     fehler=1
   fi
 done
-echo "Grammatikdeckung: ${#kuerzel_liste[@]} Kuerzel, $kuerzel_ohne_zeile ohne Zeile"
+
+# Gegenrichtung (Z-261, wie schon bei der Aussagendeckung weiter unten,
+# 6.12.27 j/S10-05): ein Etikett "Grammatik <KUERZEL>: " in der Fallspalte
+# EINER Tabellenzeile, dessen Kuerzel in KEINER Zeile der Elementtabelle
+# 6.12.7 steht, ist ein fremdes Etikett -- ohne diese Richtung waere ein
+# Tippfehler im Kuerzel eine stille Nichtdeckung.
+local fremde_grammatik_etiketten=0
+local k8g fall_text8g etikett8g kuerzel8g treffer8g
+for k8g in "${tabellen_kennungen[@]}"; do
+  fall_text8g="${FALL_TABELLE[$k8g]:-}"
+  while IFS= read -r etikett8g; do
+    [ -n "$etikett8g" ] || continue
+    kuerzel8g=$(printf '%s' "$etikett8g" | sed -E 's/^Grammatik ([A-Z]+): $/\1/')
+    treffer8g=0
+    for ku8 in "${kuerzel_liste[@]}"; do
+      [ "$ku8" = "$kuerzel8g" ] && treffer8g=1 && break
+    done
+    if [ "$treffer8g" -eq 0 ]; then
+      fremde_grammatik_etiketten=$((fremde_grammatik_etiketten + 1))
+      echo "Grammatikdeckung: fremdes Etikett ohne Deckung in 6.12.7: $k8g Grammatik $kuerzel8g"
+      fehler=1
+    fi
+  done < <(printf '%s' "$fall_text8g" | grep -oE 'Grammatik [A-Z]+: ')
+done
+echo "Grammatikdeckung: ${#kuerzel_liste[@]} Kuerzel, $kuerzel_ohne_zeile ohne Zeile, $fremde_grammatik_etiketten fremde Etiketten"
 
 local -a aussage_header_zeilen=()
 while IFS= read -r hnum; do
@@ -569,6 +701,37 @@ printf '%s' "$G_STDERR" > "$GATE_AUFRUF_PROTOKOLL/$GATE_AUFRUF_ZAEHLER.stderr"
 }
 
 # -----------------------------------------------------------------------------
+# Ausfuehrungsspur (ADR 0002, 6.12.28 b, O-27 (a1)): ab hier ruft rufe_gate
+# (und rufe_gate_ohne_home) das Gate NICHT mehr direkt auf, sondern ueber
+# eine BYTEGLEICHE Wegwerfkopie ($GATE_SPURKOPIE, EINMAL je Selbsttestlauf
+# angelegt, cmp-geprueft), mit "$BASH_BIN" -x, BASH_XTRACEFD auf einen von
+# der Subshell des Aufrufers geoeffneten Deskriptor (angehaengt an
+# $SPUR_DATEI) und BASH_ENV auf eine Datei, die PS4='+${LINENO}:' setzt.
+# Erhebung des Koordinators vom 2026-09-07: PS4 aus der Umgebung wirkt NICHT
+# ("env PS4=... bash -x" liefert nur "+ "), BASH_ENV wirkt, BASH_XTRACEFD
+# wird aus der Umgebung uebernommen. Die Spur aendert rc/stdout/stderr des
+# Gates NICHT (fd 9 ist ein eigener Kanal, von der eigentlichen Standard-
+# und Fehlerausgabe getrennt). Ein isolierter Kindlauf des Mutationsmodus
+# initialisiert Kopie, Spurdatei und BASH_ENV-Datei NEU, weil dieser ganze
+# Block Teil des Vorspanns ist (S10-10-Folge).
+# -----------------------------------------------------------------------------
+SPUR_VERZEICHNIS=$(neu_verzeichnis)
+GATE_SPURKOPIE="$SPUR_VERZEICHNIS/dod-gate-spurkopie.sh"
+cp "$GATE" "$GATE_SPURKOPIE"
+if cmp -s "$GATE" "$GATE_SPURKOPIE"; then
+  SPUR_KOPIE_FEHLGESCHLAGEN=0
+else
+  SPUR_KOPIE_FEHLGESCHLAGEN=1
+  echo "FEHLER  Ausfuehrungsspur: die Wegwerfkopie von $GATE ist nicht bytegleich (cmp)." >&2
+fi
+SPUR_DATEI="$SPUR_VERZEICHNIS/spur.log"
+: > "$SPUR_DATEI"
+SPUR_BASH_ENV="$SPUR_VERZEICHNIS/bash_env.sh"
+cat > "$SPUR_BASH_ENV" <<'BASHENVEOF'
+PS4='+${LINENO}:'
+BASHENVEOF
+
+# -----------------------------------------------------------------------------
 # rufe_gate <input-json> [zustand-basis] [path] [extra-env-KEY=WERT ...]
 # Ruft dod-gate.sh unmittelbar mit dem gegebenen JSON auf der Standardeingabe
 # auf. Schreibt stdout/stderr/rc in globale Variablen G_STDOUT/G_STDERR/G_RC.
@@ -583,7 +746,9 @@ zwischenpfad_stderr=$(mktemp)
     HOME="${HOME:-/root}" \
     XDG_STATE_HOME="$zustand" \
     "$@" \
-    "$BASH_BIN" "$GATE" ) >"$zwischenpfad_stdout" 2>"$zwischenpfad_stderr"
+    BASH_ENV="$SPUR_BASH_ENV" \
+    BASH_XTRACEFD=9 \
+    "$BASH_BIN" -x "$GATE_SPURKOPIE" ) 9>>"$SPUR_DATEI" >"$zwischenpfad_stdout" 2>"$zwischenpfad_stderr"
 G_RC=$?
 G_STDOUT=$(cat "$zwischenpfad_stdout")
 G_STDERR=$(cat "$zwischenpfad_stderr")
@@ -605,7 +770,9 @@ zwischenpfad_stderr=$(mktemp)
 ( printf '%s' "$eingabe" | env -i \
     PATH="$pfad" \
     "$@" \
-    "$BASH_BIN" "$GATE" ) >"$zwischenpfad_stdout" 2>"$zwischenpfad_stderr"
+    BASH_ENV="$SPUR_BASH_ENV" \
+    BASH_XTRACEFD=9 \
+    "$BASH_BIN" -x "$GATE_SPURKOPIE" ) 9>>"$SPUR_DATEI" >"$zwischenpfad_stdout" 2>"$zwischenpfad_stderr"
 G_RC=$?
 G_STDOUT=$(cat "$zwischenpfad_stdout")
 G_STDERR=$(cat "$zwischenpfad_stderr")
@@ -751,6 +918,27 @@ case "$soll" in
   *) echo "FEHLER  $kennung: unzulaessiges Praedikat fuer pruefe_datei: '$soll' (nur existiert|fehlt)" >&2 ;;
 esac
 _melde "$kennung" "datei" "$fall" "$zusicherung" "$ok" "$pfad $soll" "$pfad $ist" "$soll"
+}
+
+# pruefe_kein_zaehler_im_verzeichnis <kennung> <fall> <zusicherung>
+# <zustandsbasis> -- SST-P1-03 (Zwischenkontrolle nach Phase 1): misst das
+# ganze Zustandsverzeichnis auf die Abwesenheit JEDER Datei "zaehler-*",
+# statt einer EINEN, fest verdrahteten Hash-Pfades. Der vorherige Bau konnte
+# eine Zaehlerdatei unter einem ANDEREN Namen nicht erkennen (belegt: eine
+# Gate-Kopie, die "zaehler-deadbeef..." statt des erwarteten Hashs schreibt,
+# bestand alle vier Faelle unveraendert). Kanal datei, Praedikat fehlt.
+pruefe_kein_zaehler_im_verzeichnis() {
+local kennung="$1" fall="$2" zusicherung="$3" zustandsbasis="$4"
+local verz="$zustandsbasis/r3cosint/dod-gate"
+local ok=0 gefunden=""
+if [ ! -d "$verz" ]; then
+  ok=1
+else
+  gefunden=$(find "$verz" -maxdepth 1 -type f -name 'zaehler-*' 2>/dev/null | sort | head -n1)
+  [ -z "$gefunden" ] && ok=1
+fi
+_melde "$kennung" "datei" "$fall" "$zusicherung" "$ok" "keine Datei zaehler-* im Zustandsverzeichnis" \
+  "$([ -n "$gefunden" ] && echo "gefunden: $gefunden" || echo "keine Datei zaehler-* (Verzeichnis: $verz)")" "fehlt"
 }
 
 # pruefe_datei_ausserhalb <kennung> <fall> <zusicherung> <pfad> <baum> --
@@ -1490,6 +1678,72 @@ echo "/dod-gate-selbsttest-s3-05-nicht-vorhanden-$$/tmp.attrappe"
 exit 0
 MKTEMPUNAUFEOF
 chmod +x "$WERKZEUGKASTEN_FAKE_MKTEMP_UNAUFLOESBAR/mktemp"
+
+# -----------------------------------------------------------------------------
+# Werkzeugkasten mit einer ATTRAPPE fuer "flock", NUR fuer den Sperrpfad
+# (ADR 0002, 6.12.28 b Punkt 6, O-27 (a1), Z-218..Z-221): schreibt "-w 120"
+# auf eine KURZE Wartezeit um, waehrend ein ZWEITER Prozess die Sperre
+# WIRKLICH haelt -- der Fehlschlag von flock ist echt, nur die Wartezeit ist
+# verkuerzt (Vorbild WERKZEUGKASTEN_SCHNELLER_TIMEOUT, dieselbe Begruendung:
+# geprueft wird die Auswertung im Gate, nicht das Werkzeug).
+# -----------------------------------------------------------------------------
+REAL_FLOCK="$(command -v flock)"
+WERKZEUGKASTEN_FAKE_FLOCK=$(neu_verzeichnis)
+baue_werkzeugkasten "$WERKZEUGKASTEN_FAKE_FLOCK"
+rm -f "$WERKZEUGKASTEN_FAKE_FLOCK/flock"
+cat > "$WERKZEUGKASTEN_FAKE_FLOCK/flock" <<FLOCKEOF
+#!/bin/sh
+if [ "\$1" = "-w" ] && [ "\$2" = "120" ]; then
+  shift 2
+  exec "$REAL_FLOCK" -w 1 "\$@"
+fi
+exec "$REAL_FLOCK" "\$@"
+FLOCKEOF
+chmod +x "$WERKZEUGKASTEN_FAKE_FLOCK/flock"
+
+# -----------------------------------------------------------------------------
+# Drei ATTRAPPEN fuer "mktemp", je fuer eine der drei bisher unbeschrittenen
+# Aufrufstellen von "mktemp" im Gate (ADR 0002, 6.12.28 b Punkt 7,
+# Pfaddeckung, Z-222..Z-224):
+#   Z-222 (Zeile 705): der ERSTE (und hier einzige) Aufruf endet mit 1.
+#   Z-223 (Zeile 740): der erste Aufruf liefert einen Pfad IM Baum, der
+#     zweite ("-p /tmp") einen Pfad in einem NICHT VORHANDENEN Verzeichnis
+#     (Vorbild WERKZEUGKASTEN_FAKE_MKTEMP_UNAUFLOESBAR).
+#   Z-224 (Zeile 748): BEIDE Aufrufe liefern Pfade INNERHALB des Baums --
+#     das Gate loest den GELIEFERTEN Pfad physisch auf, nicht "/tmp" selbst.
+# -----------------------------------------------------------------------------
+WERKZEUGKASTEN_FAKE_MKTEMP_Z222=$(neu_verzeichnis)
+baue_werkzeugkasten "$WERKZEUGKASTEN_FAKE_MKTEMP_Z222"
+rm -f "$WERKZEUGKASTEN_FAKE_MKTEMP_Z222/mktemp"
+cat > "$WERKZEUGKASTEN_FAKE_MKTEMP_Z222/mktemp" <<'MKZ222EOF'
+#!/bin/sh
+exit 1
+MKZ222EOF
+chmod +x "$WERKZEUGKASTEN_FAKE_MKTEMP_Z222/mktemp"
+
+WERKZEUGKASTEN_FAKE_MKTEMP_Z223=$(neu_verzeichnis)
+baue_werkzeugkasten "$WERKZEUGKASTEN_FAKE_MKTEMP_Z223"
+rm -f "$WERKZEUGKASTEN_FAKE_MKTEMP_Z223/mktemp"
+cat > "$WERKZEUGKASTEN_FAKE_MKTEMP_Z223/mktemp" <<MKZ223EOF
+#!/bin/sh
+if [ "\$1" = "-p" ] && [ "\$2" = "/tmp" ]; then
+  echo "/dod-gate-selbsttest-z223-nicht-vorhanden-\$\$/tmp.attrappe"
+  exit 0
+fi
+mkdir -p "\$FAKE_MKTEMP_ZIEL"
+exec "$REAL_MKTEMP" -p "\$FAKE_MKTEMP_ZIEL"
+MKZ223EOF
+chmod +x "$WERKZEUGKASTEN_FAKE_MKTEMP_Z223/mktemp"
+
+WERKZEUGKASTEN_FAKE_MKTEMP_Z224=$(neu_verzeichnis)
+baue_werkzeugkasten "$WERKZEUGKASTEN_FAKE_MKTEMP_Z224"
+rm -f "$WERKZEUGKASTEN_FAKE_MKTEMP_Z224/mktemp"
+cat > "$WERKZEUGKASTEN_FAKE_MKTEMP_Z224/mktemp" <<MKZ224EOF
+#!/bin/sh
+mkdir -p "\$FAKE_MKTEMP_ZIEL"
+exec "$REAL_MKTEMP" -p "\$FAKE_MKTEMP_ZIEL"
+MKZ224EOF
+chmod +x "$WERKZEUGKASTEN_FAKE_MKTEMP_Z224/mktemp"
 
 # -----------------------------------------------------------------------------
 # baue_eingabe <ereignis> <cwd> <session_id> [stop_hook_active] [agent_id]
@@ -3520,6 +3774,13 @@ pruefe_zaehler_schluessel Z-208 "Liste mit einer Zeile, die die Selbstpruefung 6
 # bereits protokolliert.
 # -----------------------------------------------------------------------------
 fall_z194_197() {
+# SST-P1-04 (Wache): diese Funktion MUSS die LETZTE in FALL_REIHENFOLGE
+# bleiben -- ihre Invarianten (A01/A04/A05/A08 unten) lesen das GESAMTE
+# Aufrufprotokoll des Selbsttests bis GATE_AUFRUF_ZAEHLER; liefe sie
+# frueher, blieben spaetere Gate-Aufrufe ungeprueft, ohne dass das auffiele.
+if [ "${FALL_REIHENFOLGE[-1]:-}" != "fall_z194_197" ]; then
+  echo "FEHLGESCHLAGEN WACHE fall_z194_197: ist NICHT die letzte Fallfunktion in FALL_REIHENFOLGE (letzte dort: '${FALL_REIHENFOLGE[-1]:-leer}') -- die Invarianten A01/A04/A05/A08 dieser Funktion wuerden dann nicht das gesamte Aufrufprotokoll des Laufs pruefen (SST-P1-04)." >&2
+fi
 # S10-10 (Koordinator-Befund, 2026-09-06): ein ISOLIERTER Mutationslauf ruft
 # NUR diese eine Fallfunktion auf (kein vorangehender Fall hat das
 # Aufrufprotokoll schon gefuellt) -- OHNE eigene Gate-Aufrufe waere
@@ -3609,7 +3870,1507 @@ pruefe_invariante_stdout_einzelfeld Z-197 "$fall194" \
   "$ok197" "leer oder {systemMessage: ...} bei rc=0" "${a01_beispiel194:-keine Abweichung} ($anzahl194 Aufrufe erfasst)"
 }
 
-# ::VORSPANN-ENDE::
+# =============================================================================
+# PHASE 1 VON O-27 (ADR 0002, 6.12.28 b): die vier Vor-Eingabe- und Sperr-
+# faelle (Z-209..Z-220), die statische flock-Zeile (Z-221), die acht Faelle
+# an den bisher unbeschrittenen Aufrufstellen von blockieren_mit_zaehlung
+# (Z-222..Z-229) und die Pfaddeckung selbst (Z-230, Z-231).
+# =============================================================================
+
+# --- Z-209..Z-211: Vor-Eingabe-Pfad, ungueltiges JSON (DT11-07/DT11-11) ----
+fall_z209_211() {
+local zustand209
+zustand209=$(neu_verzeichnis)
+rufe_gate "dies ist kein gueltiges JSON {" "$zustand209" "$WERKZEUGKASTEN_VOLL"
+pruefe_rc Z-209 "Vor-Eingabe-Pfad: die Standardeingabe traegt kein gueltiges JSON (ein Ereignis ist deshalb nicht lesbar; Umgebung im Uebrigen vollstaendig: CLAUDE_PROJECT_DIR und Werkzeugkasten gesetzt)" 2
+pruefe_stderr_enthaelt Z-210 "Derselbe Fall wie Z-209" \
+  "Fehlerausgabe enthaelt Schluessel: EINGABE json" "Schluessel: EINGABE json"
+pruefe_kein_zaehler_im_verzeichnis Z-211 "Aussage E23: derselbe Fall wie Z-209" \
+  "im Zustandsverzeichnis besteht nach dem Block keine Zaehlerdatei" \
+  "$zustand209"
+}
+
+# --- Z-212..Z-214: Vor-Eingabe-Pfad, unbekanntes Ereignis (DT11-08/DT11-11)
+fall_z212_214() {
+local zustand212 eingabe212
+zustand212=$(neu_verzeichnis)
+eingabe212=$(baue_eingabe "PreToolUse" "/tmp" "fall-z212")
+rufe_gate "$eingabe212" "$zustand212" "$WERKZEUGKASTEN_VOLL"
+pruefe_rc Z-212 "Vor-Eingabe-Pfad: das Ereignis der Eingabe wird von diesem Gate nicht bedient" 2
+pruefe_stderr_enthaelt Z-213 "Derselbe Fall wie Z-212" \
+  "Fehlerausgabe enthaelt Schluessel: EINGABE ereignis" "Schluessel: EINGABE ereignis"
+pruefe_kein_zaehler_im_verzeichnis Z-214 "Aussage E23: derselbe Fall wie Z-212" \
+  "im Zustandsverzeichnis besteht nach dem Block keine Zaehlerdatei" \
+  "$zustand212"
+}
+
+# --- Z-215..Z-217: kein bestimmbarer Arbeitsbaum (DT11-09/DT11-11) --------
+fall_z215_217() {
+local ausserhalb215 zustand215 eingabe215
+ausserhalb215=$(neu_verzeichnis)
+zustand215=$(neu_verzeichnis)
+eingabe215=$(baue_eingabe "Stop" "$ausserhalb215" "fall-z215")
+rufe_gate "$eingabe215" "$zustand215" "$WERKZEUGKASTEN_VOLL"
+pruefe_rc Z-215 "Weder CLAUDE_PROJECT_DIR noch das Eingabefeld cwd ergeben einen bestimmbaren Arbeitsbaum" 2
+pruefe_stderr_enthaelt Z-216 "Derselbe Fall wie Z-215" \
+  "Fehlerausgabe enthaelt Schluessel: EINGABE baum" "Schluessel: EINGABE baum"
+pruefe_kein_zaehler_im_verzeichnis Z-217 "Aussage E23: derselbe Fall wie Z-215" \
+  "im Zustandsverzeichnis besteht nach dem Block keine Zaehlerdatei" \
+  "$zustand215"
+}
+
+# --- Z-218..Z-220: Sperrpfad, flock-Attrappe haelt -w 120 auf -w 1 kurz ----
+fall_z218_220() {
+local baum218 baum218_real zustand218 baum_hash218 sperr_verz218 sperr_datei218 halter_pid218 eingabe218
+baum218=$(neuer_mock_baum)
+baum218_real=$(cd "$baum218" && git rev-parse --show-toplevel)
+zustand218=$(neu_verzeichnis)
+baum_hash218=$(printf '%s' "$baum218_real" | sha256sum | cut -d' ' -f1)
+sperr_verz218="$zustand218/r3cosint/dod-gate"
+mkdir -p "$sperr_verz218"
+sperr_datei218="$sperr_verz218/sperre-$baum_hash218.lock"
+(
+  exec 8>"$sperr_datei218"
+  flock 8
+  sleep 3
+) &
+halter_pid218=$!
+sleep 0.3
+eingabe218=$(baue_eingabe "Stop" "$baum218" "fall-z218")
+rufe_gate "$eingabe218" "$zustand218" "$WERKZEUGKASTEN_FAKE_FLOCK" \
+  "CLAUDE_PROJECT_DIR=$baum218" "MOCK_AUSGABE=darf nie gelesen werden" "MOCK_RC=0"
+pruefe_rc Z-218 "Sperrpfad: ein zweiter Prozess haelt die Sperre fuer den geprueften Baum, die flock-Attrappe des Werkzeugkastens schreibt die Wartezeit -w 120 auf eine kurze Zeit um" 2
+pruefe_stderr_enthaelt Z-219 "Derselbe Fall wie Z-218" \
+  "Fehlerausgabe enthaelt Schluessel: SPERRE belegt" "Schluessel: SPERRE belegt"
+pruefe_kein_zaehler_im_verzeichnis Z-220 "Aussage E23: derselbe Fall wie Z-218" \
+  "im Zustandsverzeichnis besteht nach dem Block keine Zaehlerdatei" \
+  "$zustand218"
+wait "$halter_pid218" 2>/dev/null || true
+}
+
+# --- Z-221: statische Lesung des flock-Aufrufs, ohne Aufruf des Gates -----
+fall_z221() {
+local flock_wartezeit221
+flock_wartezeit221=$(grep -oE 'flock -w [0-9]+' "$GATE" | grep -oE '[0-9]+$' | head -n1)
+pruefe_wahr Z-221 "selbsttest" "gleich" "Statische Lesung von .claude/hooks/dod-gate.sh, ohne Aufruf des Gates" \
+  "der flock-Aufruf des Gates nennt als Wartezeit genau 120" \
+  "$([ "$flock_wartezeit221" = "120" ] && echo 1 || echo 0)" \
+  "120" "$flock_wartezeit221"
+}
+
+# --- Z-222: mktemp -p <Zielverzeichnis> schlaegt fehl (Zeile 705) ---------
+fall_z222() {
+local baum222 zustand222 eingabe222
+baum222=$(neuer_mock_baum)
+zustand222=$(neu_verzeichnis)
+eingabe222=$(baue_eingabe "Stop" "$baum222" "fall-z222")
+rufe_gate "$eingabe222" "$zustand222" "$WERKZEUGKASTEN_FAKE_MKTEMP_Z222" \
+  "CLAUDE_PROJECT_DIR=$baum222" "MOCK_AUSGABE=darf nie gelesen werden" "MOCK_RC=0"
+pruefe_zaehler_schluessel Z-222 "mktemp -p Zielverzeichnis schlaegt fehl -- mktemp-Attrappe, deren erster Aufruf mit 1 endet" \
+  "$(zaehler_pfad "$zustand222" "fall-z222")" "GATE mktemp"
+}
+
+# --- Z-223: /tmp-Ausweichdatei physisch nicht aufloesbar (Zeile 740) ------
+fall_z223() {
+local baum223 zustand223 eingabe223 tmpdir223
+baum223=$(neuer_mock_baum)
+zustand223=$(neu_verzeichnis)
+# TMPDIR MUSS auf ein Verzeichnis AUSSERHALB "/tmp" zeigen: sonst waere
+# "ziel_verzeichnis" im Gate bereits beim ERSTEN Aufruf woertlich "/tmp"
+# (Vorgabewert ohne TMPDIR), und die Attrappe koennte ersten und zweiten
+# Aufruf nicht mehr am Argument "-p /tmp" unterscheiden (beide waeren
+# identisch) -- belegt am Bau, erster Lauf traf faelschlich Zeile 723 statt
+# 740.
+tmpdir223=$(neu_verzeichnis)
+eingabe223=$(baue_eingabe "Stop" "$baum223" "fall-z223")
+rufe_gate "$eingabe223" "$zustand223" "$WERKZEUGKASTEN_FAKE_MKTEMP_Z223" \
+  "CLAUDE_PROJECT_DIR=$baum223" "MOCK_AUSGABE=darf nie gelesen werden" "MOCK_RC=0" \
+  "FAKE_MKTEMP_ZIEL=$baum223" "TMPDIR=$tmpdir223"
+pruefe_zaehler_schluessel Z-223 "die Ausweichdatei unter /tmp ist physisch nicht aufloesbar -- Attrappe, deren zweiter Aufruf einen Pfad in einem nicht vorhandenen Verzeichnis liefert" \
+  "$(zaehler_pfad "$zustand223" "fall-z223")" "GATE mktemp"
+}
+
+# --- Z-224: auch /tmp liegt im geprueften Baum (Zeile 748) ----------------
+fall_z224() {
+local baum224 zustand224 eingabe224
+baum224=$(neuer_mock_baum)
+zustand224=$(neu_verzeichnis)
+eingabe224=$(baue_eingabe "Stop" "$baum224" "fall-z224")
+rufe_gate "$eingabe224" "$zustand224" "$WERKZEUGKASTEN_FAKE_MKTEMP_Z224" \
+  "CLAUDE_PROJECT_DIR=$baum224" "MOCK_AUSGABE=darf nie gelesen werden" "MOCK_RC=0" "FAKE_MKTEMP_ZIEL=$baum224"
+pruefe_zaehler_schluessel Z-224 "auch die Ausweichdatei liegt im geprueften Baum -- Attrappe, deren beide Aufrufe Pfade innerhalb des Baums liefern" \
+  "$(zaehler_pfad "$zustand224" "fall-z224")" "GATE mktemp"
+}
+
+# --- Z-225: Attrappenausgabe OHNE Uebersichtszeile (Zeile 805) ------------
+fall_z225() {
+local baum225 ausgabe225 zustand225
+baum225=$(neuer_mock_baum)
+# SST-P3-02: "sonst vollstaendiger Lauf" -- Marke, D19-Zeile und Schlusszeile
+# Form 1 sind mitzugeben, NUR die Uebersichtszeile selbst entfaellt (die
+# vorige Fassung liess auch Marke/D19/Schlusszeile weg und traf Zeile 805
+# ohnehin schon ueber die fehlende Baumzeile allein -- nicht ueber die
+# tatsaechlich abgezielte Pruefung "keine Uebersichtszeile trotz sonst
+# vollstaendiger Ausgabe").
+ausgabe225=$(printf 'make dod: geprueft wird %s.\n%s\n\nmake dod: D19: %s\n%s\n' \
+  "$baum225" "$(marken_zeile K1 D3 linter A_OK "" "" 0)" "$D19_OK" \
+  "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
+zustand225=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand225" "$baum225" Stop "fall-z225" "$ausgabe225" 0
+pruefe_zaehler_schluessel Z-225 "Attrappenausgabe ohne Uebersichtszeile, sonst vollstaendiger Lauf" \
+  "$(zaehler_pfad "$zustand225" "fall-z225")" "KETTE ausgabe-unlesbar"
+}
+
+# --- Z-226: Attrappenausgabe mit ZWEI D19-Zeilen statt genau einer (SST-P1-07)
+fall_z226() {
+local baum226 ausgabe226 zustand226
+baum226=$(neuer_mock_baum)
+ausgabe226=$(printf 'make dod: geprueft wird %s.\n=== Uebersicht Definition-of-Done-Kette (make dod) ===\n%s\n\nmake dod: D19: %s\nmake dod: D19: %s\n%s\n' \
+  "$baum226" "$(marken_zeile K1 D3 linter A_OK "" "" 0)" "$D19_OK" "$D19_OK" \
+  "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
+zustand226=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand226" "$baum226" Stop "fall-z226" "$ausgabe226" 0
+pruefe_zaehler_schluessel Z-226 "Attrappenausgabe mit zwei D19-Zeilen statt genau einer" \
+  "$(zaehler_pfad "$zustand226" "fall-z226")" "KETTE ausgabe-unlesbar"
+}
+
+# --- Z-227: Attrappenausgabe mit ZWEI der vier Schlusszeilen (SST-P1-08) --
+fall_z227() {
+local baum227 ausgabe227 zustand227
+baum227=$(neuer_mock_baum)
+ausgabe227=$(printf 'make dod: geprueft wird %s.\n=== Uebersicht Definition-of-Done-Kette (make dod) ===\n%s\n\nmake dod: D19: %s\n%s\n%s\n' \
+  "$baum227" "$(marken_zeile K1 D3 linter A_OK "" "" 0)" "$D19_OK" \
+  "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt." \
+  "make dod: abgebrochen bei D3 linter, Rueckgabewert 2.")
+zustand227=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand227" "$baum227" Stop "fall-z227" "$ausgabe227" 0
+pruefe_zaehler_schluessel Z-227 "Attrappenausgabe mit zwei der vier Schlusszeilen statt genau einer" \
+  "$(zaehler_pfad "$zustand227" "fall-z227")" "KETTE ausgabe-unlesbar"
+}
+
+# --- Z-228: Konsistenzwache -- A_FAIL-Marke, Form 1, Rueckgabewert 0 -----
+fall_z228() {
+local baum228 m1_228 ausgabe228 zustand228
+baum228=$(neuer_mock_baum)
+m1_228=$(marken_zeile K1 D3 linter A_FAIL "" "" 0)
+ausgabe228=$(bauen_ausgabe "$baum228" "$m1_228" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
+zustand228=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand228" "$baum228" Stop "fall-z228" "$ausgabe228" 0
+pruefe_zaehler_schluessel Z-228 "Konsistenzwache: Attrappenausgabe mit einer A_FAIL-Marke, Schlusszeile Form 1 und Rueckgabewert 0 der Kette" \
+  "$(zaehler_pfad "$zustand228" "fall-z228")" "KETTE ausgabe-unlesbar"
+}
+
+# --- Z-229: Konsistenzwache -- nur A_OK, keine gedeckte Lage C, rc != 0 ---
+fall_z229() {
+local baum229 m1_229 ausgabe229 zustand229
+baum229=$(neuer_mock_baum)
+m1_229=$(marken_zeile K1 D3 linter A_OK "" "" 2)
+# SST-P3-01: die Tabelle verlangt Schlusszeile FORM 1 (nicht Form 3/
+# abgebrochen) bei Rueckgabewert 2 der Kette und nur A_OK-Marken -- genau
+# dieser Widerspruch (Form 1 behauptet vollen Erfolg, MOCK_RC=2 sagt rot,
+# keine Marke traegt A_FAIL oder C) ist die Konsistenzwache, ausgefuehrt
+# belegt gegen Zeile 1115 im Gate (dieselbe Zeile wie die Mutation zu Z-229).
+ausgabe229=$(bauen_ausgabe "$baum229" "$m1_229" "$D19_OK" "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
+zustand229=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand229" "$baum229" Stop "fall-z229" "$ausgabe229" 2
+pruefe_zaehler_schluessel Z-229 "Konsistenzwache: Attrappenausgabe nur mit A_OK-Marken, Schlusszeile Form 1, Rueckgabewert 2 der Kette, keine gedeckte Lage C" \
+  "$(zaehler_pfad "$zustand229" "fall-z229")" "KETTE ausgabe-unlesbar"
+}
+
+# --- Z-232..Z-251 (6.12.28 c Punkt 10, O-27 (a2)): zwanzig Verstossformen
+#     gegen je ein Element des marken_muster, Vorbild fall_z170_179/fall_z185
+#     -- je eine missgebildete Marke (Probemarke nach der Fallspalte),
+#     Schlusszeile Form 1 mit der vollen Markenzahl (1), MOCK_RC=0 (die Kette
+#     behauptet vollen Erfolg; das Gate liest 0 tatsaechliche Marken, der
+#     Widerspruch zur behaupteten Markenzahl blockiert unter KETTE
+#     ausgabe-unlesbar). Basis: "::LAGE K1 D3 linter A_OK FEHLT=wert-x
+#     SCHWELLE=1200s:: (rueckgabewert=0)", je EIN gezielter Verstoss.
+fall_z232_251() {
+baum23x=$(neuer_mock_baum)
+schluss23x="make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt."
+
+# Z-232 (DT11-01): einfacher Doppelpunkt statt :: vor der Klammer
+bad232="::LAGE K1 D3 linter A_OK FEHLT=wert-x SCHWELLE=1200s: (rueckgabewert=0)"
+ausgabe232=$(bauen_ausgabe "$baum23x" "$bad232" "$D19_OK" "$schluss23x")
+zustand232=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand232" "$baum23x" Stop "fall232" "$ausgabe232" 0
+pruefe_zaehler_schluessel Z-232 "Grammatik ABSCHLUSS: Marke mit einfachem Doppelpunkt statt :: vor der Rueckgabewertklammer, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand232" "fall232")" "KETTE ausgabe-unlesbar"
+
+# Z-233 (DT11-02): kein Leerzeichen zwischen :: und der Klammer
+bad233="::LAGE K1 D3 linter A_OK FEHLT=wert-x SCHWELLE=1200s::(rueckgabewert=0)"
+ausgabe233=$(bauen_ausgabe "$baum23x" "$bad233" "$D19_OK" "$schluss23x")
+zustand233=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand233" "$baum23x" Stop "fall233" "$ausgabe233" 0
+pruefe_zaehler_schluessel Z-233 "Grammatik TRENNUNG: Marke ohne Leerzeichen zwischen :: und der Rueckgabewertklammer, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand233" "fall233")" "KETTE ausgabe-unlesbar"
+
+# Z-234 (DT11-03): leere statt fehlende Lauf-Kennung
+bad234="::LAGE  D3 linter A_OK FEHLT=wert-x SCHWELLE=1200s:: (rueckgabewert=0)"
+ausgabe234=$(bauen_ausgabe "$baum23x" "$bad234" "$D19_OK" "$schluss23x")
+zustand234=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand234" "$baum23x" Stop "fall234" "$ausgabe234" 0
+pruefe_zaehler_schluessel Z-234 "Grammatik KENNUNG: Marke mit leerer statt fehlender Lauf-Kennung (zwei Leerzeichen hinter dem Praefix), sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand234" "fall234")" "KETTE ausgabe-unlesbar"
+
+# Z-235: leere D-Nummer
+bad235="::LAGE K1  linter A_OK FEHLT=wert-x SCHWELLE=1200s:: (rueckgabewert=0)"
+ausgabe235=$(bauen_ausgabe "$baum23x" "$bad235" "$D19_OK" "$schluss23x")
+zustand235=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand235" "$baum23x" Stop "fall235" "$ausgabe235" 0
+pruefe_zaehler_schluessel Z-235 "Grammatik DNUMMER: Marke mit leerer statt fehlender D-Nummer, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand235" "fall235")" "KETTE ausgabe-unlesbar"
+
+# Z-236: leeres Ziel
+bad236="::LAGE K1 D3  A_OK FEHLT=wert-x SCHWELLE=1200s:: (rueckgabewert=0)"
+ausgabe236=$(bauen_ausgabe "$baum23x" "$bad236" "$D19_OK" "$schluss23x")
+zustand236=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand236" "$baum23x" Stop "fall236" "$ausgabe236" 0
+pruefe_zaehler_schluessel Z-236 "Grammatik ZIEL: Marke mit leerem statt fehlendem Ziel, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand236" "fall236")" "KETTE ausgabe-unlesbar"
+
+# Z-237: leeres Lage-Feld -- zwischen Ziel und Abschluss steht nur EIN
+# Leerzeichen (FEHLT/SCHWELLE ebenfalls abwesend, Weisung des Koordinators
+# vom 2026-09-07 nach der Feststellung zur Feldloeschung).
+bad237="::LAGE K1 D3 linter :: (rueckgabewert=0)"
+ausgabe237=$(bauen_ausgabe "$baum23x" "$bad237" "$D19_OK" "$schluss23x")
+zustand237=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand237" "$baum23x" Stop "fall237" "$ausgabe237" 0
+pruefe_zaehler_schluessel Z-237 "Grammatik LAGE: Marke mit leerem Lage-Feld -- zwischen Ziel und Abschluss steht nur ein Leerzeichen, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand237" "fall237")" "KETTE ausgabe-unlesbar"
+
+# Z-238 (DT11-04): fremdes Wort an der Stelle des Schwellenzusatzes
+bad238="::LAGE K1 D3 linter A_OK FEHLT=wert-x OHNE_GRENZE:: (rueckgabewert=0)"
+ausgabe238=$(bauen_ausgabe "$baum23x" "$bad238" "$D19_OK" "$schluss23x")
+zustand238=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand238" "$baum23x" Stop "fall238" "$ausgabe238" 0
+pruefe_zaehler_schluessel Z-238 "Grammatik SCHWELLE: an der Stelle des Schwellenzusatzes steht ein fremdes Wort (etwa OHNE_GRENZE), sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand238" "fall238")" "KETTE ausgabe-unlesbar"
+
+# Z-239: Doppelpunkt im Wert von SCHWELLE=
+bad239="::LAGE K1 D3 linter A_OK FEHLT=wert-x SCHWELLE=12:00s:: (rueckgabewert=0)"
+ausgabe239=$(bauen_ausgabe "$baum23x" "$bad239" "$D19_OK" "$schluss23x")
+zustand239=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand239" "$baum23x" Stop "fall239" "$ausgabe239" 0
+pruefe_zaehler_schluessel Z-239 "Grammatik SCHWELLE: der Wert von SCHWELLE= enthaelt einen Doppelpunkt, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand239" "fall239")" "KETTE ausgabe-unlesbar"
+
+# Z-240: Doppelpunkt im Wert von FEHLT= (Weisung des Koordinators)
+bad240="::LAGE K1 D3 linter A_OK FEHLT=wert:x SCHWELLE=1200s:: (rueckgabewert=0)"
+ausgabe240=$(bauen_ausgabe "$baum23x" "$bad240" "$D19_OK" "$schluss23x")
+zustand240=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand240" "$baum23x" Stop "fall240" "$ausgabe240" 0
+pruefe_zaehler_schluessel Z-240 "Grammatik FEHLT: der Wert von FEHLT= enthaelt einen Doppelpunkt, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand240" "fall240")" "KETTE ausgabe-unlesbar"
+
+# Z-241: ein zusaetzliches Feld zwischen Praefix und Lage
+bad241="::LAGE K1 D3 linter EXTRA A_OK FEHLT=wert-x SCHWELLE=1200s:: (rueckgabewert=0)"
+ausgabe241=$(bauen_ausgabe "$baum23x" "$bad241" "$D19_OK" "$schluss23x")
+zustand241=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand241" "$baum23x" Stop "fall241" "$ausgabe241" 0
+pruefe_zaehler_schluessel Z-241 "Grammatik KENNUNG: die Marke traegt ein zusaetzliches Feld zwischen Praefix und Lage, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand241" "fall241")" "KETTE ausgabe-unlesbar"
+
+# Z-242: kein trennendes Leerzeichen zwischen Ziel und Lage
+bad242="::LAGE K1 D3 linterA_OK FEHLT=wert-x SCHWELLE=1200s:: (rueckgabewert=0)"
+ausgabe242=$(bauen_ausgabe "$baum23x" "$bad242" "$D19_OK" "$schluss23x")
+zustand242=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand242" "$baum23x" Stop "fall242" "$ausgabe242" 0
+pruefe_zaehler_schluessel Z-242 "Grammatik ZIEL: zwischen Ziel und Lage steht kein trennendes Leerzeichen, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand242" "fall242")" "KETTE ausgabe-unlesbar"
+
+# Z-243: Praefix mit nur einem Doppelpunkt
+bad243=":LAGE K1 D3 linter A_OK FEHLT=wert-x SCHWELLE=1200s:: (rueckgabewert=0)"
+ausgabe243=$(bauen_ausgabe "$baum23x" "$bad243" "$D19_OK" "$schluss23x")
+zustand243=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand243" "$baum23x" Stop "fall243" "$ausgabe243" 0
+pruefe_zaehler_schluessel Z-243 "Grammatik PRAEFIX: das Praefix traegt nur einen Doppelpunkt (:LAGE ), sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand243" "fall243")" "KETTE ausgabe-unlesbar"
+
+# Z-244: Praefix ohne trennendes Leerzeichen
+bad244="::LAGEK1 D3 linter A_OK FEHLT=wert-x SCHWELLE=1200s:: (rueckgabewert=0)"
+ausgabe244=$(bauen_ausgabe "$baum23x" "$bad244" "$D19_OK" "$schluss23x")
+zustand244=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand244" "$baum23x" Stop "fall244" "$ausgabe244" 0
+pruefe_zaehler_schluessel Z-244 "Grammatik PRAEFIX: zwischen ::LAGE und der Lauf-Kennung steht kein Leerzeichen, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand244" "fall244")" "KETTE ausgabe-unlesbar"
+
+# Z-245: weder :: noch Leerzeichen vor der Klammer
+bad245="::LAGE K1 D3 linter A_OK FEHLT=wert-x SCHWELLE=1200s(rueckgabewert=0)"
+ausgabe245=$(bauen_ausgabe "$baum23x" "$bad245" "$D19_OK" "$schluss23x")
+zustand245=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand245" "$baum23x" Stop "fall245" "$ausgabe245" 0
+pruefe_zaehler_schluessel Z-245 "Grammatik ABSCHLUSS: die Marke traegt weder :: noch ein Leerzeichen vor der Rueckgabewertklammer, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand245" "fall245")" "KETTE ausgabe-unlesbar"
+
+# Z-246: Rueckgabewertklammer ohne oeffnende Klammer
+bad246="::LAGE K1 D3 linter A_OK FEHLT=wert-x SCHWELLE=1200s:: rueckgabewert=0)"
+ausgabe246=$(bauen_ausgabe "$baum23x" "$bad246" "$D19_OK" "$schluss23x")
+zustand246=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand246" "$baum23x" Stop "fall246" "$ausgabe246" 0
+pruefe_zaehler_schluessel Z-246 "Grammatik RUECKGABE: die Rueckgabewertklammer steht ohne oeffnende Klammer, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand246" "fall246")" "KETTE ausgabe-unlesbar"
+
+# Z-247: Rueckgabewertklammer ohne Gleichheitszeichen
+bad247="::LAGE K1 D3 linter A_OK FEHLT=wert-x SCHWELLE=1200s:: (rueckgabewert0)"
+ausgabe247=$(bauen_ausgabe "$baum23x" "$bad247" "$D19_OK" "$schluss23x")
+zustand247=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand247" "$baum23x" Stop "fall247" "$ausgabe247" 0
+pruefe_zaehler_schluessel Z-247 "Grammatik RUECKGABE: die Rueckgabewertklammer steht ohne Gleichheitszeichen, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand247" "fall247")" "KETTE ausgabe-unlesbar"
+
+# Z-248: ohne schliessende Klammer
+bad248="::LAGE K1 D3 linter A_OK FEHLT=wert-x SCHWELLE=1200s:: (rueckgabewert=0"
+ausgabe248=$(bauen_ausgabe "$baum23x" "$bad248" "$D19_OK" "$schluss23x")
+zustand248=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand248" "$baum23x" Stop "fall248" "$ausgabe248" 0
+pruefe_zaehler_schluessel Z-248 "Grammatik RUECKGABE: die Marke endet ohne schliessende Klammer, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand248" "fall248")" "KETTE ausgabe-unlesbar"
+
+# Z-249: ohne das Wort rueckgabewert=
+bad249="::LAGE K1 D3 linter A_OK FEHLT=wert-x SCHWELLE=1200s:: 0)"
+ausgabe249=$(bauen_ausgabe "$baum23x" "$bad249" "$D19_OK" "$schluss23x")
+zustand249=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand249" "$baum23x" Stop "fall249" "$ausgabe249" 0
+pruefe_zaehler_schluessel Z-249 "Grammatik RUECKGABE: die Marke traegt hinter dem Abschluss nur die Zahl, ohne das Wort rueckgabewert=, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand249" "fall249")" "KETTE ausgabe-unlesbar"
+
+# Z-250: Buchstabe statt Ziffer im Rueckgabewert
+bad250="::LAGE K1 D3 linter A_OK FEHLT=wert-x SCHWELLE=1200s:: (rueckgabewert=x)"
+ausgabe250=$(bauen_ausgabe "$baum23x" "$bad250" "$D19_OK" "$schluss23x")
+zustand250=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand250" "$baum23x" Stop "fall250" "$ausgabe250" 0
+pruefe_zaehler_schluessel Z-250 "Grammatik RUECKGABE: der Rueckgabewert traegt einen Buchstaben statt einer Ziffer, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand250" "fall250")" "KETTE ausgabe-unlesbar"
+
+# Z-251 (DT11-05): nachlaufendes Leerzeichen hinter der Rueckgabewertklammer
+bad251="::LAGE K1 D3 linter A_OK FEHLT=wert-x SCHWELLE=1200s:: (rueckgabewert=0) "
+ausgabe251=$(bauen_ausgabe "$baum23x" "$bad251" "$D19_OK" "$schluss23x")
+zustand251=$(neu_verzeichnis)
+lauf_mit_zustand "$zustand251" "$baum23x" Stop "fall251" "$ausgabe251" 0
+pruefe_zaehler_schluessel Z-251 "Grammatik ENDE: die Marke traegt ein nachlaufendes Leerzeichen hinter der Rueckgabewertklammer, sonst wohlgeformt, Schlusszeile Form 1 mit der vollen Markenzahl" \
+  "$(zaehler_pfad "$zustand251" "fall251")" "KETTE ausgabe-unlesbar"
+}
+
+# -----------------------------------------------------------------------------
+# pfaddeckung_pruefen (ADR 0002, 6.12.28 b, O-27 (a1), Z-230/Z-231): die
+# Sollmenge (Ausstiege UND Aufrufstellen von blockieren_mit_zaehlung, ohne
+# Definitionszeile, mit Kommentarregel) wird mechanisch aus $GATE erhoben,
+# gegen die Ausfuehrungsspur $SPUR_DATEI gehalten (jede Stelle beschritten,
+# wenn die Spur eine Zeile "^\++<n>:exit [0-9]+$" bzw.
+# "^\++<n>:blockieren_mit_zaehlung " traegt), abzueglich der Ausnahmen aus
+# .claude/hooks/dod-gate-pfadausnahmen.txt. Gibt die Zeile "Pfaddeckung: ..."
+# aus und meldet Z-230 (m=0) sowie Z-231 (Spurzeilen "set -uo pipefail"
+# gleich GATE_AUFRUF_ZAEHLER). Faellt (a) die Ausnahmedatei, (b) die
+# Sollmenge (n=0) oder (c) die Spur (leer) aus, ist das ein Fehlschlag BEIDER
+# Zeilen -- ohne fremde Kennung (6.12.28 b Punkt 4/5, fail-closed).
+# Aufgerufen (a) im Normalmodus direkt aus zusammenfassung_und_deckung_aus-
+# geben, VOR den Deckungspruefungen, und (b) im isolierten Mutationslauf aus
+# fall_z230_231, NACHDEM diese die ganze FALL_REIHENFOLGE selbst ausgefuehrt
+# hat.
+# -----------------------------------------------------------------------------
+pfaddeckung_pruefen() {
+local fallpd="Ausfuehrungsspur ueber alle Aufrufe des unveraenderten Gates in diesem Selbsttestlauf, gegen eine bytegleiche Wegwerfkopie"
+local ausnahmedatei_pd="$REPO_WURZEL/.claude/hooks/dod-gate-pfadausnahmen.txt"
+local -a soll_pd=()
+local treffer_pd nr_pd rest_pd getrimmt_pd vor_hash_pd
+
+# SST-P1-05: SPUR_KOPIE_FEHLGESCHLAGEN wurde gesetzt (oben im Vorspann,
+# cmp-Vergleich der Wegwerfkopie), aber nie ausgewertet -- eine Spur gegen
+# eine NICHT bytegleiche Kopie waere kein Beleg fuer das unveraenderte Gate
+# und musste bislang trotzdem als "beschritten" durchgehen (fail-open).
+# Fail-closed wie die beiden Faelle darunter: Z-230/Z-231 fallen sofort,
+# ohne fremde Kennung.
+if [ "${SPUR_KOPIE_FEHLGESCHLAGEN:-0}" -eq 1 ]; then
+  pruefe_wahr Z-230 "selbsttest" "gleich" "$fallpd" \
+    "die Ausgabezeile Pfaddeckung: nennt als Zahl der nicht beschrittenen Ausgangsstellen genau 0" \
+    0 "m=0" "Wegwerfkopie des Gates ist nicht bytegleich (cmp) -- Spur waere kein Beleg fuer das unveraenderte Gate"
+  pruefe_wahr Z-231 "selbsttest" "gleich" "Dieselbe Ausfuehrungsspur wie Z-230" \
+    "die Zahl der Aufrufe, die die Spur ausweist, ist gleich der Zahl der Aufrufe des Aufrufprotokolls des Selbsttests" \
+    0 "Spurzeilen=$GATE_AUFRUF_ZAEHLER" "Wegwerfkopie des Gates ist nicht bytegleich (cmp)"
+  return
+fi
+
+while IFS= read -r treffer_pd; do
+  [ -n "$treffer_pd" ] || continue
+  nr_pd="${treffer_pd%%:*}"
+  rest_pd="${treffer_pd#*:}"
+  getrimmt_pd="${rest_pd#"${rest_pd%%[![:space:]]*}"}"
+  case "$getrimmt_pd" in '#'*) continue ;; esac
+  vor_hash_pd="${rest_pd%%#*}"
+  if printf '%s' "$vor_hash_pd" | grep -qE '(^|[[:space:];&|{])exit [0-9]+'; then
+    soll_pd+=("$nr_pd")
+  fi
+done < <(grep -nE '(^|[[:space:];&|{])exit [0-9]+' "$GATE" 2>/dev/null)
+
+while IFS= read -r treffer_pd; do
+  [ -n "$treffer_pd" ] || continue
+  nr_pd="${treffer_pd%%:*}"
+  rest_pd="${treffer_pd#*:}"
+  getrimmt_pd="${rest_pd#"${rest_pd%%[![:space:]]*}"}"
+  case "$getrimmt_pd" in '#'*) continue ;; esac
+  case "$rest_pd" in *'blockieren_mit_zaehlung()'*) continue ;; esac
+  vor_hash_pd="${rest_pd%%#*}"
+  if printf '%s' "$vor_hash_pd" | grep -qE '(^|[[:space:];&|{(])blockieren_mit_zaehlung[[:space:]]'; then
+    soll_pd+=("$nr_pd")
+  fi
+done < <(grep -nE '(^|[[:space:];&|{(])blockieren_mit_zaehlung[[:space:]]' "$GATE" 2>/dev/null)
+
+local n_pd=${#soll_pd[@]}
+
+local -A beschritten_pd=()
+local zeile_pd
+if [ -f "$SPUR_DATEI" ]; then
+  while IFS= read -r zeile_pd; do
+    if [[ "$zeile_pd" =~ ^\+{1,}([0-9]+):exit\ [0-9]+$ ]]; then
+      beschritten_pd["${BASH_REMATCH[1]}"]=1
+    elif [[ "$zeile_pd" =~ ^\+{1,}([0-9]+):blockieren_mit_zaehlung\  ]]; then
+      beschritten_pd["${BASH_REMATCH[1]}"]=1
+    fi
+  done < "$SPUR_DATEI"
+fi
+
+local ausnahmedatei_fehlschlag_pd=0
+local -A ausnahme_pd=()
+if [ ! -f "$ausnahmedatei_pd" ]; then
+  ausnahmedatei_fehlschlag_pd=1
+else
+  local a_zeile_pd a_wortlaut_pd a_grund_pd a_begruendung_pd tatsaechlich_pd
+  while IFS=$'\t' read -r a_zeile_pd a_wortlaut_pd a_grund_pd a_begruendung_pd; do
+    [ -n "$a_zeile_pd" ] || continue
+    case "$a_zeile_pd" in '#'*) continue ;; esac
+    case "$a_grund_pd" in 1|2|3) ;; *) ausnahmedatei_fehlschlag_pd=1; continue ;; esac
+    [ -n "$a_begruendung_pd" ] || { ausnahmedatei_fehlschlag_pd=1; continue; }
+    tatsaechlich_pd=$(sed -n "${a_zeile_pd}p" "$GATE" 2>/dev/null)
+    tatsaechlich_pd="${tatsaechlich_pd#"${tatsaechlich_pd%%[![:space:]]*}"}"
+    if [ "$tatsaechlich_pd" != "$a_wortlaut_pd" ]; then
+      ausnahmedatei_fehlschlag_pd=1
+      continue
+    fi
+    ausnahme_pd["$a_zeile_pd"]=1
+  done < "$ausnahmedatei_pd"
+fi
+
+local -a nicht_beschritten_pd=() mit_ausnahme_pd=()
+local s_pd
+for s_pd in "${soll_pd[@]}"; do
+  [ -n "${beschritten_pd[$s_pd]:-}" ] && continue
+  if [ -n "${ausnahme_pd[$s_pd]:-}" ]; then
+    mit_ausnahme_pd+=("$s_pd")
+  else
+    nicht_beschritten_pd+=("$s_pd")
+  fi
+done
+local m_pd=${#nicht_beschritten_pd[@]}
+local a_pd=${#mit_ausnahme_pd[@]}
+
+# SST-P1-06/S12-01: NICHT mehr direkt ausgeben -- die Zeile geht NUR ueber
+# deckungszeile_registrieren ins Feld und wird erst vom Aufrufer im Block
+# der Deckungszeilen ausgegeben. Die Meldung von Z-230/Z-231 selbst (unten)
+# bleibt an dieser Stelle, VOR der Deckungszaehlung.
+deckungszeile_registrieren "Pfaddeckung: $n_pd Ausgangsstellen, $m_pd nicht beschritten, $a_pd mit Ausnahme" >/dev/null
+for s_pd in "${nicht_beschritten_pd[@]}"; do
+  local wortlaut_pd
+  wortlaut_pd=$(sed -n "${s_pd}p" "$GATE" 2>/dev/null)
+  wortlaut_pd="${wortlaut_pd#"${wortlaut_pd%%[![:space:]]*}"}"
+  deckungszeile_registrieren "Pfaddeckung: nicht beschritten: Zeile $s_pd: $wortlaut_pd" >/dev/null
+done
+
+local spurzeilen_pd
+spurzeilen_pd=0
+if [ -f "$SPUR_DATEI" ]; then
+  spurzeilen_pd=$(grep -cE '^\+{1,}[0-9]+:set -uo pipefail$' "$SPUR_DATEI" 2>/dev/null || true)
+fi
+
+if [ "$ausnahmedatei_fehlschlag_pd" -eq 1 ]; then
+  pruefe_wahr Z-230 "selbsttest" "gleich" "$fallpd" \
+    "die Ausgabezeile Pfaddeckung: nennt als Zahl der nicht beschrittenen Ausgangsstellen genau 0" \
+    0 "m=0" "Ausnahmedatei fehlt oder ungueltig: $ausnahmedatei_pd"
+  pruefe_wahr Z-231 "selbsttest" "gleich" "Dieselbe Ausfuehrungsspur wie Z-230" \
+    "die Zahl der Aufrufe, die die Spur ausweist, ist gleich der Zahl der Aufrufe des Aufrufprotokolls des Selbsttests" \
+    0 "Spurzeilen=$GATE_AUFRUF_ZAEHLER" "Ausnahmedatei fehlt oder ungueltig: $ausnahmedatei_pd"
+  return
+fi
+if [ "$n_pd" -eq 0 ] || [ -z "$(cat "$SPUR_DATEI" 2>/dev/null)" ]; then
+  pruefe_wahr Z-230 "selbsttest" "gleich" "$fallpd" \
+    "die Ausgabezeile Pfaddeckung: nennt als Zahl der nicht beschrittenen Ausgangsstellen genau 0" \
+    0 "m=0" "Sollmenge leer (n=$n_pd) oder Spur leer"
+  pruefe_wahr Z-231 "selbsttest" "gleich" "Dieselbe Ausfuehrungsspur wie Z-230" \
+    "die Zahl der Aufrufe, die die Spur ausweist, ist gleich der Zahl der Aufrufe des Aufrufprotokolls des Selbsttests" \
+    0 "Spurzeilen=$GATE_AUFRUF_ZAEHLER" "Sollmenge leer (n=$n_pd) oder Spur leer"
+  return
+fi
+
+local ok230_pd=0; [ "$m_pd" -eq 0 ] && ok230_pd=1
+pruefe_wahr Z-230 "selbsttest" "gleich" "$fallpd" \
+  "die Ausgabezeile Pfaddeckung: nennt als Zahl der nicht beschrittenen Ausgangsstellen genau 0" \
+  "$ok230_pd" "m=0" "m=$m_pd"
+
+local ok231_pd=0; [ "$spurzeilen_pd" -eq "$GATE_AUFRUF_ZAEHLER" ] && ok231_pd=1
+pruefe_wahr Z-231 "selbsttest" "gleich" "Dieselbe Ausfuehrungsspur wie Z-230" \
+  "die Zahl der Aufrufe, die die Spur ausweist, ist gleich der Zahl der Aufrufe des Aufrufprotokolls des Selbsttests" \
+  "$ok231_pd" "Spurzeilen=$GATE_AUFRUF_ZAEHLER" "Spurzeilen=$spurzeilen_pd"
+}
+
+# -----------------------------------------------------------------------------
+# fall_z230_231 (Mutationsmodus, S10-10-Folge, 6.12.28 b Punkt 8 berichtigte
+# Fassung): erkennt am LEEREN Aufrufprotokoll, dass sie isoliert laeuft, und
+# fuehrt dann die ganze FALL_REIHENFOLGE (ohne sich selbst) im eigenen
+# Prozess gegen die mutierte Kopie aus, bevor sie die Spur auswertet. Im
+# Normalmodus wird sie NICHT aufgerufen -- dort laeuft pfaddeckung_pruefen
+# direkt aus zusammenfassung_und_deckung_ausgeben.
+# -----------------------------------------------------------------------------
+fall_z230_231() {
+if [ "$GATE_AUFRUF_ZAEHLER" -eq 0 ]; then
+  local _fn230
+  for _fn230 in "${FALL_REIHENFOLGE[@]}"; do
+    "$_fn230"
+  done
+fi
+pfaddeckung_pruefen
+}
+
+# =============================================================================
+# GRAMMATIK AM GEGENSTAND (ADR 0002, 6.12.28 c, O-27 (a2)): Zerlegung des aus
+# dem Gate gelesenen marken_muster in die 16 Elemente, die geschlossene
+# Liste U1..U6 mechanisch je Element angewandt, Probemarken aus einem
+# Musterexemplar, Wirksamkeit per Bash-Regex (wie das Gate selbst prueft),
+# fallende Zusicherung am Gate ueber isolierte Kindlaeufe der bestehenden
+# Grammatik-Fallfunktionen. Alle fuenf Bausteine sind vor dem Einbau ausser-
+# halb des Repositories gegen das reale marken_muster verifiziert: 16
+# Elemente (Rekonstruktion exakt), 35 Schwaechungen vor und nach der Ent-
+# dopplung (U1=2, U2=6, U3=18, U4=6, U5=2, U6=1), Musterexemplar woertlich
+# "::LAGE x x x A_OK FEHLT=x SCHWELLE=x:: (rueckgabewert=0)", 211 Probemarken,
+# 33 von 35 Schwaechungen wirksam.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# _marken_muster_zerlegen <muster> -- Tokenizer fuer genau diesen Musterdialekt
+# (6.12.28 c Punkt 1/2): ^ am Anfang und $ am Ende sind Anker; eine unescapte
+# "(" beginnt eine Gruppe (mit "?" danach eine optionale), Tiefe gezaehlt bis
+# zur schliessenden ")"; "\(" und "\)" sind je EIN logisches Literalzeichen
+# (nicht Gruppengrenzen); alles Uebrige ist Literal, benachbarte Literal-
+# zeichen bilden EINEN Lauf, der an jeder Anker-/Gruppen-/Escape-Grenze endet.
+# Setzt die globalen Arrays ZL_TYP/ZL_TEXT/ZL_START/ZL_ORIGLEN (0-indiziert,
+# Element Nr. i steht an Index i-1). Weicht die Zahl der Elemente von 16 ab,
+# ist das ein Befund am ADR (6.12.28 c Punkt 1) -- der Aufrufer meldet das.
+# -----------------------------------------------------------------------------
+_marken_muster_zerlegen() {
+  local m="$1"
+  ZL_TYP=(); ZL_TEXT=(); ZL_START=(); ZL_ORIGLEN=()
+  local n=${#m}
+  local i=0
+  local buf="" buf_start=-1
+  while [ "$i" -lt "$n" ]; do
+    local c="${m:$i:1}"
+    if [ "$i" -eq 0 ] && [ "$c" = "^" ]; then
+      if [ -n "$buf" ]; then ZL_TYP+=("Literal"); ZL_TEXT+=("$buf"); ZL_START+=("$buf_start"); ZL_ORIGLEN+=("${#buf}"); buf=""; fi
+      ZL_TYP+=("Anker"); ZL_TEXT+=("^"); ZL_START+=("$i"); ZL_ORIGLEN+=(1)
+      i=$((i+1)); continue
+    fi
+    if [ "$c" = '$' ] && [ "$((i+1))" -eq "$n" ]; then
+      if [ -n "$buf" ]; then ZL_TYP+=("Literal"); ZL_TEXT+=("$buf"); ZL_START+=("$buf_start"); ZL_ORIGLEN+=("${#buf}"); buf=""; fi
+      ZL_TYP+=("Anker"); ZL_TEXT+=('$'); ZL_START+=("$i"); ZL_ORIGLEN+=(1)
+      i=$((i+1)); continue
+    fi
+    if [ "$c" = "\\" ] && [ "$((i+1))" -lt "$n" ]; then
+      local c2="${m:$((i+1)):1}"
+      if [ "$c2" = "(" ] || [ "$c2" = ")" ]; then
+        if [ -n "$buf" ]; then ZL_TYP+=("Literal"); ZL_TEXT+=("$buf"); ZL_START+=("$buf_start"); ZL_ORIGLEN+=("${#buf}"); buf=""; fi
+        buf="$c$c2"; buf_start=$i
+        i=$((i+2)); continue
+      fi
+    fi
+    if [ "$c" = "(" ]; then
+      if [ -n "$buf" ]; then ZL_TYP+=("Literal"); ZL_TEXT+=("$buf"); ZL_START+=("$buf_start"); ZL_ORIGLEN+=("${#buf}"); buf=""; fi
+      local depth=1
+      local j=$((i+1))
+      while [ "$j" -lt "$n" ] && [ "$depth" -gt 0 ]; do
+        local cj="${m:$j:1}"
+        if [ "$cj" = "\\" ] && [ "$((j+1))" -lt "$n" ]; then j=$((j+2)); continue; fi
+        if [ "$cj" = "(" ]; then depth=$((depth+1)); fi
+        if [ "$cj" = ")" ]; then depth=$((depth-1)); fi
+        j=$((j+1))
+      done
+      local optional=0
+      local jend=$j
+      if [ "$jend" -lt "$n" ] && [ "${m:$jend:1}" = "?" ]; then optional=1; jend=$((jend+1)); fi
+      local grouplen=$((jend - i))
+      local grouptext="${m:$i:$grouplen}"
+      if [ "$optional" -eq 1 ]; then ZL_TYP+=("Gruppe-optional"); else ZL_TYP+=("Gruppe"); fi
+      ZL_TEXT+=("$grouptext"); ZL_START+=("$i"); ZL_ORIGLEN+=("$grouplen")
+      i=$jend
+      continue
+    fi
+    if [ -z "$buf" ]; then buf_start=$i; fi
+    buf+="$c"
+    i=$((i+1))
+  done
+  if [ -n "$buf" ]; then ZL_TYP+=("Literal"); ZL_TEXT+=("$buf"); ZL_START+=("$buf_start"); ZL_ORIGLEN+=("${#buf}"); fi
+}
+
+# _element_ersetzen <muster> <elementindex 1-basiert> <neuertext> -- spleisst
+# neuertext an der Original-Position von Element idx (aus ZL_START/ZL_ORIGLEN
+# der letzten _marken_muster_zerlegen) und gibt das neue Muster aus.
+_element_ersetzen() {
+  local m="$1" idx="$2" neu="$3"
+  local off="${ZL_START[$((idx-1))]}"
+  local orig_len="${ZL_ORIGLEN[$((idx-1))]}"
+  printf '%s%s%s' "${m:0:$off}" "$neu" "${m:$((off+orig_len))}"
+}
+
+# -----------------------------------------------------------------------------
+# _schwaechungen_erzeugen <muster> -- wendet U1..U6 (6.12.28 c Punkt 3) je
+# Element mechanisch an. Setzt SCHW_LABEL/SCHW_MUSTER/SCHW_ELEMENT (0-
+# indiziert) und SCHW_VORFILTER (die fuer Element 1/2 zusaetzlich am
+# awk-Vorfilter "^::LAGE " noetige Fassung -- fuer alle anderen Elemente
+# unveraendert "^::LAGE ", 6.12.28 c Punkt 7). Zeichengleiche Schwaechungen
+# (volles resultierendes Muster identisch) zaehlen einmal (globaler Dedup).
+# ROH_ANZAHL zaehlt vor der Entdopplung (erwartet 35, nicht verdrahtet).
+# -----------------------------------------------------------------------------
+_schwaechungen_erzeugen() {
+  local m="$1"
+  SCHW_LABEL=(); SCHW_MUSTER=(); SCHW_ELEMENT=(); SCHW_VORFILTER=()
+  local -A gesehen=()
+  ROH_ANZAHL=0
+  local idx
+  _sz_add() {
+    local label="$1" text="$2"
+    ROH_ANZAHL=$((ROH_ANZAHL+1))
+    local neues_muster
+    neues_muster=$(_element_ersetzen "$m" "$idx" "$text")
+    [ -n "${gesehen[$neues_muster]:-}" ] && return
+    gesehen["$neues_muster"]=1
+    SCHW_LABEL+=("$label")
+    SCHW_MUSTER+=("$neues_muster")
+    SCHW_ELEMENT+=("$idx")
+    if [ "$idx" -le 2 ]; then
+      SCHW_VORFILTER+=("$(_element_ersetzen "^::LAGE " "$idx" "$text")")
+    else
+      SCHW_VORFILTER+=("^::LAGE ")
+    fi
+  }
+  for idx in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; do
+    local typ="${ZL_TYP[$((idx-1))]}" text="${ZL_TEXT[$((idx-1))]}"
+    case "$typ" in
+      Anker)
+        _sz_add "U1 Anker entfernt (Element $idx)" ""
+        if [ "$idx" -eq 16 ]; then
+          _sz_add "U6 Leerraum vor Endanker (Element $idx)" ' *$'
+        fi
+        ;;
+      Literal)
+        local -a logchars=() logstarts=()
+        local li=0 llen=${#text}
+        while [ "$li" -lt "$llen" ]; do
+          local lc="${text:$li:1}"
+          if [ "$lc" = "\\" ] && [ "$((li+1))" -lt "$llen" ]; then
+            local lc2="${text:$((li+1)):1}"
+            if [ "$lc2" = "(" ] || [ "$lc2" = ")" ]; then
+              logchars+=("$lc$lc2"); logstarts+=("$li"); li=$((li+2)); continue
+            fi
+          fi
+          logchars+=("$lc"); logstarts+=("$li"); li=$((li+1))
+        done
+        local lcount=${#logchars[@]}
+        if [ "$lcount" -eq 1 ]; then
+          _sz_add "U3 Literal optional, einzeichig (Element $idx)" "${text}?"
+        else
+          local erstes="${logchars[0]}"
+          local rest_ab_1="${text:${#erstes}}"
+          local letztes="${logchars[$((lcount-1))]}"
+          local vor_letztem="${text:0:${logstarts[$((lcount-1))]}}"
+          _sz_add "U3(i) ganzes Literal optional (Element $idx)" "(${text})?"
+          _sz_add "U3(ii) erstes Zeichen optional (Element $idx)" "${erstes}?${rest_ab_1}"
+          _sz_add "U3(iii) letztes Zeichen optional (Element $idx)" "${vor_letztem}${letztes}?"
+        fi
+        ;;
+      Gruppe)
+        _sz_add "U3(i) Gruppe optional (Element $idx)" "${text}?"
+        if [[ "$text" == *'+'* ]]; then
+          _sz_add "U2 Quantor + zu * (Element $idx)" "${text//+/\*}"
+        fi
+        if [[ "$text" == *'[^ :]'* ]]; then
+          _sz_add "U4 Zeichenklasse [^ :] zu [^ ] (Element $idx)" "${text//\[^ :\]/[^ ]}"
+        elif [[ "$text" == *'[^ ]'* ]]; then
+          _sz_add "U4 Zeichenklasse [^ ] zu . (Element $idx)" "${text//\[^ \]/.}"
+        elif [[ "$text" == *'[0-9]'* ]]; then
+          _sz_add "U4 Zeichenklasse [0-9] zu . (Element $idx)" "${text//\[0-9\]/.}"
+        fi
+        if [ "$idx" -eq 9 ]; then
+          _sz_add "U5 Alternative erweitert (Element $idx)" "${text%)}|[^ ]+)"
+        fi
+        ;;
+      Gruppe-optional)
+        if [[ "$text" == *'+'* ]]; then
+          _sz_add "U2 Quantor + zu * (Element $idx)" "${text//+/\*}"
+        fi
+        if [[ "$text" == *'[^ :]'* ]]; then
+          _sz_add "U4 Zeichenklasse [^ :] zu [^ ] (Element $idx)" "${text//\[^ :\]/[^ ]}"
+        elif [[ "$text" == *'[^ ]'* ]]; then
+          _sz_add "U4 Zeichenklasse [^ ] zu . (Element $idx)" "${text//\[^ \]/.}"
+        elif [[ "$text" == *'[0-9]'* ]]; then
+          _sz_add "U4 Zeichenklasse [0-9] zu . (Element $idx)" "${text//\[0-9\]/.}"
+        fi
+        if [ "$idx" -eq 11 ]; then
+          _sz_add "U5 Alternative erweitert (Element $idx)" "${text%))?}|[^ ]+))?"
+        fi
+        ;;
+    esac
+  done
+}
+
+# -----------------------------------------------------------------------------
+# _musterexemplar_bauen -- realisiert die 16 Elemente zu EINER Zeichenkette
+# (6.12.28 c Punkt 4 Nr. 1): je Zeichenklasse ein zulaessiges Zeichen ("x"
+# bzw. "0" bei [0-9]), je Alternativengruppe die erste Alternative, alle
+# optionalen Gruppen enthalten. Setzt MX_TEXT sowie MX_START/MX_LEN (Position
+# und Laenge der Realisierung JEDES Elements innerhalb MX_TEXT, fuer die
+# Feld-Loeschungen unten).
+# -----------------------------------------------------------------------------
+_musterexemplar_bauen() {
+  MX_TEXT=""
+  MX_START=(); MX_LEN=()
+  local idx
+  for idx in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; do
+    local typ="${ZL_TYP[$((idx-1))]}" text="${ZL_TEXT[$((idx-1))]}"
+    local stueck=""
+    case "$typ" in
+      Anker) stueck="" ;;
+      Literal)
+        stueck="${text//\\(/(}"; stueck="${stueck//\\)/)}"
+        ;;
+      Gruppe)
+        case "$idx" in
+          9) stueck="A_OK" ;;
+          14) stueck="0" ;;
+          *) stueck="x" ;;
+        esac
+        ;;
+      Gruppe-optional)
+        case "$idx" in
+          10) stueck=" FEHLT=x" ;;
+          11) stueck=" SCHWELLE=x" ;;
+        esac
+        ;;
+    esac
+    MX_START+=("${#MX_TEXT}")
+    MX_LEN+=("${#stueck}")
+    MX_TEXT+="$stueck"
+  done
+}
+
+# -----------------------------------------------------------------------------
+# _probemarken_erzeugen -- alle Einzelaenderungen aus dem Musterexemplar
+# (6.12.28 c Punkt 4 Nr. 2): je ein Zeichen geloescht, je ein Leerzeichen
+# eingefuegt, je ein Buchstabe eingefuegt, je ein Zeichen verdoppelt, dazu
+# neun "ganzes Feld geloescht"-Marken (die drei Feldwerte 3/5/7 -- NUR der
+# Wert, ohne das umgebende Trennzeichen; die beiden Zusaetze 10/11 -- die
+# GANZE realisierte Spanne EINSCHLIESSLICH des fuehrenden Leerzeichens, weil
+# dieses zur selben optionalen Gruppe gehoert; die Literale 2, 12, 13, 15).
+# Setzt PROBEMARKEN, dedupliziert nach Zeicheninhalt.
+# -----------------------------------------------------------------------------
+_probemarken_erzeugen() {
+  PROBEMARKEN=()
+  local -A gesehen=()
+  local ex="$MX_TEXT"
+  local n=${#ex}
+  local i
+  for ((i=0; i<n; i++)); do
+    local mark="${ex:0:$i}${ex:$((i+1))}"
+    [ -z "${gesehen[$mark]:-}" ] && { gesehen["$mark"]=1; PROBEMARKEN+=("$mark"); }
+  done
+  for ((i=0; i<=n; i++)); do
+    local mark="${ex:0:$i} ${ex:$i}"
+    [ -z "${gesehen[$mark]:-}" ] && { gesehen["$mark"]=1; PROBEMARKEN+=("$mark"); }
+  done
+  for ((i=0; i<=n; i++)); do
+    local mark="${ex:0:$i}q${ex:$i}"
+    [ -z "${gesehen[$mark]:-}" ] && { gesehen["$mark"]=1; PROBEMARKEN+=("$mark"); }
+  done
+  for ((i=0; i<n; i++)); do
+    local ch="${ex:$i:1}"
+    local mark="${ex:0:$i}$ch$ch${ex:$((i+1))}"
+    [ -z "${gesehen[$mark]:-}" ] && { gesehen["$mark"]=1; PROBEMARKEN+=("$mark"); }
+  done
+  local feldidx
+  for feldidx in 3 5 7 10 11 2 12 13 15; do
+    local st="${MX_START[$((feldidx-1))]}" ln="${MX_LEN[$((feldidx-1))]}"
+    local mark="${ex:0:$st}${ex:$((st+ln))}"
+    [ -z "${gesehen[$mark]:-}" ] && { gesehen["$mark"]=1; PROBEMARKEN+=("$mark"); }
+  done
+
+  # Nachtrag c Punkt 4, Regel 4 (O-27 Phase 3): Feldloeschung zusaetzlich als
+  # Loeschung ALLEIN des realisierten WERTS (Trennzeichen/Literalpraefix wie
+  # "FEHLT=" bleiben stehen), fuer die Elemente 3, 5, 7, 9, 10, 11, 14 --
+  # zusaetzlich zur bestehenden Loeschung der ganzen Spanne bei 10 und 11
+  # oben. Der Wertanfang wird mechanisch als Stelle NACH dem letzten "="
+  # innerhalb der Elementspanne bestimmt; traegt das Element kein "=", ist
+  # der Wert die ganze Spanne (deckungsgleich mit der bestehenden Regel,
+  # ueber "gesehen" dedupliziert).
+  for feldidx in 3 5 7 9 10 11 14; do
+    local st="${MX_START[$((feldidx-1))]}" ln="${MX_LEN[$((feldidx-1))]}"
+    local spanwert="${ex:$st:$ln}"
+    local eqpos=-1 ci
+    for ((ci=ln-1; ci>=0; ci--)); do
+      if [ "${spanwert:$ci:1}" = "=" ]; then eqpos=$ci; break; fi
+    done
+    local wertstart=$st
+    [ "$eqpos" -ge 0 ] && wertstart=$((st+eqpos+1))
+    local mark="${ex:0:$wertstart}${ex:$((st+ln))}"
+    [ -z "${gesehen[$mark]:-}" ] && { gesehen["$mark"]=1; PROBEMARKEN+=("$mark"); }
+  done
+
+  # Nachtrag c Punkt 4, Regel 3 (O-27 Phase 3): je Position wird zusaetzlich
+  # EIN Zeichen aus der Menge der von negierten Zeichenklassen ("[^...]")
+  # AUSGESCHLOSSENEN Zeichen eingefuegt -- mechanisch aus dem rohen Muster im
+  # Gate gelesen, heute Leerzeichen und Doppelpunkt (Klassen "[^ ]"/"[^ :]").
+  local roh_muster_pm
+  roh_muster_pm=$(sed -n "s/^marken_muster='\(.*\)'\$/\1/p" "$GATE")
+  local -a ausgeschlossen_pm=()
+  local -A ausgeschlossen_gesehen_pm=()
+  local klasse_pm zeichenliste_pm zi_pm zeichen_pm
+  while IFS= read -r klasse_pm; do
+    [ -n "$klasse_pm" ] || continue
+    zeichenliste_pm="${klasse_pm#\[^}"
+    zeichenliste_pm="${zeichenliste_pm%]}"
+    for ((zi_pm=0; zi_pm<${#zeichenliste_pm}; zi_pm++)); do
+      zeichen_pm="${zeichenliste_pm:$zi_pm:1}"
+      [ -n "${ausgeschlossen_gesehen_pm[$zeichen_pm]:-}" ] && continue
+      ausgeschlossen_gesehen_pm["$zeichen_pm"]=1
+      ausgeschlossen_pm+=("$zeichen_pm")
+    done
+  done < <(printf '%s' "$roh_muster_pm" | grep -oE '\[\^[^]]*\]')
+  local zch_pm
+  for zch_pm in "${ausgeschlossen_pm[@]}"; do
+    for ((i=0; i<=n; i++)); do
+      local mark="${ex:0:$i}${zch_pm}${ex:$i}"
+      [ -z "${gesehen[$mark]:-}" ] && { gesehen["$mark"]=1; PROBEMARKEN+=("$mark"); }
+    done
+  done
+}
+
+# _schwaechung_wirksam <original> <geschwaecht> -- 6.12.28 c Punkt 5: wirksam,
+# wenn MINDESTENS EINE Probemarke die Schwaechung annimmt und das
+# unveraenderte Muster ablehnt. Bash-Regex (=~), wie das Gate selbst prueft.
+_schwaechung_wirksam() {
+  local orig="$1" schw="$2"
+  local mark
+  for mark in "${PROBEMARKEN[@]}"; do
+    if [[ "$mark" =~ $schw ]] && ! [[ "$mark" =~ $orig ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+# -----------------------------------------------------------------------------
+# _schwaechung_kopie_bauen <neu_muster> <element_idx> <neu_vorfilter> <ziel>
+# -- schreibt eine Gate-Kopie, in der die marken_muster-Zeile ersetzt ist;
+# betrifft die Schwaechung Element 1 oder 2, wird zusaetzlich der
+# awk-Vorfilter "/^::LAGE /" (Gate, Uebersichtszeilen-Filter) auf dieselbe
+# Weise geschwaecht (6.12.28 c Punkt 7). Reine Bash-String-Operationen ueber
+# mapfile -- kein sed/awk-Escaping des Musters noetig.
+# -----------------------------------------------------------------------------
+_schwaechung_kopie_bauen() {
+  local neu_muster="$1" elidx="$2" neu_vorfilter="$3" ziel="$4"
+  local -a zeilen
+  mapfile -t zeilen < "$GATE"
+  local i
+  for i in "${!zeilen[@]}"; do
+    case "${zeilen[$i]}" in
+      marken_muster=*)
+        zeilen[$i]="marken_muster='${neu_muster}'"
+        ;;
+    esac
+    if [ "$elidx" -le 2 ]; then
+      case "${zeilen[$i]}" in
+        *'/^::LAGE /'*)
+          zeilen[$i]="${zeilen[$i]//\/^::LAGE \//\/${neu_vorfilter}\/}"
+          ;;
+      esac
+    fi
+  done
+  printf '%s\n' "${zeilen[@]}" > "$ziel"
+}
+
+# -----------------------------------------------------------------------------
+# _grammatik_fallfunktionen_liste -- mechanisch bestimmt (6.12.28 c Punkt 5):
+# alle Kennungen der Tabelle 6.12.19, deren Fallspalte mit "Grammatik "
+# beginnt, in Tabellenreihenfolge, ueber FALL_ZU_KENNUNG auf Fallfunktionen
+# abgebildet, jede Funktion EINMAL (dedupliziert). Kennungen ohne Eintrag in
+# FALL_ZU_KENNUNG (noch nicht gebaut) werden uebergangen -- das ist genau der
+# Zustand des ERSTEN Laufs (c Punkt 10), der nur die heute bestehenden
+# Grammatik-Fallfunktionen kennt. Setzt GRAMMATIK_FUNKTIONEN.
+# -----------------------------------------------------------------------------
+_grammatik_fallfunktionen_liste() {
+  GRAMMATIK_FUNKTIONEN=()
+  local adr_pfad="$REPO_WURZEL/docs/adr/0002-architekturentscheid-ziel-stack.md"
+  local -A gesehen=()
+  local zeile kennung zeile_maskiert fall_zelle fn
+  while IFS= read -r zeile; do
+    kennung=$(printf '%s' "$zeile" | sed -n 's/^| \(Z-[0-9][0-9]*\).*/\1/p')
+    [ -n "$kennung" ] || continue
+    zeile_maskiert=$(printf '%s' "$zeile" | sed 's/\\|/\x01/g')
+    fall_zelle=$(printf '%s' "$zeile_maskiert" | awk -F'|' '{print $3}' | sed -e 's/^ *//' -e 's/ *$//')
+    case "$fall_zelle" in
+      "Grammatik "*)
+        fn="${FALL_ZU_KENNUNG[$kennung]:-}"
+        [ -n "$fn" ] || continue
+        [ -n "${gesehen[$fn]:-}" ] && continue
+        gesehen["$fn"]=1
+        GRAMMATIK_FUNKTIONEN+=("$fn")
+        ;;
+    esac
+  done < <(grep '^| Z-' "$adr_pfad")
+}
+
+# -----------------------------------------------------------------------------
+# fall_z252_255 (6.12.28 c Punkt 6, O-27 (a2)): erzeugt die Schwaechungen des
+# aus dem Gate gelesenen marken_muster SELBST und ruft die
+# Grammatik-Fallfunktionen selbst auf -- braucht FALL_REIHENFOLGE NICHT
+# (anders als fall_z230_231), laeuft deshalb unveraendert im Normalmodus wie
+# im isolierten Mutationslauf. Je wirksamer Schwaechung eine Gate-Kopie,
+# isoliert (eigener Vorspann-Kindprozess, wie der Mutationsmodus) gegen die
+# mechanisch bestimmten Grammatik-Fallfunktionen geprueft, Abbruch der Folge
+# bei der ERSTEN Kennung, die FEHLGESCHLAGEN meldet (gedeckt = Existenz, nicht
+# Zahl). Diese Kindlaeufe gehen weder in die Spur der Pfaddeckung noch in die
+# Invarianten Z-194..Z-197 ein (eigenes Protokoll im Kindprozess).
+# -----------------------------------------------------------------------------
+fall_z252_255() {
+local muster252
+muster252=$(sed -n "s/^marken_muster='\(.*\)'\$/\1/p" "$GATE")
+local fall252="Schwaechungslauf: alle mechanisch erzeugten Schwaechungen des aus dem Gate gelesenen marken_muster, je gegen die Grammatik-Fallfunktionen an einer geschwaechten Gate-Kopie"
+
+if [ -z "$muster252" ]; then
+  deckungszeile_registrieren "Grammatikschwaechungen: marken_muster leer -- Schwaechungslauf abgebrochen" >/dev/null
+  pruefe_wahr Z-252 "selbsttest" "gleich" "$fall252" \
+    "die Ausgabezeile Grammatikschwaechungen: nennt als Zahl der wirksamen Schwaechungen ohne fallende Zusicherung genau 0" \
+    0 "m=0" "marken_muster leer"
+  pruefe_wahr Z-255 "selbsttest" "fehlt" "Schwaechungslauf wie Z-252" \
+    "die Ausgabe des Selbsttests fuehrt keine Zeile Grammatikschwaechungen:, die als Zahl der wirksamen Schwaechungen 0 nennt" \
+    0 "keine Zeile mit w=0" "marken_muster leer"
+  return
+fi
+
+_marken_muster_zerlegen "$muster252"
+if [ "${#ZL_TYP[@]}" -ne 16 ]; then
+  deckungszeile_registrieren "Grammatikschwaechungen: ${#ZL_TYP[@]} statt 16 Elemente -- Befund am ADR (6.12.28 c Punkt 1), Schwaechungslauf abgebrochen" >/dev/null
+  pruefe_wahr Z-252 "selbsttest" "gleich" "$fall252" \
+    "die Ausgabezeile Grammatikschwaechungen: nennt als Zahl der wirksamen Schwaechungen ohne fallende Zusicherung genau 0" \
+    0 "m=0" "Zerlegung liefert ${#ZL_TYP[@]} statt 16 Elemente"
+  pruefe_wahr Z-255 "selbsttest" "fehlt" "Schwaechungslauf wie Z-252" \
+    "die Ausgabe des Selbsttests fuehrt keine Zeile Grammatikschwaechungen:, die als Zahl der wirksamen Schwaechungen 0 nennt" \
+    0 "keine Zeile mit w=0" "Zerlegung liefert ${#ZL_TYP[@]} statt 16 Elemente"
+  return
+fi
+
+_schwaechungen_erzeugen "$muster252"
+_musterexemplar_bauen
+_probemarken_erzeugen
+if [ "${#PROBEMARKEN[@]}" -eq 0 ]; then
+  deckungszeile_registrieren "Grammatikschwaechungen: 0 Probemarken -- Schwaechungslauf abgebrochen" >/dev/null
+  pruefe_wahr Z-252 "selbsttest" "gleich" "$fall252" \
+    "die Ausgabezeile Grammatikschwaechungen: nennt als Zahl der wirksamen Schwaechungen ohne fallende Zusicherung genau 0" \
+    0 "m=0" "Probemarkenmenge leer"
+  pruefe_wahr Z-255 "selbsttest" "fehlt" "Schwaechungslauf wie Z-252" \
+    "die Ausgabe des Selbsttests fuehrt keine Zeile Grammatikschwaechungen:, die als Zahl der wirksamen Schwaechungen 0 nennt" \
+    0 "keine Zeile mit w=0" "Probemarkenmenge leer"
+  return
+fi
+_grammatik_fallfunktionen_liste
+
+local prefix_start252 prefix_end252 selbsttest_pfad252
+selbsttest_pfad252="$REPO_WURZEL/scripts/dod-gate-selbsttest.sh"
+prefix_start252=$(grep -n '^# ::VORSPANN-START::$' "$selbsttest_pfad252" | head -1 | cut -d: -f1)
+prefix_end252=$(grep -n '^# ::VORSPANN-ENDE::$' "$selbsttest_pfad252" | head -1 | cut -d: -f1)
+local vorspann_datei252
+vorspann_datei252=$(mktemp)
+{
+  echo '#!/usr/bin/env bash'
+  echo 'set -uo pipefail'
+  if [ -n "${SELBSTTEST_SPERRE_FD:-}" ]; then
+    printf 'exec %s>&- 2>/dev/null || true\n' "$SELBSTTEST_SPERRE_FD"
+  fi
+  printf 'REPO_WURZEL=%q\n' "$REPO_WURZEL"
+  sed -n "$((prefix_start252 + 1)),$((prefix_end252 - 1))p" "$selbsttest_pfad252"
+} > "$vorspann_datei252"
+
+local n252=${#SCHW_LABEL[@]}
+local w252=0
+local -a ohne252=()
+local start_zeit252 ende_zeit252
+start_zeit252=$(date +%s)
+local idx252
+for idx252 in "${!SCHW_LABEL[@]}"; do
+  _schwaechung_wirksam "$muster252" "${SCHW_MUSTER[$idx252]}" || continue
+  w252=$((w252+1))
+  local kopie_verz252 kopie_pfad252
+  kopie_verz252=$(mktemp -d)
+  kopie_pfad252="$kopie_verz252/dod-gate.sh"
+  _schwaechung_kopie_bauen "${SCHW_MUSTER[$idx252]}" "${SCHW_ELEMENT[$idx252]}" "${SCHW_VORFILTER[$idx252]}" "$kopie_pfad252"
+  local gedeckt252=0 fn252
+  for fn252 in "${GRAMMATIK_FUNKTIONEN[@]}"; do
+    local falllauf252 ausgabe252
+    falllauf252="$kopie_verz252/fall.sh"
+    ausgabe252="$kopie_verz252/ausgabe.log"
+    cat "$vorspann_datei252" > "$falllauf252"
+    printf '%s\n' "$fn252" >> "$falllauf252"
+    (
+      if [ -n "${SELBSTTEST_SPERRE_FD:-}" ]; then
+        exec {SELBSTTEST_SPERRE_FD}>&- 2>/dev/null || true
+      fi
+      exec env -i PATH="$PATH" HOME="${HOME:-/root}" GATE_UEBERSCHREIBUNG="$kopie_pfad252" \
+        timeout 30 "$BASH_BIN" "$falllauf252"
+    ) > "$ausgabe252" 2>&1
+    if grep -qE '^FEHLGESCHLAGEN Z-' "$ausgabe252"; then
+      gedeckt252=1
+      break
+    fi
+  done
+  rm -rf "$kopie_verz252"
+  if [ "$gedeckt252" -eq 0 ]; then
+    ohne252+=("${SCHW_LABEL[$idx252]} | ${SCHW_MUSTER[$idx252]}")
+  fi
+done
+ende_zeit252=$(date +%s)
+rm -f "$vorspann_datei252"
+
+local m252=${#ohne252[@]}
+deckungszeile_registrieren "Grammatikschwaechungen: $n252 Schwaechungen, $w252 wirksam, $m252 ohne fallende Zusicherung (Dauer $((ende_zeit252 - start_zeit252))s)" >/dev/null
+local z252
+for z252 in "${ohne252[@]}"; do
+  echo "Grammatikschwaechungen: ohne fallende Zusicherung: $z252"
+done
+
+local ok252=0; [ "$m252" -eq 0 ] && ok252=1
+pruefe_wahr Z-252 "selbsttest" "gleich" "$fall252" \
+  "die Ausgabezeile Grammatikschwaechungen: nennt als Zahl der wirksamen Schwaechungen ohne fallende Zusicherung genau 0" \
+  "$ok252" "m=0" "m=$m252"
+
+local ok255=0; [ "$w252" -gt 0 ] && ok255=1
+pruefe_wahr Z-255 "selbsttest" "fehlt" "Schwaechungslauf wie Z-252" \
+  "die Ausgabe des Selbsttests fuehrt keine Zeile Grammatikschwaechungen:, die als Zahl der wirksamen Schwaechungen 0 nennt" \
+  "$ok255" "keine Zeile mit w=0" "w=$w252"
+}
+
+# -----------------------------------------------------------------------------
+# fall_z256/fall_z257 (6.12.28 d, Runde 11 DT11-06, O-27 Phase 3): Aussage E21
+# ("gezaehlt wird die erste Abweichung, genannt werden ALLE") an den beiden
+# UEBRIGEN Aufrufstellen von weitere_abweichungen_ausgeben im Gate -- der
+# "drittes Mal"-Zweig (Z-256) und der "viertes Mal ohne Uebergabedatei"-Zweig
+# (Z-257). Die dritte Aufrufstelle (Regelfall, 1./2. Mal) ist bereits durch
+# Z-050/Z-051/Z-053 gedeckt (fall_z049_053). ABSICHTLICH zwei getrennte
+# Fallfunktionen statt einer gemeinsamen: Z-258 vergleicht die Zahl der
+# Aufrufstellen (3, statisch aus dem Gate) mit der Zahl der VERSCHIEDENEN
+# Fallfunktionen, deren ADR-Fallspalte "Aussage E21: " traegt -- nur mit drei
+# getrennten Funktionen (fall_z049_053, fall_z256, fall_z257) ist diese Zahl
+# selbst wirklich 3 (6.2.2, keine geschoente Zaehlung).
+#
+# Zaehlerdatei WIRD VORAB geschrieben (Schluessel + Stand), statt drei/vier
+# echte Gate-Aufrufe hintereinander laufen zu lassen (Vorbild fall_z038_048
+# fuer die Mechanik, hier abgekuerzt): der Schluessel ist die ERSTE Abweichung
+# in Kettenreihenfolge -- hier die A_FAIL-Marke, die als ERSTE Zeile der
+# Uebersicht steht ("D3 linter A_FAIL"), VOR den beiden ungedeckten Lagen C.
+# Ausgabe im Uebrigen wie fall_z049_053 (A_FAIL, zwei ungedeckte Lagen C,
+# D19 VERLETZT), nur die Reihenfolge der Marken ist getauscht.
+# -----------------------------------------------------------------------------
+fall_z256() {
+local baum256 m1_256 m2_256 m3_256 ausgabe256 zustand256 zaehlerdatei256
+baum256=$(neuer_mock_baum)
+m1_256=$(marken_zeile K1 D3 linter A_FAIL "" "" 2)
+m2_256=$(marken_zeile K1 D7 abnahme C scripts/abnahme-abgleich.sh "" 2)
+m3_256=$(marken_zeile K1 D10 prototyp-trennung C scripts/prototyp-trennung-pruefen.sh "" 2)
+ausgabe256=$(bauen_ausgabe "$baum256" "$m1_256
+$m2_256
+$m3_256" "VERLETZT -- versionierter Bestand veraendert." "make dod: abgebrochen bei D3 linter, Rueckgabewert 2.")
+zustand256=$(neu_verzeichnis)
+zaehlerdatei256=$(zaehler_pfad "$zustand256" "fall-z256")
+mkdir -p "$(dirname "$zaehlerdatei256")"
+printf '%s\n2\n' "D3 linter A_FAIL" > "$zaehlerdatei256"
+lauf_mit_zustand "$zustand256" "$baum256" Stop "fall-z256" "$ausgabe256" 2
+pruefe_stderr_enthaelt Z-256 "Aussage E21: dritter Block in derselben Sitzung, Kettenausgabe mit A_FAIL, zwei ungedeckten Lagen C und D19 VERLETZT" \
+  "die Blockmeldung des dritten Blocks nennt neben der gezaehlten ersten Abweichung auch die zweite ungedeckte Lage C" \
+  "weitere Abweichung: Schritt D10 prototyp-trennung meldet Lage C mit FEHLT=scripts/prototyp-trennung-pruefen.sh"
+}
+
+fall_z257() {
+local baum257 m1_257 m2_257 m3_257 ausgabe257 zustand257 zaehlerdatei257
+baum257=$(neuer_mock_baum)
+m1_257=$(marken_zeile K1 D3 linter A_FAIL "" "" 2)
+m2_257=$(marken_zeile K1 D7 abnahme C scripts/abnahme-abgleich.sh "" 2)
+m3_257=$(marken_zeile K1 D10 prototyp-trennung C scripts/prototyp-trennung-pruefen.sh "" 2)
+ausgabe257=$(bauen_ausgabe "$baum257" "$m1_257
+$m2_257
+$m3_257" "VERLETZT -- versionierter Bestand veraendert." "make dod: abgebrochen bei D3 linter, Rueckgabewert 2.")
+zustand257=$(neu_verzeichnis)
+zaehlerdatei257=$(zaehler_pfad "$zustand257" "fall-z257")
+mkdir -p "$(dirname "$zaehlerdatei257")"
+printf '%s\n3\n' "D3 linter A_FAIL" > "$zaehlerdatei257"
+# Frischer Mock-Baum ohne docs/uebergaben/ -- handoff_gefunden bleibt 0, das
+# Gate faellt auf den Block OHNE Durchlass zurueck (viertes Mal, Zeile
+# 315..330 im Gate).
+lauf_mit_zustand "$zustand257" "$baum257" Stop "fall-z257" "$ausgabe257" 2
+pruefe_stderr_enthaelt Z-257 "Aussage E21: vierter Block ohne passende Uebergabedatei, Kettenausgabe mit A_FAIL, zwei ungedeckten Lagen C und D19 VERLETZT" \
+  "die Blockmeldung des vierten Blocks nennt neben der gezaehlten ersten Abweichung auch die zweite ungedeckte Lage C" \
+  "weitere Abweichung: Schritt D10 prototyp-trennung meldet Lage C mit FEHLT=scripts/prototyp-trennung-pruefen.sh"
+}
+
+# -----------------------------------------------------------------------------
+# fall_z258 (6.12.28 d, Aufrufstellendeckung zu E21): statische Lesung von
+# .claude/hooks/dod-gate.sh (Zahl der Aufrufstellen von
+# weitere_abweichungen_ausgeben, Definitionszeile ausgenommen) gegen die Zahl
+# der VERSCHIEDENEN Fallfunktionen dieses Selbsttests, deren ADR-Fallspalte
+# (FALL_TABELLE, via tabelle_lesen) mit "Aussage E21: " beginnt -- ueber
+# FALL_ZU_KENNUNG auf Fallfunktionsnamen abgebildet, jede Funktion einmal.
+# -----------------------------------------------------------------------------
+fall_z258() {
+local adr_pfad258 k258 fallname258 anzahl_funktionen258
+adr_pfad258="$REPO_WURZEL/docs/adr/0002-architekturentscheid-ziel-stack.md"
+tabelle_lesen "$adr_pfad258"
+
+# S12-05: Erhebungsmuster wie bei den Aufrufstellen der Pfaddeckung
+# (pfaddeckung_pruefen oben) -- Kommentarzeilen ausgeschlossen (Zeile ganz
+# oder der Teil hinter "#"), die Definitionszeile
+# "weitere_abweichungen_ausgeben() {" ausgeschlossen. Ein blosses
+# "grep -c" ohne diese Regeln zaehlte auch Kommentare, die den Namen nur
+# ERWAEHNEN, als Aufrufstelle mit -- das war der vorige Fehler.
+local -a aufrufstellen_treffer258=()
+local treffer258 nr258 rest258 getrimmt258 vor_hash258
+while IFS= read -r treffer258; do
+  [ -n "$treffer258" ] || continue
+  nr258="${treffer258%%:*}"
+  rest258="${treffer258#*:}"
+  getrimmt258="${rest258#"${rest258%%[![:space:]]*}"}"
+  case "$getrimmt258" in '#'*) continue ;; esac
+  case "$rest258" in *'weitere_abweichungen_ausgeben()'*) continue ;; esac
+  vor_hash258="${rest258%%#*}"
+  if printf '%s' "$vor_hash258" | grep -qE '(^|[[:space:];&|{(])weitere_abweichungen_ausgeben([[:space:]]|$)'; then
+    aufrufstellen_treffer258+=("$nr258")
+  fi
+done < <(grep -nE '(^|[[:space:];&|{(])weitere_abweichungen_ausgeben([[:space:]]|$)' "$GATE" 2>/dev/null)
+local aufrufstellen258=${#aufrufstellen_treffer258[@]}
+
+local -A gesehen258=()
+for k258 in "${tabellen_kennungen[@]}"; do
+  case "${FALL_TABELLE[$k258]:-}" in
+    "Aussage E21: "*)
+      fallname258="${FALL_ZU_KENNUNG[$k258]:-}"
+      [ -n "$fallname258" ] && gesehen258["$fallname258"]=1
+      ;;
+  esac
+done
+anzahl_funktionen258=${#gesehen258[@]}
+deckungszeile_registrieren "Aufrufstellendeckung E21: $aufrufstellen258 Aufrufstellen, $anzahl_funktionen258 Fallfunktionen" >/dev/null
+pruefe_wahr Z-258 "selbsttest" "gleich" "Statische Lesung von .claude/hooks/dod-gate.sh und der Tabelle 6.12.19, ohne Aufruf des Gates" \
+  "die Zahl der Aufrufstellen von weitere_abweichungen_ausgeben im Gate ist gleich der Zahl der verschiedenen Fallfunktionen, die eine Zusicherung mit dem Etikett Aussage E21: pruefen" \
+  "$([ "$aufrufstellen258" -eq "$anzahl_funktionen258" ] && echo 1 || echo 0)" \
+  "Aufrufstellen=$aufrufstellen258" "Fallfunktionen=$anzahl_funktionen258"
+}
+
+# -----------------------------------------------------------------------------
+# fall_z259 (6.12.28 f, Runde 11 S11-04): statische Lesung des marken_muster
+# aus dem Gate, ohne Aufruf des Gates -- die Lesung muss einen nicht leeren
+# Fund liefern.
+# -----------------------------------------------------------------------------
+fall_z259() {
+local muster259
+muster259=$(sed -n "s/^marken_muster='\(.*\)'\$/\1/p" "$GATE")
+pruefe_wahr Z-259 "selbsttest" "existiert" "Statische Lesung des marken_muster aus dem Gate, ohne Aufruf des Gates" \
+  "die Lesung liefert einen nicht leeren Wert -- ein Fund" \
+  "$([ -n "$muster259" ] && echo 1 || echo 0)" \
+  "nicht leer" \
+  "$([ -n "$muster259" ] && echo "nicht leer (Laenge ${#muster259})" || echo "leer")"
+}
+
+# -----------------------------------------------------------------------------
+# _z260_pruefen (S12-01/S12-02, Runde 12 statisch): gemeinsame Messung fuer
+# Z-260, aufgerufen NACH der letzten Registrierung des Blocks -- (a) direkt
+# aus zusammenfassung_und_deckung_ausgeben im Normalmodus, NACH allen neun
+# Deckungszeilen samt der Aufrufstellendeckung E21 (fall_z258 hat laengst
+# registriert, da Teil von FALL_REIHENFOLGE), (b) aus fall_z260 selbst im
+# isolierten Lauf. Generische Mindestzahlwache: keine Zeile im Feld darf als
+# ERSTE Zahl nach "<Bezeichner>: " eine 0 nennen.
+# -----------------------------------------------------------------------------
+_z260_pruefen() {
+local zeile260 rest260 erste_zahl260
+local mindest_fehlschlag260=0
+local -a nullzeilen260=()
+for zeile260 in "${DECKUNGSZEILEN[@]}"; do
+  rest260="${zeile260#*: }"
+  erste_zahl260=$(printf '%s' "$rest260" | grep -oE '^[0-9]+' || true)
+  if [ "$erste_zahl260" = "0" ]; then
+    mindest_fehlschlag260=1
+    nullzeilen260+=("$zeile260")
+  fi
+done
+pruefe_wahr Z-260 "selbsttest" "fehlt" "Zusammenfassung des Selbsttestlaufs, Block der Deckungszeilen" \
+  "der Block der Deckungszeilen fuehrt keine Zeile, deren erste Zahl 0 ist" \
+  "$([ "$mindest_fehlschlag260" -eq 0 ] && echo 1 || echo 0)" \
+  "keine Zeile mit erster Zahl 0 (${#DECKUNGSZEILEN[@]} Zeilen geprueft)" \
+  "$([ "$mindest_fehlschlag260" -eq 1 ] && printf '%s | ' "${nullzeilen260[@]}" || echo keine)"
+}
+
+# -----------------------------------------------------------------------------
+# fall_z260 -- NUR fuer den ISOLIERTEN Einzelfall-Kindlauf (Mutationsmodus
+# oder manuelle Wiederholung). Im Normalmodus steht diese Funktion
+# ABSICHTLICH NICHT in FALL_REIHENFOLGE (wie fall_z230_231) -- dort misst
+# zusammenfassung_und_deckung_ausgeben Z-260 DIREKT ueber _z260_pruefen,
+# nachdem der EINE, echte Block bereits vollstaendig registriert ist. Ein
+# zweiter Lauf dieser Funktion IM SELBEN Prozess wuerde den Block verdoppeln
+# und Z-260 doppelt melden -- deshalb der Ausschluss aus der Reihenfolge,
+# nicht eine Bedingung hier drin.
+# -----------------------------------------------------------------------------
+fall_z260() {
+local adr_pfad260 deckung_ausgabe260 gegenstand_ausgabe260 zeile260 muster260 anz_tab260
+adr_pfad260="$REPO_WURZEL/docs/adr/0002-architekturentscheid-ziel-stack.md"
+tabelle_lesen "$adr_pfad260"
+
+# S12-01, Nachbildung der drei Abgleichzeilen wie im Normalmodus -- im
+# isolierten Lauf hat ausser Z-260 selbst (unten) niemand gemeldet, die
+# Zahlen "geprueft"/"Abweichungen" sind deshalb 0, ohne dass das ein
+# Widerspruch waere.
+anz_tab260=${#tabellen_kennungen[@]}
+deckungszeile_registrieren "Deckung: $anz_tab260 Kennungen in der Tabelle, 0 geprueft, $anz_tab260 ohne Pruefung, 0 ohne Kennung" >/dev/null
+deckungszeile_registrieren "Kanalabgleich: $anz_tab260 Kennungen, 0 Abweichungen" >/dev/null
+deckungszeile_registrieren "Praedikatabgleich: $anz_tab260 Kennungen, 0 Abweichungen" >/dev/null
+
+deckung_ausgabe260=$(schluessel_und_grammatikdeckung "$adr_pfad260")
+while IFS= read -r zeile260; do
+  [ -n "$zeile260" ] && deckungszeile_registrieren "$zeile260" >/dev/null
+done <<< "$deckung_ausgabe260"
+gegenstand_ausgabe260=$(gegenstandsdeckung_schluessel "$GATE")
+while IFS= read -r zeile260; do
+  [ -n "$zeile260" ] && deckungszeile_registrieren "$zeile260" >/dev/null
+done <<< "$gegenstand_ausgabe260"
+
+# Pfaddeckung ueber die eigene Spur NUR, wenn in DIESEM Lauf tatsaechlich
+# Gate-Aufrufe bestehen (GATE_AUFRUF_ZAEHLER > 0). fall_z260 ruft das Gate
+# selbst nie auf; im isolierten Einzelfall-Kindlauf (Mutationsmodus) ist der
+# Zaehler deshalb 0, und pfaddeckung_pruefen traefe nur die fail-closed-
+# Zweige "Sollmenge leer oder Spur leer" -- eine erfundene Pfaddeckungszeile
+# waere kein Beleg fuer irgendetwas UND meldete Z-230/Z-231 fuer diesen
+# Lauf, was hier fehl am Platz ist. Der isolierte Lauf registriert die
+# Pfaddeckung deshalb schlicht NICHT, wenn es nichts zu belegen gibt.
+if [ "${GATE_AUFRUF_ZAEHLER:-0}" -gt 0 ]; then
+  pfaddeckung_pruefen
+fi
+
+# Billiger, mutationsempfindlicher Zusatz (Ziel der Mutation dieser Kennung:
+# marken_muster im Gate wird leer) -- ohne den teuren Schwaechungslauf zu
+# wiederholen, der bereits unter Z-252/Z-255 laeuft (6.2.2).
+muster260=$(sed -n "s/^marken_muster='\(.*\)'\$/\1/p" "$GATE")
+if [ -n "$muster260" ]; then
+  deckungszeile_registrieren "Musterlesung (Z-260): 1 nicht leerer Fund" >/dev/null
+else
+  deckungszeile_registrieren "Musterlesung (Z-260): 0 nicht leerer Fund" >/dev/null
+fi
+
+_z260_pruefen
+}
+
+# -----------------------------------------------------------------------------
+# fall_z261 (6.12.28 f, Runde 11 S11-06): Gegenrichtung der Grammatikdeckung
+# -- die Ausgabezeile "Grammatikdeckung: ..." muss als Zahl der fremden
+# Etiketten genau 0 nennen (keine Mutation, Grund 1: Vorbild Z-152/Z-153).
+# -----------------------------------------------------------------------------
+fall_z261() {
+local adr_pfad261 deckung_ausgabe261 grammatikdeckung_zeile261 fremde261
+adr_pfad261="$REPO_WURZEL/docs/adr/0002-architekturentscheid-ziel-stack.md"
+tabelle_lesen "$adr_pfad261"
+deckung_ausgabe261=$(schluessel_und_grammatikdeckung "$adr_pfad261")
+grammatikdeckung_zeile261=$(printf '%s\n' "$deckung_ausgabe261" | grep -E '^Grammatikdeckung: [0-9]+ Kuerzel, [0-9]+ ohne Zeile, [0-9]+ fremde Etiketten$' | tail -n1)
+fremde261=$(printf '%s' "$grammatikdeckung_zeile261" | sed -E 's/^Grammatikdeckung: [0-9]+ Kuerzel, [0-9]+ ohne Zeile, ([0-9]+) fremde Etiketten$/\1/')
+[ -n "$fremde261" ] || fremde261=-1
+pruefe_wahr Z-261 "selbsttest" "gleich" "Zusammenfassung des Selbsttestlaufs, Zeile der Grammatikdeckung" \
+  "die Ausgabezeile Grammatikdeckung: nennt als Zahl der fremden Etiketten genau 0" \
+  "$([ "$fremde261" = "0" ] && echo 1 || echo 0)" \
+  "f=0" "f=$fremde261 (Zeile: '$grammatikdeckung_zeile261')"
+}
+
+# -----------------------------------------------------------------------------
+# fall_z253_254 (6.12.28 c Punkt 3 "zweite benannte Grenze", Alternativen-
+# deckung): statische Lesung des marken_muster und der Spalte Element der
+# Zeilen LAGE/SCHWELLE der Elementtabelle 6.12.7, ohne Aufruf des Gates.
+# -----------------------------------------------------------------------------
+fall_z253_254() {
+local muster253
+muster253=$(sed -n "s/^marken_muster='\(.*\)'\$/\1/p" "$GATE")
+local adr253="$REPO_WURZEL/docs/adr/0002-architekturentscheid-ziel-stack.md"
+
+local lage_element253 schwelle_element253
+lage_element253=$(grep -E '^\| `LAGE` \|' "$adr253" | head -n1 | awk -F'|' '{print $3}')
+schwelle_element253=$(grep -E '^\| `SCHWELLE` \|' "$adr253" | head -n1 | awk -F'|' '{print $3}')
+
+local -a erwartete_lage253=()
+while IFS= read -r w253; do erwartete_lage253+=("$w253"); done < <(printf '%s' "$lage_element253" | grep -o '`[^`]*`' | sed -e 's/^`//' -e 's/`$//')
+
+local lage_gruppe253
+lage_gruppe253=$(printf '%s' "$muster253" | grep -oE '\(A_OK[^)]*\)' | head -n1)
+local lage_inhalt253="${lage_gruppe253#\(}"
+lage_inhalt253="${lage_inhalt253%\)}"
+local -a tatsaechliche_lage253=()
+IFS='|' read -ra tatsaechliche_lage253 <<< "$lage_inhalt253"
+
+local gleich253=1
+if [ "${#erwartete_lage253[@]}" -ne "${#tatsaechliche_lage253[@]}" ]; then
+  gleich253=0
+else
+  local i253
+  for i253 in "${!erwartete_lage253[@]}"; do
+    [ "${erwartete_lage253[$i253]}" = "${tatsaechliche_lage253[$i253]}" ] || gleich253=0
+  done
+fi
+pruefe_wahr Z-253 "selbsttest" "gleich" "Statische Lesung des marken_muster und der Elementtabelle 6.12.7, ohne Aufruf des Gates" \
+  "die Alternativen der Lage-Gruppe des marken_muster sind, in Lesereihenfolge, gleich den Backtick-Abschnitten der Spalte Element der Zeile LAGE der Elementtabelle 6.12.7" \
+  "$gleich253" "${erwartete_lage253[*]}" "${tatsaechliche_lage253[*]}"
+
+local -a erwartete_schwelle254=()
+while IFS= read -r w254; do erwartete_schwelle254+=("$w254"); done < <(printf '%s' "$schwelle_element253" | grep -o '`[^`]*`')
+local schwelle_gruppe254
+schwelle_gruppe254=$(printf '%s' "$muster253" | grep -oE 'SCHWELLE=[^)]*\)' | head -n1)
+local anz_pipes254
+anz_pipes254=$(printf '%s' "$schwelle_gruppe254" | tr -cd '|' | wc -c)
+local anz_alt254=$((anz_pipes254 + 1))
+local ok254=0
+[ "${#erwartete_schwelle254[@]}" -eq "$anz_alt254" ] && ok254=1
+pruefe_wahr Z-254 "selbsttest" "gleich" "Dieselbe Lesung wie Z-253" \
+  "die Zahl der Alternativen der Schwellengruppe des marken_muster ist gleich der Zahl der Backtick-Abschnitte der Spalte Element der Zeile SCHWELLE der Elementtabelle 6.12.7" \
+  "$ok254" "${#erwartete_schwelle254[@]}" "$anz_alt254"
+}
+
+# -----------------------------------------------------------------------------
+# fall_z262_263 (6.12.28 j, Runde 12, Behebung DT12-M14): eine D19-Zeile mit
+# einem Wort ausserhalb der vier zulaessigen (OHNE_BEFUND, VERLETZT, B, C) --
+# hier SPAETER, wie die Tabelle als Beispiel nennt --, sonst eine gruene
+# Attrappenkette: Baumzeile, Uebersichtszeile, EINE gueltige A_OK-Marke,
+# Schlusszeile Form 1 mit der vollen Markenzahl (1), MOCK_RC=0. Ein Lauf, zwei
+# Messungen (rc + Zaehlerschluessel aus demselben Zustandsverzeichnis) --
+# Vorbild fall_z142_143. Am unveraenderten Gate trifft die Zeile das Muster
+# in Zeile 810 nicht (d19_treffer_anzahl=0), die Kette blockiert mit dem
+# Schluessel "KETTE ausgabe-unlesbar" und Rueckgabewert 2, unabhaengig vom
+# MOCK_RC der Attrappenkette.
+# -----------------------------------------------------------------------------
+fall_z262_263() {
+local baum262 m1_262 ausgabe262 zustand262 eingabe262 zaehler_datei262
+baum262=$(neuer_mock_baum)
+m1_262=$(marken_zeile K1 D20 belege A_OK "" "" 0)
+ausgabe262=$(bauen_ausgabe "$baum262" "$m1_262" "SPAETER." "make dod: alle 1 Kettenschritte durchlaufen, keiner ungleich 0, 1 gueltige Marken gezaehlt.")
+zustand262=$(neu_verzeichnis)
+eingabe262=$(baue_eingabe "Stop" "$baum262" "fall-z262")
+rufe_gate "$eingabe262" "$zustand262" "$WERKZEUGKASTEN_VOLL" "CLAUDE_PROJECT_DIR=$baum262" "MOCK_AUSGABE=$ausgabe262" "MOCK_RC=0"
+pruefe_rc Z-262 "D19-Zeile mit einem Wort ausserhalb von OHNE_BEFUND, VERLETZT, B und C (SPAETER), sonst gruene Attrappenkette mit Schlusszeile Form 1 und voller Markenzahl" 2
+zaehler_datei262=$(zaehler_pfad "$zustand262" "fall-z262")
+pruefe_zaehler_schluessel Z-263 "Derselbe Fall wie Z-262" \
+  "$zaehler_datei262" "KETTE ausgabe-unlesbar"
+}
+
+# Reihenfolge des Normalmodus, identisch mit der vormaligen Fallreihenfolge,
+# erweitert um Z-209..Z-229 (6.12.28 b, O-27 Phase 1). Wandert seit dieser
+# Einheit in den VORSPANN (vor ::VORSPANN-ENDE::), weil fall_z230_231 sie im
+# isolierten Mutationslauf braucht (S10-10-Folge). fall_z230_231 selbst steht
+# ABSICHTLICH NICHT in dieser Liste -- im Normalmodus wertet
+# pfaddeckung_pruefen direkt aus der Zusammenfassung aus.
+FALL_REIHENFOLGE=(
+  fall_z001
+  fall_z002_004
+  fall_z005_007
+  fall_z008
+  fall_z009_010
+  fall_z011_012
+  fall_z013
+  fall_z014
+  fall_z015
+  fall_z016
+  fall_z017_018
+  fall_z019
+  fall_z020
+  fall_z021_032
+  fall_z027_028
+  fall_z033_034
+  fall_z116_121
+  fall_z035_036_104_105
+  fall_z106_108
+  fall_z037
+  fall_z038_048
+  fall_z125_129
+  fall_z049_053
+  fall_z054_055
+  fall_z056_063
+  fall_z142_143
+  fall_z064
+  fall_z065_068
+  fall_z066
+  fall_z069_070
+  fall_z071_072
+  fall_z073_074
+  fall_z075_076
+  fall_z077_078
+  fall_z079_080
+  fall_z081_095
+  fall_z096_097
+  fall_z144_145
+  fall_z098_100
+  fall_z101_103
+  fall_z109_111
+  fall_z112_113
+  fall_z114_115
+  fall_z122_124
+  fall_z130
+  fall_z131_132
+  fall_z133_134
+  fall_z135_136
+  fall_z137_138
+  fall_z139_140
+  fall_z141
+  fall_z146_148
+  fall_z149_151
+  fall_z152_153
+  fall_z154_155
+  fall_z156_157
+  fall_z160
+  fall_z164_165
+  fall_z168_169
+  fall_z170_179
+  fall_z180
+  fall_z181
+  fall_z185
+  fall_z186
+  fall_z187
+  fall_z188
+  fall_z189
+  fall_z190
+  fall_z198
+  fall_z199
+  fall_z208
+  fall_z209_211
+  fall_z212_214
+  fall_z215_217
+  fall_z218_220
+  fall_z221
+  fall_z222
+  fall_z223
+  fall_z224
+  fall_z225
+  fall_z226
+  fall_z227
+  fall_z228
+  fall_z229
+  fall_z232_251
+  fall_z253_254
+  fall_z252_255
+  fall_z256
+  fall_z257
+  fall_z258
+  fall_z259
+  fall_z261
+  fall_z262_263
+  fall_z194_197
+)
+# fall_z260 steht ABSICHTLICH NICHT in dieser Liste (S12-01, wie
+# fall_z230_231) -- im Normalmodus misst zusammenfassung_und_deckung_aus-
+# geben Z-260 direkt ueber _z260_pruefen, NACH der letzten Registrierung des
+# einen, echten Blocks der Deckungszeilen.
 
 # -----------------------------------------------------------------------------
 # FALL_ZU_KENNUNG (Auftrag Punkt 2): ordnet jeder Kennung Z-nnn GENAU EINE
@@ -3617,7 +5378,13 @@ pruefe_invariante_stdout_einzelfeld Z-197 "$fall194" \
 # Zeilenbereichen dieser Datei bestimmt -- das war Befund S6-08/DT6-04);
 # mehrere Kennungen duerfen auf dieselbe Funktion zeigen, wenn ihr
 # Pruefaufbau derselbe ist. Z-110 ist am 2026-09-03 zurueckgezogen und hat
-# absichtlich KEINEN Eintrag.
+# absichtlich KEINEN Eintrag. Wandert seit O-27 Phase 2 (wie zuvor
+# FALL_REIHENFOLGE in Phase 1) VOR ::VORSPANN-ENDE::, weil
+# _grammatik_fallfunktionen_liste (aufgerufen aus fall_z252_255) sie auch im
+# ISOLIERTEN Kindprozess braucht -- ohne diese Verschiebung wertet Bash
+# "FALL_ZU_KENNUNG[$kennung]" dort als arithmetischen Index (die Assoziativitaet
+# ist dem Kindprozess unbekannt) und bricht mit "Z: unbound variable" ab
+# (Kennung "Z-170" als "Z minus 170" gelesen) -- am Bau gefunden und behoben.
 # -----------------------------------------------------------------------------
 declare -A FALL_ZU_KENNUNG=(
   ["Z-001"]="fall_z001"
@@ -3827,83 +5594,70 @@ declare -A FALL_ZU_KENNUNG=(
   ["Z-195"]="fall_z194_197"
   ["Z-196"]="fall_z194_197"
   ["Z-197"]="fall_z194_197"
+  ["Z-209"]="fall_z209_211"
+  ["Z-210"]="fall_z209_211"
+  ["Z-211"]="fall_z209_211"
+  ["Z-212"]="fall_z212_214"
+  ["Z-213"]="fall_z212_214"
+  ["Z-214"]="fall_z212_214"
+  ["Z-215"]="fall_z215_217"
+  ["Z-216"]="fall_z215_217"
+  ["Z-217"]="fall_z215_217"
+  ["Z-218"]="fall_z218_220"
+  ["Z-219"]="fall_z218_220"
+  ["Z-220"]="fall_z218_220"
+  ["Z-221"]="fall_z221"
+  ["Z-222"]="fall_z222"
+  ["Z-223"]="fall_z223"
+  ["Z-224"]="fall_z224"
+  ["Z-225"]="fall_z225"
+  ["Z-226"]="fall_z226"
+  ["Z-227"]="fall_z227"
+  ["Z-228"]="fall_z228"
+  ["Z-229"]="fall_z229"
+  ["Z-230"]="fall_z230_231"
+  ["Z-231"]="fall_z230_231"
+  ["Z-232"]="fall_z232_251"
+  ["Z-233"]="fall_z232_251"
+  ["Z-234"]="fall_z232_251"
+  ["Z-235"]="fall_z232_251"
+  ["Z-236"]="fall_z232_251"
+  ["Z-237"]="fall_z232_251"
+  ["Z-238"]="fall_z232_251"
+  ["Z-239"]="fall_z232_251"
+  ["Z-240"]="fall_z232_251"
+  ["Z-241"]="fall_z232_251"
+  ["Z-242"]="fall_z232_251"
+  ["Z-243"]="fall_z232_251"
+  ["Z-244"]="fall_z232_251"
+  ["Z-245"]="fall_z232_251"
+  ["Z-246"]="fall_z232_251"
+  ["Z-247"]="fall_z232_251"
+  ["Z-248"]="fall_z232_251"
+  ["Z-249"]="fall_z232_251"
+  ["Z-250"]="fall_z232_251"
+  ["Z-251"]="fall_z232_251"
+  ["Z-252"]="fall_z252_255"
+  ["Z-255"]="fall_z252_255"
+  ["Z-253"]="fall_z253_254"
+  ["Z-254"]="fall_z253_254"
+  ["Z-256"]="fall_z256"
+  ["Z-257"]="fall_z257"
+  ["Z-258"]="fall_z258"
+  ["Z-259"]="fall_z259"
+  ["Z-260"]="fall_z260"
+  ["Z-261"]="fall_z261"
+  ["Z-262"]="fall_z262_263"
+  ["Z-263"]="fall_z262_263"
 )
 
-# Reihenfolge des Normalmodus, identisch mit der vormaligen Fallreihenfolge.
-FALL_REIHENFOLGE=(
-  fall_z001
-  fall_z002_004
-  fall_z005_007
-  fall_z008
-  fall_z009_010
-  fall_z011_012
-  fall_z013
-  fall_z014
-  fall_z015
-  fall_z016
-  fall_z017_018
-  fall_z019
-  fall_z020
-  fall_z021_032
-  fall_z027_028
-  fall_z033_034
-  fall_z116_121
-  fall_z035_036_104_105
-  fall_z106_108
-  fall_z037
-  fall_z038_048
-  fall_z125_129
-  fall_z049_053
-  fall_z054_055
-  fall_z056_063
-  fall_z142_143
-  fall_z064
-  fall_z065_068
-  fall_z066
-  fall_z069_070
-  fall_z071_072
-  fall_z073_074
-  fall_z075_076
-  fall_z077_078
-  fall_z079_080
-  fall_z081_095
-  fall_z096_097
-  fall_z144_145
-  fall_z098_100
-  fall_z101_103
-  fall_z109_111
-  fall_z112_113
-  fall_z114_115
-  fall_z122_124
-  fall_z130
-  fall_z131_132
-  fall_z133_134
-  fall_z135_136
-  fall_z137_138
-  fall_z139_140
-  fall_z141
-  fall_z146_148
-  fall_z149_151
-  fall_z152_153
-  fall_z154_155
-  fall_z156_157
-  fall_z160
-  fall_z164_165
-  fall_z168_169
-  fall_z170_179
-  fall_z180
-  fall_z181
-  fall_z185
-  fall_z186
-  fall_z187
-  fall_z188
-  fall_z189
-  fall_z190
-  fall_z198
-  fall_z199
-  fall_z208
-  fall_z194_197
-)
+# ::VORSPANN-ENDE::
+
+# Die FALL_REIHENFOLGE steht seit dieser Einheit im VORSPANN (vor
+# ::VORSPANN-ENDE::, oberhalb), weil der isolierte Mutationslauf von
+# fall_z230_231 sie braucht (6.12.28 b Punkt 8, S10-10-Folge). Hier keine
+# zweite Definition -- das waere die zweite Stelle fuer dieselbe Aussage
+# (6.2.2).
 
 normal_modus_ausfuehren() {
   echo "=== Selbsttest dod-gate.sh (ADR 0002, 6.12.19) ==="
@@ -3917,13 +5671,325 @@ normal_modus_ausfuehren() {
   done
 }
 
+# -----------------------------------------------------------------------------
+# buchhaltung_abgleich <modus: bilden|einloesen> (ADR 0002, 6.12.28 f,
+# Nachtrag vom 2026-09-08, Entscheid "Reihenfolge"): bildet aus
+# GEMELDETE_KENNUNGEN/KANAL_GEMELDET/PRAEDIKAT_GEMELDET die drei
+# Abgleichzeilen "Deckung: ...", "Kanalabgleich: ..." und
+# "Praedikatabgleich: ...".
+#
+# modus=bilden (ERSTE Erhebung, VOR der Messung von Z-260): registriert die
+# drei Zeilen NEU im Feld DECKUNGSZEILEN und merkt sich ihre Plaetze in
+# BUCHHALTUNG_IDX_DECKUNG/_KANAL/_PRAEDIKAT. Keine Ausgabe, kein Urteil --
+# Z-260 selbst ist an dieser Stelle noch nicht gemeldet, die Zahlen
+# "geprueft"/"Abweichungen" sind deshalb noch nicht die endgueltigen. Die
+# ERSTE Zahl jeder der drei Zeilen ist unabhaengig davon bereits die
+# endgueltige (${#tabellen_kennungen[@]}, 6.12.28 f Punkt 5) -- genau darauf
+# stuetzt sich die Zulaessigkeit dieses Vorgehens.
+#
+# modus=einloesen (ZWEITE Erhebung, NACH der Messung von Z-260): bildet
+# dieselben drei Zeilen aus dem JETZT vollstaendigen GEMELDETE_KENNUNGEN neu,
+# ERSETZT die Eintraege an den gemerkten Plaetzen, gibt die Befundzeilen aus
+# (Fundstelle dieser Funktion) und setzt BUCHHALTUNG_FEHLER sowie
+# BUCHHALTUNG_EINGELOEST=1.
+# -----------------------------------------------------------------------------
+BUCHHALTUNG_IDX_DECKUNG=-1
+BUCHHALTUNG_IDX_KANAL=-1
+BUCHHALTUNG_IDX_PRAEDIKAT=-1
+BUCHHALTUNG_FEHLER=1
+BUCHHALTUNG_EINGELOEST=0
+buchhaltung_abgleich() {
+local modus="$1"
+local -a _ba_ohne_pruefung=() _ba_ohne_kennung=() _ba_doppelt=()
+local k g gefunden
+
+for k in "${tabellen_kennungen[@]}"; do
+  gefunden=0
+  for g in "${GEMELDETE_KENNUNGEN[@]:-}"; do
+    [ "$g" = "$k" ] && gefunden=1 && break
+  done
+  [ "$gefunden" -eq 1 ] || _ba_ohne_pruefung+=("$k")
+done
+
+for g in "${GEMELDETE_KENNUNGEN[@]:-}"; do
+  [ -n "$g" ] || continue
+  gefunden=0
+  for k in "${tabellen_kennungen[@]}"; do
+    [ "$g" = "$k" ] && gefunden=1 && break
+  done
+  [ "$gefunden" -eq 1 ] || _ba_ohne_kennung+=("$g")
+done
+
+if [ "${#GEMELDETE_KENNUNGEN[@]}" -gt 0 ]; then
+  while IFS= read -r k; do
+    [ -n "$k" ] && _ba_doppelt+=("$k")
+  done < <(printf '%s\n' "${GEMELDETE_KENNUNGEN[@]}" | sort | uniq -d)
+fi
+
+local _ba_fehler=0
+[ "${#_ba_ohne_pruefung[@]}" -gt 0 ] && _ba_fehler=1
+[ "${#_ba_ohne_kennung[@]}" -gt 0 ] && _ba_fehler=1
+[ "${#_ba_doppelt[@]}" -gt 0 ] && _ba_fehler=1
+
+local _ba_zeile_deckung="Deckung: ${#tabellen_kennungen[@]} Kennungen in der Tabelle, $((${#tabellen_kennungen[@]} - ${#_ba_ohne_pruefung[@]})) geprueft, ${#_ba_ohne_pruefung[@]} ohne Pruefung, ${#_ba_ohne_kennung[@]} ohne Kennung"
+
+# Kanalabgleich (ADR 0002, 6.12.26, Entscheid zu O-25): der von jeder
+# pruefe_*-Huelle an _melde gemeldete Kanal wird gegen die dritte Spalte der
+# Tabelle 6.12.19 abgeglichen -- ADR 0002, 6.12.26 e: keine Ausnahmeliste
+# mehr, jede Kanalabweichung bleibt ein Fehler.
+local -a _ba_kanal_zeilen=()
+local _ba_kanal_abw=0 erwarteter_kanal gemeldeter_kanal
+for k in "${tabellen_kennungen[@]}"; do
+  erwarteter_kanal="${KANAL_TABELLE[$k]:-}"
+  gemeldeter_kanal="${KANAL_GEMELDET[$k]:-}"
+  [ -n "$gemeldeter_kanal" ] || continue
+  if [ -z "$erwarteter_kanal" ]; then
+    _ba_kanal_abw=$((_ba_kanal_abw + 1))
+    _ba_fehler=1
+    _ba_kanal_zeilen+=("Kanalabweichung: $k Tabelle=leer gemessen=$gemeldeter_kanal")
+    continue
+  fi
+  if [ "$gemeldeter_kanal" != "$erwarteter_kanal" ]; then
+    _ba_kanal_abw=$((_ba_kanal_abw + 1))
+    _ba_fehler=1
+    _ba_kanal_zeilen+=("Kanalabweichung: $k Tabelle=$erwarteter_kanal gemessen=$gemeldeter_kanal")
+  fi
+done
+local _ba_zeile_kanal="Kanalabgleich: ${#tabellen_kennungen[@]} Kennungen, $_ba_kanal_abw Abweichungen"
+
+# Praedikatabgleich (ADR 0002, 6.12.27 b, O-26): dieselbe Mechanik, gegen
+# Spalte 4 (Praedikat). S8-06: verglichen wird die Zeichenkette
+# (Reihenfolge verbindlich), nicht als Menge.
+local -a _ba_praedikat_zeilen=()
+local _ba_praedikat_abw=0 erwartetes_praedikat gemeldetes_praedikat _ba_ist_ohne op
+for k in "${tabellen_kennungen[@]}"; do
+  erwartetes_praedikat="${PRAEDIKAT_TABELLE[$k]:-}"
+  gemeldetes_praedikat="${PRAEDIKAT_GEMELDET[$k]:-}"
+  _ba_ist_ohne=0
+  for op in "${_ba_ohne_pruefung[@]:-}"; do [ "$op" = "$k" ] && _ba_ist_ohne=1 && break; done
+  [ "$_ba_ist_ohne" -eq 1 ] && continue
+  if [ -z "$erwartetes_praedikat" ]; then
+    _ba_praedikat_abw=$((_ba_praedikat_abw + 1))
+    _ba_fehler=1
+    _ba_praedikat_zeilen+=("ABWEICHUNG Praedikat $k: gemeldet $gemeldetes_praedikat, Tabelle leer")
+    continue
+  fi
+  if [ "$gemeldetes_praedikat" != "$erwartetes_praedikat" ]; then
+    _ba_praedikat_abw=$((_ba_praedikat_abw + 1))
+    _ba_fehler=1
+    _ba_praedikat_zeilen+=("ABWEICHUNG Praedikat $k: gemeldet $gemeldetes_praedikat, Tabelle $erwartetes_praedikat")
+  fi
+done
+local _ba_zeile_praedikat="Praedikatabgleich: ${#tabellen_kennungen[@]} Kennungen, $_ba_praedikat_abw Abweichungen"
+
+if [ "$modus" = "bilden" ]; then
+  # Index NICHT ueber "x=$(deckungszeile_registrieren ...)" lesen -- das
+  # liefe in einer Subshell und die Anhaengung an DECKUNGSZEILEN ginge beim
+  # Verlassen der Subshell verloren (nur die Ausgabe waere sichtbar). Wie
+  # ueberall sonst in dieser Datei: Aufruf als eigene Anweisung mit
+  # umgeleiteter Ausgabe, Index danach aus der (jetzt tatsaechlich
+  # gewachsenen) Feldlaenge berechnet.
+  deckungszeile_registrieren "$_ba_zeile_deckung" >/dev/null
+  BUCHHALTUNG_IDX_DECKUNG=$((${#DECKUNGSZEILEN[@]} - 1))
+  deckungszeile_registrieren "$_ba_zeile_kanal" >/dev/null
+  BUCHHALTUNG_IDX_KANAL=$((${#DECKUNGSZEILEN[@]} - 1))
+  deckungszeile_registrieren "$_ba_zeile_praedikat" >/dev/null
+  BUCHHALTUNG_IDX_PRAEDIKAT=$((${#DECKUNGSZEILEN[@]} - 1))
+  return 0
+fi
+
+# modus = einloesen: die drei Zeilen an ihren gemerkten Plaetzen ERSETZEN,
+# nicht neu anhaengen -- das Feld waechst dabei nicht.
+DECKUNGSZEILEN[$BUCHHALTUNG_IDX_DECKUNG]="$_ba_zeile_deckung"
+DECKUNGSZEILEN[$BUCHHALTUNG_IDX_KANAL]="$_ba_zeile_kanal"
+DECKUNGSZEILEN[$BUCHHALTUNG_IDX_PRAEDIKAT]="$_ba_zeile_praedikat"
+
+if [ "${#_ba_ohne_pruefung[@]}" -gt 0 ]; then
+  echo "Kennungen der Tabelle OHNE Pruefung: ${_ba_ohne_pruefung[*]}"
+fi
+if [ "${#_ba_ohne_kennung[@]}" -gt 0 ]; then
+  echo "Gemeldete Pruefungen mit einer Kennung, die NICHT in der Tabelle steht: ${_ba_ohne_kennung[*]}"
+fi
+if [ "${#_ba_doppelt[@]}" -gt 0 ]; then
+  echo "Doppelt gemeldete Kennungen: ${_ba_doppelt[*]}"
+fi
+local _bz
+for _bz in "${_ba_kanal_zeilen[@]:-}"; do [ -n "$_bz" ] && echo "$_bz"; done
+for _bz in "${_ba_praedikat_zeilen[@]:-}"; do [ -n "$_bz" ] && echo "$_bz"; done
+
+BUCHHALTUNG_FEHLER="$_ba_fehler"
+BUCHHALTUNG_EINGELOEST=1
+}
+
 zusammenfassung_und_deckung_ausgeben() {
+  # Pfaddeckung (ADR 0002, 6.12.28 b, O-27 (a1)): laeuft im Normalmodus HIER,
+  # als ERSTE Handlung dieser Funktion und damit VOR jeder Deckungspruefung,
+  # damit Z-230/Z-231 in der Zaehlung "N von M Zusicherungen" und in der
+  # Deckung gegen Tabelle 6.12.19 als geprueft gelten (6.12.28 b Punkt 8).
+  pfaddeckung_pruefen
   echo
   echo "=== Zusammenfassung ==="
   if [ "${#fehlgeschlagene_faelle[@]}" -gt 0 ]; then
     echo "Fehlgeschlagene Faelle:"
     for f in "${fehlgeschlagene_faelle[@]}"; do
       echo "  - $f"
+    done
+  fi
+
+  # -----------------------------------------------------------------------------
+  # Deckung (ADR 0002, 6.12.25 a; Reihenfolge berichtigt 2026-09-08, ADR 0002
+  # 6.12.28 f): Kennungen aus der Tabelle 6.12.19 dieser ADR-Datei (Zeilen,
+  # die mit "| Z-" beginnen) gegen die tatsaechlich gemeldeten Kennungen, in
+  # BEIDE Richtungen. Zurueckgezogene Kennungen sind ausgenommen und werden
+  # aufgezaehlt -- erkannt seit 6.12.27 h (S8-01) ueber die KANALSPALTE
+  # (kein Wert des Vorrats). Der Pfad zur ADR-Datei wird REPO-RELATIV
+  # bestimmt, nicht ueber einen absoluten Pfad der Arbeitsumgebung (das
+  # Skript liegt unter scripts/).
+  # -----------------------------------------------------------------------------
+  adr_pfad="$REPO_WURZEL/docs/adr/0002-architekturentscheid-ziel-stack.md"
+  echo
+  echo "=== Deckung gegen Tabelle 6.12.19 ($adr_pfad) ==="
+
+  # tabelle_lesen (vormals inline, jetzt Vorspann-Funktion -- SST-P1-06,
+  # Z-258/Z-260, 6.2.2) fuellt tabellen_kennungen/KANAL_TABELLE/
+  # PRAEDIKAT_TABELLE/FALL_TABELLE/ZUSICHERUNG_TABELLE.
+  tabelle_lesen "$adr_pfad"
+  if [ ! -f "$adr_pfad" ]; then
+    echo "FEHLER  ADR-Datei nicht gefunden: $adr_pfad"
+  fi
+  if [ "${#zurueckgezogene_kennungen[@]}" -gt 0 ]; then
+    echo "Zurueckgezogene Kennungen (von der Deckung ausgenommen): ${zurueckgezogene_kennungen[*]}"
+  fi
+
+  # Anfangswerte auf Fehler (ADR 0002, 6.12.28 f Punkt 8.1): das Urteil
+  # dieser Deckung gilt erst, wenn die ZWEITE Erhebung der Buchhaltung
+  # (unten) es tatsaechlich gesetzt hat -- BUCHHALTUNG_EINGELOEST bleibt bis
+  # dahin bei 0 und geht in die Rueckgabewert-Bedingung am Ende ein.
+  deckung_fehler=1
+  sonstige_fehler=0
+
+  # ---------------------------------------------------------------------
+  # Schluessel-, Grammatik- und Aussagendeckung sowie Gegenstandsdeckung
+  # Schluessel (6.12.28 f, Entscheid "Reihenfolge" Punkte 2/3, Auftrag
+  # Punkt 2): geben ihre Zeilen nicht mehr direkt aus -- die Ausgabe wird
+  # HIER aufgefangen und JEDE Zeile (Deckungs- wie Befundzeile
+  # gleichermassen) ueber deckungszeile_registrieren an das Feld gehaengt,
+  # genau wie fall_z260 es fuer den isolierten Lauf bereits tut. Der
+  # Rueckgabewert bleibt Urteil.
+  # ---------------------------------------------------------------------
+  local _sgd_ausgabe _sgd_zeile _sgd_rc _gds_ausgabe _gds_zeile _gds_rc
+  _sgd_ausgabe=$(schluessel_und_grammatikdeckung "$adr_pfad")
+  _sgd_rc=$?
+  while IFS= read -r _sgd_zeile; do
+    [ -n "$_sgd_zeile" ] && deckungszeile_registrieren "$_sgd_zeile" >/dev/null
+  done <<< "$_sgd_ausgabe"
+  [ "$_sgd_rc" -eq 0 ] || sonstige_fehler=1
+
+  # ---------------------------------------------------------------------
+  # Gegenstandsdeckung Schluessel (ADR 0002, 6.12.27 j, Punkt 3, O-26):
+  # zweite, unabhaengige Deckung -- haelt die Schluesselzeichenketten aus
+  # dem GATE SELBST (nicht der Aufzaehlung in 6.12.4) gegen die
+  # Zusicherungsspalte. Ersetzt keine der beiden Deckungen oben, tritt
+  # daneben (6.12.27 j, "Der Bestand am 2026-09-06").
+  # ---------------------------------------------------------------------
+  _gds_ausgabe=$(gegenstandsdeckung_schluessel "$GATE")
+  _gds_rc=$?
+  while IFS= read -r _gds_zeile; do
+    [ -n "$_gds_zeile" ] && deckungszeile_registrieren "$_gds_zeile" >/dev/null
+  done <<< "$_gds_ausgabe"
+  [ "$_gds_rc" -eq 0 ] || sonstige_fehler=1
+
+  # Buchhaltung, ERSTE Erhebung (6.12.28 f, Entscheid "Reihenfolge" Punkt 4):
+  # registriert "Deckung:"/"Kanalabgleich:"/"Praedikatabgleich:" NEU im Feld
+  # und merkt sich ihre Plaetze. Keine Ausgabe, kein Urteil -- Z-260 ist an
+  # dieser Stelle noch nicht gemeldet.
+  buchhaltung_abgleich bilden
+
+  # -----------------------------------------------------------------------
+  # Blockdeckung (6.12.28 f, Entscheid "Vollstaendigkeit des Blocks"): haelt
+  # die ELF Pflichtetiketten der Tabelle in 6.12.28 f in BEIDE Richtungen
+  # gegen die Etiketten (Text vor dem ersten Doppelpunkt) der Zeilen, die
+  # bis hierhin im Feld stehen -- ihre EIGENE Zeile zaehlt als letzte dazu.
+  # Laeuft NUR hier, nicht im isolierten Einzelfall-Lauf (benannte Grenze,
+  # 6.12.28 f Punkt 11.5).
+  # -----------------------------------------------------------------------
+  local -a _block_soll=(
+    "Pfaddeckung"
+    "Grammatikschwaechungen"
+    "Aufrufstellendeckung E21"
+    "Schluesseldeckung"
+    "Grammatikdeckung"
+    "Aussagendeckung"
+    "Gegenstandsdeckung Schluessel"
+    "Deckung"
+    "Kanalabgleich"
+    "Praedikatabgleich"
+    "Blockdeckung"
+  )
+  local -A _block_ist=()
+  local _bdz _bde
+  for _bdz in "${DECKUNGSZEILEN[@]}"; do
+    _bde="${_bdz%%:*}"
+    _block_ist["$_bde"]=1
+  done
+  _block_ist["Blockdeckung"]=1
+  local _block_ohne=0 _bse
+  for _bse in "${_block_soll[@]}"; do
+    [ -n "${_block_ist[$_bse]:-}" ] || _block_ohne=$((_block_ohne + 1))
+  done
+  local _block_fremde=0 _bie _btreffer
+  for _bie in "${!_block_ist[@]}"; do
+    _btreffer=0
+    for _bse in "${_block_soll[@]}"; do
+      [ "$_bse" = "$_bie" ] && _btreffer=1 && break
+    done
+    [ "$_btreffer" -eq 1 ] || _block_fremde=$((_block_fremde + 1))
+  done
+  local _block_zeilen_im_block=$((${#DECKUNGSZEILEN[@]} + 1))
+  deckungszeile_registrieren "Blockdeckung: ${#_block_soll[@]} Etiketten erwartet, $_block_ohne ohne Zeile, $_block_fremde fremde Etiketten, $_block_zeilen_im_block Zeilen im Block" >/dev/null
+  if [ "$_block_ohne" -gt 0 ] || [ "$_block_fremde" -gt 0 ]; then
+    sonstige_fehler=1
+  fi
+
+  # Messung von Z-260 (6.12.28 f, Entscheid "Reihenfolge" Punkt 6): ueber
+  # den jetzt vollstaendigen Block. Der Vektor der ersten Zahlen wird davor
+  # festgehalten (Wache "Unveraenderlichkeit", Punkt 8 unten).
+  local -a _vektor_vor=()
+  local _vz _vr _vn
+  for _vz in "${DECKUNGSZEILEN[@]}"; do
+    _vr="${_vz#*: }"
+    _vn=$(printf '%s' "$_vr" | grep -oE '^[0-9]+' || true)
+    _vektor_vor+=("$_vn")
+  done
+  _z260_pruefen
+
+  # Buchhaltung, ZWEITE Erhebung (Einloesung, 6.12.28 f Punkt 7): dieselbe
+  # Funktion, jetzt mit der Meldung von Z-260 -- ersetzt die drei Zeilen an
+  # ihren Plaetzen, gibt die Befundzeilen aus, liefert als EINZIGE das
+  # Urteil.
+  buchhaltung_abgleich einloesen
+  [ "$sonstige_fehler" -eq 1 ] && BUCHHALTUNG_FEHLER=1
+  deckung_fehler="$BUCHHALTUNG_FEHLER"
+
+  # Wache Unveraenderlichkeit (6.12.28 f Punkt 8.4): der Vektor der ersten
+  # Zahlen darf sich zwischen der Messung (oben) und der Ausgabe (unten)
+  # nicht geaendert haben -- geprueft, nicht angenommen.
+  local -a _vektor_nach=()
+  for _vz in "${DECKUNGSZEILEN[@]}"; do
+    _vr="${_vz#*: }"
+    _vn=$(printf '%s' "$_vr" | grep -oE '^[0-9]+' || true)
+    _vektor_nach+=("$_vn")
+  done
+  local _vi
+  if [ "${#_vektor_vor[@]}" -ne "${#_vektor_nach[@]}" ]; then
+    echo "Wache Unveraenderlichkeit: verletzt -- Zahl der Zeilen im Block hat sich zwischen Messung und Ausgabe geaendert (${#_vektor_vor[@]} -> ${#_vektor_nach[@]})."
+    deckung_fehler=1
+  else
+    for _vi in "${!_vektor_vor[@]}"; do
+      if [ "${_vektor_vor[$_vi]}" != "${_vektor_nach[$_vi]}" ]; then
+        echo "Wache Unveraenderlichkeit: verletzt -- Zeile $((_vi + 1)) im Block ('${DECKUNGSZEILEN[$_vi]}') hat ihre erste Zahl zwischen Messung und Ausgabe geaendert (${_vektor_vor[$_vi]} -> ${_vektor_nach[$_vi]})."
+        deckung_fehler=1
+      fi
     done
   fi
 
@@ -3940,7 +6006,10 @@ zusammenfassung_und_deckung_ausgeben() {
   # derselben Quelle abzueglich der Fehlschlaege gebildet, nicht aus dem
   # mitgefuehrten $bestanden. Weicht der mitgefuehrte Skalar ab, ist DAS
   # SELBST ein Befund (eine pruefe_*-Huelle mit kollidierendem Parameter)
-  # und wird gemeldet, aber NICHT die massgebliche Zahl.
+  # und wird gemeldet, aber NICHT die massgebliche Zahl. Gebildet ERST HIER
+  # (6.12.28 f Punkt 9), NACH der Meldung von Z-260 -- vorher stimmte M
+  # nicht mit der Tabelle ueberein (der Widerspruch, den dieser Nachtrag
+  # aufloest).
   # -----------------------------------------------------------------------------
   melde_anzahl_m=${#GEMELDETE_KENNUNGEN[@]}
   melde_anzahl_n=$((melde_anzahl_m - ${#fehlgeschlagene_faelle[@]}))
@@ -3951,188 +6020,13 @@ zusammenfassung_und_deckung_ausgeben() {
   bestanden="$melde_anzahl_n"
   echo "Selbsttest: $bestanden von $gesamt Zusicherungen bestanden"
 
-  # -----------------------------------------------------------------------------
-  # Deckung (ADR 0002, 6.12.25 a): Kennungen aus der Tabelle 6.12.19 dieser
-  # ADR-Datei (Zeilen, die mit "| Z-" beginnen) gegen die tatsaechlich
-  # gemeldeten Kennungen, in BEIDE Richtungen. Zurueckgezogene Kennungen
-  # sind ausgenommen und werden aufgezaehlt -- erkannt seit 6.12.27 h
-  # (S8-01) ueber die KANALSPALTE (kein Wert des Vorrats), nicht mehr ueber
-  # eine Textsuche nach dem Wort "zurueckgezogen". Der Pfad zur ADR-Datei
-  # wird REPO-RELATIV bestimmt, nicht ueber einen absoluten Pfad der
-  # Arbeitsumgebung (das Skript liegt unter scripts/).
-  # -----------------------------------------------------------------------------
-  adr_pfad="$REPO_WURZEL/docs/adr/0002-architekturentscheid-ziel-stack.md"
-  echo
-  echo "=== Deckung gegen Tabelle 6.12.19 ($adr_pfad) ==="
-
-  tabellen_kennungen=()
-  zurueckgezogene_kennungen=()
-  declare -A KANAL_TABELLE=()
-  declare -A PRAEDIKAT_TABELLE=()
-  declare -A FALL_TABELLE=()
-  declare -A ZUSICHERUNG_TABELLE=()
-  if [ -f "$adr_pfad" ]; then
-    while IFS= read -r zeile; do
-      kennung=$(printf '%s' "$zeile" | sed -n 's/^| \(Z-[0-9][0-9]*\).*/\1/p')
-      [ -n "$kennung" ] || continue
-      # Seit 6.12.27 (O-26) traegt die Tabelle SIEBEN Spalten: Kennung, Fall,
-      # Kanal, Praedikat, Zusicherung, Mutation, Herkunft. Maskiertes "\|"
-      # (Item 7, Runde 6) wird vor der Aufteilung durch \x01 ersetzt.
-      zeile_maskiert=$(printf '%s' "$zeile" | sed 's/\\|/\x01/g')
-      fall_zelle=$(printf '%s' "$zeile_maskiert" | awk -F'|' '{print $3}' | sed -e 's/^ *//' -e 's/ *$//')
-      kanal_zelle=$(printf '%s' "$zeile_maskiert" | awk -F'|' '{print $4}' \
-        | sed -e 's/^ *//' -e 's/ *$//' -e 's/\*\*//g' -e 's/`//g')
-      praedikat_zelle=$(printf '%s' "$zeile_maskiert" | awk -F'|' '{print $5}' \
-        | sed -e 's/^ *//' -e 's/ *$//' -e 's/\*\*//g' -e 's/`//g')
-      zusicherung_zelle=$(printf '%s' "$zeile_maskiert" | awk -F'|' '{print $6}')
-      # S8-01 (6.12.27 h): eine Zeile ist zurueckgezogen, wenn ihre Kanal-
-      # spalte KEINEN Wert des Vorrats traegt (heute allein Z-110, deren
-      # Kanal-, Praedikat- und Mutationsspalte je "--" tragen). Ersetzt die
-      # fruehere Textsuche nach dem Wort "zurueckgezogen" (Nicht-ASCII-Fund
-      # S8-07).
-      if kanal_gueltig "$kanal_zelle"; then
-        tabellen_kennungen+=("$kennung")
-        KANAL_TABELLE["$kennung"]="$kanal_zelle"
-        PRAEDIKAT_TABELLE["$kennung"]="$praedikat_zelle"
-        FALL_TABELLE["$kennung"]="$fall_zelle"
-        ZUSICHERUNG_TABELLE["$kennung"]="$zusicherung_zelle"
-      else
-        zurueckgezogene_kennungen+=("$kennung")
-      fi
-    done < <(grep '^| Z-' "$adr_pfad")
-  else
-    echo "FEHLER  ADR-Datei nicht gefunden: $adr_pfad"
-  fi
-
-  # Duplikate innerhalb der Tabelle selbst waeren ein Befund am ADR, nicht am
-  # Selbsttest -- hier nur gegen die vom Selbsttest gemeldeten Kennungen
-  # geprueft (Auftrag, Punkt 2: "doppelt gemeldete Kennungen sind ebenfalls
-  # ein Fehler").
-  deckung_fehler=0
-
-  ohne_pruefung=()
-  for k in "${tabellen_kennungen[@]}"; do
-    gefunden=0
-    for g in "${GEMELDETE_KENNUNGEN[@]:-}"; do
-      [ "$g" = "$k" ] && gefunden=1 && break
-    done
-    [ "$gefunden" -eq 1 ] || ohne_pruefung+=("$k")
+  # Einmalige Ausgabe des Blocks (6.12.28 f, Entscheid "eine Quelle, eine
+  # Ausgabestelle"): EINE Quelle, EINE Ausgabestelle, nach der Messung --
+  # keine Deckungszeile ausserhalb dieser Stelle.
+  local _block_ausgabe_zeile
+  for _block_ausgabe_zeile in "${DECKUNGSZEILEN[@]}"; do
+    echo "$_block_ausgabe_zeile"
   done
-
-  ohne_kennung=()
-  for g in "${GEMELDETE_KENNUNGEN[@]:-}"; do
-    [ -n "$g" ] || continue
-    gefunden=0
-    for k in "${tabellen_kennungen[@]}"; do
-      [ "$g" = "$k" ] && gefunden=1 && break
-    done
-    [ "$gefunden" -eq 1 ] || ohne_kennung+=("$g")
-  done
-
-  doppelt_gemeldet=()
-  if [ "${#GEMELDETE_KENNUNGEN[@]}" -gt 0 ]; then
-    while IFS= read -r k; do
-      [ -n "$k" ] && doppelt_gemeldet+=("$k")
-    done < <(printf '%s\n' "${GEMELDETE_KENNUNGEN[@]}" | sort | uniq -d)
-  fi
-
-  if [ "${#zurueckgezogene_kennungen[@]}" -gt 0 ]; then
-    echo "Zurueckgezogene Kennungen (von der Deckung ausgenommen): ${zurueckgezogene_kennungen[*]}"
-  fi
-
-  if [ "${#ohne_pruefung[@]}" -gt 0 ]; then
-    deckung_fehler=1
-    echo "Kennungen der Tabelle OHNE Pruefung: ${ohne_pruefung[*]}"
-  fi
-  if [ "${#ohne_kennung[@]}" -gt 0 ]; then
-    deckung_fehler=1
-    echo "Gemeldete Pruefungen mit einer Kennung, die NICHT in der Tabelle steht: ${ohne_kennung[*]}"
-  fi
-  if [ "${#doppelt_gemeldet[@]}" -gt 0 ]; then
-    deckung_fehler=1
-    echo "Doppelt gemeldete Kennungen: ${doppelt_gemeldet[*]}"
-  fi
-
-  echo "Deckung: ${#tabellen_kennungen[@]} Kennungen in der Tabelle, $((${#tabellen_kennungen[@]} - ${#ohne_pruefung[@]})) geprueft, ${#ohne_pruefung[@]} ohne Pruefung, ${#ohne_kennung[@]} ohne Kennung"
-
-  # -----------------------------------------------------------------------------
-  # Kanalabgleich (ADR 0002, 6.12.26, Entscheid zu O-25): der von jeder
-  # pruefe_*-Huelle an _melde gemeldete Kanal wird gegen die dritte Spalte der
-  # Tabelle 6.12.19 abgeglichen. Nur Kennungen, die BEIDE Seiten kennen (in der
-  # Tabelle UND gemeldet), werden verglichen -- eine fehlende Pruefung ist
-  # bereits oben als "ohne Pruefung" erfasst, eine Kennung ohne Tabelleneintrag
-  # bereits als "ohne Kennung"; hier geht es allein um den WERT bei
-  # uebereinstimmender Kennung.
-  # -----------------------------------------------------------------------------
-  # ADR 0002, 6.12.26 e (Vierzehnte Fortschreibung, Entscheide 1 und 4): die
-  # Ausnahmeliste ist ersatzlos entfernt. Tabelle 6.12.19 traegt fuer Z-080
-  # und Z-130 den Kanal "kette", die Messung meldet fuer beide "kette" --
-  # Tabelle und Messung stimmen ueberein, jede Kanalabweichung bleibt ein
-  # Fehler.
-  kanal_abweichungen=0
-  for k in "${tabellen_kennungen[@]}"; do
-    erwarteter_kanal="${KANAL_TABELLE[$k]:-}"
-    gemeldeter_kanal="${KANAL_GEMELDET[$k]:-}"
-    [ -n "$gemeldeter_kanal" ] || continue
-    # SST-B5-16: eine leere Kanalspalte bei einer gemessenen (nicht
-    # zurueckgezogenen) Zeile ist eine Abweichung, kein Uebersprung.
-    if [ -z "$erwarteter_kanal" ]; then
-      kanal_abweichungen=$((kanal_abweichungen + 1))
-      deckung_fehler=1
-      echo "Kanalabweichung: $k Tabelle=leer gemessen=$gemeldeter_kanal"
-      continue
-    fi
-    if [ "$gemeldeter_kanal" != "$erwarteter_kanal" ]; then
-      kanal_abweichungen=$((kanal_abweichungen + 1))
-      deckung_fehler=1
-      echo "Kanalabweichung: $k Tabelle=$erwarteter_kanal gemessen=$gemeldeter_kanal"
-    fi
-  done
-  echo "Kanalabgleich: ${#tabellen_kennungen[@]} Kennungen, $kanal_abweichungen Abweichungen"
-
-  # ---------------------------------------------------------------------
-  # Praedikatabgleich (ADR 0002, 6.12.27 b, O-26): dieselbe Mechanik wie der
-  # Kanalabgleich, jetzt gegen Spalte 4 (Praedikat). S8-06: verglichen wird
-  # die Zeichenkette (Reihenfolge verbindlich), nicht als Menge.
-  # ---------------------------------------------------------------------
-  praedikat_abweichungen=0
-  for k in "${tabellen_kennungen[@]}"; do
-    erwartetes_praedikat="${PRAEDIKAT_TABELLE[$k]:-}"
-    gemeldetes_praedikat="${PRAEDIKAT_GEMELDET[$k]:-}"
-    # SST-B5-03: nicht mehr uebersprungen, wenn leer -- eine Kennung, die
-    # gemeldet wurde (siehe Deckung oben), aber ein leeres Praedikat
-    # traegt, ist ein Befund und keine Luecke, die stillschweigend
-    # durchgeht. Nur echte "gar nicht gemeldet"-Kennungen (ohne_pruefung)
-    # bleiben aussen vor.
-    is_ohne_pruefung=0
-    for op in "${ohne_pruefung[@]:-}"; do [ "$op" = "$k" ] && is_ohne_pruefung=1 && break; done
-    [ "$is_ohne_pruefung" -eq 1 ] && continue
-    # SST-B5-16: eine leere Praedikatspalte bei einer gemessenen (nicht
-    # zurueckgezogenen) Zeile ist eine Abweichung, kein Uebersprung.
-    if [ -z "$erwartetes_praedikat" ]; then
-      praedikat_abweichungen=$((praedikat_abweichungen + 1))
-      deckung_fehler=1
-      echo "ABWEICHUNG Praedikat $k: gemeldet $gemeldetes_praedikat, Tabelle leer"
-      continue
-    fi
-    if [ "$gemeldetes_praedikat" != "$erwartetes_praedikat" ]; then
-      praedikat_abweichungen=$((praedikat_abweichungen + 1))
-      deckung_fehler=1
-      echo "ABWEICHUNG Praedikat $k: gemeldet $gemeldetes_praedikat, Tabelle $erwartetes_praedikat"
-    fi
-  done
-  echo "Praedikatabgleich: ${#tabellen_kennungen[@]} Kennungen, $praedikat_abweichungen Abweichungen"
-
-  schluessel_und_grammatikdeckung "$adr_pfad" || deckung_fehler=1
-
-  # ---------------------------------------------------------------------
-  # Gegenstandsdeckung Schluessel (ADR 0002, 6.12.27 j, Punkt 3, O-26):
-  # zweite, unabhaengige Deckung -- haelt die Schluesselzeichenketten aus
-  # dem GATE SELBST (nicht der Aufzaehlung in 6.12.4) gegen die
-  # Zusicherungsspalte. Ersetzt keine der beiden Deckungen oben, tritt
-  # daneben (6.12.27 j, "Der Bestand am 2026-09-06").
-  # ---------------------------------------------------------------------
-  gegenstandsdeckung_schluessel "$GATE" || deckung_fehler=1
 
   # Explizite, redundante Wache (Koordinator-Befund, 2026-09-06): eine
   # FEHLGESCHLAGEN-Meldung erzwingt den Rueckgabewert 2 -- unabhaengig davon,
@@ -4142,7 +6036,11 @@ zusammenfassung_und_deckung_ausgeben() {
   if [ "${#fehlgeschlagene_faelle[@]}" -gt 0 ]; then
     exit 2
   fi
-  if [ "$bestanden" -eq "$gesamt" ] && [ "$deckung_fehler" -eq 0 ] && [ -f "$adr_pfad" ]; then
+  # Rueckgabewert 0 setzt zusaetzlich zu den bestehenden Bedingungen voraus,
+  # dass die zweite Erhebung der Buchhaltung tatsaechlich gelaufen ist und
+  # ihr Urteil gesetzt hat (6.12.28 f Punkt 8.1, Auftrag Punkt 11).
+  if [ "$bestanden" -eq "$gesamt" ] && [ "$deckung_fehler" -eq 0 ] \
+     && [ "$BUCHHALTUNG_EINGELOEST" -eq 1 ] && [ -f "$adr_pfad" ]; then
     exit 0
   else
     exit 2
@@ -4380,12 +6278,13 @@ mutationsmodus_ausfuehren() {
     # exec (also VOR env) geschlossen; danach kann ihn keiner der
     # nachfolgenden Prozesse (env, timeout-Beobachter, bash/fall.sh) mehr
     # erben, weil er zu diesem Zeitpunkt in dieser Prozesskopie schon zu ist.
+    local zeitgrenze="${FALL_ZEITGRENZE[$fallname]:-30}"
     (
       if [ -n "${SELBSTTEST_SPERRE_FD:-}" ]; then
         exec {SELBSTTEST_SPERRE_FD}>&- 2>/dev/null || true
       fi
       exec env -i PATH="$PATH" HOME="${HOME:-/root}" "$env_var=$kopie_pfad" \
-        timeout 30 "$BASH_BIN" "$falllauf_datei"
+        timeout "$zeitgrenze" "$BASH_BIN" "$falllauf_datei"
     ) > "$ausgabe_datei" 2>&1
     local falllauf_rc=$?
 
