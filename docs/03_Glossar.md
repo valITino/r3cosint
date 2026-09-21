@@ -5,7 +5,7 @@
 | **Arbeitsprodukt nach** | Projektauftrag 6.3 |
 | **Verantwortlich** | Requirements Engineer; ein benannter Verantwortlicher ist noch zu bestimmen |
 | **Lebensdauer** | langlebig |
-| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19 |
+| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19. Nachgeführt 2026-09-21 mit dem Backlog-Eintrag R3-Q-010: Gate und Hook aufgenommen, beim Eintrag Freigabe-Gate die Homonym-Warnung um die Abgrenzung zum Gate ergänzt — beide Begriffe werden in Arbeitsprodukten und Regeln seit dem 2026-08-19 verwendet, standen aber nicht im Glossar, und "Gate" bezeichnete darin zwei verschiedene Sachen (R3 der Definition of Ready, Homonyme vermeiden) |
 
 **Die Verwendung dieses Glossars ist für alle Arbeitsprodukte und für die
 Oberflächentexte verpflichtend** (6.3). Synonyme sind gekennzeichnet, Homonyme
@@ -111,7 +111,8 @@ Ausführung dürfen technisch nicht selbstständig verkettbar sein (5.2).
 
 **Freigabe-Gate** — Ein Prüfpunkt im Projektablauf, an dem der Auftraggeber
 schriftlich zustimmt, bevor der nächste Lieferschritt beginnt (Abschnitt 2, 5.6).
-*Homonym-Warnung:* nicht dasselbe wie die Freigabe einer Abfrage.
+*Homonym-Warnung:* nicht dasselbe wie die Freigabe einer Abfrage und nicht
+dasselbe wie das Gate im Sinne eines blockierenden Hooks (siehe dort).
 
 **Freigabevorlage** — Der vom Modul `freigabe.vorschlag` erzeugte, noch nicht
 bestätigte Vorschlag im Zustand *offen*. Er führt als Vorschau die vorgesehenen
@@ -128,6 +129,17 @@ einzelnen, fallbezogenen Vorschlag, nicht ein Muster.
 
 ## G
 
+**Gate** — Ein Hook, der einen Vorgang abbricht, indem er mit Rückgabewert 2
+endet. Im Repository sind das die beiden `PreToolUse`-Gates — Schutz von main
+(3.2) und Trennung von Prototyp und Produktionscode (5.6) — sowie das
+Definition-of-Done-Gate an den Ereignissen `Stop`, `SubagentStop` und
+`TaskCompleted` (3.4). Ein Hook, der nie blockiert, ist ein Kanal und kein
+Gate; so der Hook, der beim Sitzungsstart den Eingang aus dem
+Methodik-Repository mitgibt. *Abzugrenzen von:* Freigabe-Gate (siehe dort) —
+jenes ist ein Prüfpunkt im Projektablauf, an dem ein Mensch schriftlich
+zustimmt, dieses eine maschinelle Sperre ohne Ermessen. *Nicht verwenden als
+Synonym für:* Freigabe.
+
 **Grabstein-Eintrag** — Was nach einer Löschung bleibt: Fallnummer,
 Löschzeitpunkt, freigebende Person, Rechtsgrundlage, Prüfsumme. Kein Inhalt.
 Hält die Protokollkette lückenlos (4.4).
@@ -137,6 +149,14 @@ Hält die Protokollkette lückenlos (4.4).
 **Herkunftsnachweis** — Die Angabe, aus welcher Quelle ein Datenpunkt stammt,
 wann er erhoben wurde und von wem. Nach W3C PROV geführt. Kein Knoten und keine
 Kante ohne Herkunftsnachweis (5.4). *Synonym:* Provenienz.
+
+**Hook** — Ein Skript, das bei einem festgelegten Ereignis der
+Entwicklungsumgebung ausgeführt wird. Registriert wird es in der versionierten
+`.claude/settings.json`, die Skripte liegen unter `.claude/hooks/`. Nur
+Rückgabewert 2 blockiert; Rückgabewert 1 blockiert nicht (3.4). Ein Hook ist
+die einzige Form, die eine Regel unabhängig vom Modell durchsetzt — CLAUDE.md,
+Regeln und Skills sind Kontext, keine Durchsetzung (3.2). *Abzugrenzen von:*
+Gate (siehe dort) — jedes Gate ist ein Hook, nicht jeder Hook ist ein Gate.
 
 ## K
 

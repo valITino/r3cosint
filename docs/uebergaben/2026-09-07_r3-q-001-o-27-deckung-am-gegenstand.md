@@ -259,7 +259,7 @@ verloren, weil Kommandosubstitution forkt.
 
 ## Nachführung
 
-- `docs/adr/0002-architekturentscheid-ziel-stack.md`: Abschnitt 6.12.28 a bis j
+- `docs/adr/0002-architekturentscheid-ziel-stack.md`: ADR 0002, Abschnitt 6.12.28 a bis j
   neu, mit dem Nachtrag vom 2026-09-08 in f; 6.12.4 um vier Schlüssel, 6.12.7
   um das Kürzel `TRENNUNG`, 6.12.9 um die Aussage `E23` erweitert; Tabelle
   6.12.19 auf 263 Zeilen; Abschnitte 8, 9 und 10 nachgeführt.
