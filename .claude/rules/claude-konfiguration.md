@@ -16,7 +16,7 @@ Grundlage: Projektauftrag 3.2, 3.4, 4.1.
 | Rules | `.claude/rules/*.md` | Themenspezifische Standards, pfadgebunden über `paths:` |
 | Skills | `.claude/skills/<name>/SKILL.md` | Wiederverwendbare Prozeduren und Checklisten |
 | Subagents | `.claude/agents/<name>.md` | Rollen mit eigenem Kontext, eigenen Tools, eigenem Modell |
-| Hooks | `.claude/settings.json` | Harte Gates, die unabhängig vom Modell greifen, und Kontext beim Sitzungsstart (`SessionStart`) |
+| Hooks | `.claude/settings.json` | Harte Gates, die unabhängig vom Modell greifen, Kontext beim Sitzungsstart (`SessionStart`) und Bereitstellung eines Prüfmittels beim Sitzungsstart |
 
 CLAUDE.md ist **Kontext, keine Durchsetzung**. Wer eine Regel garantiert
 durchsetzen will, braucht einen Hook.
@@ -56,6 +56,14 @@ durchsetzen will, braucht einen Hook.
   geführt: beim Beginn mit dem Aufgabenwerkzeug anlegen, beim Abschluss auf
   erledigt setzen (CLAUDE.md, "Vor jeder Arbeitseinheit"; ADR 0002, O-23,
   Entscheid E-H).
+- Ein `SessionStart`-Hook, der ein Prüfmittel der Kette bereitstellt
+  (`session-start-gitleaks.sh`), blockiert nie, endet auf jedem Weg mit 0,
+  installiert nur nach doppelter Prüfsummenprüfung (gepinnter Wert im Skript
+  und veröffentlichte Prüfsummendatei), schreibt nie in den Arbeitsbaum und
+  ersetzt nicht die Lage-C-Meldung von D11: Bereitstellung ist Kanal, die
+  Kette bleibt das Prüfmittel (ADR 0002, Abschnitt 10, E-E, Nachtrag vom
+  2026-09-22); er zieht sein Zeitbudget im Skript (zwei Downloads zu je
+  höchstens zwei Versuchen à 20 s) unter der Grenze aus `settings.json`.
 
 ## Skills (3.2 b)
 
