@@ -69,12 +69,18 @@ durchsetzen will, braucht einen Hook.
   2026-09-22); er zieht sein Zeitbudget im Skript (zwei Downloads zu je
   höchstens zwei Versuchen à 20 s) unter der Grenze aus `settings.json`.
   Liegt zum Prüfzeitpunkt, vor jedem Download, unter einem Zielverzeichnis
-  bereits ein Eintrag `gitleaks`, ersetzt er ihn nicht und sagt das; `curl`
-  läuft mit `-q`, damit keine `.curlrc` die Gegenstelle ändert.
+  bereits ein Eintrag `gitleaks`, ersetzt er ihn nicht und sagt das;
+  Zielverzeichnisse, die im PATH stehen, werden zuerst geprüft und
+  beschrieben, damit ein installiertes Binary auffindbar ist; `curl` läuft
+  mit `-q`, damit keine `.curlrc` die Gegenstelle ändert, und ohne
+  `SSLKEYLOGFILE`, damit keine TLS-Schlüssel in eine Datei geschrieben
+  werden.
 - Ein `SessionStart`-Hook, der bei flachem Klon die Git-Historie nachholt
   (`session-start-git-historie.sh`, `git fetch --unshallow` mit expliziter
-  Refspec `+refs/heads/*:refs/remotes/origin/*` und leerer Refmap
-  `--refmap=''`), blockiert nie, endet auf jedem Weg mit 0, schreibt
+  Refspec `+refs/heads/*:refs/remotes/origin/*`, leerer Refmap
+  `--refmap=''`, `--no-recurse-submodules` und `-c core.hooksPath=/dev/null`,
+  damit weder eine zweite Gegenstelle noch ein Git-Hook des Klons während des
+  Nachholens läuft), blockiert nie, endet auf jedem Weg mit 0, schreibt
   ausschliesslich in `.git/` (Objekte, Remote-Tracking-Refs, Tags in die
   geholte Historie) und nie in den Arbeitsbaum, lässt Zweige, HEAD und Index
   unberührt — die konfigurierte `remote.origin.fetch`-Refspec wirkt weder als

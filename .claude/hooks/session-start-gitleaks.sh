@@ -81,15 +81,46 @@
 # unbedingt formuliert; der Mechanismus wirkt aber nur zum Pruefzeitpunkt,
 # ohne Sperre gegen einen gleichzeitigen zweiten Lauf (siehe oben).
 #
-# Fuenfte Behebungsrunde vom 2026-09-22 (reine Textbefunde der
-# Schlusspruefung s3 des Static Software Testers, keine Codezeile geaendert):
+# Sechste Behebungsrunde vom 2026-09-22 (reine Textbefunde der
+# Schlusspruefung s3 des Static Software Testers, keine Codezeile geaendert;
+# gemeinsame Zaehlung mit dem Git-Historie-Hook, dessen fuenfte Runde B-12
+# und B-13 betraf):
 # S3-02 -- ein UTF-8-Umlaut im Kopfkommentar verletzte das Kriterium "reines
 # ASCII", ersetzt; S3-06 -- ein Bezugswort ohne Bezug im Absatz zur
 # Ersetzungs-Zusicherung berichtigt; S3-05 -- der Absatz zur vierten Runde
-# nennt jetzt, welche Runden welche Datei betrafen. Die Runden zwei, vier und
-# fuenf an diesem Hook sind in
+# nennt jetzt, welche Runden welche Datei betrafen. Die Runden zwei, vier,
+# sechs, sieben und acht an diesem Hook sind in
 # docs/uebergaben/2026-09-22_git-historie-starthook.md
-# (Nachtrag nach dem Codex-Review) belegt.
+# (Nachtrag nach dem Codex-Review) und in
+# docs/uebergaben/2026-09-22_abnahme-starthooks-und-codex-dritter-lauf.md
+# belegt.
+#
+# Siebte Behebungsrunde vom 2026-09-22 (Codex-Review, dritter Lauf, Pull
+# Request r3cosint#17, geprueft gegen Commit
+# 59de8974bc6871e4e5e1ce179cc1b29d98739961): zwei P2-Befunde. Erstens --
+# SSLKEYLOGFILE laesst curl bei jeder TLS-Verbindung Sitzungsschluessel in
+# die dort genannte Datei schreiben; zeigt der Pfad in den Arbeitsbaum,
+# entsteht die Datei schon beim ersten Verbindungsversuch, auch bei einem
+# gescheiterten Download (belegt). Behoben mit "unset SSLKEYLOGFILE" gleich
+# nach dem Signal-Trap, vor jedem curl-Aufruf; die Proxy-Konfiguration
+# (HTTPS_PROXY/https_proxy, CURL_CA_BUNDLE) bleibt unberuehrt. Zweitens --
+# die Kandidatenliste war unabhaengig vom PATH geordnet: installierte
+# Schritt h in einen Kandidaten ausserhalb des PATH, waehrend ein
+# spaeterer Kandidat im PATH gestanden haette, fand "command -v" das
+# Ergebnis nicht, D11 blieb in Lage C, und der Ersetzungsschutz (oben,
+# "Ersetzt kein Binary") verhinderte ab der naechsten Sitzung jeden
+# weiteren Versuch -- belegt. Behoben: die Kandidatenliste wird jetzt so
+# geordnet, dass ein bereits im PATH stehendes Verzeichnis zuerst kommt
+# (exakter Verzeichnisvergleich, keine Teilstringtreffer); dieselbe
+# geordnete Liste gilt fuer die Pruefung auf ein vorhandenes Binary und
+# fuer die Installation, die Erfolgsmeldung nennt weiterhin den
+# tatsaechlich gewaehlten Kandidaten.
+#
+# Achte Behebungsrunde vom 2026-09-22 (Textbefunde der statischen Pruefung
+# s5, keine Codezeile geaendert): S5-03 -- die Rundenzaehlung dieser Datei
+# lag ab der s3-Runde um eins zu tief, an die gemeinsame Zaehlung mit dem
+# Git-Historie-Hook angeglichen (Runden 1, 3, 5 dort allein, 4 hier allein,
+# 2, 6, 7, 8 beide Hooks).
 #
 # Anforderungskennung: R3-Q-001 (dieser Hook setzt den Entscheidpunkt E-E des
 # Definition-of-Done-Gates aus R3-Q-001 um, ADR 0002, Abschnitt 10).
@@ -139,6 +170,15 @@ set -uo pipefail
 # aufraeumt. Zum Zeitpunkt, zu dem der Trap tatsaechlich laeuft, siehe die
 # Grenze des Signalverhaltens im Kopfkommentar oben.
 trap 'exit 0' HUP INT TERM
+
+# SSLKEYLOGFILE loeschen (Codex-Review, dritter Lauf, P2): ist die Variable
+# gesetzt, schreibt curl bei jeder TLS-Verbindung Sitzungsschluessel in die
+# dort genannte Datei -- zeigt der Pfad in den Arbeitsbaum, entsteht die
+# Datei schon beim ersten Verbindungsversuch, auch wenn der Download
+# scheitert (belegt). Die Variable gehoert nicht zur Proxy-Konfiguration,
+# die curl braucht: HTTPS_PROXY/https_proxy und CURL_CA_BUNDLE bleiben
+# gesetzt (siehe Kopfkommentar, "Die eine Gegenstelle dieses Hooks").
+unset SSLKEYLOGFILE 2>/dev/null || true
 
 melden() {
     printf '[session-start-gitleaks] %s\n' "$1"
@@ -298,6 +338,30 @@ home_verzeichnis="${HOME:-}"
 case "$home_verzeichnis" in
     /*) kandidaten+=("$home_verzeichnis/.local/bin") ;;
 esac
+
+# Nach PATH geordnet (Codex-Review, dritter Lauf, P2): ohne das koennte
+# Schritt h in einen Kandidaten installieren, der nicht im PATH steht,
+# waehrend ein spaeterer Kandidat es waere -- "command -v" faende das
+# Ergebnis dann nicht, D11 bliebe in Lage C, und der Ersetzungsschutz
+# unten verhindert ab der naechsten Sitzung jeden weiteren Versuch: der
+# Fehlschlag waere dauerhaft. Ein Kandidat, der als Verzeichnis im PATH
+# steht, kommt deshalb zuerst; exakter Verzeichnisvergleich, keine
+# Teilstringtreffer (":$PATH:" umschliesst jeden Eintrag mit
+# Doppelpunkten, ":$kandidat:" sucht darin nur den vollen Eintrag).
+# Innerhalb der beiden Gruppen bleibt die urspruengliche Reihenfolge
+# erhalten (/usr/local/bin vor $HOME/.local/bin). Dieselbe geordnete Liste
+# gilt fuer die Pruefung auf ein vorhandenes Binary unten und fuer die
+# Installation in Schritt h -- beide Schritte meinen damit denselben
+# ersten Kandidaten.
+kandidaten_im_pfad=()
+kandidaten_nicht_im_pfad=()
+for kandidat in "${kandidaten[@]}"; do
+    case ":$PATH:" in
+        *":$kandidat:"*) kandidaten_im_pfad+=("$kandidat") ;;
+        *) kandidaten_nicht_im_pfad+=("$kandidat") ;;
+    esac
+done
+kandidaten=("${kandidaten_im_pfad[@]}" "${kandidaten_nicht_im_pfad[@]}")
 
 # Ersetzt kein Binary zum Pruefzeitpunkt: liegt unter einem Kandidaten
 # bereits ein Eintrag namens gitleaks -- Datei, Verzeichnis oder Symlink,
