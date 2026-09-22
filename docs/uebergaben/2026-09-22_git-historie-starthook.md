@@ -183,7 +183,14 @@ dass das unzutreffend war. Wer den Stand plant, liest Abschnitt 8.
 Der Codex-Code-Review (geprüfter Commit `bb6c1965fa271f7f1d28cc57d3c0fc192ad8cb15`)
 hat fünf Befunde gemeldet; vier davon sind berechtigte Mängel an den beiden
 Starthooks, der fünfte (Nachweisverzeichnis veraltet) war zum Zeitpunkt des
-Reviews bereits durch die Folgecommits erledigt.
+Reviews bereits durch die Folgecommits erledigt. Ein zweiter Lauf desselben
+Reviews (geprüfter Commit `bbaca093baf58db32114d6ff5cfefd0122f416b0`) hat
+einen sechsten Befund gemeldet: `GIT_SHALLOW_FILE` auf einen nicht
+vorhandenen Pfad lässt git einen flachen Klon als nicht flach melden, der
+Hook holt dann nichts nach — derselbe Sachverhalt wie N-04 der statischen
+Prüfung, mit P2 in derselben Runde behoben (Löschliste) und als Fall K-D
+nachgemessen. Alle sechs Threads sind am Pull Request beantwortet und
+aufgelöst.
 
 - **P1, Git-Historie-Hook:** `git fetch --unshallow origin` ohne Refspec
   verwendet die konfigurierten `remote.origin.fetch`-Refspecs; eine nicht
