@@ -8015,7 +8015,7 @@ erteilt der Auftraggeber auf einem der beiden Formwege aus Abschnitt 10.
 > bleiben als Stand davor stehen (ADR 0002, 6.1.2). Freigegeben sind damit der
 > Umfang nach den Buchstaben a bis f, der Schnitt und die Reihenfolge nach
 > Buchstabe g; die nächste Einheit ist der Bau von E4.1. Nicht Gegenstand
-> dieser Freigabe: O-28 (bleibt bedingt offen), O-25, O-15 und die Freigabe
+> dieser Freigabe: O-28 (bleibt bedingt offen), O-25 (entschieden am 2026-09-03, Abschnitt 8), O-15 und die Freigabe
 > des Grundgerüsts. Der Bau selbst hat in dieser Einheit nicht begonnen; an
 > den beiden Gates und am `Makefile` ist für E4 weiterhin keine Zeile
 > geändert. Die Änderung an `.claude/settings.json` vom 2026-09-22 betrifft
@@ -8861,7 +8861,7 @@ umzusetzen, nicht stillschweigend.
 **7. Was die Abnahme bedeutet — und was nicht.** Sie bedeutet, dass das
 Prüfmittel seinen Massstab in der Fassung von 6.12.28 g erfüllt, mit Teil 2 auf
 dem Ersatzweg und mit den Restlücken aus Punkt 3 und den Grenzen aus Punkt 4.
-Sie bedeutet **nicht** die Erledigung von **O-25**, **nicht** die Abnahme von
+Sie bedeutet **nicht** die Erledigung von **O-25** — das ist am 2026-09-03 entschieden (Abschnitt 8) und wird hier nur als nicht umfasst genannt —, **nicht** die Abnahme von
 D20 (**O-15**), **nicht** die Schliessung der Lücke aus **E-K** und **R3-Q-005**
 und **nicht** die Freigabe des Grundgerüsts. Am Verhältnis zu 5.2 ändert sie
 nichts: Das Gate steht an keiner Stelle zwischen Freigabe und Ausführung. Die
@@ -8884,7 +8884,7 @@ Product Owner.
 
 **Was die Abnahme umfasst.** Der Gegenstand ist derselbe wie in der Abnahmevorlage oben: das Prüfmittel aus R3-Q-001 — `.claude/hooks/dod-gate.sh`, `.claude/hooks/dod-gate-terminierte-lagen.txt`, `scripts/dod-gate-selbsttest.sh` mit 262 Zusicherungen und 264 Messhüllen, `scripts/dod-gate-mutationen.txt` mit 262 Einträgen (250 `sed`, 12 `keine`) sowie die Festlegung in ADR 0002, 6.12 samt den Nachträgen 6.12.23 bis 6.12.28 und der Prüftabelle 6.12.19 mit 263 Zeilen.
 
-**Was sie NICHT umfasst.** **O-25** bleibt offen. Die Abnahme des Belegprüfers **D20** ist damit nicht erteilt (**O-15**); sie ist vor der Freigabe des Grundgerüsts fällig. Die harte Durchsetzung der Rollen-Schreibgrenzen (**R3-Q-005**) bleibt offen, und die Lücke aus **E-K** bleibt bestehen. Die **Freigabe des Grundgerüsts** ist mit dieser Abnahme nicht erteilt. Die Entscheidpunkte **E-A bis E-K** waren bereits am 2026-09-07 durch Merge freigegeben (Unterabschnitt darüber) und standen hier nicht erneut zur Wahl.
+**Was sie NICHT umfasst.** **O-25** bleibt offen. *Berichtigung vom 2026-09-22 (Befund des Codex-Reviews am Pull Request r3coscrum#10): O-25 ist am 2026-09-03 entschieden (Abschnitt 8) und nicht Gegenstand dieser Abnahme; die Wendung "bleibt offen" ist seit dem 2026-09-07 ohne benannten Grund fortgeschrieben worden und bleibt als Stand davor stehen (6.1.2).* Die Abnahme des Belegprüfers **D20** ist damit nicht erteilt (**O-15**); sie ist vor der Freigabe des Grundgerüsts fällig. Die harte Durchsetzung der Rollen-Schreibgrenzen (**R3-Q-005**) bleibt offen, und die Lücke aus **E-K** bleibt bestehen. Die **Freigabe des Grundgerüsts** ist mit dieser Abnahme nicht erteilt. Die Entscheidpunkte **E-A bis E-K** waren bereits am 2026-09-07 durch Merge freigegeben (Unterabschnitt darüber) und standen hier nicht erneut zur Wahl.
 
 **Massstab und Ergebnis, ohne Beschönigung.** Das Abnahmekriterium aus ADR 0002, 6.12.27 g in der Fassung von **6.12.28 g** hat zwei Teile. **Teil 1 ist erfüllt** (Fremdbeleg). **Teil 2 ist NICHT erfüllt** — er verlangt eine Fremdmutationsrunde ohne blockierenden Befund, und **Runde 12 hatte einen**: `DT12-M14`, ein falsches Grün an der Grammatik der D19-Zeile. Getragen hat die Abnahme nicht ein bestandener Teil 2, sondern der in **6.12.28 g** für genau diesen Fall **vorab** festgelegte Weg: Der Befund wurde behoben, statisch nachgeprüft und mit einer gezielten Wiederholung belegt; eine Runde 13 gibt es nicht. Mit abgenommen sind damit die **drei Restlücken** (ADR 0002, 6.12.28 j Punkt 5: die Grammatik der D19-Zeile ist nicht am Gegenstand gedeckt; Zeichen im Inneren eines Wortliterals werden nicht einzeln geschwächt; eine Alternative mit einem bestimmten fremden Literal ist nur als Klasse erfasst), die **Grenzen der Prüfrollen an ihrer eigenen Prüfung** (keine wortlautgenaue Feindeckung Zeile für Zeile; kein Lauf gegen einen unabhängig geklonten Baum) und die **beiden bekannten Lücken ausserhalb dieser Einheit** (das Gate misst das Recht einer Rolle, nicht ihre Fähigkeit — E-K und R3-Q-005; das Gate stützt sich auf den nicht abgenommenen Belegprüfer D20 — O-15). Diese Grenzen sind mit dieser Abnahme **benannt und mitgetragen**, nicht geschlossen.
 

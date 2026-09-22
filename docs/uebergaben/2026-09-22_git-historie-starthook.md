@@ -142,8 +142,8 @@ erwartete grüne Zustand, ohne Nachbesserung.
   einer neuen Sitzung von `main` (nach ADR 0002, 6.13 g ändert E4.1 keine
   Zeile an den beiden Gates).
 - Alles, was die Übergabe der ersten Einheit unter "Was offen ist" führt:
-  offene Punkte 12, 15 und 20 des Backlogs, O-28 bedingt offen, O-25 und
-  O-15, `CHANGELOG.md`, die Bestätigung der Notation der Abnahmekriterien, die
+  offene Punkte 12, 15 und 20 des Backlogs, O-28 bedingt offen, O-15,
+  `CHANGELOG.md`, die Bestätigung der Notation der Abnahmekriterien, die
   Kommentarzeilen "foermliche Freigabe ausstehend", die Restbefunde am
   gitleaks-Hook.
 - Am neuen Hook, benannt und nicht behoben: Signal während des `fetch` endet
@@ -156,6 +156,27 @@ erwartete grüne Zustand, ohne Nachbesserung.
   (`GIT_SHALLOW_FILE`, `GIT_TRACE` nicht gelöscht), N-06/N-08 (Kopfkommentar
   zu absolut), N-07 (Zeilenverweis) — SecDevOps Engineer, mit der nächsten
   Änderung am Hook.
+
+## Nachtrag vom 2026-09-22 nach dem Codex-Review
+
+Der Codex-Review am Pull Request r3coscrum#10 (Befund P2) hat einen
+Widerspruch gefunden, der auch das Produkt-Repository betrifft: **O-25** ist
+in ADR 0002, Abschnitt 8 seit dem 2026-09-03 als **entschieden** geführt
+(sechzehnte Zeile der Tabelle, umgesetzt in 6.12.26; im Methodik-Repository
+V15 und ein erledigter Punkt), wird aber seit der Einheit vom 2026-09-07 in
+Kopfzeile, Abschnitt 10, `CLAUDE.md`, Backlog und Übergaben als "bleibt
+offen" mitgeführt — ohne dass eine Stelle den Grund nennt. Am Bestand ist
+kein Grund auffindbar; die massgebliche Stelle ist Abschnitt 8. Berichtigt in
+dieser Einheit an den Stellen dieses Pull Requests, die den Stand tragen:
+`CLAUDE.md` (Statustabelle, Gate-Zeile), Backlog (Stand-Vermerk R3-Q-001),
+ADR 0002 (Status-Block von 6.13, Abnahmeeintrag in Abschnitt 10 mit
+Berichtigungsvermerk nach 6.1.2), Nachweiserzeuger, diese Übergabe; im
+Methodik-Repository der Eintrag zu O-27 und der Übergabevermerk dieser
+Einheit. Nicht geändert, weil sie einen vergangenen Stand belegen: die
+Übergaben vom 2026-09-07, 2026-09-21 und 2026-09-22 (erste Einheit), die
+Kopfzeileneinträge vom 2026-09-07 und die Abnahmevorlage vom 2026-09-07 in
+Abschnitt 10; sie führen O-25 weiterhin als offen, und dieser Nachtrag sagt,
+dass das unzutreffend war. Wer den Stand plant, liest Abschnitt 8.
 
 ## Protokoll der ausgeführten Befehle (Koordinator)
 
