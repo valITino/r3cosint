@@ -36,6 +36,28 @@
             "statusMessage": "Liest den Eingang aus dem Methodik-Repository (6.6)"
           }
         ]
+      },
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/session-start-gitleaks.sh\"",
+            "timeout": 120,
+            "statusMessage": "Stellt gitleaks fuer D11 bereit (ADR 0002, Abschnitt 10, E-E)"
+          }
+        ]
+      },
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/session-start-git-historie.sh\"",
+            "timeout": 120,
+            "statusMessage": "Holt die Git-Historie nach, wenn der Klon flach ist (D20; ADR 0002, Abschnitt 10, E-F)"
+          }
+        ]
       }
     ],
     "Stop": [

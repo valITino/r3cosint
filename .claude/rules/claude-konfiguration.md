@@ -16,7 +16,7 @@ Grundlage: Projektauftrag 3.2, 3.4, 4.1.
 | Rules | `.claude/rules/*.md` | Themenspezifische Standards, pfadgebunden über `paths:` |
 | Skills | `.claude/skills/<name>/SKILL.md` | Wiederverwendbare Prozeduren und Checklisten |
 | Subagents | `.claude/agents/<name>.md` | Rollen mit eigenem Kontext, eigenen Tools, eigenem Modell |
-| Hooks | `.claude/settings.json` | Harte Gates, die unabhängig vom Modell greifen, und Kontext beim Sitzungsstart (`SessionStart`) |
+| Hooks | `.claude/settings.json` | Harte Gates, die unabhängig vom Modell greifen, Kontext beim Sitzungsstart (`SessionStart`) und Bereitstellung eines Prüfmittels beim Sitzungsstart |
 
 CLAUDE.md ist **Kontext, keine Durchsetzung**. Wer eine Regel garantiert
 durchsetzen will, braucht einen Hook.
@@ -49,13 +49,42 @@ durchsetzen will, braucht einen Hook.
 - Die Standardausgabe eines Hooks trägt ausschliesslich das JSON-Objekt oder
   nichts; jede andere Ausgabe wird als Fehler gemeldet oder verworfen. Die
   Ausgabe einer aufgerufenen Kette gelangt nie auf die Standardausgabe des
-  Hooks (ADR 0002, 6.12.15).
+  Hooks (ADR 0002, 6.12.15). Das gilt für die Gates (`PreToolUse`, `Stop`,
+  `SubagentStop`, `TaskCompleted`); ein `SessionStart`-Hook gibt Klartext auf
+  der Standardausgabe aus, der als Kontext übernommen wird — so die drei
+  Hooks `session-start-eingang.sh`, `session-start-gitleaks.sh` und
+  `session-start-git-historie.sh`.
 - Das Definition-of-Done-Gate (`dod-gate.sh`, ADR 0002, 6.12) erzwingt die
   Kette hart nur über `TaskCompleted`, und dieses Ereignis feuert nur, wenn
   eine Aufgabenliste geführt wird. Deshalb wird jede Arbeitseinheit als Aufgabe
   geführt: beim Beginn mit dem Aufgabenwerkzeug anlegen, beim Abschluss auf
   erledigt setzen (CLAUDE.md, "Vor jeder Arbeitseinheit"; ADR 0002, O-23,
   Entscheid E-H).
+- Ein `SessionStart`-Hook, der ein Prüfmittel der Kette bereitstellt
+  (`session-start-gitleaks.sh`), blockiert nie, endet auf jedem Weg mit 0,
+  installiert nur nach doppelter Prüfsummenprüfung (gepinnter Wert im Skript
+  und veröffentlichte Prüfsummendatei), schreibt nie in den Arbeitsbaum und
+  ersetzt nicht die Lage-C-Meldung von D11: Bereitstellung ist Kanal, die
+  Kette bleibt das Prüfmittel (ADR 0002, Abschnitt 10, E-E, Nachträge vom
+  2026-09-22); er zieht sein Zeitbudget im Skript (zwei Downloads zu je
+  höchstens zwei Versuchen à 20 s) unter der Grenze aus `settings.json`.
+  Liegt zum Prüfzeitpunkt, vor jedem Download, unter einem Zielverzeichnis
+  bereits ein Eintrag `gitleaks`, ersetzt er ihn nicht und sagt das; `curl`
+  läuft mit `-q`, damit keine `.curlrc` die Gegenstelle ändert.
+- Ein `SessionStart`-Hook, der bei flachem Klon die Git-Historie nachholt
+  (`session-start-git-historie.sh`, `git fetch --unshallow` mit expliziter
+  Refspec `+refs/heads/*:refs/remotes/origin/*` und leerer Refmap
+  `--refmap=''`), blockiert nie, endet auf jedem Weg mit 0, schreibt
+  ausschliesslich in `.git/` (Objekte, Remote-Tracking-Refs, Tags in die
+  geholte Historie) und nie in den Arbeitsbaum, lässt Zweige, HEAD und Index
+  unberührt — die konfigurierte `remote.origin.fetch`-Refspec wirkt weder als
+  Abrufliste noch als Refmap — und ersetzt die Lage-C-Meldung von D20
+  (`FEHLT=git-historie`) nicht (ADR 0002, Abschnitt 10, E-F, Nachträge vom
+  2026-09-22); die git-eigenen Umgebungsvariablen, die den Gegenstand
+  verlegen oder in den Arbeitsbaum schreiben könnten (`GIT_DIR`-Familie,
+  `GIT_SHALLOW_FILE`, `GIT_TRACE*`), löscht er vor dem ersten `git`-Aufruf;
+  Zeitbudget im Skript (Fetch höchstens 90 s) unter der Grenze aus
+  `settings.json`.
 
 ## Skills (3.2 b)
 
