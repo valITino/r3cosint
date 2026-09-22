@@ -65,16 +65,26 @@ durchsetzen will, braucht einen Hook.
   installiert nur nach doppelter Prüfsummenprüfung (gepinnter Wert im Skript
   und veröffentlichte Prüfsummendatei), schreibt nie in den Arbeitsbaum und
   ersetzt nicht die Lage-C-Meldung von D11: Bereitstellung ist Kanal, die
-  Kette bleibt das Prüfmittel (ADR 0002, Abschnitt 10, E-E, Nachtrag vom
+  Kette bleibt das Prüfmittel (ADR 0002, Abschnitt 10, E-E, Nachträge vom
   2026-09-22); er zieht sein Zeitbudget im Skript (zwei Downloads zu je
   höchstens zwei Versuchen à 20 s) unter der Grenze aus `settings.json`.
+  Liegt zum Prüfzeitpunkt, vor jedem Download, unter einem Zielverzeichnis
+  bereits ein Eintrag `gitleaks`, ersetzt er ihn nicht und sagt das; `curl`
+  läuft mit `-q`, damit keine `.curlrc` die Gegenstelle ändert.
 - Ein `SessionStart`-Hook, der bei flachem Klon die Git-Historie nachholt
-  (`session-start-git-historie.sh`, `git fetch --unshallow origin`),
-  blockiert nie, endet auf jedem Weg mit 0, schreibt ausschliesslich in
-  `.git/` und nie in den Arbeitsbaum, lässt Zweige, HEAD und Index unberührt
-  und ersetzt die Lage-C-Meldung von D20 (`FEHLT=git-historie`) nicht (ADR
-  0002, Abschnitt 10, E-F, Nachtrag vom 2026-09-22); Zeitbudget im Skript
-  (Fetch höchstens 90 s) unter der Grenze aus `settings.json`.
+  (`session-start-git-historie.sh`, `git fetch --unshallow` mit expliziter
+  Refspec `+refs/heads/*:refs/remotes/origin/*` und leerer Refmap
+  `--refmap=''`), blockiert nie, endet auf jedem Weg mit 0, schreibt
+  ausschliesslich in `.git/` (Objekte, Remote-Tracking-Refs, Tags in die
+  geholte Historie) und nie in den Arbeitsbaum, lässt Zweige, HEAD und Index
+  unberührt — die konfigurierte `remote.origin.fetch`-Refspec wirkt weder als
+  Abrufliste noch als Refmap — und ersetzt die Lage-C-Meldung von D20
+  (`FEHLT=git-historie`) nicht (ADR 0002, Abschnitt 10, E-F, Nachträge vom
+  2026-09-22); die git-eigenen Umgebungsvariablen, die den Gegenstand
+  verlegen oder in den Arbeitsbaum schreiben könnten (`GIT_DIR`-Familie,
+  `GIT_SHALLOW_FILE`, `GIT_TRACE*`), löscht er vor dem ersten `git`-Aufruf;
+  Zeitbudget im Skript (Fetch höchstens 90 s) unter der Grenze aus
+  `settings.json`.
 
 ## Skills (3.2 b)
 

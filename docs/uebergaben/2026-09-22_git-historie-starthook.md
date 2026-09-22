@@ -178,6 +178,165 @@ Kopfzeileneinträge vom 2026-09-07 und die Abnahmevorlage vom 2026-09-07 in
 Abschnitt 10; sie führen O-25 weiterhin als offen, und dieser Nachtrag sagt,
 dass das unzutreffend war. Wer den Stand plant, liest Abschnitt 8.
 
+## Nachtrag vom 2026-09-22 nach dem Codex-Review am Pull Request #17
+
+Der Codex-Code-Review (geprüfter Commit `bb6c1965fa271f7f1d28cc57d3c0fc192ad8cb15`)
+hat fünf Befunde gemeldet; vier davon sind berechtigte Mängel an den beiden
+Starthooks, der fünfte (Nachweisverzeichnis veraltet) war zum Zeitpunkt des
+Reviews bereits durch die Folgecommits erledigt.
+
+- **P1, Git-Historie-Hook:** `git fetch --unshallow origin` ohne Refspec
+  verwendet die konfigurierten `remote.origin.fetch`-Refspecs; eine nicht
+  standardmässige wie "+refs/heads/side:refs/heads/side" hätte beim
+  Sitzungsstart einen lokalen Zweig geschrieben — im Widerspruch zur
+  Zusicherung "Zweige unberührt". Erste Behebung: explizite Refspec
+  `+refs/heads/*:refs/remotes/origin/*` in beiden Fetch-Zweigen. **Diese
+  Behebung trug nur die Hälfte** (siehe unten): git zieht die konfigurierten
+  Refspecs weiterhin als Refmap heran. Zweite Behebung: zusätzlich
+  `--refmap=''` an beiden Fetch-Aufrufen. Der Hook schreibt seither in keiner
+  gemessenen Lage unter refs/heads/.
+- **P2, Git-Historie-Hook:** `GIT_TRACE` und die `GIT_TRACE2`-Varianten mit
+  Pfad im Arbeitsbaum hätten jeden git-Aufruf dorthin schreiben lassen
+  (derselbe Sachverhalt wie N-05 der statischen Prüfung). Behoben: alle
+  Variablen mit Präfix `GIT_TRACE` und `GIT_SHALLOW_FILE` (N-04) werden zu
+  Beginn gelöscht.
+- **P2, gitleaks-Hook:** `curl` liest `.curlrc` aus `CURL_HOME`,
+  `XDG_CONFIG_HOME` oder `HOME`; Einträge dort könnten eine andere
+  Gegenstelle ansprechen. Behoben: `-q` als erster Parameter beider
+  `curl`-Aufrufe.
+- **P2, gitleaks-Hook:** Liegt `/usr/local/bin/gitleaks` vor, ist das
+  Verzeichnis aber nicht im PATH, galt gitleaks als fehlend, und `mv -f`
+  hätte das vorhandene Binary ersetzt. Behoben: die Kandidaten werden vor
+  jedem Download auf einen vorhandenen Eintrag geprüft; liegt einer vor,
+  meldet der Hook das und ersetzt nichts.
+
+### Nachprüfung auf einem anderen Modell, in drei Runden
+
+**Runde 1 (statisch s2, dynamisch r7) — nicht bestanden, ein blockierender
+Befund, von beiden Rollen unabhängig gefunden.** Die erste Behebung von P1
+stellte die Zusicherung "Zweige unberührt" nicht her: Eine Refspec auf der
+Befehlszeile ersetzt die konfigurierten Refspecs nur als *Abrufliste*; als
+*Refmap* — Abbildung der abgerufenen Refs auf lokale Refs — zieht git sie
+weiterhin heran. Der Dynamic Software Tester hat es am Gegenstand gemessen
+(Fall K-B2, konfigurierte Refspec `+refs/heads/<zweig>:refs/heads/side`: der
+Hook schrieb `side` von `98512f42…` auf `bbaca093…`, Reflog
+`fetch --unshallow origin +refs/heads/*:refs/remotes/origin/*: fast-forward`),
+der Static Software Tester in Nachbildungen (Befund B-11, Läufe F, I, J:
+darunter ein `forced update` über einen eigenen lokalen Commit und die
+Einschleusung der Refspec allein über `GIT_CONFIG_COUNT`). Beide haben
+`--refmap=''` als Kontrollmessung belegt und als Vorschlag gekennzeichnet.
+Die übrigen drei Behebungen sind in beiden Prüfungen bestanden: `GIT_TRACE*`
+und `GIT_SHALLOW_FILE` (K-C, K-D mit Kontrollen ohne Hook), `curl -q` (L-Q:
+Download trotz `.curlrc` mit `url`/`connect-to` von der echten Gegenstelle,
+byte-identisches Binary; statisch belegt, dass `-q` nur an erster Stelle
+wirkt), Ersetzungsschutz (L-N: Binary vorhanden, PATH ohne das Verzeichnis,
+kein Download, Prüfsumme unverändert; Marker-`curl` mit Kontrolle).
+
+Nachrangige Befunde der statischen Nachprüfung, alle behoben: B-12
+(Kopfkommentar zu eng: der Fetch schreibt auch Tags unter refs/tags/, die in
+die geholte Historie zeigen, und entfernt bei `fetch.prune=true` veraltete
+Remote-Tracking-Refs — Aufzählung ergänzt), B-13 (zwei Zitate der
+Befehlszeile ohne Refspec: Zeitbudget-Absatz und Fehlschlagmeldung angepasst),
+B-14 (`[ -e ]` übersieht einen hängenden Symlink, `mv -f` hätte ihn ersetzt —
+Bedingung um `[ -L ]` erweitert), B-15 (Zusicherung "ersetzt nie ein
+vorhandenes Binary" war unbedingt formuliert, wirkt aber nur zum
+Prüfzeitpunkt — auf den Prüfzeitpunkt bezogen, kein `mv -n`, weil dessen
+Rückgabewert je coreutils-Fassung nicht belegt ist), B-16 (Meldung behauptete
+den PATH als Ursache, `[ -e ]` trifft auch Verzeichnis und unbrauchbare Datei
+— Meldung nennt nur noch die Prüfung), B-17 (Texte: `CLAUDE.md`, Hook-Regel
+und ADR 0002, E-E und E-F, zitierten die Befehlszeile ohne Refspec und
+führten "vorhanden, aber nicht im PATH" nicht — je als Nachtrag nachgeführt).
+
+**Entscheid des Koordinators zu `GIT_CONFIG_*`** (Restlücke aus B-11):
+`GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_n` und `GIT_CONFIG_VALUE_n` werden nicht
+gelöscht. Gemessen am 2026-09-22: Der Harness dieser Sitzungsumgebung setzt
+darüber `credential.interactive=false` und zwei `url.….insteadOf`-Regeln; ein
+Löschen könnte in anderen Umgebungen den Fetch-Weg kappen, und der Hook soll
+das Prüfmittel bereitstellen, nicht verweigern. Die einzige darüber
+eingeschleuste Wirkung auf Zweige, eine `remote.origin.fetch`-Refspec, ist
+mit `--refmap=''` abgeschaltet (statische Läufe J und K). Was darüber sonst
+eingeschleust werden kann, trifft jeden git-Aufruf der Sitzung und ist keine
+Eigenschaft dieses Hooks. Das steht als Kommentar bei den `unset`-Zeilen des
+Hooks und im zweiten Nachtrag zu E-F.
+
+**Runde 2 (dynamisch r8) — bestanden, 42 von 42 Zusicherungen.** Nach dem
+Einbau von `--refmap=''`: K-A (echter Klon, keine Änderung), K-B, K-B2
+(`side` unverändert, nicht mehr flach, `refs/remotes/origin/*` aktualisiert),
+K-B3 (Wildcard `+refs/heads/*:refs/heads/*` mit zwei lokalen Zweigen auf
+HEAD~1: kein Zweig verändert), K-B4 (`fetch.prune=true`: kein Zweig
+verändert; der von Hand angelegte veraltete Remote-Tracking-Ref wird entfernt
+— gemessen, innerhalb der Zusicherung), K-B5 (`fetch.prune=true` plus
+Wildcard in refs/heads/, lokaler Zweig ohne Gegenstück: nicht gelöscht).
+Beide Kontrollen ohne `--refmap=''` (K-B2K, K-B3K) schreiben weiterhin lokale
+Zweige, die Messung trennt also. Zweiter Lauf reproduzierbar (die einzige
+Abweichung im Fingerabdruck des echten Klons waren zwei parallel
+nachgeführte Textdateien, keine Ref-Änderung).
+
+**Zählung nach 3.4 am Kriterium "Zweige unberührt":** erstes Scheitern Codex
+P1 (Commit `bb6c1965…`), zweites Scheitern K-B2/B-11 (Arbeitsbaumstand mit
+expliziter Refspec), drittes Antreten r8 ohne blockierenden Befund. Keine
+Eskalation; eine vierte Messung an diesem Kriterium hätte es in dieser
+Einheit nicht gegeben. Das Muster, das beide Prüfrollen unabhängig benannt
+haben, gilt als Lehre: *Eine Zusicherung über das Verhalten eines fremden
+Werkzeugs wurde aus dessen Dokumentation geschlossen, statt am Werkzeug
+gemessen; die konfigurierte Refspec wirkt auf zwei Wegen, die Behebung deckte
+nur den ersten.*
+
+**Runde 3 (dynamisch r9, statisch s3) auf dem Endstand des Codes.**
+r9 — bestanden, 99 von 99 Zusicherungen: Regression des r8-Skripts auf dem
+Endstand (42 von 42, Skript mechanisch als inhaltsgleich belegt); neuer
+Fehlschlagpfad K-F (Remote `origin` auf nicht vorhandenen Pfad gesetzt: rc 0,
+stderr leer, genau eine Zeile mit der neuen Fehlschlagmeldung, Klon bleibt
+flach, Zweige und HEAD unverändert) und K-F2 (kein Remote `origin`);
+gitleaks-Hook L-S (hängender Symlink unter `$HOME/.local/bin/gitleaks`) und
+L-V (Verzeichnis): rc 0, je genau die neue Meldung, kein Download
+(Marker-`curl` mit Kontrolle), Eintrag und Inode unverändert, keine Reste;
+`/usr/local/bin/gitleaks` byte-identisch und mit Zeitstempel zurückgespielt,
+L-A danach `8.21.2`. s3 — nicht bestanden, ohne Verhaltensmangel: B-11 bis
+B-17 als behoben bestätigt (B-11 in den Nachbildungen F3, I3, J3 am
+Gegenstand; Pruning P, P2, P3 gemessen; der Entscheid zu `GIT_CONFIG_*` an
+der Umgebung bestätigt), dazu zwei blockierende und fünf nachrangige
+Textbefunde: S3-01 — drei Kommentarstellen des Git-Hooks führten einen Satz
+in Anführungszeichen als Zitat aus `git-fetch(1)`, der dort nicht steht (die
+Vorgabe stammte aus dem Auftrag des Koordinators an den SecDevOps Engineer;
+behoben mit den wörtlichen Passagen zu `--refmap` und zum Abschnitt
+"Configured Remote-tracking Branches"); S3-02 — ein UTF-8-Umlaut im
+Kopfkommentar des gitleaks-Hooks (Kriterium reines ASCII; behoben); S3-03 —
+Begründung zum Pruning widersprach der eigenen Begriffsbildung (behoben:
+geprunt wird entlang der Befehlszeilen-Refspec als Abrufliste, `--refmap=''`
+betrifft nur die Abbildung); S3-04 — `CLAUDE.md` gab die Ersetzungs-
+Zusicherung unbedingt wieder (behoben: auf den Prüfzeitpunkt bezogen); S3-05
+und S3-06 — Selbstbezüge der Rundenabsätze und ein Bezugswort (behoben);
+S3-07 — die Artefaktzeile des Nachweiserzeugers nannte die Befehlszeile ohne
+Refspec (behoben). S3-08, Klärungspunkt: "Codex" steht in Hook-Kommentar,
+ADR, Backlog und dieser Übergabe. Entscheid des Koordinators: Das ist der
+Name des Prüfereignisses (der Code-Review-Bot am Pull Request), also die
+Herkunftsangabe der vier Befunde nach 6.6, kein Modellname des Projekts; die
+Prüfrollen dieses Projekts werden weiterhin ohne Modellnamen als "auf einem
+anderen Modell" geführt. 3.4-Zählung: S3-01 und S3-02 je erstes Scheitern an
+einem neuen Kriterium.
+
+**Runde 4 (statisch s4) auf dem Endstand aller Dateien — bestanden.** S3-01
+bis S3-08 erledigt; die drei gesetzten Zitate sind wörtlich in `git-fetch(1)`
+enthalten (frisch abgerufen, je ein Treffer, Abschnittszuordnung geprüft), das
+frühere Zitat kommt im Repository nicht mehr vor; die Rümpfe beider Hooks
+sind ohne Kommentarzeilen byte-gleich mit den in r9 gemessenen Fassungen, die
+dynamische Messung r9 gilt damit weiter; beide Hooks reines ASCII, `bash -n`
+ohne Befund, jeder Ausstieg `exit 0`; Form der neuen Zeilen ohne Befund. Ein
+Hinweis ohne Befundrang (Rundenspanne im Kopf des gitleaks-Hooks) ist danach
+vom Koordinator berichtigt, wieder nur im Kommentar. Endstand der Hooks:
+`session-start-git-historie.sh` 336 Zeilen, `session-start-gitleaks.sh`
+456 Zeilen.
+
+Nicht behoben, offen (aus s2/r7/r8): Signalverhalten beider Hooks, weitere
+Konfigurationsvektoren derselben Klasse (`remote.origin.mirror`,
+`url.*.insteadOf`, `GIT_CONFIG_GLOBAL`, `remote.origin.tagOpt`), `GIT_ASKPASS`
+und `GIT_SSH_COMMAND` (nicht in der Löschliste; ein Beleg wäre nur gegen eine
+Gegenstelle mit Anmeldung zu führen), das echte `SessionStart`-Ereignis des
+Harness (die Hooks wurden direkt aufgerufen), Messung nur über `file://`
+statt über den HTTPS-Remote, `shellcheck` fehlt in der Umgebung (nicht
+ersetzt).
+
 ## Protokoll der ausgeführten Befehle (Koordinator)
 
 - Lesen von ADR 0002, 6.12.17 und des D20-Wächters im `Makefile` (Zeilen 703

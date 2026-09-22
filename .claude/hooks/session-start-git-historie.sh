@@ -13,7 +13,65 @@
 #
 # Behebungsrunde vom 2026-09-22 (statische Pruefung, B-01 bis B-10): ein
 # blockierender Befund (B-01, GIT_DIR verlegte den Gegenstand) und neun
-# nachrangige Befunde behoben. Dies ist die einzige Behebungsrunde.
+# nachrangige Befunde behoben.
+#
+# Zweite Behebungsrunde vom 2026-09-22 (Codex-Review, Pull Request
+# r3cosint#17, P1 und P2): P1 -- der Fetch ohne Refspec haette die
+# konfigurierten remote.origin.fetch-Refspecs verwendet und bei einer
+# nicht-standardmaessigen Refspec einen lokalen Zweig unter refs/heads/
+# schreiben koennen; behoben mit einer expliziten, sicheren Refspec, die nur
+# Remote-Tracking-Refs schreibt (siehe "Was der Hook NIE tut" und Schritt e).
+# P2 -- GIT_TRACE, seine Auspraegungen (GIT_TRACE2 und weitere) und
+# GIT_SHALLOW_FILE (statischer Befund N-04) konnten bei gesetztem Pfad in
+# den Arbeitsbaum schreiben beziehungsweise die Schalenliste verlegen;
+# beide werden jetzt zusammen mit den bereits geloeschten git-eigenen
+# Variablen entfernt (siehe die unset-Zeilen direkt nach dem Signal-Trap).
+#
+# Dritte Behebungsrunde vom 2026-09-22 (Nachmessung des Dynamic Software
+# Testers, Fall K-B2): P1 war nur halb behoben. Eine Refspec auf der
+# Befehlszeile ersetzt zwar die konfigurierten remote.origin.fetch-Refspecs
+# als ABRUFLISTE, git zieht die konfigurierten Refspecs aber weiterhin als
+# REFMAP heran -- die konfigurierten Refspecs entscheiden weiterhin, wohin
+# die abgerufenen Refs lokal abgelegt werden (git-fetch(1), Abschnitt
+# "Configured Remote-tracking Branches": "they are only used to decide
+# where the refs that are fetched are stored by acting as a mapping"). Mit
+# einer konfigurierten Refspec wie
+# "+refs/heads/claude/awesome-knuth-blvzpb:refs/heads/side" schrieb der Fetch
+# trotz expliziter Abrufliste weiterhin den lokalen Zweig refs/heads/side.
+# Behoben mit zusaetzlich "--refmap=''" (git-fetch(1): der dokumentierte Weg,
+# die konfigurierte Refmap abzuschalten) an beiden Fetch-Aufrufen (Schritt
+# e). Erst die explizite Refspec UND das leere Refmap zusammen tragen die
+# Zusicherung "Zweige unberuehrt".
+#
+# Fuenfte Behebungsrunde vom 2026-09-22 (statische Nachpruefung, B-12 und
+# B-13; Nachmessung r8 des Dynamic Software Testers bestanden) -- die vierte
+# Runde betraf den gitleaks-Hook (B-14 bis B-16), bisherige Absaetze stehen
+# unveraendert oberhalb: B-12 -- die Aufzaehlung dessen, was
+# der Fetch in .git/ schreibt, war zu eng: gemessen legt der Fetch auch Tags
+# unter refs/tags/ an, die in die geholte Historie zeigen (git folgt Tags
+# automatisch), und entfernt bei fetch.prune=true veraltete
+# Remote-Tracking-Refs unter refs/remotes/origin/ entlang der
+# Befehlszeilen-Refspec (DST r8, Fall K-B4; "--refmap=''" unterbindet das
+# nicht). Beides liegt in .git/, betrifft nie refs/heads/. Die Aufzaehlung
+# im Absatz "Was der Hook NIE tut" ist entsprechend ergaenzt. B-13 -- zwei
+# Stellen zitierten die Befehlszeile ohne Refspec und Refmap (Zeitbudget-Satz
+# und die Fehlschlagsmeldung in Schritt e); beide sind auf den tatsaechlichen
+# Aufruf umgestellt. Dazu, nicht umgesetzt, als Entscheid festgehalten: die
+# GIT_CONFIG_*-Variablen werden bewusst NICHT geloescht (siehe Kommentar bei
+# den unset-Zeilen).
+#
+# Sechste Behebungsrunde vom 2026-09-22 (reine Textbefunde der Schlusspruefung
+# s3 des Static Software Testers, kein Verhaltensmangel, keine Codezeile
+# geaendert): S3-01 -- drei Stellen fuehrten einen Satz als woertliches
+# git-fetch(1)-Zitat, der dort so nicht vorkommt (0 Treffer gegen
+# https://git-scm.com/docs/git-fetch); an allen drei Stellen durch ein
+# belegbares woertliches Zitat mit Quellenangabe ersetzt (Abschnitt
+# "Was der Hook NIE tut", "Dritte Behebungsrunde" und der Kommentar in
+# Schritt e). S3-03 -- die Begruendung, weshalb "--refmap=''" das Pruning
+# nicht unterbindet, widersprach der eigenen Begriffsbildung; richtiggestellt
+# (gemessen, SST Laeufe P, P2, P3): geprunt wird entlang der Abrufliste, das
+# betrifft "--refmap=''" nicht. S3-05 -- dieser Absatz ergaenzt, dass die
+# vierte Runde den gitleaks-Hook betraf.
 #
 # Warum dieser Hook UNTER KEINEN UMSTAENDEN blockiert: SessionStart ist ein
 # Kanal, kein Gate. Rueckgabewert 2 wird in diesem Hook nicht verwendet; ob
@@ -24,9 +82,35 @@
 # einem Signal (siehe die Absaetze zum Signal-Trap weiter unten).
 #
 # Was der Hook NIE tut: er aendert nie den Arbeitsbaum, nie einen Zweig, nie
-# HEAD, nie den Index. "git fetch --unshallow" schreibt ausschliesslich in
-# .git/ (Objekte und Remote-Refs des vorhandenen Klons) -- kein Checkout,
-# kein Merge, kein Umschreiben eines Zweigs.
+# HEAD, nie den Index. "git fetch --unshallow" schreibt in .git/
+# ausschliesslich: Objekte; Remote-Tracking-Refs unter refs/remotes/origin/
+# (bei fetch.prune=true entfernt der Fetch darunter auch veraltete Eintraege
+# entlang der Befehlszeilen-Refspec, wenn die Gegenstelle den Zweig nicht
+# mehr fuehrt -- gemessen, DST r8, Fall K-B4; geprunt wird entlang der
+# tatsaechlich verwendeten Abrufliste, hier der Befehlszeilen-Refspec;
+# "--refmap=''" betrifft nur die Abbildung auf lokale Refs und unterbindet
+# das Entfernen deshalb nicht); und
+# Tags unter refs/tags/, die in die geholte Historie zeigen (git folgt Tags
+# automatisch). Nie refs/heads/, nie HEAD, nie Index, nie Arbeitsbaum -- kein
+# Checkout, kein Merge, kein Umschreiben eines lokalen Zweigs. Dazu gibt der
+# Fetch-Aufruf (Schritt e) die Refspec
+# '+refs/heads/*:refs/remotes/origin/*' explizit auf der Befehlszeile an:
+# eine Refspec auf der Befehlszeile ersetzt die in remote.origin.fetch
+# konfigurierten Refspecs als ABRUFLISTE. Das allein genuegt nicht: git zieht
+# die konfigurierten Refspecs weiterhin als REFMAP heran: sie entscheiden
+# weiterhin, wohin die abgerufenen Refs lokal abgelegt werden (git-fetch(1),
+# Abschnitt "Configured Remote-tracking Branches": "they are only used to
+# decide where the refs that are fetched are stored by acting as a
+# mapping"). Ohne ein zusaetzliches "--refmap=''" koennte ein Klon mit einer
+# nicht-standardmaessigen
+# remote.origin.fetch-Refspec wie
+# "+refs/heads/claude/awesome-knuth-blvzpb:refs/heads/side" durch den Fetch
+# trotz expliziter Abrufliste einen LOKALEN Zweig (hier refs/heads/side)
+# aktualisieren -- im Widerspruch zur Zusicherung "Zweige unberuehrt". Erst
+# die explizite Refspec UND "--refmap=''" zusammen (Schritt e) schalten die
+# konfigurierte Refmap ab und tragen diese Zusicherung (Codex-Review, Pull
+# Request r3cosint#17, P1; Nachmessung des Dynamic Software Testers, Fall
+# K-B2).
 #
 # Die eine ausgehende Verbindung dieses Hooks: der bereits konfigurierte
 # Remote "origin" des vorhandenen Klons. Diese Adresse ist hier nicht fest
@@ -41,10 +125,12 @@
 # Beginn geloescht (direkt nach dem Signal-Trap, siehe dort); Proxy-Variablen
 # liest git von selbst.
 #
-# Zeitbudget (settings.json-Grenze 120 s): "git fetch --unshallow origin"
-# laeuft unter "timeout 90" (sofern timeout vorhanden ist; fehlt es, laeuft
-# der Fetch ohne Zeitgrenze -- dann faengt allein die Grenze aus
-# settings.json, siehe den Rueckfallzweig in Schritt e). Alle uebrigen
+# Zeitbudget (settings.json-Grenze 120 s): der Fetch-Aufruf in Schritt e
+# (git fetch --unshallow --refmap='' origin
+# '+refs/heads/*:refs/remotes/origin/*') laeuft unter "timeout 90" (sofern
+# timeout vorhanden ist; fehlt es, laeuft der Fetch ohne Zeitgrenze -- dann
+# faengt allein die Grenze aus settings.json, siehe den Rueckfallzweig in
+# Schritt e). Alle uebrigen
 # Schritte (is-inside-work-tree, show-toplevel, is-shallow-repository,
 # rev-list --count, remote get-url) liegen im Millisekundenbereich. 90 s plus
 # Rest liegt deutlich unter der Grenze von 120 s aus settings.json. Ein Hook,
@@ -93,10 +179,40 @@ trap 'melden "abgebrochen durch Signal -- Zustand der Git-Historie nicht gemelde
 # Gegenstand (das zu pruefende Repository) nicht verlegen -- belegt: mit
 # gesetztem GIT_DIR zielten Zaehlung und Fetch auf ein anderes
 # Repository --, werden sie hier geloescht, bevor irgendein git-Aufruf
-# erfolgt (B-01). Proxy- und TLS-Variablen bleiben unangetastet, weil sie den
-# Weg zur Gegenstelle bestimmen, nicht den Gegenstand.
-unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_NAMESPACE GIT_CEILING_DIRECTORIES 2>/dev/null || true
+# erfolgt (B-01). GIT_SHALLOW_FILE verlegt zusaetzlich die Schalenliste und
+# wird ebenso geloescht (statischer Befund N-04). Proxy- und TLS-Variablen
+# bleiben unangetastet, weil sie den Weg zur Gegenstelle bestimmen, nicht den
+# Gegenstand.
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_NAMESPACE GIT_CEILING_DIRECTORIES GIT_SHALLOW_FILE 2>/dev/null || true
 
+# Alle Variablen, deren Name mit GIT_TRACE beginnt (GIT_TRACE selbst,
+# GIT_TRACE2 und ihre weiteren Auspraegungen), lassen bei gesetztem Pfad
+# jeden git-Aufruf dorthin schreiben -- moeglich auch in den Arbeitsbaum, im
+# Widerspruch zu "schreibt nie in den Arbeitsbaum" (Codex-Review, Pull
+# Request r3cosint#17, P2). "${!GIT_TRACE@}" listet die Namen aller
+# gesetzten Variablen mit diesem Praefix; das ist ein Listen-Zugriff wie bei
+# einem Array, kein Dereferenzieren einer moeglicherweise ungesetzten
+# Variable, und liefert deshalb unter "set -u" auch dann keinen Fehler, wenn
+# keine solche Variable gesetzt ist -- dann expandiert der Ausdruck auf kein
+# einziges Wort, und "unset" ohne Argumente ist ebenfalls fehlerfrei.
+unset "${!GIT_TRACE@}" 2>/dev/null || true
+
+# Entscheid zu GIT_CONFIG_* (Restluecke aus B-11, bewusst NICHT umgesetzt,
+# fuenfte Behebungsrunde): GIT_CONFIG_COUNT, GIT_CONFIG_KEY_n und
+# GIT_CONFIG_VALUE_n werden hier NICHT geloescht. Grund, gemessen am
+# 2026-09-22 in dieser Sitzungsumgebung: der Harness setzt darueber
+# credential.interactive=false und zwei url.https://github.com/.insteadOf
+# -Regeln (fuer git@github.com: und ssh://git@github.com/); ein Loeschen
+# koennte in anderen Umgebungen den Fetch-Weg (Anmeldung, URL-Umschreibung)
+# kappen, und dieser Hook soll das Pruefmittel bereitstellen, nicht
+# verweigern. Eine darueber eingeschleuste remote.origin.fetch-Refspec wirkt
+# wegen --refmap='' nicht mehr auf refs/heads/ (statische Pruefung, Laeufe J
+# und K). Was darueber sonst eingeschleust werden kann (etwa core.hooksPath),
+# trifft jeden git-Aufruf der Sitzung gleichermassen und ist keine
+# Eigenschaft dieses Hooks. GIT_REDIRECT_STDOUT und GIT_REDIRECT_STDERR sind
+# auf Linux wirkungslos (gemessen) und stehen deshalb nicht in der
+# unset-Liste oben.
+#
 # Physischer (aufgeloester) Pfad eines Verzeichnisses -- fuer den Vergleich
 # CLAUDE_PROJECT_DIR gegen die Repository-Wurzel (B-06). readlink -f
 # bevorzugt, cd -P/pwd -P als Rueckfall, falls readlink fehlt oder -f nicht
@@ -181,10 +297,24 @@ vorher="$(git -C "$projekt" rev-list --count HEAD 2>/dev/null)"
 # (etwa Zugangsdaten), sondern bricht den Fetch sofort mit einem Fehler ab --
 # in einer Sitzung ohne Terminal waere ein wartender Fetch sonst nicht von
 # einem haengenden Prozess zu unterscheiden.
+#
+# Explizite Refspec '+refs/heads/*:refs/remotes/origin/*' (P1) UND
+# '--refmap=""' (dritte Behebungsrunde, Nachmessung des Dynamic Software
+# Testers, Fall K-B2): die Refspec auf der Befehlszeile ersetzt die in
+# remote.origin.fetch konfigurierten Refspecs als ABRUFLISTE, git zieht sie
+# aber weiterhin als REFMAP heran. Erst "--refmap=''" schaltet auch diese
+# Refmap ab (git-fetch(1), Option --refmap: "Providing an empty <refspec>
+# to the --refmap option causes Git to ignore the configured refspecs and
+# rely entirely on the refspecs supplied as command-line arguments"); ohne
+# diese Option koennte eine nicht-standardmaessige
+# konfigurierte Refspec trotz expliziter Abrufliste einen lokalen Zweig
+# unter refs/heads/ schreiben (siehe Kopfkommentar, "Was der Hook NIE tut").
+# Beide Massnahmen zusammen tragen die Zusicherung "Zweige unberuehrt".
+refspec='+refs/heads/*:refs/remotes/origin/*'
 if command -v timeout >/dev/null 2>&1; then
-    GIT_TERMINAL_PROMPT=0 timeout 90 git -C "$projekt" fetch --unshallow origin >/dev/null 2>&1
+    GIT_TERMINAL_PROMPT=0 timeout 90 git -C "$projekt" fetch --unshallow --refmap='' origin "$refspec" >/dev/null 2>&1
 else
-    GIT_TERMINAL_PROMPT=0 git -C "$projekt" fetch --unshallow origin >/dev/null 2>&1
+    GIT_TERMINAL_PROMPT=0 git -C "$projekt" fetch --unshallow --refmap='' origin "$refspec" >/dev/null 2>&1
 fi
 
 # Schalenzustand nachher, dieselbe exakte Auswertung wie in Schritt d
@@ -196,7 +326,7 @@ case "$zustand_nachher" in
         melden "Git-Historie nachgeholt: ${vorher:-unbekannt} -> ${nachher:-unbekannt} Commit(s), nicht mehr flach"
         ;;
     true)
-        melden "Nachholen der Git-Historie fehlgeschlagen (git fetch --unshallow origin) -- D20 meldet Lage C FEHLT=git-historie"
+        melden "Nachholen der Git-Historie fehlgeschlagen (git fetch --unshallow, Befehlszeile in Schritt e) -- D20 meldet Lage C FEHLT=git-historie"
         ;;
     *)
         melden "Schalenzustand nicht bestimmbar (git kennt --is-shallow-repository nicht) -- nichts nachgeholt; D20 misst"

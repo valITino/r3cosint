@@ -135,15 +135,19 @@ Rückgabewert 2 blockiert; Rückgabewert 1 blockiert nicht (3.4).
 Daneben laufen drei `SessionStart`-Hooks, alle Kanal, kein Gate — sie
 blockieren nie. `session-start-eingang.sh` gibt den Eingang aus dem
 Methodik-Repository als Kontext mit (6.6). `session-start-git-historie.sh`
-holt bei flachem Klon die Git-Historie nach (`git fetch --unshallow origin`,
-schreibt nur in `.git/`; ADR 0002, Abschnitt 10, E-F, Nachtrag vom
-2026-09-22) — bleibt der Klon flach, meldet D20 Lage C.
+holt bei flachem Klon die Git-Historie nach (`git fetch --unshallow` mit
+expliziter Refspec auf `refs/remotes/origin/*` und leerer Refmap
+`--refmap=''`, schreibt nur in `.git/`, nie unter refs/heads/; ADR 0002,
+Abschnitt 10, E-F, Nachträge vom 2026-09-22) — bleibt der Klon flach, meldet
+D20 Lage C.
 `session-start-gitleaks.sh` stellt `gitleaks` 8.21.2 bereit, wenn es fehlt:
 Release-Archiv gegen den im Skript
 gepinnten SHA-256-Wert **und** gegen die veröffentlichte Prüfsummendatei
 geprüft, sonst keine Installation; nur `linux_x64` ist gepinnt (ADR 0002,
 Abschnitt 10, E-E, Nachtrag vom 2026-09-22 auf Weisung "gitleaks permanent
-einbauen bitte."). Fehlt `gitleaks` trotzdem, meldet D11 Lage C: der Hook ist
+einbauen bitte."). Liegt zum Prüfzeitpunkt, vor jedem Download, unter einem
+Zielverzeichnis bereits ein Eintrag `gitleaks`, lädt der Hook nichts und
+ersetzt nichts. Fehlt `gitleaks` trotzdem, meldet D11 Lage C: der Hook ist
 Bereitstellung, die Kette bleibt das Prüfmittel.
 
 Alle drei Gates setzen `jq` voraus, das main-Gate und das DoD-Gate auch `git`.

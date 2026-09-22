@@ -21,7 +21,11 @@
 # Produkts (5.4): keine Telemetrie, kein Fehlerbericht, keine
 # Aktualisierungsabfrage, keine durch Umgebungsvariable uebersteuerbare
 # Gegenstelle. curl liest HTTPS_PROXY/https_proxy und CURL_CA_BUNDLE aus der
-# Umgebung von selbst. Die Start-URL ist fest verdrahtet; --proto '=https'
+# Umgebung von selbst, aber keine .curlrc: -q als erster Parameter beider
+# curl-Aufrufe sorgt dafuer, dass die Standardkonfiguration aus CURL_HOME,
+# XDG_CONFIG_HOME oder HOME nicht gelesen wird -- Eintraege wie url,
+# connect-to oder Upload-Optionen dort koennten sonst eine andere
+# Gegenstelle ansprechen. Die Start-URL ist fest verdrahtet; --proto '=https'
 # und --proto-redir '=https' erlauben Umleitungen nur ueber https, den
 # Zielhost der Umleitung bestimmt dabei die Gegenstelle -- GitHub liefert
 # Release-Dateien ueblicherweise ueber eine Umleitung aus. Tragend bleibt
@@ -48,6 +52,44 @@
 # Voraussetzung fehlt, die Architektur nicht gepinnt ist, ein Download
 # scheitert oder eine Pruefsumme nicht passt --, meldet D11 Lage C, nicht
 # dieser Hook.
+#
+# Ersetzt kein Binary, das zum Pruefzeitpunkt (VOR jedem Download, siehe die
+# Pruefung zwischen Schritt b und Schritt d) unter einem Zielkandidaten
+# (/usr/local/bin oder $HOME/.local/bin) liegt -- etwa weil das Verzeichnis
+# nicht im PATH steht und Fall A es deshalb nicht gefunden hat. Die
+# Zusicherung gilt fuer diesen Pruefzeitpunkt, nicht unbedingt: zwischen der
+# Pruefung und der atomaren Installation (Schritt h, mv -f) liegen bis zu
+# rund 92 s Download und Pruefsummenpruefung, ohne Sperre. Ein zweiter,
+# gleichzeitiger Lauf ist nicht abgesichert; das ist nicht vorgesehen, weil
+# SessionStart auf startup|resume gematcht ist.
+#
+# Vierte Behebungsrunde vom 2026-09-22 (statische Nachpruefung, B-14 bis
+# B-16): die Runden eins und drei betrafen den Git-Historie-Hook, Runde zwei
+# (Codex-Review, Pull Request r3cosint#17, P2: curl -q gegen eine gelesene
+# .curlrc und der Ersetzungsschutz) betraf beide Hooks -- ihre Aenderungen an
+# dieser Datei sind an den betroffenen Stellen kommentiert (oben bei -q,
+# unten bei Schritt b/d und den curl-Aufrufen). B-14 -- ein
+# haengender Symlink unter einem Zielkandidaten wurde von der Pruefung
+# "[ -e ]" allein nicht erkannt (haengender Symlink: "[ -e ]" falsch, "[ -L ]"
+# wahr); ein Download waere gefolgt, mv -f haette den Symlink durch eine
+# regulaere Datei ersetzt. Die Pruefung ist um "[ -L ]" erweitert (Schritt
+# zwischen b und d). B-16 -- die bisherige Meldung benannte den PATH als
+# Ursache, obwohl die Pruefung auch auf ein Verzeichnis, eine nicht
+# ausfuehrbare Datei oder, seit B-14, einen haengenden Symlink zutrifft; die
+# Meldung nennt jetzt nur, was geprueft wurde, keine Ursache, die darueber
+# hinausgeht. B-15 -- die Kopfzusicherung "Ersetzt kein Binary" war zuvor
+# unbedingt formuliert; der Mechanismus wirkt aber nur zum Pruefzeitpunkt,
+# ohne Sperre gegen einen gleichzeitigen zweiten Lauf (siehe oben).
+#
+# Fuenfte Behebungsrunde vom 2026-09-22 (reine Textbefunde der
+# Schlusspruefung s3 des Static Software Testers, keine Codezeile geaendert):
+# S3-02 -- ein UTF-8-Umlaut im Kopfkommentar verletzte das Kriterium "reines
+# ASCII", ersetzt; S3-06 -- ein Bezugswort ohne Bezug im Absatz zur
+# Ersetzungs-Zusicherung berichtigt; S3-05 -- der Absatz zur vierten Runde
+# nennt jetzt, welche Runden welche Datei betrafen. Die Runden zwei, vier und
+# fuenf an diesem Hook sind in
+# docs/uebergaben/2026-09-22_git-historie-starthook.md
+# (Nachtrag nach dem Codex-Review) belegt.
 #
 # Anforderungskennung: R3-Q-001 (dieser Hook setzt den Entscheidpunkt E-E des
 # Definition-of-Done-Gates aus R3-Q-001 um, ADR 0002, Abschnitt 10).
@@ -211,8 +253,9 @@ fi
 
 # Fall B: gitleaks fehlt. Bereitstellung nach den Schritten a bis i (c, die
 # Konstanten, steht oberhalb von Fall A; dazu, zwischen a und b, die
-# Bestimmbarkeit des Arbeitsbaums), jeder Fehlschlag bricht mit einer
-# Meldung ab und endet mit 0.
+# Bestimmbarkeit des Arbeitsbaums; dazu, zwischen b und d, die
+# Kandidatenliste und die Pruefung auf ein bereits vorhandenes Binary),
+# jeder Fehlschlag bricht mit einer Meldung ab und endet mit 0.
 
 # a) Pruefmittel des Hooks selbst. 'install' wird nicht mehr gebraucht --
 # Schritt h installiert ausschliesslich ueber mktemp, cp, chmod und mv.
@@ -247,6 +290,29 @@ if [ "$architektur" != "x86_64" ]; then
     exit 0
 fi
 
+# Kandidatenliste (fuer Schritt h) bereits hier bestimmen -- nur ein
+# absoluter $HOME wird uebernommen: ein relativer Pfad wuerde relativ zum
+# aktuellen Arbeitsverzeichnis angelegt, also womoeglich im Arbeitsbaum.
+kandidaten=("/usr/local/bin")
+home_verzeichnis="${HOME:-}"
+case "$home_verzeichnis" in
+    /*) kandidaten+=("$home_verzeichnis/.local/bin") ;;
+esac
+
+# Ersetzt kein Binary zum Pruefzeitpunkt: liegt unter einem Kandidaten
+# bereits ein Eintrag namens gitleaks -- Datei, Verzeichnis oder Symlink,
+# auch ein haengender --, wird das VOR jedem Download geprueft, es erfolgt in
+# diesem Fall kein Abruf und keine Installation. "[ -e ]" allein prueft bei
+# einem haengenden Symlink (Ziel fehlt) falsch (B-14); deshalb zusaetzlich
+# "[ -L ]", das unabhaengig vom Ziel wahr ist, sobald der Pfad selbst ein
+# Symlink ist.
+for kandidat in "${kandidaten[@]}"; do
+    if [ -e "$kandidat/gitleaks" ] || [ -L "$kandidat/gitleaks" ]; then
+        melden "unter $kandidat/gitleaks liegt bereits ein Eintrag (Datei, Verzeichnis oder Symlink), der nicht als 'gitleaks' im PATH ausfuehrbar ist -- nicht ersetzt; D11 meldet Lage C, bis dort ein ausfuehrbares gitleaks im PATH liegt"
+        exit 0
+    fi
+done
+
 # d) Temporaeres Verzeichnis, nie im Arbeitsbaum. Das Basisverzeichnis wird
 # VOR mktemp gegen den Arbeitsbaum geprueft: jedes von mktemp darin
 # angelegte Verzeichnis liegt zwangslaeufig ebenfalls ausserhalb, wenn das
@@ -274,13 +340,14 @@ pruefsummendatei_pfad="$tmpdir/$PRUEFSUMMENDATEI"
 # dieses Hooks, nur an die feste Basis-URL oben. -fsL ohne -S: curl bleibt
 # auch bei Fehlschlag auf stderr still, die eigene Meldung des Hooks traegt
 # den Fehlschlag. --proto-redir '=https' bindet auch eine Umleitung an
-# https (siehe Kopfkommentar).
-if ! curl -fsL --proto '=https' --proto-redir '=https' --tlsv1.2 --connect-timeout 10 --max-time 20 --retry 1 \
+# https (siehe Kopfkommentar). -q als erster Parameter: keine .curlrc wird
+# gelesen.
+if ! curl -q -fsL --proto '=https' --proto-redir '=https' --tlsv1.2 --connect-timeout 10 --max-time 20 --retry 1 \
     -o "$archiv_pfad" "${BASIS_URL}${ARCHIV}"; then
     melden "Download des Archivs fehlgeschlagen (${BASIS_URL}${ARCHIV}) -- nichts installiert"
     exit 0
 fi
-if ! curl -fsL --proto '=https' --proto-redir '=https' --tlsv1.2 --connect-timeout 10 --max-time 20 --retry 1 \
+if ! curl -q -fsL --proto '=https' --proto-redir '=https' --tlsv1.2 --connect-timeout 10 --max-time 20 --retry 1 \
     -o "$pruefsummendatei_pfad" "${BASIS_URL}${PRUEFSUMMENDATEI}"; then
     melden "Download der Pruefsummendatei fehlgeschlagen (${BASIS_URL}${PRUEFSUMMENDATEI}) -- nichts installiert"
     exit 0
@@ -328,11 +395,13 @@ if [ "$probelauf_zeile" != "$VERSION" ]; then
     exit 0
 fi
 
-# h) Zielverzeichnis: Schleife ueber /usr/local/bin und $HOME/.local/bin.
-# Vor jedem mkdir wird der naechste bereits vorhandene Vorfahre des
-# Kandidaten gegen den Arbeitsbaum geprueft (existiert der Kandidat schon,
-# ist das der Kandidat selbst) -- erst danach mkdir -p. Liegt der Kandidat
-# im Arbeitsbaum, wird NICHT abgebrochen (das koennte einen spaeteren,
+# h) Zielverzeichnis: Schleife ueber die Kandidatenliste von oben
+# (/usr/local/bin und, falls absolut, $HOME/.local/bin -- schon nach
+# Schritt b bestimmt und dort auf ein vorhandenes Binary geprueft). Vor
+# jedem mkdir wird der naechste bereits vorhandene Vorfahre des Kandidaten
+# gegen den Arbeitsbaum geprueft (existiert der Kandidat schon, ist das der
+# Kandidat selbst) -- erst danach mkdir -p. Liegt der Kandidat im
+# Arbeitsbaum, wird NICHT abgebrochen (das koennte einen spaeteren,
 # zulaessigen Kandidaten verhindern): stattdessen continue zum naechsten
 # Kandidaten. Installation je Kandidat atomar: mktemp legt eine temporaere
 # Datei IM Zielverzeichnis an, cp schreibt den Inhalt hinein (die Datei
@@ -340,14 +409,6 @@ fi
 # auf den endgueltigen Namen um. Scheitert ein Kandidat aus einem anderen
 # Grund, wird die temporaere Datei entfernt und der naechste Kandidat
 # versucht.
-kandidaten=("/usr/local/bin")
-home_verzeichnis="${HOME:-}"
-# Nur ein absoluter Pfad wird uebernommen: ein relativer $HOME wuerde relativ
-# zum aktuellen Arbeitsverzeichnis angelegt, also womoeglich im Arbeitsbaum.
-case "$home_verzeichnis" in
-    /*) kandidaten+=("$home_verzeichnis/.local/bin") ;;
-esac
-
 ziel=""
 versucht=""
 for kandidat in "${kandidaten[@]}"; do
