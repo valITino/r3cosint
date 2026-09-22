@@ -132,10 +132,14 @@ Rückgabewert 2 blockiert; Rückgabewert 1 blockiert nicht (3.4).
 | `block-main-write.sh` | Blockiert Dateiänderungen auf `main` sowie Commit, Merge und Push nach `main` (3.2 c) |
 | `dod-gate.sh` | Lässt eine Antwort (`Stop`), einen Subagenten (`SubagentStop`) und eine Aufgabe (`TaskCompleted`) erst enden, wenn `make dod` im geprüften Arbeitsbaum nachweisbar gelaufen ist und nichts gefunden hat. Lagen C, die in `dod-gate-terminierte-lagen.txt` mit Grund eingetragen sind, werden mit Meldung geduldet; die Liste prüft sich selbst. Dreimaliges Scheitern am gleichen Kriterium verlangt die Übergabedatei (3.4). Rollen ohne `Edit`, `Write` oder `NotebookEdit` prüft es nicht (ADR 0002, 6.12; gebaut 2026-09-02 auf Weisung; elf Prüfrunden, die Runden 9 bis 11 am 2026-09-06 als Fremdmutationsrunden nach dem Abnahmekriterium 6.12.27 g — Teil 2 dreimal nicht erfüllt, Einheit nach 3.4 abgebrochen, O-27 vorgelegt, am 2026-09-07 entschieden und am 2026-09-07/08 umgesetzt; förmliche Freigabe der Entscheidpunkte E-A bis E-K am 2026-09-07 und **Abnahme des Gates am 2026-09-08** je durch Merge erteilt, ohne Auflagen (ADR 0002, Abschnitt 10) — Teil 2 des Abnahmekriteriums war nicht erfüllt, getragen hat der in ADR 0002, 6.12.28 g vorab festgelegte Weg; nicht abgenommen ist der Belegprüfer D20 (O-15); R3-Q-005 ist nicht gebaut und bleibt offen, O-25 bleibt offen, die Freigabe des Grundgerüsts ist nicht erteilt; Selbsttest `scripts/dod-gate-selbsttest.sh` mit 207 Zusicherungen `Z-nnn`, Deckung, Kanal und Prädikat mechanisch gegen ADR 0002, 6.12.19 abgeglichen, Zählschlüssel (6.12.4 und Literale des Gates), Markenelemente (6.12.7) und Aussagen (6.12.9, 6.12.15) mechanisch gedeckt, Ausgabeform als Invariante über alle Gate-Aufrufe, Mutationsprobe `scripts/dod-gate-mutationen.txt` über `--mutationen`; offene Befunde in `docs/uebergaben/2026-09-06_r3-q-001-o-26-praedikat-und-deckung.md`; **Runde 12 am 2026-09-07/08 als zwölfte und letzte Fremdmutationsrunde**, ein blockierender Befund behoben und mit gezielter Wiederholung belegt; der Selbsttest führt jetzt 262 Zusicherungen mit Pfaddeckung über 40 Ausgangsstellen, 35 Grammatikschwächungen und einer Blockdeckung über elf Pflichtetiketten, dazu die Ausnahmedatei `.claude/hooks/dod-gate-pfadausnahmen.txt`; Restlücken in `docs/uebergaben/2026-09-07_r3-q-001-o-27-deckung-am-gegenstand.md`) |
 
-Daneben laufen zwei `SessionStart`-Hooks, beide Kanal, kein Gate — sie
+Daneben laufen drei `SessionStart`-Hooks, alle Kanal, kein Gate — sie
 blockieren nie. `session-start-eingang.sh` gibt den Eingang aus dem
-Methodik-Repository als Kontext mit (6.6). `session-start-gitleaks.sh` stellt
-`gitleaks` 8.21.2 bereit, wenn es fehlt: Release-Archiv gegen den im Skript
+Methodik-Repository als Kontext mit (6.6). `session-start-git-historie.sh`
+holt bei flachem Klon die Git-Historie nach (`git fetch --unshallow origin`,
+schreibt nur in `.git/`; ADR 0002, Abschnitt 10, E-F, Nachtrag vom
+2026-09-22) — bleibt der Klon flach, meldet D20 Lage C.
+`session-start-gitleaks.sh` stellt `gitleaks` 8.21.2 bereit, wenn es fehlt:
+Release-Archiv gegen den im Skript
 gepinnten SHA-256-Wert **und** gegen die veröffentlichte Prüfsummendatei
 geprüft, sonst keine Installation; nur `linux_x64` ist gepinnt (ADR 0002,
 Abschnitt 10, E-E, Nachtrag vom 2026-09-22 auf Weisung "gitleaks permanent
@@ -171,7 +175,7 @@ ADR 0001 fortgeschrieben und bleibt am Freigabe-Gate als Entscheid E-02
 | Rechtsregime, Aufbewahrung, Belegpflicht | `.claude/rules/recht-und-datenschutz.md` |
 | Rollendateien, Hooks, Mechanismen | `.claude/rules/claude-konfiguration.md` |
 | DoD-Gate, terminierte Lagen C, Selbsttest, Mutationsprobe | `.claude/hooks/dod-gate.sh`, `.claude/hooks/dod-gate-terminierte-lagen.txt`, `scripts/dod-gate-selbsttest.sh`, `scripts/dod-gate-mutationen.txt`; Entwurf und Nachträge in ADR 0002, 6.12 (Prädikatbindung, Schlüssel-, Gegenstands-, Grammatik- und Aussagendeckung, Abnahmekriterium und O-27 in 6.12.27); Abnahme in ADR 0002, Abschnitt 10; E4 (die beiden PreToolUse-Gates, R3-Q-010) in ADR 0002, 6.13 |
-| Bereitstellung von `gitleaks` beim Sitzungsstart | `.claude/hooks/session-start-gitleaks.sh`; Entscheid E-E mit Nachtrag vom 2026-09-22 in ADR 0002, Abschnitt 10; Hook-Regel in `.claude/rules/claude-konfiguration.md` |
+| Bereitstellung von `gitleaks` und der Git-Historie beim Sitzungsstart | `.claude/hooks/session-start-gitleaks.sh`, `.claude/hooks/session-start-git-historie.sh`; Entscheide E-E und E-F mit Nachträgen vom 2026-09-22 in ADR 0002, Abschnitt 10; Hook-Regel in `.claude/rules/claude-konfiguration.md` |
 | Versionsschilder, Meilensteine, Nachweisfluss | `.claude/rules/versionierung-und-nachweisfluss.md` |
 | Rechte je Rolle | `docs/adr/0001-rollenmodell.md` |
 

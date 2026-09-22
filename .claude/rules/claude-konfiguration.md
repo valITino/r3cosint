@@ -49,7 +49,11 @@ durchsetzen will, braucht einen Hook.
 - Die Standardausgabe eines Hooks trägt ausschliesslich das JSON-Objekt oder
   nichts; jede andere Ausgabe wird als Fehler gemeldet oder verworfen. Die
   Ausgabe einer aufgerufenen Kette gelangt nie auf die Standardausgabe des
-  Hooks (ADR 0002, 6.12.15).
+  Hooks (ADR 0002, 6.12.15). Das gilt für die Gates (`PreToolUse`, `Stop`,
+  `SubagentStop`, `TaskCompleted`); ein `SessionStart`-Hook gibt Klartext auf
+  der Standardausgabe aus, der als Kontext übernommen wird — so die drei
+  Hooks `session-start-eingang.sh`, `session-start-gitleaks.sh` und
+  `session-start-git-historie.sh`.
 - Das Definition-of-Done-Gate (`dod-gate.sh`, ADR 0002, 6.12) erzwingt die
   Kette hart nur über `TaskCompleted`, und dieses Ereignis feuert nur, wenn
   eine Aufgabenliste geführt wird. Deshalb wird jede Arbeitseinheit als Aufgabe
@@ -64,6 +68,13 @@ durchsetzen will, braucht einen Hook.
   Kette bleibt das Prüfmittel (ADR 0002, Abschnitt 10, E-E, Nachtrag vom
   2026-09-22); er zieht sein Zeitbudget im Skript (zwei Downloads zu je
   höchstens zwei Versuchen à 20 s) unter der Grenze aus `settings.json`.
+- Ein `SessionStart`-Hook, der bei flachem Klon die Git-Historie nachholt
+  (`session-start-git-historie.sh`, `git fetch --unshallow origin`),
+  blockiert nie, endet auf jedem Weg mit 0, schreibt ausschliesslich in
+  `.git/` und nie in den Arbeitsbaum, lässt Zweige, HEAD und Index unberührt
+  und ersetzt die Lage-C-Meldung von D20 (`FEHLT=git-historie`) nicht (ADR
+  0002, Abschnitt 10, E-F, Nachtrag vom 2026-09-22); Zeitbudget im Skript
+  (Fetch höchstens 90 s) unter der Grenze aus `settings.json`.
 
 ## Skills (3.2 b)
 
