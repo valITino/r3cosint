@@ -287,3 +287,66 @@ Commit-Prüfsumme zurück nach Repo B.
 >
 
 **Nachweis:** https://github.com/valITino/r3coscrum/commit/9c28499252ab3f42a96dc43bf096c3a6353ce0cb
+
+## 2026-09-22 — Änderung an der Methodik
+
+**Was sich geändert hat:**
+
+- Geändert: `methodik/entscheide.md`
+
+**Warum:**
+
+> 3671645 — docs(R3-Q-001): Abnahme des DoD-Gates in V17 und O-27 eingetragen, Uebergabe 2026-09-21
+> Methodischer Anteil der Arbeitseinheit vom 2026-09-21 im Produkt-Repository
+> (e5bab959aa4886eefc7983ce23916bbd798d8a83, dort
+> docs/uebergaben/2026-09-21_r3-q-001-abnahme-eingetragen-e4-dor.md):
+>
+> - methodik/entscheide.md: V17 um die am 2026-09-08 durch Merge des Pull
+>   Requests #15 erteilte Abnahme des Pruefmittels ergaenzt (Merge-Commit
+>   9870b0d115b8ef330a7c19777af5741093e4f0e9, ohne Auflagen; Teil 2 des
+>   Abnahmekriteriums nicht erfuellt, getragen hat der vorab festgelegte Weg;
+>   nicht umfasst: O-25, D20/O-15, R3-Q-005, Freigabe des Grundgeruests); der
+>   seit dem 2026-09-07 erledigte Punkt O-27 um den Entscheid ergaenzt.
+> - UEBERGABE.md: Vermerk zur Einheit (Abnahme aktenkundig, E4 als R3-Q-010
+>   auf der Definition of Ready, Zerlegung E4.1 bis E4.3, E3 eigene Einheit).
+>
+> Verweise auf das Produkt-Repository ausschliesslich ueber die 40-stellige
+> Commit-Pruefsumme.
+>
+> Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+> Claude-Session: https://claude.ai/code/session_01HcsiiLQRbfnfArGkF9TqDg
+>
+> 2b9a1a2 — docs(R3-Q-001): Weisung vom 2026-09-22 als V18, V19 und S8 festgehalten; R3-Q-010-Freigabe erledigt; Uebergabe 2026-09-22
+> Lesart zu 3.4 (V18), Lesart zu R1 der Definition of Ready (V19, delegierter
+> Entscheid) und die Bereitstellung eines Pruefmittels der Kette durch einen
+> versionierten SessionStart-Hook (S8) eingetragen; Freigabe des Umfangs von
+> R3-Q-010 und Schnitt E4.1 bis E4.3 unter den offenen Punkten als erledigt
+> gefuehrt; Uebergabevermerk. Verweise auf das Produkt-Repository mit
+> 40-stelliger Pruefsumme 13a23b98d0ed5c4e5531ddfb01f43a6b91f4d8a8.
+>
+> Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+> Claude-Session: https://claude.ai/code/session_01HcsiiLQRbfnfArGkF9TqDg
+>
+> ab4ef02 — docs(R3-Q-001): Nachtrag zu S8 (Git-Historie bei flachem Klon) und Uebergabe 2026-09-22 (2)
+> Auf Delegation des Auftraggebers: Nachholen der Git-Historie beim
+> Sitzungsstart als zweiter versionierter SessionStart-Hook im
+> Produkt-Repository (bb6c1965fa271f7f1d28cc57d3c0fc192ad8cb15); Pull Request
+> #17 dort eroeffnet.
+>
+> Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+> Claude-Session: https://claude.ai/code/session_01HcsiiLQRbfnfArGkF9TqDg
+>
+> ecd60f9 — docs(R3-Q-001): O-25 als entschieden statt als offen gefuehrt (Codex-Review #10, P2); Nachtrag im Uebergabevermerk
+> Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+> Claude-Session: https://claude.ai/code/session_01HcsiiLQRbfnfArGkF9TqDg
+>
+> b3379e2 — docs: Nachtrag zum Codex-Review am Pull Request #17 des Produkt-Repositories (S8, Uebergabevermerk 2026-09-22 (2))
+> Vier Befunde an den beiden Starthooks behoben und in drei Runden nachgeprueft;
+> Zusicherung "Zweige unberuehrt" erst mit Refspec und leerer Refmap, Lehre
+> festgehalten; Verweis auf Commit 1d9da15e4617555f73a60a49f6dbc968cb166a87.
+>
+> Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+> Claude-Session: https://claude.ai/code/session_01HcsiiLQRbfnfArGkF9TqDg
+>
+
+**Nachweis:** https://github.com/valITino/r3coscrum/commit/494409cf431e447ef26ce18f99832e467ec8a08d
