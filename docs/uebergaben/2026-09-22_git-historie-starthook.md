@@ -170,6 +170,9 @@ erwartete grüne Zustand, ohne Nachbesserung.
   Commit des Produkt-Repositories.
 - `git add`, `make dod` (Form 2, drei terminierte Lagen C, D20 und D11 grün, D19 ohne Befund, Rückgabewert 2), Commit mit Kennung R3-Q-001, Push; danach
   `docs/NACHWEISE.md` neu erzeugt, `make dod`, zweiter Commit, Push.
-- Pull Requests: unmittelbar nach dem ersten Commit dieser Einheit in beiden
-  Repositories eröffnet; ihre Nummern trägt der zweite Commit dieser Einheit
-  (Nachweisverzeichnis) hier nach.
+- Pull Requests unmittelbar nach dem ersten Commit dieser Einheit eröffnet:
+  Produkt-Repository `valITino/r3cosint` Pull Request #17 (Text: Merge gilt
+  als Abnahme der beiden Starthooks, erster Formweg), Methodik-Repository
+  `valITino/r3coscrum` Pull Request #10; beide zusammen zu mergen. Diese
+  Nummern sind mit dem zweiten Commit dieser Einheit nachgetragen, das
+  Nachweisverzeichnis mit dem dritten neu erzeugt.
