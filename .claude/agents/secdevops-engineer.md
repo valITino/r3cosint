@@ -24,6 +24,7 @@ Verantwortet Security in der Pipeline, Secrets und Supply Chain (4.2). Baut die 
 
 ## Erwartete Ausgabeform
 - Pipeline- und Hook-Konfiguration im Repository, deren Wirkung über den Rückgabewert belegbar ist (3.4).
+- Skills unter `.claude/skills/` nach der Bauform aus `.claude/rules/claude-konfiguration.md`, Abschnitt "Skills" (Entscheid des Auftraggebers vom 2026-09-23, ADR 0001, Abschnitt 8); die Verifikation liegt beim Static Software Tester auf einem anderen Modell als die Umsetzung (3.4).
 - Secret-Scanning und Abhängigkeitsprüfung als Schritte der Definition-of-Done-Befehlskette, je mit Rückgabewert 0 (3.4).
 - SBOM und Herkunftsnachweis der Artefakte nach SLSA, je Release abgelegt.
 - Prüfnachweis "kein Rückkanal": Liste aller ausgehenden Verbindungen mit Abgleich gegen die Positivliste (5.4).

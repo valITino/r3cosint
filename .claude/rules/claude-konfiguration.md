@@ -103,6 +103,12 @@ Was eine Festlegung ist, gehört in einen ADR oder in eine Regel. Diese
 Abgrenzung ist der einzige Grund, aus dem ein Skill entsteht — jeder weitere
 Skill kostet Pflege an drei Stellen (Skill, `skills:`-Feld je Rolle, ADR 0001).
 
+Skills unter `.claude/skills/` schreibt seit dem 2026-09-23 der SecDevOps
+Engineer, wie die Hooks (Entscheid des Auftraggebers vom 2026-09-23, ADR 0001,
+Abschnitt 8); die Verifikation liegt beim Static Software Tester auf einem
+anderen Modell als die Umsetzung (3.4). Die ersten beiden Skills hat der
+Koordinator angelegt; das bleibt als Stand davor stehen.
+
 ### Bauform
 
 Eine `SKILL.md` ist dünn und verweist auf Tiefe:
