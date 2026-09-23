@@ -367,3 +367,18 @@ Commit-Prüfsumme zurück nach Repo B.
 >
 
 **Nachweis:** https://github.com/valITino/r3coscrum/commit/b53e481abd7c13537f4a76b87b4842befeef6f97
+
+## 2026-09-23 — Änderung an der Methodik
+
+**Was sich geändert hat:**
+
+- Geändert: `methodik/entscheide.md`
+
+**Warum:**
+
+> 30864e9 — docs: S9 (Pruefmittel vor Gate-Aenderung, belegte Luecken als Soll) und Uebergabevermerk 2026-09-23 (1): E4.1 gebaut (R3-Q-010)
+> Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+> Claude-Session: https://claude.ai/code/session_01UvFLTyfJxwkoCTwXfEQiud
+>
+
+**Nachweis:** https://github.com/valITino/r3coscrum/commit/cb838ecd35baba30fb04ab64300e501ab55ed0b6
