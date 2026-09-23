@@ -350,3 +350,20 @@ Commit-Prüfsumme zurück nach Repo B.
 >
 
 **Nachweis:** https://github.com/valITino/r3coscrum/commit/494409cf431e447ef26ce18f99832e467ec8a08d
+
+## 2026-09-23 — Änderung an der Methodik
+
+**Was sich geändert hat:**
+
+- Geändert: `methodik/entscheide.md`
+
+**Warum:**
+
+> 9d19100 — docs: Abnahme der Starthooks durch Merge (S8), Uebergabevermerk 2026-09-22 (3): Nachweisfluss am Regelwerk gescheitert, dritter Codex-Lauf
+> Verweis auf Commit 3c712292c74c14c8d7934f1edcfbbe3deceaad84 des Produkt-Repositories.
+>
+> Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+> Claude-Session: https://claude.ai/code/session_01HcsiiLQRbfnfArGkF9TqDg
+>
+
+**Nachweis:** https://github.com/valITino/r3coscrum/commit/b53e481abd7c13537f4a76b87b4842befeef6f97
