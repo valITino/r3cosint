@@ -73,6 +73,34 @@
 # betrifft "--refmap=''" nicht. S3-05 -- dieser Absatz ergaenzt, dass die
 # vierte Runde den gitleaks-Hook betraf.
 #
+# Siebte Behebungsrunde vom 2026-09-22 (Codex-Review, dritter Lauf, Pull
+# Request r3cosint#17, geprueft gegen Commit
+# 59de8974bc6871e4e5e1ce179cc1b29d98739961): zwei P2-Befunde. Erstens -- bei
+# gesetztem core.hooksPath fuehrt der Fetch, sobald er
+# refs/remotes/origin/* aktualisiert, den konfigurierten
+# reference-transaction-Hook aus (githooks(5)); belegt mit einem Hook, der
+# eine Datei unter CLAUDE_PROJECT_DIR anlegt. Behoben mit der
+# befehlsgebundenen Konfiguration "-c core.hooksPath=/dev/null" an beiden
+# Fetch-Aufrufen (Schritt e); die uebrigen git-Aufrufe des Hooks fuehren
+# keine Referenz-Transaktion aus. Zweitens -- mit
+# fetch.recurseSubmodules=true und bestueckten Submodulen holt der Fetch
+# auch deren Remotes (git fetch -h: --[no-]recurse-submodules); belegt mit
+# einem Submodul, dessen origin/main dabei aktualisiert wurde. Behoben mit
+# "--no-recurse-submodules" an beiden Fetch-Aufrufen. Zielform je Aufruf:
+# "git -C <projekt> -c core.hooksPath=/dev/null fetch --unshallow
+# --no-recurse-submodules --refmap='' origin
+# '+refs/heads/*:refs/remotes/origin/*'" (GIT_TERMINAL_PROMPT=0 und, wo
+# vorhanden, timeout 90 davor).
+#
+# Achte Behebungsrunde vom 2026-09-22 (Textbefunde der statischen Pruefung
+# s5, keine Codezeile geaendert): S5-01 -- das githooks(5)-Zitat im Kommentar
+# zu core.hooksPath (Schritt e) stimmte nicht mit der Quelle ueberein
+# ("reference updates", nicht "reference transactions"), ersetzt; S5-02 --
+# /dev/null als Verzeichnis bezeichnet, berichtigt; S5-04 -- der Absatz zu
+# GIT_CONFIG_* nannte core.hooksPath noch als nicht neutralisiert,
+# berichtigt; S5-07 -- Optionszeichen aus "git fetch -h" vollstaendig
+# zitiert; die Zielform im Absatz zur siebten Runde nennt jetzt -C <projekt>.
+#
 # Warum dieser Hook UNTER KEINEN UMSTAENDEN blockiert: SessionStart ist ein
 # Kanal, kein Gate. Rueckgabewert 2 wird in diesem Hook nicht verwendet; ob
 # SessionStart ihn als Blockade wertet, wird hier nicht behauptet. Dieser
@@ -116,7 +144,11 @@
 # Remote "origin" des vorhandenen Klons. Diese Adresse ist hier nicht fest
 # verdrahtet -- sie gehoert dem Klon, nicht diesem Skript. Schritt e prueft
 # mit "git remote get-url origin" nur, dass origin konfiguriert ist; die
-# Adresse loest "git fetch" selbst aus der Konfiguration auf. git liest
+# Adresse loest "git fetch" selbst aus der Konfiguration auf.
+# "--no-recurse-submodules" (Schritt e, siebte Behebungsrunde) haelt das
+# auch dann wahr, wenn der Klon Submodule fuehrt: ohne diese Option koennte
+# "git fetch" bei fetch.recurseSubmodules=true zusaetzlich deren Remotes
+# erreichen -- eine zweite Gegenstelle. git liest
 # HTTPS_PROXY/https_proxy und die uebliche Proxy-Konfiguration der Umgebung
 # von selbst. Das ist Nachholen eines Pruefmittels fuer die Kette, kein
 # Rueckkanal des Produkts (5.4): keine Telemetrie, kein Fehlerbericht, keine
@@ -126,11 +158,11 @@
 # liest git von selbst.
 #
 # Zeitbudget (settings.json-Grenze 120 s): der Fetch-Aufruf in Schritt e
-# (git fetch --unshallow --refmap='' origin
-# '+refs/heads/*:refs/remotes/origin/*') laeuft unter "timeout 90" (sofern
-# timeout vorhanden ist; fehlt es, laeuft der Fetch ohne Zeitgrenze -- dann
-# faengt allein die Grenze aus settings.json, siehe den Rueckfallzweig in
-# Schritt e). Alle uebrigen
+# (git -c core.hooksPath=/dev/null fetch --unshallow --no-recurse-submodules
+# --refmap='' origin '+refs/heads/*:refs/remotes/origin/*') laeuft unter
+# "timeout 90" (sofern timeout vorhanden ist; fehlt es, laeuft der Fetch
+# ohne Zeitgrenze -- dann faengt allein die Grenze aus settings.json, siehe
+# den Rueckfallzweig in Schritt e). Alle uebrigen
 # Schritte (is-inside-work-tree, show-toplevel, is-shallow-repository,
 # rev-list --count, remote get-url) liegen im Millisekundenbereich. 90 s plus
 # Rest liegt deutlich unter der Grenze von 120 s aus settings.json. Ein Hook,
@@ -207,9 +239,12 @@ unset "${!GIT_TRACE@}" 2>/dev/null || true
 # kappen, und dieser Hook soll das Pruefmittel bereitstellen, nicht
 # verweigern. Eine darueber eingeschleuste remote.origin.fetch-Refspec wirkt
 # wegen --refmap='' nicht mehr auf refs/heads/ (statische Pruefung, Laeufe J
-# und K). Was darueber sonst eingeschleust werden kann (etwa core.hooksPath),
-# trifft jeden git-Aufruf der Sitzung gleichermassen und ist keine
-# Eigenschaft dieses Hooks. GIT_REDIRECT_STDOUT und GIT_REDIRECT_STDERR sind
+# und K). Ein darueber eingeschleustes core.hooksPath ist fuer die beiden
+# Fetch-Aufrufe dieses Hooks seit der siebten Behebungsrunde durch
+# "-c core.hooksPath=/dev/null" neutralisiert (statische Pruefung, Laeufe f1
+# und f2); was darueber sonst eingeschleust werden kann, trifft jeden
+# git-Aufruf der Sitzung gleichermassen und ist keine Eigenschaft dieses
+# Hooks. GIT_REDIRECT_STDOUT und GIT_REDIRECT_STDERR sind
 # auf Linux wirkungslos (gemessen) und stehen deshalb nicht in der
 # unset-Liste oben.
 #
@@ -310,11 +345,37 @@ vorher="$(git -C "$projekt" rev-list --count HEAD 2>/dev/null)"
 # konfigurierte Refspec trotz expliziter Abrufliste einen lokalen Zweig
 # unter refs/heads/ schreiben (siehe Kopfkommentar, "Was der Hook NIE tut").
 # Beide Massnahmen zusammen tragen die Zusicherung "Zweige unberuehrt".
+#
+# "-c core.hooksPath=/dev/null" (siebte Behebungsrunde, Codex-Review,
+# dritter Lauf): sobald der Fetch refs/remotes/origin/* aktualisiert,
+# fuehrt git dabei eine Referenz-Transaktion aus; ist in der Konfiguration
+# des Klons core.hooksPath gesetzt, ruft git dafuer den dort hinterlegten
+# reference-transaction-Hook auf (githooks(5), Abschnitt
+# reference-transaction: "This hook is invoked by any Git command that
+# performs reference updates"). Ein solcher Hook laeuft
+# mit den Rechten dieses Prozesses -- belegt mit einem Hook, der eine Datei
+# unter CLAUDE_PROJECT_DIR anlegt, also in den Arbeitsbaum schreibt. "-c"
+# vor dem Unterbefehl setzt die Option nur fuer diesen einen Aufruf;
+# /dev/null ist ein Zeichengeraet, kein Verzeichnis -- unterhalb davon loest
+# sich kein Pfad auf, git findet also keine Hook-Datei und laesst keinen
+# Hook laufen (gemessen). Die Klonkonfiguration selbst bleibt unveraendert.
+# Die uebrigen
+# git-Aufrufe dieses Hooks (rev-parse, rev-list, remote get-url) fuehren
+# keine Referenz-Transaktion aus und sind davon nicht betroffen.
+#
+# "--no-recurse-submodules" (siebte Behebungsrunde, Codex-Review, dritter
+# Lauf): mit fetch.recurseSubmodules=true und bestueckten Submodulen holt
+# "git fetch" ohne diese Option auch deren Remotes (git fetch -h:
+# "--[no-]recurse-submodules[=<on-demand>]") -- eine zweite, von diesem Hook
+# nicht
+# kontrollierte Gegenstelle und ein weiterer Schreibzugriff; belegt mit
+# einem Submodul, dessen origin/main dabei aktualisiert wurde. Die Option
+# unterbindet das, unabhaengig von fetch.recurseSubmodules.
 refspec='+refs/heads/*:refs/remotes/origin/*'
 if command -v timeout >/dev/null 2>&1; then
-    GIT_TERMINAL_PROMPT=0 timeout 90 git -C "$projekt" fetch --unshallow --refmap='' origin "$refspec" >/dev/null 2>&1
+    GIT_TERMINAL_PROMPT=0 timeout 90 git -C "$projekt" -c core.hooksPath=/dev/null fetch --unshallow --no-recurse-submodules --refmap='' origin "$refspec" >/dev/null 2>&1
 else
-    GIT_TERMINAL_PROMPT=0 git -C "$projekt" fetch --unshallow --refmap='' origin "$refspec" >/dev/null 2>&1
+    GIT_TERMINAL_PROMPT=0 git -C "$projekt" -c core.hooksPath=/dev/null fetch --unshallow --no-recurse-submodules --refmap='' origin "$refspec" >/dev/null 2>&1
 fi
 
 # Schalenzustand nachher, dieselbe exakte Auswertung wie in Schritt d
