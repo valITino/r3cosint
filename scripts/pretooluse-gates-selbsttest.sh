@@ -13,7 +13,7 @@
 # (.claude/rules/claude-konfiguration.md, Abschnitt "Hooks")
 #
 # ZWEI MODI:
-#   1. Normalmodus (kein Parameter): 247 vorgemessene Faelle laufen gegen die
+#   1. Normalmodus (kein Parameter): 258 vorgemessene Faelle laufen gegen die
 #      Gate-Dateien DES ARBEITSBAUMS (oder, nur fuer Pruefrollen, gegen eine
 #      per Umgebungsvariable ueberschriebene Kopie, siehe Abschnitt 3a weiter
 #      unten). main-Faelle laufen gegen einen Wegwerf-Klon auf main, einen auf
@@ -24,7 +24,7 @@
 #      JSON von der Standardeingabe und urteilen.
 #   2. Modus --mutationen (Gegenprobe): zuerst eine GRUNDLINIE -- die
 #      vollstaendige Fallliste gegen die UNVERAENDERTEN Gates; ist sie nicht
-#      gruen, endet der Modus sofort mit Rueckgabewert 2. Danach 15 fest im
+#      gruen, endet der Modus sofort mit Rueckgabewert 2. Danach 19 fest im
 #      Skript hinterlegte Mutationen, die je GENAU EINE Sperre schwaechen oder
 #      eine Ausnahme entfernen (MP4, MP5), in einer Kopie eines Gates; die
 #      vollstaendige Fallliste des betroffenen Gates laeuft gegen die Kopie.
@@ -45,7 +45,7 @@
 # NIEDRIGERES MASS als scripts/dod-gate-selbsttest.sh (ADR 0002, 6.13 d
 # verlangt das ausdruecklich): keine Zusicherungstabelle, keine mechanischen
 # mehrstufigen Deckungen, keine separate Mutationsdatei -- die Fallliste, die
-# 15 Mutationen, die 22 Fallklassen der Kopfkommentare und die Zuordnung zu
+# 19 Mutationen, die 23 Fallklassen der Kopfkommentare und die Zuordnung zu
 # den sieben Abnahmekriterien stehen FEST im Skript (Datenteil weiter unten).
 #
 # Verifikation dieses Skripts UND der beiden Gates: Static und Dynamic
@@ -64,7 +64,7 @@
 # NEU-1 der statischen Nachpruefung vom 2026-09-23); heute ruft die Kette es
 # nicht auf.
 #
-# Rueckgabewert 0: Normalmodus -- alle 247 Faelle bestanden UND je Gate
+# Rueckgabewert 0: Normalmodus -- alle 258 Faelle bestanden UND je Gate
 # mindestens ein Fall mit Soll 2 und einer mit Soll 0 UND je Gate mindestens
 # ein Fall der Klasse blockierend und einer der Klasse durchlaufend UND die
 # gemessene Gesamtzahl entspricht der erwarteten Zahl UND der Arbeitsbaum
@@ -313,7 +313,7 @@ wj_ph() { wj "$(ph "$1")" "$(ph "$2")" "${3:-Write}"; }
 # -----------------------------------------------------------------------------
 # 9. Buchhaltung
 # -----------------------------------------------------------------------------
-ERWARTETE_FAELLE=247
+ERWARTETE_FAELLE=258
 VOLLSTAENDIGKEIT_OK=1
 declare -a ALLE_KENNUNGEN=()
 declare -a BESTANDENE_KENNUNGEN=()
@@ -539,6 +539,10 @@ mutation_definieren MP6 prototyp 'Richtung 1 (Produktionscode -> Prototyp): ' ''
 mutation_definieren MP7 prototyp '\b(python[0-9.]*|perl|ruby|node|deno|php|Rscript)[[:space:]]+([^|;&]*[[:space:]]+)?-[a-zA-Z]*(c|e|i|p|r|n)([^a-zA-Z]|$)' '(NIE)' 'ST-09-Behebung zurueckgesetzt: Interpreter-mit-Inline-Code-Glied im Prototyp-Gate entfernt' 'B09 ZF7a ZF7c ZF7d'
 mutation_definieren MM6 main 'type == "object" and (.tool_input | type == "object")' 'true' 'ST-13-Behebung zurueckgesetzt: die Eingabepruefung im main-Gate haelt keine Form mehr fest (vorgemessen: S01/S02 sind kein gueltiges JSON und lassen jq unabhaengig vom Filter scheitern, bleiben deshalb blockiert -- nur ZF8a/ZF8b werden durch diese Mutation durchgelassen)' 'ZF8a ZF8b'
 mutation_definieren MP8 prototyp 'type == "object" and (.tool_input | type == "object")' 'true' 'ST-13-Behebung zurueckgesetzt: die Eingabepruefung im Prototyp-Gate haelt keine Form mehr fest (vorgemessen: S04/S05 sind kein gueltiges JSON und lassen jq unabhaengig vom Filter scheitern, bleiben deshalb blockiert -- nur ZF8c/ZF8d werden durch diese Mutation durchgelassen)' 'ZF8c ZF8d'
+mutation_definieren MM7 main '[0-9]?>>?[[:space:]]*(\/tmp\/([^[:space:].;|&)]|\.[^.[:space:];|&)])*|"?\$\{?(TMPDIR|RUNNER_TEMP|SCRATCH[A-Z_]*)\}?([^[:space:].;|&)]|\.[^.[:space:];|&)])*)([[:space:];|&)]|$)/\5/g' '[0-9]?>>?[[:space:]]*(\/tmp\/[^[:space:];|&)]*|"?\$\{?(TMPDIR|RUNNER_TEMP|SCRATCH[A-Z_]*)\}?[^[:space:];|&)]*)([[:space:];|&)]|$)/\5/g' 'DT-E43-6-Behebung zurueckgesetzt: die ".."-Ausnahme im main-Gate auf die alte, uneingeschraenkte Form zurueckgesetzt (Trennerschutz DT-E43-8 bleibt erhalten)' 'A50 A51'
+mutation_definieren MP10 prototyp '[0-9]?>>?[[:space:]]*(\/tmp\/([^[:space:].;|&)]|\.[^.[:space:];|&)])*|"?\$\{?(TMPDIR|RUNNER_TEMP|SCRATCH[A-Z_]*)\}?([^[:space:].;|&)]|\.[^.[:space:];|&)])*)([[:space:];|&)]|$)/\5/g' '[0-9]?>>?[[:space:]]*(\/tmp\/[^[:space:];|&)]*|"?\$\{?(TMPDIR|RUNNER_TEMP|SCRATCH[A-Z_]*)\}?[^[:space:];|&)]*)([[:space:];|&)]|$)/\5/g' 'DT-E43-6-Behebung zurueckgesetzt: die ".."-Ausnahme im Prototyp-Gate auf die alte, uneingeschraenkte Form zurueckgesetzt (Trennerschutz DT-E43-8 bleibt erhalten)' 'B60 B61'
+mutation_definieren MM8 main 'length == 1' 'length >= 1' 'N-3: Kardinalitaetspruefung des JSON-Stroms im main-Gate abgeschwaecht' 'S08'
+mutation_definieren MP11 prototyp 'length == 1' 'length >= 1' 'N-3: Kardinalitaetspruefung des JSON-Stroms im Prototyp-Gate abgeschwaecht' 'S09'
 
 # --- 11b. Fallklassen der Kopfkommentare (ADR 0002, 6.13 d) -----------
 fallklasse_definieren KM-1 main gedeckt 'Fall 1: Dateiaenderung, waehrend HEAD auf main/master steht' 'A12 A13 A48'
@@ -558,8 +562,9 @@ fallklasse_definieren KP-1 prototyp gedeckt 'Importe Richtung 1: Produktionscode
 fallklasse_definieren KP-2 prototyp gedeckt 'Importe Richtung 2: Prototyp importiert aus dem Produktionscode' 'B05 B22 ZF6e B46 B50'
 fallklasse_definieren KM-10 main gedeckt 'unlesbare Eingabe blockiert (ST-13, E4.3)' 'S01 S02 ZF8a ZF8b S08'
 fallklasse_definieren KM-11 main gedeckt 'Subshell in Klammern (N-9, E4.3)' 'ZF2a'
+fallklasse_definieren KM-12 main gedeckt 'Shell-Schreibwirkung in einem geschuetzten Kontext, inklusive fluechtiger Ziele mit ".." und "/dev/null" ohne Wortgrenze sowie Trenner hinter fluechtigem Ziel (DT-E43-6, DT-E43-8, E4.3-Nachtrag)' 'A11 A50 A51 A52 A53'
 fallklasse_definieren KP-3 prototyp gedeckt 'unlesbare Eingabe blockiert (ST-13, E4.3)' 'S04 S05 ZF8c ZF8d S09'
-fallklasse_definieren KP-4 prototyp gedeckt 'Schreibwirkung derselben Befehlsklassen wie das main-Gate: Umleitung, tee, sed -i, Heredoc, Dateiwerkzeuge, Interpreter mit Inline-Code, ed/ex' 'B09 ZF7a ZF7c ZF7d B53 B54 B55 B56 B57 B58 B59'
+fallklasse_definieren KP-4 prototyp gedeckt 'Schreibwirkung derselben Befehlsklassen wie das main-Gate: Umleitung, tee, sed -i, Heredoc, Dateiwerkzeuge, Interpreter mit Inline-Code, ed/ex, fluechtige Ziele mit ".." und "/dev/null" ohne Wortgrenze sowie Trenner hinter fluechtigem Ziel (DT-E43-6, DT-E43-8)' 'B09 ZF7a ZF7c ZF7d B53 B54 B55 B56 B57 B58 B59 B60 B61 B62 B63'
 fallklasse_definieren GP-1 prototyp grenze 'gemeinsame Abhaengigkeiten werden nicht geprueft (P-10, E4.3)' 'P35'
 fallklasse_definieren GP-2 prototyp grenze 'Asymmetrie der Pfadschreibweise in Richtung 2 (Wurzelpfad, Vorspann, src=/href= ohne Schraegstrich oder mit Rueckstrich, doppelter Rueckstrich, mehrfaches ./)' 'L10 L11 L12 L13 L14 L15 L16'
 fallklasse_definieren GP-3 prototyp grenze 'symmetrische Luecken beider Richtungen (Leerraum vor der Klammer, @import url(, Leerraum um =, __import__ ohne Punkt)' 'L05 L06 L07 L08'
@@ -567,11 +572,11 @@ fallklasse_definieren GP-3 prototyp grenze 'symmetrische Luecken beider Richtung
 # --- 11c. Abnahmekriterien (Backlog R3-Q-010; ADR 0002, 6.13 f) -------------------------
 abnahmekriterium_definieren R3-Q-010_prototyp_gate_pfadformen fallliste 'B02 B03 B06 ZF5a ZF5b ZF5c ZF6a ZF6b ZF5e B43 B45 B46 B50 B51 ZF6f P01 P05 P09 P27 P30 P31 P32' 'geschlossen mit E4.2 (vormals ST-04/ST-05); Gegenproben P01 P05 P09 P27 P30 P31 P32'
 abnahmekriterium_definieren R3-Q-010_prototyp_gate_richtungsgleichheit fallliste 'B07 B08 ZF6c ZF6d B35 B41 B42 B44 B47 B48 B49 P10 P02 B34 P28 P29' 'geschlossen mit E4.2 (vormals P-01); Gegenprobe P10; Richtung 1 zum Vergleich P02 B34; Gegenproben P28 P29'
-abnahmekriterium_definieren R3-Q-010_prototyp_gate_schreibwirkung fallliste 'B09 ZF7a ZF7c ZF7d ZF7b P06 P14 P15 P33 B52 B53 B54 B55 B56 B57 B58 B59 P36 P37 P38' 'geschlossen mit E4.3 (vormals ST-09); Gegenproben P06 P14 P15 P33 B52 P36 P37; P38 vorgemessen mit Abweichung vom Behebungsauftrag (rc=2 statt 0), gemeldet, nicht angepasst'
+abnahmekriterium_definieren R3-Q-010_prototyp_gate_schreibwirkung fallliste 'B09 ZF7a ZF7c ZF7d ZF7b P06 P14 P15 P33 B52 B53 B54 B55 B56 B57 B58 B59 P36 P37 P38 B60 B61 B62 P39 B63' 'geschlossen mit E4.3 (vormals ST-09); Gegenproben P06 P14 P15 P33 B52 P36 P37; P38 vorgemessen mit Abweichung vom Behebungsauftrag (rc=2 statt 0), gemeldet, nicht angepasst; DT-E43-6 (E4.3-Nachtrag, 2026-09-23) mit B60 B61 B62, Gegenprobe P39; DT-E43-8 (E4.3-Nachtrag, 2026-09-23) mit B63'
 abnahmekriterium_definieren R3-Q-010_gates_unlesbare_eingabe fallliste 'S01 S02 ZF8a ZF8b S04 S05 ZF8c ZF8d G01 P04 G40 P34' 'geschlossen mit E4.3 (vormals ST-13); Gegenproben G01 P04 G40 P34'
-abnahmekriterium_definieren R3-Q-010_pruefmittel_je_gate gemischt 'G01 G02 G03 G05 G06 P01 P03 P04 P05 MM1 MM2 MM3 MM4 MM5 MP1 MP2 MP3 MP4 MP5' 'Zaehlung je Gate, Mutationsmodus MM1-MM5/MP1-MP5, Regressionsschutz G01 G02 G03 G05 G06 P01 P03 P04 P05'
+abnahmekriterium_definieren R3-Q-010_pruefmittel_je_gate gemischt 'G01 G02 G03 G05 G06 P01 P03 P04 P05 MM1 MM2 MM3 MM4 MM5 MP1 MP2 MP3 MP4 MP5 MM7 MM8 MP10 MP11' 'Zaehlung je Gate, Mutationsmodus MM1-MM5/MP1-MP5 und MM7/MM8/MP10/MP11 (DT-E43-6, N-3), Regressionsschutz G01 G02 G03 G05 G06 P01 P03 P04 P05'
 abnahmekriterium_definieren R3-Q-010_main_gate_fremdbelegt fallliste 'A02 A03 A04 A05 A06 A38 A39 A40 A41 A42 A07 A08 A09 S03 G01 G02 G03' 'ST-01 trennscharf im Kontext AK; ST-02/ST-03 behoben; Gegenproben G01 G02 G03'
-abnahmekriterium_definieren R3-Q-010_benannte_grenzen fallklassen 'KM-1 KM-2 KM-3 KM-4 KM-5 KM-6 KM-7 KM-8 KM-9 GM-1 GM-2 GM-3 GM-4 KP-1 KP-2 KM-10 KM-11 KP-3 KP-4 GP-1 GP-2 GP-3' 'Fallklassen der Kopfkommentare; P-10 benannt (GP-1), nicht geschlossen'
+abnahmekriterium_definieren R3-Q-010_benannte_grenzen fallklassen 'KM-1 KM-2 KM-3 KM-4 KM-5 KM-6 KM-7 KM-8 KM-9 GM-1 GM-2 GM-3 GM-4 KP-1 KP-2 KM-10 KM-11 KM-12 KP-3 KP-4 GP-1 GP-2 GP-3' 'Fallklassen der Kopfkommentare; P-10 benannt (GP-1), nicht geschlossen'
 
 # -----------------------------------------------------------------------------
 # 12. Fallliste -- Teil 4.1 der Fallliste: main-Gate, Soll 2
@@ -626,6 +631,10 @@ faelle_4_1_main_soll2() {
   fall A47 main blockierend 2 MS - voll JSON Bash 'master gleichgestellt (Kopfkommentar Fall 2)' "$(bj_ph 'git commit -m x')"
   fall A48 main blockierend 2 MS - voll JSON Write 'master gleichgestellt (Kopfkommentar Fall 1)' "$(wj_ph '{MS}/frontend/x.ts' 'const a = 1;')"
   fall A49 main blockierend 2 MS - voll JSON Bash 'Shell-Schreibwirkung bei HEAD auf master' "$(bj_ph 'echo hallo > datei.txt')"
+  fall A50 main blockierend 2 MK - voll JSON Bash 'Umleitungsziel mit ".." fuehrt in den Arbeitsbaum zurueck, /tmp-Form (DT-E43-6)' "$(bj_ph 'echo x > /tmp/../{MK}/datei.txt')"
+  fall A51 main blockierend 2 MK - voll JSON Bash 'Umleitungsziel mit ".." fuehrt in den Arbeitsbaum zurueck, Variablenform (DT-E43-6)' "$(bj_ph 'echo x > "$TMPDIR"/../{MK}/datei.txt')"
+  fall A52 main blockierend 2 MK - voll JSON Bash '"/dev/null" ohne Wortgrenze bleibt Schreibwirkung (DT-E43-6)' "$(bj_ph 'echo x > /dev/nullx')"
+  fall A53 main blockierend 2 MK - voll JSON Bash 'Trenner hinter fluechtigem Ziel bleibt Schreibwirkung (DT-E43-8)' "$(bj_ph 'echo x > /tmp/x;cp a {MK}/datei.txt')"
   fall ZF1a main blockierend 2 AK - voll JSON Bash 'Zusatzfall 1 (vollqualifizierte Ref-Form), heute erstmals ausgefuehrt; Kontext AK, damit die Zeichenklassen ":" und "+" der Zielpruefung messen und nicht die Sperre "Push bei HEAD auf main" (N-1)' "$(bj_ph 'git push origin HEAD:refs/heads/main')"
   fall ZF1b main blockierend 2 AK - voll JSON Bash 'Zusatzfall 1 (Pluszeichen); Kontext AK, damit die Zeichenklassen ":" und "+" der Zielpruefung messen und nicht die Sperre "Push bei HEAD auf main" (N-1)' "$(bj_ph 'git push origin +main')"
   fall ZF2a main blockierend 2 AK - voll JSON Bash 'Subshell in Klammern erkannt; Grenze ist der untergeordnete Shell-Aufruf (N-9, E4.3)' "$(bj_ph '(cd {ZM} && git commit -m x)')"
@@ -687,6 +696,8 @@ faelle_4_2_main_soll0() {
   fall G38 main durchlaufend 0 AK - voll JSON Bash 'mehrfaches cd' "$(bj_ph 'cd docs && cd .. && git status')"
   fall G39 main durchlaufend 0 MS - voll JSON Bash 'Lesen auf master' "$(bj_ph 'git status')"
   fall G40 main durchlaufend 0 AK - voll JSON Read 'Gegenprobe ST-13 (main-Gate, E4.3): synthetisch (Read steht nicht im Matcher); realistische Gegenproben G01, P04. Kontext AK statt MK vorgemessen (in MK blockiert das Dateiwerkzeug-Geleise unabhaengig vom Werkzeugnamen jeden file_path auf main -- Restbefund, nicht Gegenstand von E4.3)' "$(rj 'x')"
+  fall G41 main durchlaufend 0 MK - voll JSON Bash 'fluechtiges Ziel /tmp ohne ".." bleibt frei (DT-E43-6, Regressionsschutz)' "$(bj_ph 'echo x > /tmp/datei.txt')"
+  fall G42 main durchlaufend 0 MK - voll JSON Bash 'Suchen mit 2>/dev/null bleibt frei (DT-E43-6, Regressionsschutz)' "$(bj_ph 'grep -r x . 2>/dev/null')"
   fall A43 main grenze 0 AK - voll JSON Bash 'Schreiben per Pfad in einen zweiten main-Auscheckstand ohne Kontextwechsel (2026-08-25, zweite Runde Nr. 1): heute 0 -- das ist die im Kopfkommentar benannte Grenze GM-2 (zweiter Arbeitsbaum ausserhalb der Sitzung); seit 2026-08-25 ist die Klasse ueber die worktree-Sperre abgedeckt, nicht ueber die Pfadpruefung' "$(bj_ph "sed -i 's/a/b/' ../zweiter-main/datei.txt")"
   fall L01 main pruefstand 0 AK - voll JSON Bash 'beobachtete Luecke DT-E41-04 (Dynamic Software Tester, 2026-09-23), heute 0; kein Befund des Zustandsberichts, nicht Gegenstand von R3-Q-010; Aufnahme nur als Fortschreibung von ADR 0002, 6.13 c' "$(bj_ph 'git push origin ma"in"')"
   fall L02 main pruefstand 0 AK - voll JSON Bash 'beobachtete Luecke DT-E41-04 (Dynamic Software Tester, 2026-09-23), heute 0; kein Befund des Zustandsberichts, nicht Gegenstand von R3-Q-010; Aufnahme nur als Fortschreibung von ADR 0002, 6.13 c' "$(bj_ph 'git push origin \main')"
@@ -765,6 +776,10 @@ faelle_4_4_proto_soll2() {
   fall B57 prototyp blockierend 2 AB - voll JSON Bash 'tee ohne Pipe hinter sudo (DT-E43-1)' "$(bj_ph "echo \"import x from '../prototype/a'\" | sudo tee frontend/a.js")"
   fall B58 prototyp blockierend 2 AB - voll JSON Bash 'tee hinter |& (DT-E43-1)' "$(bj_ph "printf '%s' 'import x from \"../prototype/a\"' |& tee frontend/a.js")"
   fall B59 prototyp blockierend 2 AB - voll JSON Bash 'Rscript -e mit Inline-Code (DT-E43-4)' "$(bj_ph "Rscript -e 'writeLines(\"import h from \\\"../prototype/helper\\\";\", \"frontend/src/a.ts\")'")"
+  fall B60 prototyp blockierend 2 AB - voll JSON Bash 'Umleitungsziel mit ".." fuehrt in den Arbeitsbaum zurueck, /tmp-Form (DT-E43-6)' "$(bj_ph "echo \"import x from '../prototype/a'\" > /tmp/../{AB}/frontend/a.js")"
+  fall B61 prototyp blockierend 2 AB - voll JSON Bash 'Umleitungsziel mit ".." fuehrt in den Arbeitsbaum zurueck, Variablenform (DT-E43-6)' "$(bj_ph "echo \"import x from '../prototype/a'\" > \"\$TMPDIR\"/../{AB}/frontend/a.js")"
+  fall B62 prototyp blockierend 2 AB - voll JSON Bash '"/dev/null" ohne Wortgrenze bleibt Schreibwirkung (DT-E43-6)' "$(bj_ph "echo \"import x from '../prototype/a'\" > /dev/nullx")"
+  fall B63 prototyp blockierend 2 AB - voll JSON Bash 'Trenner hinter fluechtigem Ziel bleibt Schreibwirkung (DT-E43-8)' "$(bj_ph "echo \"import x from '../prototype/a'\" > /tmp/x;cp a {AB}/frontend/a.js")"
 }
 
 # -----------------------------------------------------------------------------
@@ -838,6 +853,7 @@ faelle_4_5_proto_soll0() {
   fall P36 prototyp durchlaufend 0 AB - voll JSON Bash 'Dateiwerkzeug mv ohne Importmuster (Gegenprobe zu B54, B-2)' "$(bj_ph 'mv frontend/src/a.ts frontend/src/b.ts')"
   fall P37 prototyp durchlaufend 0 AB - voll JSON Bash 'Suchen mit 2>/dev/null, fluechtiges Ziel ausgenommen (DT-E43-5)' "$(bj_ph "grep -r \"require('../prototype/a')\" . 2>/dev/null")"
   fall P38 prototyp pruefstand 2 AB - voll JSON Bash 'DT-E43-5, vorgemessen: rc=2 statt der im Behebungsauftrag angenommenen 0 -- die Interpreterklasse (python3 -c) matcht auf dem bereinigten Text unabhaengig von der Umleitung nach /dev/null, weil sie nicht auf ein Umleitungszeichen angewiesen ist; Abweichung gemeldet, keine Aenderung ohne Weisung' "$(bj_ph "python3 -c 'print(\"import h from \\\"../prototype/helper\\\"\")' > /dev/null")"
+  fall P39 prototyp durchlaufend 0 AB - voll JSON Bash 'fluechtiges Ziel /tmp ohne "..", kein Schreiben in den Baum (DT-E43-6, Regressionsschutz)' "$(bj_ph "echo \"import x from '../prototype/a'\" > /tmp/a.js")"
   fall L12 prototyp pruefstand 0 AB - voll JSON Write 'benannte Grenze GP-2, heute 0; Aufnahme: Fortschreibung 6.13 c' "$(wj_ph 'prototype/demo.html' '<script src="../backend"></script>')"
   fall L13 prototyp pruefstand 0 AB - voll JSON Write 'benannte Grenze GP-2, heute 0; Aufnahme: Fortschreibung 6.13 c' "$(wj_ph 'prototype/demo.html' '<link href="..\frontend\style.css">')"
   fall L14 prototyp pruefstand 0 AB - voll JSON Write 'benannte Grenze GP-2, heute 0; Aufnahme: Fortschreibung 6.13 c' "$(wj_ph 'prototype/x.js' 'import a from "..\\backend\\api";')"

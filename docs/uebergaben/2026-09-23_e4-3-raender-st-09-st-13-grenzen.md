@@ -28,20 +28,16 @@ und an der Kette.
 
 ## Entscheidungen dieser Einheit
 
-1. **Dieselbe Befehlsklassenliste in beiden Gates** (ST-09): das Prototyp-Gate
-   übernimmt den Ausdruck des main-Gates für Schreibwirkung; die zweite
-   Bedingung (Importmuster im flachgezogenen Befehl) bleibt, ein Kopierbefehl
-   ohne Importmuster (B52) läuft durch.
-2. **Unlesbare Eingabe wird fail-closed behandelt** wie die jq- und die
-   git-Wache (ADR 0002, 6.13 b); geprüft wird "JSON-Objekt mit Objekt
-   `tool_input`", die Meldung nennt Anfang (80 Zeichen) und Länge der Eingabe;
-   eine wohlgeformte Eingabe eines anderen Werkzeugs (G40, P34) läuft durch.
-3. **Grenzen festgeschrieben, nicht geschlossen** (6.13 c): P-10 als Grenze mit
-   durchlaufendem Fall P35 (`package.json` im Prototyp); die Subshell in
-   Klammern wird erkannt (ZF2a, jetzt gedeckte Klasse KM-11), Grenze bleibt der
-   untergeordnete Shell-Aufruf (GM-4: ZF2b, ZF2c); GM-1 bis GM-3 unverändert.
+1. **Dieselbe Befehlsklassenliste in beiden Gates** (ST-09); die zweite Bedingung
+   (Importmuster) bleibt, ein Kopierbefehl ohne Importmuster (B52) läuft durch.
+2. **Unlesbare Eingabe fail-closed** wie jq- und git-Wache (6.13 b): "JSON-Objekt
+   mit Objekt `tool_input`", Meldung mit Anfang (80 Zeichen) und Länge; eine
+   wohlgeformte Eingabe eines anderen Werkzeugs (G40, P34) läuft durch.
+3. **Grenzen festgeschrieben, nicht geschlossen** (6.13 c): P-10 mit Fall P35;
+   Klammer-Subshell erkannt (ZF2a, KM-11), Grenze bleibt der untergeordnete
+   Shell-Aufruf (GM-4: ZF2b, ZF2c); GM-1 bis GM-3 unverändert.
 4. **Prüfstand-Fälle bleiben** (ZF9, ZF10a bis ZF10d, L01 bis L11): Aufnahme nur
-   als Fortschreibung von ADR 0002, 6.13 c durch den Software Architect.
+   als Fortschreibung von 6.13 c durch den Software Architect.
 
 ## Was gebaut ist
 
@@ -55,14 +51,11 @@ und an der Kette.
 - `scripts/pretooluse-gates-selbsttest.sh`: 247 Fälle (main 67 mit Soll 2, 47 mit
   Soll 0; Prototyp 82 und 51): zwölf von belegte Lücke auf blockierend, ZF2a und
   ZF7b auf blockierend; neu P33 bis P38, B52 bis B59, G40, L12 bis L16, S08, S09;
-  Meldungsprüfung für die Eingabewache ("nicht auswertbar"), Fallklassen KM-10,
-  KM-11, KP-3, KP-4, GP-1, GP-2, GP-3 (22 Klassen, jede Behauptung und jede
-  Grenze beider Kopfkommentare mit Fall), Mutationen MP7 (Interpreterglied), MM6
-  und MP8 (Eingabewache), MP9 (Dateiwerkzeuge), `BEFUND_VON` leer, Listen der
-  drei Kriterien nachgeführt.
-- Nachführung: ADR 0002 (6.13 Nachtrag E4.3, Abschnitt 9, Kopftabelle), Backlog
-  (Stand-Vermerk, zwölfte Nachführung), CLAUDE.md, Nachweiserzeuger, diese
-  Übergabe; Methodik-Repository (Übergabevermerk).
+  Meldungsprüfung der Eingabewache, Fallklassen KM-10, KM-11, KP-3, KP-4, GP-1
+  bis GP-3 (22, jede Behauptung und Grenze beider Kopfkommentare mit Fall),
+  Mutationen MP7, MM6, MP8, MP9; `BEFUND_VON` leer; Kriterienlisten nachgeführt.
+- Nachführung: ADR 0002 (6.13 Nachtrag, Abschnitt 9, Kopftabelle), Backlog,
+  CLAUDE.md, Nachweiserzeuger, diese Übergabe; Methodik-Repository.
 
 ## Verifikation auf einem anderen Modell
 
@@ -92,18 +85,12 @@ Kontrolllauf danach in beiden Modi Rückgabewert 0.
 - Entscheid des Software Architects zu den Prüfstand-Fällen (Fortschreibung
   6.13 c) und zum Wortlaut von 6.13 d Punkt 2 (bereits präzisiert).
 - Restbefunde aus E4.1 und E4.2 unverändert (NEU-1, NEU-4, N-DT-1, R-1/E-1,
-  DST-E42-N1); neu aus E4.3: DT-E43-6/N-1
-  (die Bereinigung flüchtiger Ziele greift in beiden Gates auch bei
-  Umleitungen über "/tmp/.." und "$TMPDIR/.." sowie bei "/dev/nullx"; im
-  Prototyp-Gate ein Rückschritt gegenüber E4.2, im main-Gate seit jeher;
-  Vorschlag der Prüfer: `..`-Pfade von der Ausnahme ausnehmen und `/dev/null`
-  nur mit Wortgrenze, in beiden Gates), N-3 (der Teil `length == 1` der
-  Eingabewache ist durch keine Mutation belegt), DT-E43-4 (`deno eval`,
+  DST-E42-N1); DT-E43-6/N-1 und N-3 im Nachtrag unten behoben; DT-E43-4 (`deno eval`,
   `node --eval`, `bun -e` an beiden Gates nicht als Inline-Code erkannt,
   Parität besteht), Preis P38 (Suchbefehl mit zitiertem Interpreteraufruf samt
   Import blockiert).
-- Nächste Einheit nach 6.13 g: E3 (eigene Festlegungseinheit), dann Grundgerüst.
-- Unverändert: O-28 (bedingt), O-15, R3-Q-005, Backlog-Punkte 12, 15, 20.
+- Nächste Einheit: Festlegung von E3, dann E3, dann Grundgerüst. Unverändert:
+  O-28 (bedingt), O-15, R3-Q-005, Backlog-Punkte 12, 15, 20.
 
 ## Protokoll (Koordinator)
 
@@ -114,6 +101,21 @@ Kontrolllauf danach in beiden Modi Rückgabewert 0.
   und T-3 (Kommentarzeilen); Kontrolllauf; Nachführung durch Software Architect
   (ADR 0002) und Product Owner (Backlog), Übriges durch den Koordinator.
 - `git add`, `make dod` (drei terminierte Lagen C, D20 und D11 A_OK, D19
-  OHNE_BEFUND, Rückgabewert 2), Commit mit Kennung R3-Q-010, Push;
-  `docs/NACHWEISE.md` neu erzeugt, `make dod`, zweiter Commit, Push;
-  Methodik-Repository, Commit, Push; Pull Requests beider Repositories.
+  OHNE_BEFUND, Rückgabewert 2), Commit R3-Q-010, Push; `docs/NACHWEISE.md`
+  erzeugt, `make dod`, Commit, Push; Methodik-Repository; Pull Requests.
+
+## Nachtrag vom selben Tag: DT-E43-6/N-1, N-3 und DT-E43-8 behoben
+
+Auf Weisung ("Das, was richtig ist und effizient") vor dem Merge, Aufgabe #4. Beide
+Gates textgleich: ein Umleitungsziel mit ".." fällt nicht mehr unter die Ausnahme
+flüchtiger Ziele, "/dev/null" nur mit Wortgrenze (SecDevOps Engineer, 6.13 g: A50
+bis A52 und B60 bis B62 fielen zuerst). Die Prüfrunde fand daran ein vorbestehendes
+falsches Grün, DT-E43-8: ein Trenner samt Schreibverb direkt hinter dem flüchtigen
+Ziel ("> /tmp/x;cp a datei") wurde mitverschluckt; behoben (Trenner beenden das
+Ziel), Fälle A53 und B63. Prüfmittel: 258 Fälle, 19 Mutationen (neu MM7/MP10 für
+die Ausnahme, MM8/MP11 für "length == 1", N-3), 23 Fallklassen (neu KM-12), beide
+Modi Rückgabewert 0. Dynamische Runde auf einem anderen Modell: 258 von 258 und 19
+von 19, direkte Messung an beiden Gates in Wegwerf-Klonen (je sechs Ziele mit Soll
+2 und Soll 0, alle wie erwartet), vier Mutanten selbst erzeugt und trennscharf,
+Gegenprobe mit den HEAD-Gates (je drei neue Fälle fallen), Nachmessung von
+DT-E43-8 mit sieben Formen; Entscheid bestanden für alle drei.

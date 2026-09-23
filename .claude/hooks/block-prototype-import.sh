@@ -86,11 +86,8 @@
 # Umleitungen nach /dev/null, unter /tmp und in die Verzeichnisse aus TMPDIR,
 # RUNNER_TEMP und SCRATCH* werden vor der Schreibwirkungspruefung aus dem
 # Befehlstext entfernt, sonst waere reines Suchen mit "2>/dev/null" ein
-# Fehlalarm. OFFENER RESTBEFUND, keine benannte Grenze (DT-E43-6 und N-1 der
-# Nachpruefung vom 2026-09-23, gefuehrt in docs/uebergaben/ vom 2026-09-23,
-# E4.3): die Ausnahme greift auch bei "/tmp/.." und "$TMPDIR/.." sowie bei
-# "/dev/nullx"; das gilt in beiden Gates gleich und ist zu beheben, nicht
-# festzuschreiben.
+# Fehlalarm. Ein Ziel mit '..' faellt nicht unter die Ausnahme, '/dev/null'
+# nur mit Wortgrenze (DT-E43-6, behoben am 2026-09-23).
 #
 # PREIS DER TEXTPRUEFUNG (B-5): "Suchen mit demselben Wortlaut" (P06, P15)
 # bleibt frei, WEIL der reine Suchbefehl keine Schreibwirkung im Text traegt.
@@ -164,10 +161,13 @@ if [ "$tool" = "Bash" ]; then
   # Fluechtige Ziele wie im main-Gate ausgenommen (DT-E43-5, 2026-09-23):
   # Umleitungen nach /dev/null, /tmp/..., $TMPDIR/$RUNNER_TEMP/$SCRATCH...
   # werden vor der Schreibwirkungspruefung entfernt, sonst waere z. B. ein
-  # reines Suchen mit "2>/dev/null" ein Fehlalarm.
+  # reines Suchen mit "2>/dev/null" ein Fehlalarm. Ein Ziel mit '..' faellt
+  # nicht unter die Ausnahme, '/dev/null' nur mit Wortgrenze (DT-E43-6,
+  # behoben am 2026-09-23).
   bereinigt=$(printf '%s' "$cmd" | sed -E \
     -e 's/[0-9]?>&[0-9]//g' \
-    -e 's/[0-9]?>>?[[:space:]]*(\/dev\/null|\/tmp\/[^[:space:]]*|"?\$\{?(TMPDIR|RUNNER_TEMP|SCRATCH[A-Z_]*)\}?[^[:space:]]*)//g')
+    -e 's/[0-9]?>>?[[:space:]]*\/dev\/null([[:space:]]|$|[;|&)])/\1/g' \
+    -e 's/[0-9]?>>?[[:space:]]*(\/tmp\/([^[:space:].;|&)]|\.[^.[:space:];|&)])*|"?\$\{?(TMPDIR|RUNNER_TEMP|SCRATCH[A-Z_]*)\}?([^[:space:].;|&)]|\.[^.[:space:];|&)])*)([[:space:];|&)]|$)/\5/g')
   schreibwirkung='(>>?|\btee[[:space:]]|sed[[:space:]]+-[a-zA-Z]*i|<<)|(\b(mv|cp|rm|mkdir|touch|truncate|ln|install|patch|dd)[[:space:]]|\b(python[0-9.]*|perl|ruby|node|deno|php|Rscript)[[:space:]]+([^|;&]*[[:space:]]+)?-[a-zA-Z]*(c|e|i|p|r|n)([^a-zA-Z]|$)|\b(ed|ex)[[:space:]])'
   if printf '%s' "$bereinigt" | grep -Eq "$schreibwirkung" \
       && printf '%s' "$cmd_flach" | grep -Eq "(from|require|import|@import|__import__|import_module)[^|&]*prototype([./\"'[:space:]]|\$)"; then

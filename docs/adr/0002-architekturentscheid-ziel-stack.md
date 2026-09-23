@@ -8164,6 +8164,19 @@ erteilt der Auftraggeber auf einem der beiden Formwege aus Abschnitt 10.
 > DT-E43-6/N-1 (die Ausnahme flüchtiger Ziele greift in beiden Gates auch
 > bei "/tmp/..", "$TMPDIR/.." und "/dev/nullx") ist als offener Restbefund
 > im Kopfkommentar und in der Übergabe geführt, nicht als benannte Grenze.
+>
+> **Nachtrag vom selben Tag (E4.3-Nachtrag, Aufgabe #4):** DT-E43-6/N-1 und
+> N-3 sind behoben, dazu der bei der Prüfung der Behebung gefundene DT-E43-8
+> (ein Trenner samt Schreibverb direkt hinter einem flüchtigen Ziel wurde
+> mitverschluckt, vorbestehend in beiden Gates): ein Umleitungsziel mit ".."
+> fällt in beiden Gates nicht mehr unter die Ausnahme flüchtiger Ziele,
+> "/dev/null" nur mit Wortgrenze, Trenner beenden das Ziel; die Ausnahme ist
+> in beiden Gates textgleich. Prüfmittel danach 258 Fälle, 19 Mutationen (neu
+> MM7/MP10 für die Ausnahme, MM8/MP11 für "length == 1"), 23 Fallklassen (neu
+> KM-12); Vorgehen nach Buchstabe g, eine dynamische Runde auf einem anderen
+> Modell mit gezielter Nachmessung, bestanden (Übergabe E4.3, Abschnitt
+> "Nachtrag").
+>
 > Abgeschlossen sind `R3-Q-010_prototyp_gate_schreibwirkung`,
 > `R3-Q-010_gates_unlesbare_eingabe` und `R3-Q-010_benannte_grenzen`; damit
 > sind alle sieben Abnahmekriterien von R3-Q-010 gebaut und verifiziert. Die

@@ -189,7 +189,9 @@ if [ "$tool" = "Bash" ]; then
   # Umgebungs-Tempverzeichnisse) bleiben frei. Ein Fehlalarm kostet einen
   # Versuch und der Ausweg ist immer derselbe: zuerst einen Arbeitszweig
   # anlegen. Das ist dieselbe bewusste Abwaegung wie beim Textmuster-Gate
-  # insgesamt (.claude/rules/claude-konfiguration.md).
+  # insgesamt (.claude/rules/claude-konfiguration.md). Ein Ziel mit '..'
+  # faellt nicht unter die Ausnahme, '/dev/null' nur mit Wortgrenze
+  # (DT-E43-6, behoben am 2026-09-23).
   #
   # Interpreter mit Inline-Code (python -c, perl -e/-i, node -e, ruby -e ...)
   # schreiben ueber ihre eigene Datei-API, ohne dass ein Umleitungszeichen oder
@@ -201,7 +203,8 @@ if [ "$tool" = "Bash" ]; then
   if [ "$ziel_geschuetzt" = 1 ]; then
     bereinigt=$(printf '%s' "$cmd" | sed -E \
       -e 's/[0-9]?>&[0-9]//g' \
-      -e 's/[0-9]?>>?[[:space:]]*(\/dev\/null|\/tmp\/[^[:space:]]*|"?\$\{?(TMPDIR|RUNNER_TEMP|SCRATCH[A-Z_]*)\}?[^[:space:]]*)//g')
+      -e 's/[0-9]?>>?[[:space:]]*\/dev\/null([[:space:]]|$|[;|&)])/\1/g' \
+      -e 's/[0-9]?>>?[[:space:]]*(\/tmp\/([^[:space:].;|&)]|\.[^.[:space:];|&)])*|"?\$\{?(TMPDIR|RUNNER_TEMP|SCRATCH[A-Z_]*)\}?([^[:space:].;|&)]|\.[^.[:space:];|&)])*)([[:space:];|&)]|$)/\5/g')
     if printf '%s' "$bereinigt" | grep -Eq '(>>?|\btee[[:space:]]|sed[[:space:]]+-[a-zA-Z]*i|\b(mv|cp|rm|mkdir|touch|truncate|ln|install|patch|dd)[[:space:]]|\b(python[0-9.]*|perl|ruby|node|deno|php|Rscript)[[:space:]]+([^|;&]*[[:space:]]+)?-[a-zA-Z]*(c|e|i|p|r|n)([^a-zA-Z]|$)|\b(ed|ex)[[:space:]])'; then
       echo "BLOCKIERT (Projektauftrag 3.2 c): Shell-Befehl mit moeglicher Schreibwirkung in einem geschuetzten Kontext (main/master)." >&2
       echo "Dateien werden auf einem Arbeitszweig geaendert, nie auf main." >&2
