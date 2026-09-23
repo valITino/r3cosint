@@ -32,7 +32,10 @@ durchsetzen will, braucht einen Hook.
 - Hook-Skripte liegen unter `.claude/hooks/` und werden über
   `"${CLAUDE_PROJECT_DIR}"` angesprochen, nie über einen relativen Pfad.
 - Jedes Hook-Skript wird vor dem Einbau gegen einen blockierenden und einen
-  durchzulassenden Fall geprüft. Ein ungetestetes Gate ist kein Gate.
+  durchzulassenden Fall geprüft. Ein ungetestetes Gate ist kein Gate. Für die
+  beiden `PreToolUse`-Gates ist das versionierte Prüfmittel
+  `scripts/pretooluse-gates-selbsttest.sh` (R3-Q-010, ADR 0002, 6.13 d;
+  Normalmodus und Modus `--mutationen`).
 - Das main-Gate und das Prototyp-Gate prüfen bei `Bash` den **Text** des
   Befehls. Ein Befehl, der die Wörter nur als Inhalt trägt — etwa ein Heredoc,
   das diese Regel dokumentiert — kann deshalb blockiert werden. Das ist gewollt:

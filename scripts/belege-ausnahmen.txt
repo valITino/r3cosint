@@ -38,8 +38,6 @@ docs/uebergaben/2026-08-20_befunde-vorpruefung.md|R3-C-020	Kennung, die es im Ba
 docs/00_Projektauftrag.md|nachweise/abzug/	Wird erst bei der Abgabe erzeugt, auf ein besonderes Versionsschild hin (6.6). Vorher darf das Verzeichnis nicht bestehen.
 docs/05_Product_Backlog.md|docs/datenschutz/	Entsteht mit R3-C-012 (Bearbeitungsverzeichnis und Loeschnachweis).
 docs/05_Product_Backlog.md|docs/konformitaet/	Entsteht mit R3-C-013 (dokumentierte Konformitaetsanalyse).
-docs/05_Product_Backlog.md|scripts/pretooluse-gates-selbsttest.sh	Entsteht mit R3-Q-010 (E4.1); mit dem Entstehen der Datei wieder zu entfernen. Der Eintrag R3-Q-010 nennt das vom Software Architect in ADR 0002, 6.13 d festgelegte Pruefmittel; derselbe Gegenstand wie der Eintrag fuer ADR 0002.
-docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/pretooluse-gates-selbsttest.sh	Entsteht mit R3-Q-010 (E4.1); mit dem Entstehen der Datei wieder zu entfernen.
 docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/abnahme-abgleich.sh	Folgt mit dem Grundgeruest (D7). Bis dahin meldet D7 der Kette Lage C -- der belegte und gewollte Zustand.
 docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/rueckkanal-pruefen.sh	Folgt mit R3-C-004. Bis dahin meldet D9 Lage C.
 docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/prototyp-trennung-pruefen.sh	Folgt mit dem Grundgeruest; Betriebsart und Form sind als O-8 offen. Bis dahin meldet D10 Lage C.
