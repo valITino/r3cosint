@@ -169,7 +169,30 @@ jedem Push. Der Entscheid liegt beim Auftraggeber.
 
 ## Was offen bleibt
 
-- Pull Request für die vier Behebungen: auf Weisung.
+- **Nachtrag vom 2026-09-23, vierter Codex-Lauf am Pull Request #19
+  (Commit `c17c0ee649219e85f4fc5058b6d01c43f1aac75a`), vier P2-Befunde,
+  nicht behoben, als Restbefunde geführt** — auf Weisung des Auftraggebers
+  ("genau so weiter nach Plan", keine weiteren Prüfrunden vor E4.1) und weil
+  P2 unter der blockierenden Schwelle des Reviews (P0) liegt: (1) Die
+  Kandidatenordnung nach PATH vergleicht Text, nicht physische Pfade — ein
+  PATH-Eintrag mit Schrägstrich am Ende oder ein Symlink auf das Verzeichnis
+  wird nicht erkannt. (2) Ist der Kandidat im PATH nicht beschreibbar, fällt
+  die Installation auf den Kandidaten ausserhalb des PATH zurück; `command
+  -v` findet das Binary danach nicht, der Ersetzungsschutz macht die Lage
+  dauerhaft. (3) Ein aus einer früheren Sitzung gestrandeter Eintrag
+  ausserhalb des PATH wird von der Vorprüfung gefunden und beendet den Hook,
+  bevor ein Kandidat im PATH beschrieben wird (dasselbe wie S5-05). (4) Das
+  Nachweisverzeichnis nennt als Stand den Vorgänger-Commit des Zweigs, nicht
+  den vom Review gebildeten Squash-Commit — kein Mangel, Erzeugung nach dem
+  Merge durch den Arbeitsablauf (wie am Pull Request #17 beantwortet).
+  Behebungsvorschlag für (1) bis (3), als Vorschlag: nur in Kandidaten
+  installieren, die als physisches Verzeichnis im PATH stehen; fehlt ein
+  beschreibbarer, Lage C melden statt ausserhalb des PATH zu installieren;
+  gestrandete Einträge ausserhalb des PATH in der Vorprüfung überspringen,
+  wenn ein Kandidat im PATH frei ist. Aufwand: eine Einheit mit einer
+  statischen und einer dynamischen Runde.
+- Pull Request für die vier Behebungen: eröffnet am 2026-09-23 als #19
+  (Produkt-Repository) und #11 (Methodik-Repository), auf Delegation.
 - Nachweisfluss: einer der beiden Wege oben, auf Weisung; danach den Lauf
   wiederholen.
 - Restbefunde aus den früheren Übergaben vom 2026-09-22 unverändert;
