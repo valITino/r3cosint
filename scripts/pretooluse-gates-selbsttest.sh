@@ -13,7 +13,7 @@
 # (.claude/rules/claude-konfiguration.md, Abschnitt "Hooks")
 #
 # ZWEI MODI:
-#   1. Normalmodus (kein Parameter): 202 vorgemessene Faelle laufen gegen die
+#   1. Normalmodus (kein Parameter): 225 vorgemessene Faelle laufen gegen die
 #      Gate-Dateien DES ARBEITSBAUMS (oder, nur fuer Pruefrollen, gegen eine
 #      per Umgebungsvariable ueberschriebene Kopie, siehe Abschnitt 3a weiter
 #      unten). main-Faelle laufen gegen einen Wegwerf-Klon auf main, einen auf
@@ -24,7 +24,7 @@
 #      JSON von der Standardeingabe und urteilen.
 #   2. Modus --mutationen (Gegenprobe): zuerst eine GRUNDLINIE -- die
 #      vollstaendige Fallliste gegen die UNVERAENDERTEN Gates; ist sie nicht
-#      gruen, endet der Modus sofort mit Rueckgabewert 2. Danach zehn fest im
+#      gruen, endet der Modus sofort mit Rueckgabewert 2. Danach elf fest im
 #      Skript hinterlegte Mutationen, die je GENAU EINE Sperre schwaechen oder
 #      eine Ausnahme entfernen (MP4, MP5), in einer Kopie eines Gates; die
 #      vollstaendige Fallliste des betroffenen Gates laeuft gegen die Kopie.
@@ -45,7 +45,7 @@
 # NIEDRIGERES MASS als scripts/dod-gate-selbsttest.sh (ADR 0002, 6.13 d
 # verlangt das ausdruecklich): keine Zusicherungstabelle, keine mechanischen
 # mehrstufigen Deckungen, keine separate Mutationsdatei -- die Fallliste, die
-# zehn Mutationen, die Fallklassen der Kopfkommentare und die Zuordnung zu den
+# elf Mutationen, die Fallklassen der Kopfkommentare und die Zuordnung zu den
 # sieben Abnahmekriterien stehen FEST im Skript (Datenteil weiter unten).
 #
 # Verifikation dieses Skripts UND der beiden Gates: Static und Dynamic
@@ -64,17 +64,17 @@
 # NEU-1 der statischen Nachpruefung vom 2026-09-23); heute ruft die Kette es
 # nicht auf.
 #
-# Rueckgabewert 0: Normalmodus -- alle 202 Faelle bestanden UND je Gate
+# Rueckgabewert 0: Normalmodus -- alle 225 Faelle bestanden UND je Gate
 # mindestens ein Fall mit Soll 2 und einer mit Soll 0 UND je Gate mindestens
 # ein Fall der Klasse blockierend und einer der Klasse durchlaufend UND die
 # gemessene Gesamtzahl entspricht der erwarteten Zahl UND der Arbeitsbaum
 # blieb unveraendert UND alle Fallklassen sind gedeckt UND jede
-# Befundkennung ist bekannt. Die Listen der Abnahmekriterien werden
-# ausgegeben und auf vorhandene Kennungen geprueft; eine fehlende Kennung
-# erscheint dort als FEHLEND, wirkt aber NICHT auf den Rueckgabewert
-# (Restbefund N-2 der statischen Nachpruefung vom 2026-09-23, zu beheben mit
-# E4.2). Modus --mutationen -- die
-# Grundlinie ist gruen UND alle zehn Mutationen erkannt UND der Arbeitsbaum
+# Befundkennung ist bekannt UND jedes Abnahmekriterium ist vollstaendig (die
+# Listen der Abnahmekriterien werden ausgegeben und auf vorhandene Kennungen
+# geprueft; eine fehlende Kennung erscheint dort als FEHLEND und wirkt seit
+# E4.2 auf den Rueckgabewert -- Restbefund N-2/T-4 der statischen
+# Nachpruefung vom 2026-09-23, behoben). Modus --mutationen -- die
+# Grundlinie ist gruen UND alle elf Mutationen erkannt UND der Arbeitsbaum
 # blieb unveraendert. Sonst Rueckgabewert 2. Rueckgabewert 3: der Lauf kommt
 # nicht zustande (ein Werkzeug fehlt, ein Klon ist nicht anlegbar, unbekannter
 # Parameter) -- mit Meldung auf stderr.
@@ -313,7 +313,7 @@ wj_ph() { wj "$(ph "$1")" "$(ph "$2")" "${3:-Write}"; }
 # -----------------------------------------------------------------------------
 # 9. Buchhaltung
 # -----------------------------------------------------------------------------
-ERWARTETE_FAELLE=202
+ERWARTETE_FAELLE=225
 VOLLSTAENDIGKEIT_OK=1
 declare -a ALLE_KENNUNGEN=()
 declare -a BESTANDENE_KENNUNGEN=()
@@ -344,11 +344,9 @@ declare -a GRUNDLINIE_GEFALLEN=()
 # Fallliste unten, ADR 0002, 6.13 d), fuer die Ausgabezeile "belegte Luecken".
 declare -A BEFUND_VON=(
   [S01]="ST-13" [S02]="ST-13" [ZF8a]="ST-13" [ZF8b]="ST-13"
-  [B02]="ST-04" [B03]="ST-04" [B06]="ST-05" [B07]="P-01" [B08]="P-01" [B09]="ST-09"
-  [ZF5a]="ST-04" [ZF5b]="ST-04" [ZF5c]="ST-04" [ZF6a]="ST-05" [ZF6b]="ST-05"
-  [ZF6c]="P-01" [ZF6d]="P-01" [ZF7a]="ST-09" [ZF7c]="ST-09" [ZF7d]="ST-09"
+  [B09]="ST-09"
+  [ZF7a]="ST-09" [ZF7c]="ST-09" [ZF7d]="ST-09"
   [S04]="ST-13" [S05]="ST-13" [ZF8c]="ST-13" [ZF8d]="ST-13"
-  [ZF5e]="ST-04" [B35]="P-01" [B41]="P-01" [B42]="P-01"
 )
 
 # -----------------------------------------------------------------------------
@@ -414,6 +412,40 @@ fall() {
   if [ "$ist" != "$soll" ]; then gruende="${gruende}rueckgabewert,"; fi
   if [ "$stdout_bytes" != "0" ]; then gruende="${gruende}stdout-nicht-leer,"; fi
   if [ "$soll" = "2" ] && [ "$stderr_bytes" = "0" ]; then gruende="${gruende}stderr-leer-bei-soll-2,"; fi
+
+  # B-1/DST-E42-03: bei Soll 2 und vollem PATH (Wachen-Faelle ohne-jq/ohne-git
+  # ausgenommen) muss stderr den verletzten Abschnitt nennen und, beim
+  # Prototyp-Gate an einem Dateiwerkzeug, die zur Datei passende Richtung.
+  # Bash-Faelle des Prototyp-Gates nennen keine Richtung (die Bash-Meldung
+  # kennt das Konstrukt "Richtung" nicht) und werden hier ausgenommen.
+  if [ "$soll" = "2" ] && [ "$pfad_wahl" = "voll" ]; then
+    local stderr_text
+    stderr_text=$(cat "$T/lauf-fehler")
+    if [ "$gate" = "prototyp" ]; then
+      case "$stderr_text" in
+        *"Projektauftrag 5.6"*) : ;;
+        *) gruende="${gruende}meldung-ohne-5.6," ;;
+      esac
+      local werkzeug_klein
+      werkzeug_klein=$(printf '%s' "$werkzeug" | tr '[:upper:]' '[:lower:]')
+      if [ "$werkzeug_klein" != "bash" ]; then
+        local erwartete_richtung="Richtung 1"
+        case "$eingabe" in
+          *'"file_path":"prototype/'*|*'"notebook_path":"prototype/'*) erwartete_richtung="Richtung 2" ;;
+        esac
+        case "$stderr_text" in
+          *"$erwartete_richtung"*) : ;;
+          *) gruende="${gruende}meldung-ohne-richtung," ;;
+        esac
+      fi
+    else
+      case "$stderr_text" in
+        *"Projektauftrag 3.2 c"*) : ;;
+        *) gruende="${gruende}meldung-ohne-3.2c," ;;
+      esac
+    fi
+  fi
+
   if [ -n "$gruende" ]; then
     urteil="GEFALLEN"
     grund="${gruende%,}"
@@ -490,14 +522,15 @@ mutation_definieren MM2 main 'if ! command -v git >/dev/null 2>&1; then' 'if fal
 mutation_definieren MM3 main '(commit|merge|revert|cherry-pick|rebase|reset|am|apply|stash[[:space:]]+(pop|apply))' '(NIE)' 'Sperre schreibender git-Verben entfernt' 'A10 A14 A20 A21 A22 A30 A31 ZF3a ZF3b ZF3c ZF3d ZF3e ZF3f ZF3g'
 mutation_definieren MM4 main 'is_protected "$branch" || exit 0' 'exit 0' 'Sperre der Dateiwerkzeuge auf main entfernt (Kopfkommentar Fall 1)' 'A12 A13'
 mutation_definieren MM5 main "(^|[[:space:]:+\"'\\''(])(main|master)([[:space:]]|\$|[\"'\\'';&|)])" "(^|[[:space:]:+])(main|master)([[:space:]]|\$|[\"'\\''])" 'ST-01-Behebung zurueckgesetzt: Zeichenklassen der Push-Zielpruefung auf den Stand vor 0b3510a (kein Anfuehrungszeichen, kein Semikolon, keine Klammer)' 'A38 A39 A40 A41'
-mutation_definieren MP1 prototyp '-e "(src|href)=${Q}${NQ}*prototype/"' '-e "(NIE)=${Q}${NQ}*prototype/"' 'HTML-Formen src=/href= der Richtung 1 entfernt' 'P02 B34'
+mutation_definieren MP1 prototyp '-e "(src|href)=${Q}(${NQ}*[/\\\\])?prototype(/|\\\\|${Q})"' '-e "(NIE)=${Q}(${NQ}*[/\\\\])?prototype(/|\\\\|${Q})"' 'HTML-Formen src=/href= der Richtung 1 entfernt' 'P02 B34'
 mutation_definieren MP2 prototyp '(>>?|[|][[:space:]]*tee[[:space:]]|sed[[:space:]]+-[a-zA-Z]*i|<<)' '(NIE)' 'Erkennung der Schreibwirkung bei Bash entfernt' 'B10 B11 B12 B13 B39 B40'
-mutation_definieren MP3 prototyp '(backend|frontend|deploy|src|app|lib|server|packages|apps)/' '(NIE)/' 'Bauwurzeln der Richtung 2 entfernt' 'B05 B20 B21 B22 B37'
+mutation_definieren MP3 prototyp "WURZELN='backend|frontend|deploy|src|app|lib|server|packages|apps'" "WURZELN='NIE'" 'Verzeichnisliste WURZELN der Richtung 2 entfernt (Import-Pfade und src=/href=; die Python-Formen fuehren backend/frontend/deploy gesondert)' 'B05 B20 B21 B22 B37'
 # P08 (MultiEdit) faellt bei dieser Mutation nicht, weil das Gate old_string
 # innerhalb von edits[] ueber einen eigenen jq-Pfad strukturell nie liest;
 # P08 bleibt Gegenprobe im Normalmodus.
 mutation_definieren MP4 prototyp 'test("path|^old_string$"; "i")' 'test("path"; "i")' 'Ausnahme von old_string entfernt -- Regressionsschutz' 'P05'
 mutation_definieren MP5 prototyp 'docs/*|.claude/*|*.md|*.txt|*.adoc|*.rst) exit 0 ;;' 'NIE-GESETZT) exit 0 ;;' 'Doku-Ausnahme entfernt -- Regressionsschutz' 'P03 P11 P18 P19 ZF9'
+mutation_definieren MP6 prototyp 'Richtung 1 (Produktionscode -> Prototyp): ' '' 'Richtungsangabe der Richtung-1-Meldung entfernt' 'B01 B04 B27 P02'
 
 # --- 11b. Fallklassen der Kopfkommentare (ADR 0002, 6.13 d) -----------
 fallklasse_definieren KM-1 main gedeckt 'Fall 1: Dateiaenderung, waehrend HEAD auf main/master steht' 'A12 A13 A48'
@@ -513,12 +546,12 @@ fallklasse_definieren GM-1 main grenze 'Interpreter, der mit eigener Datei-API s
 fallklasse_definieren GM-2 main grenze 'zweiter, auf main ausgecheckter Arbeitsbaum, der ausserhalb dieser Sitzung angelegt wurde' 'G10 A43'
 fallklasse_definieren GM-3 main grenze 'git vorhanden, aber kein Arbeitsbaum -- ausserhalb eines Repositories' 'ZF4a ZF4b'
 fallklasse_definieren GM-4 main grenze 'BEWUSSTE GRENZE: Kontextwechsel in Subshell oder bash -c' 'ZF2b ZF2c'
-fallklasse_definieren KP-1 prototyp gedeckt 'Importe Richtung 1: Produktionscode importiert aus prototype/' 'B01 B04 B27 P02'
-fallklasse_definieren KP-2 prototyp gedeckt 'Importe Richtung 2: Prototyp importiert aus dem Produktionscode' 'B05 B22 ZF6e'
+fallklasse_definieren KP-1 prototyp gedeckt 'Importe Richtung 1: Produktionscode importiert aus prototype/' 'B01 B04 B27 P02 B45 B47'
+fallklasse_definieren KP-2 prototyp gedeckt 'Importe Richtung 2: Prototyp importiert aus dem Produktionscode' 'B05 B22 ZF6e B46 B50'
 
 # --- 11c. Abnahmekriterien (Backlog R3-Q-010; ADR 0002, 6.13 f) -------------------------
-abnahmekriterium_definieren R3-Q-010_prototyp_gate_pfadformen fallliste 'B02 B03 B06 ZF5a ZF5b ZF5c ZF6a ZF6b ZF5e P01 P05 P09' 'belegte Luecke ST-04/ST-05; Gegenproben P01 P05 P09'
-abnahmekriterium_definieren R3-Q-010_prototyp_gate_richtungsgleichheit fallliste 'B07 B08 ZF6c ZF6d B35 B41 B42 P10 P02 B34' 'belegte Luecke P-01; Gegenprobe P10; Richtung 1 zum Vergleich P02 B34'
+abnahmekriterium_definieren R3-Q-010_prototyp_gate_pfadformen fallliste 'B02 B03 B06 ZF5a ZF5b ZF5c ZF6a ZF6b ZF5e B43 B45 B46 B50 B51 ZF6f P01 P05 P09 P27 P30 P31 P32' 'geschlossen mit E4.2 (vormals ST-04/ST-05); Gegenproben P01 P05 P09 P27 P30 P31 P32'
+abnahmekriterium_definieren R3-Q-010_prototyp_gate_richtungsgleichheit fallliste 'B07 B08 ZF6c ZF6d B35 B41 B42 B44 B47 B48 B49 P10 P02 B34 P28 P29' 'geschlossen mit E4.2 (vormals P-01); Gegenprobe P10; Richtung 1 zum Vergleich P02 B34; Gegenproben P28 P29'
 abnahmekriterium_definieren R3-Q-010_prototyp_gate_schreibwirkung fallliste 'B09 ZF7a ZF7c ZF7d ZF7b P06 P14 P15' 'belegte Luecke ST-09, ZF7b Pruefstand; Gegenproben P06 P14 P15'
 abnahmekriterium_definieren R3-Q-010_gates_unlesbare_eingabe fallliste 'S01 S02 ZF8a ZF8b S04 S05 ZF8c ZF8d G01 P04' 'belegte Luecke ST-13; Gegenproben G01 P04'
 abnahmekriterium_definieren R3-Q-010_pruefmittel_je_gate gemischt 'G01 G02 G03 G05 G06 P01 P03 P04 P05 MM1 MM2 MM3 MM4 MM5 MP1 MP2 MP3 MP4 MP5' 'Zaehlung je Gate, Mutationsmodus MM1-MM5/MP1-MP5, Regressionsschutz G01 G02 G03 G05 G06 P01 P03 P04 P05'
@@ -695,6 +728,16 @@ faelle_4_4_proto_soll2() {
   fall B40 prototyp blockierend 2 AB - voll JSON Bash 'Umleitung mit Python-Form' "$(bj_ph 'printf "%s\n" "from prototype import demo" > backend/src/a.py')"
   fall ZF5d prototyp blockierend 2 AB - voll JSON Write 'Zusatzfall 5: Punktform mit Untermodul wird erkannt -- kein Befund' "$(wj_ph 'backend/src/a.py' 'from prototype.helper import x')"
   fall ZF6e prototyp blockierend 2 AB - voll JSON Write 'Zusatzfall 6: absoluter Alias @/ wird erkannt (Gegenprobe zur Alias-Zeile)' "$(wj_ph 'prototype/x.js' 'import a from "@/backend/api";')"
+  fall B43 prototyp blockierend 2 AB - voll JSON Write 'Praefix ./ mit dynamischem import( in Richtung 2 (E4.2, Klasse ST-05)' "$(wj_ph 'prototype/x.js' 'const a = await import("./../backend/api");')"
+  fall B44 prototyp blockierend 2 AB - voll JSON Write 'N-5: HTML src= mit ./../ in Richtung 2 (E4.2)' "$(wj_ph 'prototype/demo.html' '<script src="./../backend/app.js"></script>')"
+  fall B45 prototyp blockierend 2 AB - voll JSON Write 'B-1 statisch: bare import ohne "from", Richtung 1 (E4.2)' "$(wj_ph 'frontend/src/a.ts' 'import "../prototype";')"
+  fall B46 prototyp blockierend 2 AB - voll JSON Write 'B-1 statisch: bare import ohne "from", Richtung 2 (E4.2)' "$(wj_ph 'prototype/x.js' 'import "./../backend/api";')"
+  fall B47 prototyp blockierend 2 AB - voll JSON Write 'N-5: a href= ohne Schraegstrich vor "prototype", Richtung 1 (E4.2)' "$(wj_ph 'frontend/src/demo.html' '<a href="../prototype">x</a>')"
+  fall B48 prototyp blockierend 2 AB - voll JSON Write 'N-5: img src= mit Rueckstrich-Pfad, Richtung 1 (E4.2)' "$(wj_ph 'frontend/src/demo.html' '<img src="..\prototype\x.png">')"
+  fall B49 prototyp blockierend 2 AB - voll JSON Write 'N-5: __import__ mit Punktform, Richtung 2 (E4.2, heute schon 2)' "$(wj_ph 'prototype/x.py' 'm = __import__("frontend.x")')"
+  fall B50 prototyp blockierend 2 AB - voll JSON Write 'A2: Verzeichnisimport ohne Schraegstrich, Richtung 2, Bauwurzel backend (E4.2)' "$(wj_ph 'prototype/x.js' 'import x from "../backend";')"
+  fall B51 prototyp blockierend 2 AB - voll JSON Write 'A2: Verzeichnisimport ohne Schraegstrich mit ./../../, Richtung 2, Bauwurzel frontend (E4.2)' "$(wj_ph 'prototype/x.ts' "import x from './../../frontend'")"
+  fall ZF6f prototyp blockierend 2 AB - voll JSON Write 'Rueckstrich-Pfad in Richtung 2 (E4.2, Zusatz nach DST-E42-01 b)' "$(wj_ph 'prototype/x.js' 'import a from "..\backend\api";')"
   fall ZF7b prototyp pruefstand 2 AB - voll JSON Bash 'Zusatzfall 7: perl -e wird HEUTE erkannt (2), aber allein wegen des Zeichens > im Befehlstext, nicht wegen der Interpreterklasse; Stand gefuehrt' "$(bj_ph "$(printf 'perl -e '"'"'open(F,">frontend/src/a.ts"); print F "import h from \\"../prototype/helper\\";"'"'"'')")"
   fall ZF10c prototyp pruefstand 2 AB - voll JSON write 'Zusatzfall 10: der Dateiwerkzeug-Pfad prueft den Werkzeugnamen nicht -- blockiert (2); heutiger Stand' "$(wj_ph 'frontend/src/a.ts' 'import h from "../prototype/helper";' 'write')"
   fall S07 prototyp blockierend 2 AB - ohne-jq JSON Write 'jq-Wache des Prototyp-Gates' "$(wj_ph 'frontend/src/a.ts' 'const a = 1;')"
@@ -729,28 +772,41 @@ faelle_4_5_proto_soll0() {
   fall P24 prototyp durchlaufend 0 AB - voll JSON Read 'Werkzeug ohne Inhalt' "$(rj 'frontend/src/a.ts')"
   fall P25 prototyp durchlaufend 0 AB - voll JSON Write 'Write ohne content' "$(wj_ohne_content 'frontend/src/a.ts')"
   fall P26 prototyp durchlaufend 0 AB - voll JSON Write '"prototype_alt" ist nicht "prototype/"' "$(wj_ph 'frontend/src/a.ts' 'import h from "../prototype_alt/helper";')"
-  fall B02 prototyp belegte-luecke 0 AB - voll JSON Write 'ST-04 offen: Verzeichnisimport ohne Schraegstrich, heute 0' "$(wj_ph 'frontend/src/a.ts' 'import h from "../prototype";')"
-  fall B03 prototyp belegte-luecke 0 AB - voll JSON Write 'ST-04 offen' "$(wj_ph 'frontend/src/a.ts' "import h from '../../prototype'")"
-  fall B06 prototyp belegte-luecke 0 AB - voll JSON Write 'ST-05 offen: Pfad mit vorangestelltem ./' "$(wj_ph 'prototype/x.js' 'import a from "./../backend/api";')"
-  fall B07 prototyp belegte-luecke 0 AB - voll JSON Write 'P-01 (Dimension Prototyp, 5.6) offen: Richtung 2 kennt src= nicht' "$(wj_ph 'prototype/demo.html' '<script src="../backend/app.js"></script>')"
-  fall B08 prototyp belegte-luecke 0 AB - voll JSON Write 'P-01 offen: href=' "$(wj_ph 'prototype/demo.html' '<link href="../frontend/style.css">')"
+  fall P27 prototyp durchlaufend 0 AB - voll JSON Write 'A1 Gegenprobe: Pfad verlaesst den Prototyp nicht (E4.2)' "$(wj_ph 'prototype/x.js' 'import u from "./lib/util";')"
+  fall P28 prototyp durchlaufend 0 AB - voll JSON Write 'A1 Gegenprobe: HTML-Pfad relativ zum Dokument ohne ../ (E4.2)' "$(wj_ph 'prototype/demo.html' '<script src="src/main.js"></script>')"
+  fall P29 prototyp durchlaufend 0 AB - voll JSON Write 'A1 Gegenprobe: ./ ohne folgendes ../ (HTML) (E4.2)' "$(wj_ph 'prototype/demo.html' '<script src="./app/app.js"></script>')"
+  fall P30 prototyp durchlaufend 0 AB - voll JSON Write 'A1 Gegenprobe: ./ ohne folgendes ../ (Import) (E4.2)' "$(wj_ph 'prototype/x.js' 'const c = require("./app/config");')"
+  fall P31 prototyp durchlaufend 0 AB - voll JSON Write 'A2 Gegenprobe: "app" ist keine Bauwurzel, kein Verzeichnisimport ohne Schraegstrich (E4.2)' "$(wj_ph 'prototype/components/x.js' 'import a from "../app";')"
+  fall P32 prototyp durchlaufend 0 AB - voll JSON Write 'A3 Gegenprobe: "prototype" ohne vorangehenden Pfadtrenner oder Zeichenkettenanfang (E4.2)' "$(wj_ph 'frontend/src/a.ts' 'import x from "es-prototype";')"
+  fall L05 prototyp pruefstand 0 AB - voll JSON Write 'beobachtete Luecke A5-Leerraum-require (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'frontend/src/a.ts' 'const h = require ("../prototype/helper");')"
+  fall L06 prototyp pruefstand 0 AB - voll JSON Write 'beobachtete Luecke A5-atimport-url (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'frontend/src/a.css' '@import url("../prototype/theme.css");')"
+  fall L07 prototyp pruefstand 0 AB - voll JSON Write 'beobachtete Luecke A5-Leerraum-Gleichheit (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'frontend/src/demo.html' '<img src = "../prototype/x.png">')"
+  fall L08 prototyp pruefstand 0 AB - voll JSON Write 'beobachtete Luecke A5-import-ohne-Punkt (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'backend/src/a.py' "m = __import__('prototype')")"
+  fall L09 prototyp pruefstand 0 AB - voll JSON Write 'beobachtete Luecke B-1-dynamisch-unnormalisierter-Pfad (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph '{AB}/./prototype/x.js' 'import a from "./../backend/api";')"
+  fall L10 prototyp pruefstand 0 AB - voll JSON Write 'beobachtete Luecke A4-Wurzelpfad (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'prototype/demo.html' '<script src="/backend/app.js"></script>')"
+  fall L11 prototyp pruefstand 0 AB - voll JSON Write 'beobachtete Luecke A4-beliebiger-Vorspann (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'prototype/x.js' 'import a from "../x/../backend/api";')"
+  fall B02 prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals ST-04)' "$(wj_ph 'frontend/src/a.ts' 'import h from "../prototype";')"
+  fall B03 prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals ST-04)' "$(wj_ph 'frontend/src/a.ts' "import h from '../../prototype'")"
+  fall B06 prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals ST-05)' "$(wj_ph 'prototype/x.js' 'import a from "./../backend/api";')"
+  fall B07 prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals P-01)' "$(wj_ph 'prototype/demo.html' '<script src="../backend/app.js"></script>')"
+  fall B08 prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals P-01)' "$(wj_ph 'prototype/demo.html' '<link href="../frontend/style.css">')"
   fall B09 prototyp belegte-luecke 0 AB - voll JSON Bash 'ST-09 offen: Interpreter mit Inline-Code schreibt ohne Umleitungszeichen' "$(bj_ph "$(printf 'python3 -c '"'"'open("frontend/src/a.ts","w").write("import h from \\"../prototype/helper\\";")'"'"'')")"
-  fall ZF5a prototyp belegte-luecke 0 AB - voll JSON Write 'ST-04 (Zusatzfall 5, require)' "$(wj_ph 'frontend/src/a.ts' 'const h = require("../prototype");')"
-  fall ZF5b prototyp belegte-luecke 0 AB - voll JSON Write 'ST-04 (Zusatzfall 5, dynamisches import)' "$(wj_ph 'frontend/src/a.ts' 'const h = await import("../prototype");')"
-  fall ZF5c prototyp belegte-luecke 0 AB - voll JSON Write 'ST-04 (Zusatzfall 5, @import)' "$(wj_ph 'frontend/src/a.css' '@import "../prototype";')"
-  fall ZF5e prototyp belegte-luecke 0 AB - voll JSON Write 'ST-04 (Zusatzfall 5, Rueckstrich-Pfad; ADR 0002, 6.13 d zaehlt ihn zu "demselben Loch" ST-04)' "$(wj_ph 'frontend/src/a.ts' 'import h from "..\prototype\helper";')"
-  fall ZF6a prototyp belegte-luecke 0 AB - voll JSON Write 'ST-05 (Zusatzfall 6)' "$(wj_ph 'prototype/x.js' 'const a = require("./../backend/api");')"
-  fall ZF6b prototyp belegte-luecke 0 AB - voll JSON Write 'ST-05 (Zusatzfall 6)' "$(wj_ph 'prototype/x.css' '@import "./../frontend/style.css";')"
-  fall ZF6c prototyp belegte-luecke 0 AB - voll JSON Write 'P-01 (Zusatzfall 6, img src)' "$(wj_ph 'prototype/demo.html' '<img src="../backend/x.png">')"
-  fall ZF6d prototyp belegte-luecke 0 AB - voll JSON Write 'P-01 (Zusatzfall 6, a href)' "$(wj_ph 'prototype/demo.html' '<a href="../frontend/index.html">x</a>')"
+  fall ZF5a prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals ST-04)' "$(wj_ph 'frontend/src/a.ts' 'const h = require("../prototype");')"
+  fall ZF5b prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals ST-04)' "$(wj_ph 'frontend/src/a.ts' 'const h = await import("../prototype");')"
+  fall ZF5c prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals ST-04)' "$(wj_ph 'frontend/src/a.css' '@import "../prototype";')"
+  fall ZF5e prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals ST-04)' "$(wj_ph 'frontend/src/a.ts' 'import h from "..\prototype\helper";')"
+  fall ZF6a prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals ST-05)' "$(wj_ph 'prototype/x.js' 'const a = require("./../backend/api");')"
+  fall ZF6b prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals ST-05)' "$(wj_ph 'prototype/x.css' '@import "./../frontend/style.css";')"
+  fall ZF6c prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals P-01)' "$(wj_ph 'prototype/demo.html' '<img src="../backend/x.png">')"
+  fall ZF6d prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals P-01)' "$(wj_ph 'prototype/demo.html' '<a href="../frontend/index.html">x</a>')"
   fall ZF7a prototyp belegte-luecke 0 AB - voll JSON Bash 'ST-09 (Zusatzfall 7, node -e)' "$(bj_ph "$(printf 'node -e '"'"'require("fs").writeFileSync("frontend/src/a.ts","import h from \\"../prototype/helper\\";")'"'"'')")"
   fall ZF7c prototyp belegte-luecke 0 AB - voll JSON Bash 'ST-09 (Zusatzfall 7, php -r)' "$(bj_ph "$(printf 'php -r '"'"'file_put_contents("frontend/src/a.ts","import h from \\"../prototype/helper\\";");'"'"'')")"
   fall ZF7d prototyp belegte-luecke 0 AB - voll JSON Bash 'ST-09 (Zusatzfall 7, ruby -e)' "$(bj_ph "$(printf 'ruby -e '"'"'File.write("frontend/src/a.ts","import h from \\"../prototype/helper\\";")'"'"'')")"
   fall ZF9 prototyp pruefstand 0 AB - voll JSON Write 'Zusatzfall 9: Reichweite der Ausnahmeliste (.claude/*), heute 0; Prueffall, kein Befund (ADR 0002, 6.13 d)' "$(wj_ph '.claude/hooks/x.sh' 'import h from "../prototype/helper";')"
   fall ZF10d prototyp pruefstand 0 AB - voll JSON bash 'Zusatzfall 10: Bash-Pfad haengt an der Gleichheit "Bash", tool_name "bash" endet 0; heutiger Stand' "$(bj_ph "$(printf 'cat > frontend/src/a.ts <<EOT\nimport h from "../prototype/helper";\nEOT')" 'bash')"
-  fall B35 prototyp belegte-luecke 0 AB - voll JSON Write 'Richtungsgleichheit (R3-Q-010_prototyp_gate_richtungsgleichheit, "jede Bezugsform"): Richtung 1 kennt die Python-Modulform, Richtung 2 nicht -- beobachtet 2026-09-23, heute 0; Klasse P-01' "$(wj_ph 'prototype/x.py' 'from backend.api import x')"
-  fall B41 prototyp belegte-luecke 0 AB - voll JSON Write 'P-01 (Klasse Richtungsgleichheit): Funktionsform in Richtung 2 nicht erkannt, heute 0' "$(wj_ph 'prototype/x.py' 'import importlib; m = importlib.import_module("backend.api")')"
-  fall B42 prototyp belegte-luecke 0 AB - voll JSON Write 'P-01 (Klasse Richtungsgleichheit): Python-Punktform in Richtung 2 nicht erkannt, heute 0' "$(wj_ph 'prototype/x.py' 'import backend.api')"
+  fall B35 prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals P-01)' "$(wj_ph 'prototype/x.py' 'from backend.api import x')"
+  fall B41 prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals P-01)' "$(wj_ph 'prototype/x.py' 'import importlib; m = importlib.import_module("backend.api")')"
+  fall B42 prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals P-01)' "$(wj_ph 'prototype/x.py' 'import backend.api')"
 }
 
 # -----------------------------------------------------------------------------
@@ -849,6 +905,7 @@ normalmodus_ausfuehren() {
   done
   echo "pretooluse-gates-selbsttest: Fallklasse (prototyp, grenze) keine benannt (P-10 folgt mit E4.3)"
 
+  local ak_ok=1
   local m=${#AK_ID[@]}
   for (( j=0; j<m; j++ )); do
     local id="${AK_ID[$j]}" domain="${AK_DOMAIN[$j]}" kennungen="${AK_KENNUNGEN[$j]}" anmerkung="${AK_ANMERKUNG[$j]}"
@@ -875,7 +932,7 @@ normalmodus_ausfuehren() {
       esac
     done
     local status="vorhanden"
-    [ -n "$fehlend" ] && status="FEHLEND:$fehlend"
+    if [ -n "$fehlend" ]; then status="FEHLEND:$fehlend"; ak_ok=0; fi
     echo "pretooluse-gates-selbsttest: Abnahmekriterium $id -> $kennungen ($anmerkung): $status"
   done
 
@@ -914,7 +971,7 @@ normalmodus_ausfuehren() {
 
   local rc=2
   if [ "$alle_bestanden" -eq 1 ] && [ "$zaehlung_ok" -eq 1 ] && [ "$arbeitsbaum_ok" -eq 1 ] \
-      && [ "$fallklassen_ok" -eq 1 ] && [ "$vollstaendigkeit_ok" -eq 1 ]; then
+      && [ "$fallklassen_ok" -eq 1 ] && [ "$vollstaendigkeit_ok" -eq 1 ] && [ "$ak_ok" -eq 1 ]; then
     rc=0
   fi
 

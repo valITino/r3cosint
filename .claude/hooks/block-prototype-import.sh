@@ -6,6 +6,52 @@
 # Richtungen." Der haeufigste Fehler bei diesem Vorgehen ist, dass der Prototyp
 # still zur Grundlage wird und Provisorien in die Produktion wandern.
 #
+# Seit E4.2 (Backlog R3-Q-010, ADR 0002 6.13 g) erkennt dieses Gate
+# zusaetzlich: einen Verzeichnisimport ohne Schraegstrich ("../prototype",
+# Richtung 1) und einen Windows-Pfad mit Rueckstrich ("..\prototype\helper",
+# Richtung 1) -- "prototype" gilt dabei nur getroffen, wenn davor entweder
+# der Zeichenkettenanfang oder ein Pfadtrenner (/ oder \) steht: "es-prototype"
+# trifft deshalb nicht mehr, "./prototype" und "prototype//y" weiterhin
+# (Preis der Namenslogik: ein beliebiger Vorspann, der auf einen Trenner
+# endet, etwa "mock/backend/prototype", trifft ebenfalls -- das letzte
+# Segment "prototype" entscheidet); ein vorangestelltes "./" vor MINDESTENS
+# einem "../" in Richtung 2 (z. B. "./../backend/api"; ein Pfad, der den
+# Prototyp nicht verlaesst, etwa "./lib/util" oder "src/main.js", ist seit
+# der Behebung vom 2026-09-23 kein Treffer mehr -- vorher war "./" allein
+# genug, ein Fehlalarm auf jeden generischen Namen aus WURZELN); fuer die
+# Bauwurzeln backend/, frontend/ und deploy/ (die Bauwurzeln backend/ und
+# frontend/ nach ADR 0002 sowie deploy/, siehe Begruendung bei Richtung 2)
+# zusaetzlich der Verzeichnisimport ohne Schraegstrich und der
+# Rueckstrich-Pfad in Richtung 2; die HTML-Formen src=/href= in Richtung 2
+# (die Richtung 1 schon kannte, jetzt ebenfalls nur mit mindestens einem
+# "../") sowie die Python-Formen "from backend import x", "import
+# backend.api" und "importlib.import_module(...)" in Richtung 2 -- dort
+# bewusst nur die Bauwurzeln backend/frontend/deploy, nicht die generischen
+# Namen der Variable WURZELN (Begruendung dort).
+#
+# Benannte Grenze -- Asymmetrie der Pfadschreibweise: Richtung 1 ist bei der
+# Pfadschreibweise bewusst weiter gefasst (ein beliebiger Vorspann vor einem
+# Trenner reicht), weil "prototype" EIN bestimmter Name ist; Richtung 2 ist
+# praefixgebunden (nur "../"-Ketten, optional mit einem "./" davor, kein
+# beliebiger Vorspann, kein Wurzelpfad "/backend/..." oder Alias "~/frontend/..."
+# in src=/href=; in src=/href= der Richtung 2 ausserdem nur Pfade MIT
+# Schraegstrich hinter der Wurzel, also weder "../backend" noch
+# "..\backend\app.js" -- Richtung 1 kennt beide Formen, B47 und B48 --,
+# und beim Rueckstrich-Import nur der einfache Rueckstrich, nicht die in
+# JS-Quelltext uebliche Verdopplung "..\\backend\\api"; ein mehrfaches "./"
+# vor "../" wie "./././../backend" trifft seit der Behebung vom 2026-09-23
+# nicht mehr -- Restbefunde der Nachpruefung vom 2026-09-23, Entscheid ueber
+# eine Aufnahme als Fortschreibung von ADR 0002, 6.13 c),
+# weil die Produktionswurzeln generische Namen sind und ein
+# Vorspann wie "mock/backend/" im Prototyp ein Fehlalarm waere. Bekannte,
+# fuer beide Richtungen SYMMETRISCHE Luecken (Leerraum vor "(" bei require,
+# "@import url(", Leerraum um "=" bei src/href, "__import__('prototype')"
+# ohne Punkt/Schraegstrich) sind unveraendert offen; Entscheid ueber eine
+# Behebung liegt beim Software Architect (Fortschreibung nach 6.13 c) und
+# wird als Pruefstand gemessen.
+#
+# Belegt und geprueft ueber scripts/pretooluse-gates-selbsttest.sh.
+#
 # Rueckgabewert 2 blockiert und gibt stderr als Begruendung an Claude zurueck.
 # Rueckgabewert 1 blockiert NICHT (3.4) und wird hier nirgends verwendet.
 set -uo pipefail
@@ -124,6 +170,13 @@ pruefstoff=$(printf '%s\n%s' "$payload" "$payload_norm")
 Q="[\"'\`]"
 NQ="[^\"'\`]"
 
+# Verzeichnisliste der Richtung 2 (Prototyp importiert aus dem Produktionscode)
+# EINMAL definiert und ueber ${WURZELN} in den betroffenen Mustern verwendet --
+# sonst kaeme der Suchtext der Mutationsprobe MP3
+# (scripts/pretooluse-gates-selbsttest.sh) mehrfach vor und waere nicht mehr
+# eindeutig ersetzbar (R3-Q-010, E4.2).
+WURZELN='backend|frontend|deploy|src|app|lib|server|packages|apps'
+
 if [ "${rel#prototype/}" != "$rel" ]; then
   # Richtung 2: Prototyp importiert aus dem Produktionscode. Die Bauwurzeln
   # nach ADR 0002 Abschnitt 5 sind backend/ und frontend/ (Zitat: "Zwei
@@ -133,10 +186,26 @@ if [ "${rel#prototype/}" != "$rel" ]; then
   # uebrigen Namen bleiben Vorhalt fuer generische Layouts. Bis zum 2026-08-25
   # fehlten backend/ und frontend/ -- ein Import aus genau den Verzeichnissen,
   # die der ADR als Bauwurzeln festlegt, lief durch (ausgefuehrt belegt).
+  #
+  # Seit E4.2 (R3-Q-010, belegte Luecken ST-05 und P-01) zusaetzlich erkannt:
+  # ein vorangestelltes "./" vor MINDESTENS einem "../" (ST-05, z. B.
+  # "./../backend/api"; "./lib/util" bleibt frei); die HTML-Formen src=/href=, die Richtung 1 schon
+  # kannte (P-01); und die Python-Formen "from backend import x",
+  # "import backend.api" sowie "importlib.import_module(...)" (P-01) -- dort
+  # bewusst NUR backend/ und frontend/ (Bauwurzeln nach ADR 0002) sowie
+  # deploy/, nicht die generischen
+  # Namen der Variable WURZELN (src, app, lib, server, packages, apps): ein
+  # "import app" waere in einem Python-Prototyp ein plausibles Fremdmodul,
+  # und der Fehlalarm daraus teurer als die engere Deckung.
   if printf '%s' "$pruefstoff" | grep -Eq \
-      -e "(from|require\(|import\(|@import|import)[[:space:]]*\(?[[:space:]]*${Q}(\.\./)*(backend|frontend|deploy|src|app|lib|server|packages|apps)/" \
-      -e "(from|require\(|import\(|@import|import)[[:space:]]*\(?[[:space:]]*${Q}[@~#]/"; then
-    echo "BLOCKIERT (Projektauftrag 5.6): '$rel' liegt im Prototyp und importiert aus dem Produktionscode." >&2
+      -e "(from|require\(|import\(|@import|import)[[:space:]]*\(?[[:space:]]*${Q}((\.\./)*|\./(\.\./)+)(${WURZELN})/" \
+      -e "(from|require\(|import\(|@import|import)[[:space:]]*\(?[[:space:]]*${Q}[@~#]/" \
+      -e "(src|href)=${Q}(\./)?(\.\./)+(${WURZELN})/" \
+      -e "^[[:space:]]*(from|import)[[:space:]]+(backend|frontend|deploy)([.[:space:]]|\$)" \
+      -e "(import_module|__import__|import)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)[./]" \
+      -e "(from|require\(|import\(|@import|import)[[:space:]]*\(?[[:space:]]*${Q}(\./)?(\.\./)+(backend|frontend|deploy)${Q}" \
+      -e "(from|require\(|import\(|@import|import)[[:space:]]*\(?[[:space:]]*${Q}(\.\.\\\\)+(backend|frontend|deploy)(\\\\|${Q})"; then
+    echo "BLOCKIERT (Projektauftrag 5.6): Richtung 2 (Prototyp -> Produktionscode): '$rel' liegt im Prototyp und importiert aus dem Produktionscode." >&2
     echo "Der Prototyp ist Wegwerf-Code und haelt keine Abhaengigkeit in beide Richtungen." >&2
     echo "Benoetigte Werte im Prototyp eigenstaendig hinterlegen, statt sie zu importieren." >&2
     exit 2
@@ -145,12 +214,21 @@ if [ "${rel#prototype/}" != "$rel" ]; then
 fi
 
 # Richtung 1: Produktionscode importiert aus dem Prototyp.
+# Seit E4.2 (ST-04) gilt "prototype" auch als getroffen, wenn direkt danach
+# ein Rueckstrich oder ein schliessendes Anfuehrungszeichen folgt statt eines
+# Schraegstrichs: ein Verzeichnisimport wie "../prototype" oder ein
+# Windows-Pfad "..\prototype\helper" blieb sonst unerkannt (belegt ueber B02,
+# B03, ZF5a, ZF5b, ZF5c, ZF5e). Vor "prototype" muss der Zeichenkettenanfang
+# oder ein Pfadtrenner stehen ("es-prototype" trifft nicht). "prototypes/" und
+# "prototype_alt/" treffen nicht, weil auf "prototype" ein Buchstabe folgt,
+# der keine der drei Alternativen ist; "prototyp/" enthaelt die Zeichenkette
+# "prototype" gar nicht.
 if printf '%s' "$pruefstoff" | grep -Eq \
-    -e "(from|require\(|import\(|@import|import)[[:space:]]*\(?[[:space:]]*${Q}${NQ}*prototype/" \
-    -e "(src|href)=${Q}${NQ}*prototype/" \
+    -e "(from|require\(|import\(|@import|import)[[:space:]]*\(?[[:space:]]*${Q}(${NQ}*[/\\\\])?prototype(/|\\\\|${Q})" \
+    -e "(src|href)=${Q}(${NQ}*[/\\\\])?prototype(/|\\\\|${Q})" \
     -e "^[[:space:]]*(from|import)[[:space:]]+prototype([.[:space:]]|\$)" \
     -e "(import_module|__import__|import)[[:space:]]*\([[:space:]]*${Q}prototype[./]"; then
-  echo "BLOCKIERT (Projektauftrag 5.6): '$rel' ist Produktionscode und importiert aus 'prototype/'." >&2
+  echo "BLOCKIERT (Projektauftrag 5.6): Richtung 1 (Produktionscode -> Prototyp): '$rel' ist Produktionscode und importiert aus 'prototype/'." >&2
   echo "Der Prototyp ist ein Wegwerf-Prototyp; sein Code wird nach der Freigabe nicht weiterverwendet." >&2
   echo "Weiter gehen nur Bildschirmfluss, Komponenteninventar, Design-Tokens, Oberflaechentexte und" >&2
   echo "der synthetische Datenbestand - als Vorlage nachbauen, nicht importieren." >&2
