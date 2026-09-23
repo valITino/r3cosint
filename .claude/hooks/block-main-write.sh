@@ -19,12 +19,25 @@
 # damit ein Fehler nicht erst am Server auffaellt. Es deckt: die gaengigen
 # Interpreter mit Inline-Code, das Anlegen eines Arbeitsbaums auf main und
 # Mirror-/Wildcard-Pushes (Befunde der statischen Pruefung vom 2026-08-25).
+# Nicht gedeckt ist der untergeordnete Shell-Aufruf mit Kontextwechsel
+# ('bash -c "cd x; ..."', 'sh -c ...'), siehe die Grenze im Rumpf (N-9).
 #
 # VORAUSSETZUNG git: Fehlt git selbst, kann das Gate nicht pruefen und
 # blockiert (Rueckgabewert 2), analog zur jq-Wache. Ist git vorhanden, aber es
 # gibt keinen Arbeitsbaum -- etwa ausserhalb eines Repositories --, bleibt
 # Rueckgabewert 0: eine bewusste Grenze, denn ohne Repository gibt es keinen
 # Zweig, der main/master sein und geschuetzt werden koennte.
+#
+# Seit E4.3 (Backlog R3-Q-010, ADR 0002 6.13 g) gilt zusaetzlich: eine
+# Eingabe, die sich nicht als JSON-Objekt mit einem Objekt tool_input lesen
+# laesst, blockiert mit Rueckgabewert 2 und einer Meldung auf stderr, die die
+# nicht lesbare Eingabe ueber ihren Anfang und ihre Laenge benennt (ST-13,
+# fail-closed wie die jq-/git-Wache; ADR 0002, 6.13 b). Vorher lief eine
+# leere, syntaktisch ungueltige oder mit tool_input als Zeichenkette
+# versehene Eingabe still mit Rueckgabewert 0 durch. Das Prototyp-Gate
+# (.claude/hooks/block-prototype-import.sh) fuehrt seit E4.3 dieselbe
+# Befehlsklasse mit Schreibwirkung wie dieses Gate (dort das mit "bereinigt"
+# gepruefte Muster, ST-09).
 #
 # Rueckgabewert 2 blockiert. Rueckgabewert 1 blockiert NICHT (3.4).
 set -uo pipefail
@@ -42,6 +55,22 @@ if ! command -v git >/dev/null 2>&1; then
 fi
 
 input=$(cat)
+
+# ST-13: die Eingabe muss ein JSON-Objekt mit einem Objekt tool_input sein,
+# sonst kann das Gate nicht pruefen und blockiert fail-closed wie die
+# jq-/git-Wache oben (ADR 0002, 6.13 b).
+if ! printf '%s' "$input" | jq -es 'length == 1 and (.[0] | type == "object" and (.tool_input | type == "object"))' >/dev/null 2>&1; then
+  echo "Gate main-schutz: Eingabe nicht auswertbar (kein JSON-Objekt mit einem Objekt tool_input); das Gate kann nicht pruefen und blockiert (ADR 0002, 6.13 b)." >&2
+  eingabe_laenge=$(printf '%s' "$input" | wc -c | tr -d ' ')
+  if [ "$eingabe_laenge" = "0" ]; then
+    echo "Anfang der Eingabe: leer (0 Bytes)" >&2
+  else
+    eingabe_anfang=$(printf '%s' "$input" | tr '\n\t\r' '   ' | cut -c1-80)
+    echo "Anfang der Eingabe: '$eingabe_anfang' ($eingabe_laenge Bytes)" >&2
+  fi
+  exit 2
+fi
+
 proj="${CLAUDE_PROJECT_DIR:-$PWD}"
 
 git -C "$proj" rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
@@ -80,11 +109,15 @@ if [ "$tool" = "Bash" ]; then
   # ausgefuehrt belegt). Jeder gefundene Kontextpfad wird aufgeloest; ist einer
   # geschuetzt, gilt der ganze Befehl als geschuetzter Kontext.
   #
-  # BEWUSSTE GRENZE: Erfasst werden die gebraeuchlichen Idiome. Ein in eine
-  # Subshell '(cd x; ...)', in 'bash -c "cd x; ..."' oder in ein anderes
-  # Programm verlagerter Kontextwechsel ist mit Textpruefung nicht sicher
-  # erkennbar. Das ist die im Kopf benannte Grenze; die harte Zusicherung
-  # liefert das serverseitige Ruleset, nicht dieses Gate.
+  # BEWUSSTE GRENZE, seit E4.3 praezisiert (N-9): eine Subshell in Klammern
+  # '(cd x; ...)' WIRD erkannt -- die oeffnende Klammer steht in der
+  # Zeichenklasse vor cd/pushd/git -C/env -C weiter unten. NICHT erkannt wird
+  # der untergeordnete Shell-Aufruf (bash -c, sh -c), etwa 'bash -c "cd x; ..."'
+  # bzw. 'sh -c ...',
+  # oder ein in ein anderes Programm verlagerter Kontextwechsel: das ist mit
+  # Textpruefung nicht sicher erkennbar. Das ist die im Kopf benannte Grenze;
+  # die harte Zusicherung liefert das serverseitige Ruleset, nicht dieses
+  # Gate.
   if is_protected "$branch"; then ziel_geschuetzt=1; else ziel_geschuetzt=0; fi
   while IFS= read -r kp; do
     [ -n "$kp" ] || continue
@@ -156,7 +189,9 @@ if [ "$tool" = "Bash" ]; then
   # Umgebungs-Tempverzeichnisse) bleiben frei. Ein Fehlalarm kostet einen
   # Versuch und der Ausweg ist immer derselbe: zuerst einen Arbeitszweig
   # anlegen. Das ist dieselbe bewusste Abwaegung wie beim Textmuster-Gate
-  # insgesamt (.claude/rules/claude-konfiguration.md).
+  # insgesamt (.claude/rules/claude-konfiguration.md). Ein Ziel mit '..'
+  # faellt nicht unter die Ausnahme, '/dev/null' nur mit Wortgrenze
+  # (DT-E43-6, behoben am 2026-09-23).
   #
   # Interpreter mit Inline-Code (python -c, perl -e/-i, node -e, ruby -e ...)
   # schreiben ueber ihre eigene Datei-API, ohne dass ein Umleitungszeichen oder
@@ -168,7 +203,8 @@ if [ "$tool" = "Bash" ]; then
   if [ "$ziel_geschuetzt" = 1 ]; then
     bereinigt=$(printf '%s' "$cmd" | sed -E \
       -e 's/[0-9]?>&[0-9]//g' \
-      -e 's/[0-9]?>>?[[:space:]]*(\/dev\/null|\/tmp\/[^[:space:]]*|"?\$\{?(TMPDIR|RUNNER_TEMP|SCRATCH[A-Z_]*)\}?[^[:space:]]*)//g')
+      -e 's/[0-9]?>>?[[:space:]]*\/dev\/null([[:space:]]|$|[;|&)])/\1/g' \
+      -e 's/[0-9]?>>?[[:space:]]*(\/tmp\/([^[:space:].;|&)]|\.[^.[:space:];|&)])*|"?\$\{?(TMPDIR|RUNNER_TEMP|SCRATCH[A-Z_]*)\}?([^[:space:].;|&)]|\.[^.[:space:];|&)])*)([[:space:];|&)]|$)/\5/g')
     if printf '%s' "$bereinigt" | grep -Eq '(>>?|\btee[[:space:]]|sed[[:space:]]+-[a-zA-Z]*i|\b(mv|cp|rm|mkdir|touch|truncate|ln|install|patch|dd)[[:space:]]|\b(python[0-9.]*|perl|ruby|node|deno|php|Rscript)[[:space:]]+([^|;&]*[[:space:]]+)?-[a-zA-Z]*(c|e|i|p|r|n)([^a-zA-Z]|$)|\b(ed|ex)[[:space:]])'; then
       echo "BLOCKIERT (Projektauftrag 3.2 c): Shell-Befehl mit moeglicher Schreibwirkung in einem geschuetzten Kontext (main/master)." >&2
       echo "Dateien werden auf einem Arbeitszweig geaendert, nie auf main." >&2
