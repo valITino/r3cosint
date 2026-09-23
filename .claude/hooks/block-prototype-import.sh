@@ -50,7 +50,56 @@
 # Behebung liegt beim Software Architect (Fortschreibung nach 6.13 c) und
 # wird als Pruefstand gemessen.
 #
+# Seit E4.3 (Backlog R3-Q-010, ADR 0002 6.13 g) erkennt dieses Gate bei Bash
+# dieselbe Befehlsklasse mit Schreibwirkung wie das main-Gate
+# (.claude/hooks/block-main-write.sh, dort das mit "bereinigt" gepruefte
+# Muster): zusaetzlich zu Umleitung/tee/sed -i/Heredoc jetzt auch die
+# Dateiwerkzeuge mv/cp/rm/mkdir/touch/truncate/ln/install/patch/dd, einen
+# Interpreter mit Inline-Code (python/perl/ruby/node/deno/php/Rscript mit
+# -c/-e/-i/-p/-r/-n) und ed/ex (ST-09, vorher wurden Interpreter wie
+# "node -e" oder "python3 -c", die ueber ihre eigene Datei-API schreiben,
+# ohne Umleitungszeichen im Befehlstext gar nicht als schreibend erkannt).
+# Geprueft wird weiterhin nur die Kombination aus Schreibwirkung UND
+# Importmuster mit "prototype" -- reines Kopieren ohne Importmuster (etwa
+# "cp ../prototype/helper.js frontend/src/helper.js") bleibt frei, weil das
+# Importmuster fehlt.
+#
+# Seit E4.3 gilt ausserdem: eine Eingabe, die sich nicht als JSON-Objekt mit
+# einem Objekt tool_input lesen laesst, blockiert mit Rueckgabewert 2 und
+# einer Meldung auf stderr, die die nicht lesbare Eingabe ueber ihren Anfang
+# und ihre Laenge benennt (ST-13, analog zur jq-/git-Wache: das Gate kann
+# nicht pruefen und blockiert deshalb, statt still durchzulassen; ADR 0002,
+# 6.13 b). Vorher lief eine leere, syntaktisch ungueltige oder mit
+# tool_input als Zeichenkette versehene Eingabe still mit Rueckgabewert 0
+# durch.
+#
+# BENANNTE GRENZE (P-10, ADR 0002, 6.13 c: benannte Grenze, keine neue
+# Faehigkeit): 5.6 nennt drei Trennungen: eigenes Verzeichnis, keine
+# gemeinsamen Abhaengigkeiten, keine Importe in beide Richtungen. Dieses
+# Gate prueft NUR die Importe. Ob Prototyp und Produktionscode dieselben
+# Abhaengigkeiten (package.json, pyproject.toml) fuehren, prueft weder
+# dieses Gate noch ein Kettenschritt.
+#
 # Belegt und geprueft ueber scripts/pretooluse-gates-selbsttest.sh.
+#
+# AUSNAHME FUER FLUECHTIGE ZIELE (DT-E43-5, seit E4.3, wie im main-Gate):
+# Umleitungen nach /dev/null, unter /tmp und in die Verzeichnisse aus TMPDIR,
+# RUNNER_TEMP und SCRATCH* werden vor der Schreibwirkungspruefung aus dem
+# Befehlstext entfernt, sonst waere reines Suchen mit "2>/dev/null" ein
+# Fehlalarm. OFFENER RESTBEFUND, keine benannte Grenze (DT-E43-6 und N-1 der
+# Nachpruefung vom 2026-09-23, gefuehrt in docs/uebergaben/ vom 2026-09-23,
+# E4.3): die Ausnahme greift auch bei "/tmp/.." und "$TMPDIR/.." sowie bei
+# "/dev/nullx"; das gilt in beiden Gates gleich und ist zu beheben, nicht
+# festzuschreiben.
+#
+# PREIS DER TEXTPRUEFUNG (B-5): "Suchen mit demselben Wortlaut" (P06, P15)
+# bleibt frei, WEIL der reine Suchbefehl keine Schreibwirkung im Text traegt.
+# Traegt der Suchtext selbst eine der Schreibwirkungs-Zeichenklassen -- etwa
+# ein zitierter Interpreteraufruf mit Inline-Code samt Import als Suchtext
+# ('grep -rn "python3 -c ...import h from \"../prototype/helper\"..." .') --,
+# blockiert dieses Gate den Suchbefehl trotzdem: es liest nur Text und kann
+# Suchtext von auszufuehrendem Code nicht unterscheiden. Ausweg: die Datei mit
+# dem Write-Werkzeug schreiben, dort prueft das Gate pfadgenau statt textlich.
 #
 # Rueckgabewert 2 blockiert und gibt stderr als Begruendung an Claude zurueck.
 # Rueckgabewert 1 blockiert NICHT (3.4) und wird hier nirgends verwendet.
@@ -63,6 +112,22 @@ if ! command -v jq >/dev/null 2>&1; then
 fi
 
 input=$(cat)
+
+# ST-13: die Eingabe muss ein JSON-Objekt mit einem Objekt tool_input sein,
+# sonst kann das Gate nicht pruefen und blockiert fail-closed wie die
+# jq-Wache oben (ADR 0002, 6.13 b).
+if ! printf '%s' "$input" | jq -es 'length == 1 and (.[0] | type == "object" and (.tool_input | type == "object"))' >/dev/null 2>&1; then
+  echo "Gate prototyp-trennung: Eingabe nicht auswertbar (kein JSON-Objekt mit einem Objekt tool_input); das Gate kann nicht pruefen und blockiert (ADR 0002, 6.13 b)." >&2
+  eingabe_laenge=$(printf '%s' "$input" | wc -c | tr -d ' ')
+  if [ "$eingabe_laenge" = "0" ]; then
+    echo "Anfang der Eingabe: leer (0 Bytes)" >&2
+  else
+    eingabe_anfang=$(printf '%s' "$input" | tr '\n\t\r' '   ' | cut -c1-80)
+    echo "Anfang der Eingabe: '$eingabe_anfang' ($eingabe_laenge Bytes)" >&2
+  fi
+  exit 2
+fi
+
 proj="${CLAUDE_PROJECT_DIR:-$PWD}"
 
 # Bash-Befehle: grobes Netz. Ein Schreibbefehl, dessen Text einen Import mit
@@ -89,7 +154,22 @@ if [ "$tool" = "Bash" ]; then
     cmd_flach="$neu"
   done
   cmd_flach=$(printf '%s' "$cmd_flach" | tr '\n\t' '  ')
-  if printf '%s' "$cmd" | grep -Eq '(>>?|[|][[:space:]]*tee[[:space:]]|sed[[:space:]]+-[a-zA-Z]*i|<<)' \
+  # ST-09: dieselbe Befehlsklasse mit Schreibwirkung wie das main-Gate (Kopf-
+  # kommentar oben) -- Umleitung/tee/sed -i/Heredoc, dazu die Dateiwerkzeuge
+  # mv/cp/rm/mkdir/touch/truncate/ln/install/patch/dd, ein Interpreter mit
+  # Inline-Code und ed/ex. tee ohne Pipe (z. B. hinter '< <(...)' oder hinter
+  # 'sudo'/'|&') zaehlt seit der Behebung vom 2026-09-23 ebenfalls, dieselbe
+  # Klasse wie das main-Gate (\btee statt [|]...tee, B-1).
+  #
+  # Fluechtige Ziele wie im main-Gate ausgenommen (DT-E43-5, 2026-09-23):
+  # Umleitungen nach /dev/null, /tmp/..., $TMPDIR/$RUNNER_TEMP/$SCRATCH...
+  # werden vor der Schreibwirkungspruefung entfernt, sonst waere z. B. ein
+  # reines Suchen mit "2>/dev/null" ein Fehlalarm.
+  bereinigt=$(printf '%s' "$cmd" | sed -E \
+    -e 's/[0-9]?>&[0-9]//g' \
+    -e 's/[0-9]?>>?[[:space:]]*(\/dev\/null|\/tmp\/[^[:space:]]*|"?\$\{?(TMPDIR|RUNNER_TEMP|SCRATCH[A-Z_]*)\}?[^[:space:]]*)//g')
+  schreibwirkung='(>>?|\btee[[:space:]]|sed[[:space:]]+-[a-zA-Z]*i|<<)|(\b(mv|cp|rm|mkdir|touch|truncate|ln|install|patch|dd)[[:space:]]|\b(python[0-9.]*|perl|ruby|node|deno|php|Rscript)[[:space:]]+([^|;&]*[[:space:]]+)?-[a-zA-Z]*(c|e|i|p|r|n)([^a-zA-Z]|$)|\b(ed|ex)[[:space:]])'
+  if printf '%s' "$bereinigt" | grep -Eq "$schreibwirkung" \
       && printf '%s' "$cmd_flach" | grep -Eq "(from|require|import|@import|__import__|import_module)[^|&]*prototype([./\"'[:space:]]|\$)"; then
     echo "BLOCKIERT (Projektauftrag 5.6): Shell-Befehl mit Schreibwirkung und einem Import, der 'prototype' beruehrt." >&2
     echo "Importe zwischen prototype/ und Produktionscode sind in beide Richtungen untersagt." >&2
