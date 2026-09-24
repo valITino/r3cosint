@@ -13,7 +13,7 @@ Grundlage: Projektauftrag 3.2, 3.4, 4.1.
 | Mechanismus | Ablageort | Wofür |
 |---|---|---|
 | CLAUDE.md | `./CLAUDE.md` | Kurze, immer gültige Projektregeln |
-| Rules | `.claude/rules/*.md` | Themenspezifische Standards, pfadgebunden über `paths:` |
+| Rules | `.claude/rules/*.md` | Themenspezifische Standards, pfadgebunden über `paths:`; ohne `paths:` bisher nur `.claude/rules/fremde-inhalte-im-harness.md`, bestimmt für jede Sitzung ab dem Sitzungsstart — ob sie dort ankommt, ist nicht belegt und wird mit `R3-Q-011_regel_im_startkontext` gemessen (ADR 0002, 6.14 d) |
 | Skills | `.claude/skills/<name>/SKILL.md` | Wiederverwendbare Prozeduren und Checklisten |
 | Subagents | `.claude/agents/<name>.md` | Rollen mit eigenem Kontext, eigenen Tools, eigenem Modell |
 | Hooks | `.claude/settings.json` | Harte Gates, die unabhängig vom Modell greifen, Kontext beim Sitzungsstart (`SessionStart`) und Bereitstellung eines Prüfmittels beim Sitzungsstart |

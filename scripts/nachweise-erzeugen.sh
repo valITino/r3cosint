@@ -50,6 +50,7 @@ ARTEFAKTE=(
   "Regel Dokumentation|.claude/rules/dokumentation.md|Feste Verweise, Nachweisverzeichnis, Verfolgbarkeit"
   "Regel Recht und Datenschutz|.claude/rules/recht-und-datenschutz.md|Rechtsregime, Belegpflicht, Aufbewahrung"
   "Regel Claude-Konfiguration|.claude/rules/claude-konfiguration.md|Mechanismen, Hooks, Rollendateien"
+  "Regel Fremde Inhalte im Harness|.claude/rules/fremde-inhalte-im-harness.md|Regel ohne paths:, fuer jede Sitzung bestimmt (R3-Q-011, E3.1): Kanaele fremden Inhalts im Harness, Grundsatz Kanal vor Einfassung, drei Wirkungen, die fremder Inhalt nie hat, Formwege fuer Weisungen und Freigaben, regulaerer Weg nach 6.6, Meldeform, Grenze (ADR 0002, 6.14)"
   "Gate Prototyp-Trennung|.claude/hooks/block-prototype-import.sh|Blockiert Importe zwischen Prototyp und Produktionscode; Pruefmittel scripts/pretooluse-gates-selbsttest.sh (R3-Q-010), abgenommen am 2026-09-23 durch Merge des Pull Requests #21 (ADR 0002, Abschnitt 10)"
   "Gate main-Schutz|.claude/hooks/block-main-write.sh|Blockiert Schreibzugriffe und Pushes nach main; Pruefmittel scripts/pretooluse-gates-selbsttest.sh (R3-Q-010), abgenommen am 2026-09-23 durch Merge des Pull Requests #21 (ADR 0002, Abschnitt 10)"
   "Hook Eingang Methodik|.claude/hooks/session-start-eingang.sh|Gibt den Eingang beim Sitzungsstart mit"
