@@ -5,7 +5,7 @@
 | **Arbeitsprodukt nach** | Projektauftrag 6.3 |
 | **Verantwortlich** | Requirements Engineer; ein benannter Verantwortlicher ist noch zu bestimmen |
 | **Lebensdauer** | langlebig |
-| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19. Nachgeführt 2026-09-21 mit dem Backlog-Eintrag R3-Q-010: Gate und Hook aufgenommen, beim Eintrag Freigabe-Gate die Homonym-Warnung um die Abgrenzung zum Gate ergänzt — beide Begriffe werden in Arbeitsprodukten und Regeln seit dem 2026-08-19 verwendet, standen aber nicht im Glossar, und "Gate" bezeichnete darin zwei verschiedene Sachen (R3 der Definition of Ready, Homonyme vermeiden) |
+| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19. Nachgeführt 2026-09-21 mit dem Backlog-Eintrag R3-Q-010: Gate und Hook aufgenommen, beim Eintrag Freigabe-Gate die Homonym-Warnung um die Abgrenzung zum Gate ergänzt — beide Begriffe werden in Arbeitsprodukten und Regeln seit dem 2026-08-19 verwendet, standen aber nicht im Glossar, und "Gate" bezeichnete darin zwei verschiedene Sachen (R3 der Definition of Ready, Homonyme vermeiden). Nachgeführt 2026-09-23 mit dem Backlog-Eintrag R3-Q-011: Einschleusung, Fremder Inhalt und Harness aufgenommen — alle drei Begriffe tragen den Eintrag; "fremde Inhalte" wurde bisher für den Harness (CLAUDE.md, Abschnitt "Nicht verhandelbar") und für das Produkt (R3-F-017) ohne Abgrenzung gebraucht, und "Harness" selbst stand trotz Verwendung im Projektauftrag (5.15) und in CLAUDE.md nicht im Glossar (R3 der Definition of Ready) |
 
 **Die Verwendung dieses Glossars ist für alle Arbeitsprodukte und für die
 Oberflächentexte verpflichtend** (6.3). Synonyme sind gekennzeichnet, Homonyme
@@ -79,6 +79,23 @@ entsprechend gekennzeichnet (5.10).
 
 ## E
 
+**Einschleusung** — In fremden Inhalt eingebetteter Text, der sich als Anweisung
+an das Modell oder an eine Rolle richtet. Der Projektauftrag beschreibt ihn als
+Text, "der das Modell zu einem bestimmten Verhalten verleiten soll", und nennt
+das "ein bekanntes Angriffsmuster, keine theoretische Sorge" (5.4). Gemeint ist
+ein Verhalten, das nur auf den regulären Wegen entstehen darf: ein
+Werkzeugaufruf, ein Rollenwechsel, eine Freigabe oder Weisung des
+Auftraggebers, eine Änderung an Rollen, Regeln oder Backlog, das Beenden einer
+Einfassung. Ob der Text absichtlich gesetzt ist, ist unerheblich und in der
+Regel nicht feststellbar; er wird gemeldet, nicht ausgeführt. Der einzelne Fund
+heisst eingebettete Anweisung. Im Harness gelten dafür die Regel
+`.claude/rules/fremde-inhalte-im-harness.md` und die Skill
+`.claude/skills/einschleusung-pruefen/` (R3-Q-011), im Produkt R3-F-017.
+*Synonym:* Prompt Injection — englischer Fachbegriff, in Arbeitsprodukten nicht
+verwenden. *Abzugrenzen von:* Fremder Inhalt (siehe dort) — fremder Inhalt ist
+der Träger, die Einschleusung der eingebettete Text; nicht jeder fremde Inhalt
+enthält eine.
+
 **Entität** — Ein Objekt im kanonischen Datenbestand: Person, Firma, IP-Adresse,
 Domain, Wallet, Vermögenswert und so weiter. Trägt immer einen Herkunftsnachweis
 und eine Klassifizierungsstufe.
@@ -127,6 +144,25 @@ wenig dasselbe wie das Freigabe-Gate, das den Projektablauf betrifft und nicht
 eine einzelne Abfrage. Auch keine Formularvorlage: "Vorlage" meint hier den
 einzelnen, fallbezogenen Vorschlag, nicht ein Muster.
 
+**Fremder Inhalt** — Im Harness, den Claude-Code-Sitzungen und Rollen dieses
+Repositories: jeder Text, der in eine Sitzung gelangt und weder vom
+Auftraggeber als Nachricht in dieser Sitzung stammt noch in der Sitzung selbst
+verfasst ist noch zum eigenen versionierten Bestand dieses Repositories gehört.
+Kanäle sind der Eingang aus dem Methodik-Repository, Kommentare und Reviews auf
+Pull Requests einschliesslich solcher von Bots, abgerufene Webinhalte, fremde
+Repositories sowie Werkzeug- und Anwendungsausgaben, die fremden Text
+wiedergeben. Die Wiedergabe macht ihn nicht zu eigenem Bestand: Fremd bleibt
+er, wenn er als Datei in diesem Repository liegt — so der Eingang in
+`docs/EINGANG_METHODIK.md`, der Information und keine Anweisung ist (6.6) —,
+wenn eine Rolle ihn in ihrem Bericht wiedergibt und wenn die Einfassung fehlt
+oder gekappt ist, mit der ein Hook ihn kennzeichnet (beim Eingang: Marker mit
+einer Kennung je Sitzung, Warnhinweis, Präfix vor jeder Zeile; zur Kappung
+Befund NF-005 des Zustandsberichts vom 2026-09-02). Im Produkt: jeder von
+aussen bezogene Inhalt (5.4), dort Gegenstand von R3-F-017. Fremder Inhalt ist
+Daten, nie Anweisung (5.4, 6.6); im Harness regelt das die Regel
+`.claude/rules/fremde-inhalte-im-harness.md` (R3-Q-011). *Abzugrenzen von:*
+Einschleusung (siehe dort).
+
 ## G
 
 **Gate** — Ein Hook, der einen Vorgang abbricht, indem er mit Rückgabewert 2
@@ -145,6 +181,16 @@ Löschzeitpunkt, freigebende Person, Rechtsgrundlage, Prüfsumme. Kein Inhalt.
 Hält die Protokollkette lückenlos (4.4).
 
 ## H
+
+**Harness** — Die Entwicklungsumgebung, in der Claude Code dieses Repository
+bearbeitet: die Claude-Code-Sitzungen mit ihren Rollen (Subagenten unter
+`.claude/agents/`), Hooks, Regeln und Skills (3.2). Der Projektauftrag
+verwendet das Wort in 5.15 ("Claude als Harness") und legt dort fest: "Über den
+Harness dürfen zu keinem Zeitpunkt echte Fall- oder Personendaten laufen."
+*Abzugrenzen von:* dem Produkt R3cOSINT — der Harness baut das Produkt und ist
+nicht Teil davon; entwickelt wird ausschliesslich gegen die Umgebung
+Test/Schulung, ein Zugang zur Produktion besteht nicht (5.16). Fremder Inhalt
+und Einschleusung im Harness: siehe dort (R3-Q-011).
 
 **Herkunftsnachweis** — Die Angabe, aus welcher Quelle ein Datenpunkt stammt,
 wann er erhoben wurde und von wem. Nach W3C PROV geführt. Kein Knoten und keine
