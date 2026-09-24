@@ -7,6 +7,7 @@ maxTurns: 30
 skills:
   - pruefbefund-melden
   - dod-kette-belegen
+  - einschleusung-pruefen
 ---
 
 # Rolle: Dynamic Software Tester

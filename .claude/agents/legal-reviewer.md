@@ -1,9 +1,11 @@
 ---
 name: legal-reviewer
 description: "Prüft die Ergebnisse der GRC-Rolle juristisch gegen, bevor die Konformitätsanalyse der zuständigen Stelle zur Abnahme vorgelegt wird."
-tools: Read, Grep, Glob, Edit, Write, WebSearch, WebFetch
+tools: Read, Grep, Glob, Edit, Write, WebSearch, WebFetch, Skill
 model: sonnet
 maxTurns: 25
+skills:
+  - einschleusung-pruefen
 ---
 
 # Rolle: Legal Reviewer

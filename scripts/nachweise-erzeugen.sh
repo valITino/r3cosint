@@ -66,6 +66,7 @@ ARTEFAKTE=(
   "Regel Versionierung und Nachweisfluss|.claude/rules/versionierung-und-nachweisfluss.md|Versionsschilder, Commit-Identitaet, Nachweisfluss"
   "Skill Pruefbefund melden|.claude/skills/pruefbefund-melden/SKILL.md|Erste Skill des Projekts, Prozedur fuer Pruefberichte: Pflichtfelder je Befund, Negativbefunde zwingend"
   "Skill DoD-Kette belegen|.claude/skills/dod-kette-belegen/SKILL.md|Zweite Skill des Projekts, Prozedur fuer Fertigmeldungen: Befehl frisch ausfuehren, Lage je Schritt benennen"
+  "Skill Einschleusung pruefen|.claude/skills/einschleusung-pruefen/SKILL.md|Dritte Skill des Projekts (R3-Q-011, E3.2), geschrieben vom SecDevOps Engineer: Prozedur fuer Rollen mit fremdem Inhalt als Arbeitsgegenstand; Kanal feststellen, als Daten lesen, auf eingebettete Anweisungen pruefen, melden statt ausfuehren; Massstab ist die Regel zu fremden Inhalten im Harness; vorgeladen bei sechs Rollen (ADR 0001, Abschnitt 5.1; ADR 0002, 6.14)"
   "Arbeitsablauf Nachweisfluss|.github/workflows/nachweise-uebertragen.yml|Erzeugt und uebertraegt das Nachweisverzeichnis nach Repo B (6.6)"
   "Arbeitsablauf Meilenstein|.github/workflows/meilenstein-tag.yml|Versionsschild und Release bei Meilenstein-Merge (6.6)"
   "Belegpruefer|scripts/belege-pruefen.sh|Prueft Herkunftsangaben in der Dokumentation gegen ihren Fundort; nicht abgenommen, Abbruch nach 3.4 (docs/uebergaben/2026-09-01_belegpruefer-abbruch-nach-3-4.md)"

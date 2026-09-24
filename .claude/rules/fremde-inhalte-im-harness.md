@@ -87,9 +87,9 @@ Prüfrollen melden zusätzlich nach der Skill `pruefbefund-melden`.
 ## Prozedur für die Rollen
 
 Rollen, deren Auftrag fremden Inhalt zum Arbeitsgegenstand hat, wenden die
-Skill einschleusung-pruefen an; welche Rollen das sind, legt ADR 0002, 6.14 e
-fest. Diese Regel ist der Massstab der Skill; ihre Schritte stehen dort und
-nicht hier.
+Skill einschleusung-pruefen an (`.claude/skills/einschleusung-pruefen/SKILL.md`);
+welche Rollen das sind, legt ADR 0002, 6.14 e fest. Diese Regel ist der
+Massstab der Skill; ihre Schritte stehen dort und nicht hier.
 
 ## Grenze
 

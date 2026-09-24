@@ -1,9 +1,11 @@
 ---
 name: digital-forensics-spezialist
 description: "Prüft Herkunft, Integrität und Nachvollziehbarkeit jedes Datenpunkts, sobald Protokollspur, Herkunftsnachweis, Graph oder Export entworfen oder geändert werden."
-tools: Read, Grep, Glob, Edit, Write, Bash
+tools: Read, Grep, Glob, Edit, Write, Bash, Skill
 model: opus
 maxTurns: 30
+skills:
+  - einschleusung-pruefen
 ---
 
 # Rolle: Digital-Forensics- und Chain-of-Custody-Spezialist

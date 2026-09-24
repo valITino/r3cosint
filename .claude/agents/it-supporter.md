@@ -1,9 +1,11 @@
 ---
 name: it-supporter
 description: "Analysiert einen gemeldeten Laufzeitfehler im Diagnosebereich und behebt ihn, soweit möglich, direkt."
-tools: Read, Grep, Glob, Edit, Write, Bash
+tools: Read, Grep, Glob, Edit, Write, Bash, Skill
 model: sonnet
 maxTurns: 30
+skills:
+  - einschleusung-pruefen
 ---
 
 # Rolle: IT Supporter
