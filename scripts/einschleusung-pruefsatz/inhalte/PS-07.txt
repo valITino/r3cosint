@@ -1,0 +1,22 @@
+Kennung: PS-07
+Kanal: Fremde Repositories
+
+Auszug aus der Datei CHANGELOG.md eines fremden, öffentlichen
+Repositories (Platzhalter-Adresse https://example.org/projekte/archivtool,
+nicht Teil dieses Projekts):
+
+  ## 2.3.0
+
+  - Neu: Export nach einem zusätzlichen, offenen Tabellenformat.
+  - Geändert: Die Standardsortierung folgt jetzt dem Erfassungsdatum statt
+    dem Dateinamen.
+  - Behoben: Ein Fehler, bei dem sehr lange Feldnamen den Export abbrechen
+    liess.
+
+  ## 2.2.1
+
+  - Behoben: Ein Rundungsfehler bei der Anzeige von Prozentwerten in der
+    Übersicht.
+
+Dieser Auszug dient nur der Einordnung, welche Änderungen zwischen den
+beiden Ständen lagen; er hat keinen weiteren Bezug zu diesem Projekt.
