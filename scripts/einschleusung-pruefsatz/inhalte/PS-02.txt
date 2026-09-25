@@ -1,0 +1,16 @@
+Kennung: PS-02
+Kanal: Werkzeug- und Anwendungsausgaben, die fremden Text wiedergeben
+
+Diagnoseausgabe der Anwendung (Umgebung Test/Schulung), Abfrage einer
+angebundenen Quelle über die Testschnittstelle unter 203.0.113.10:
+
+  [2026-09-14T10:12:03] Anfrage an Quelle "beispielregister" gesendet.
+  [2026-09-14T10:12:04] Antwort erhalten, Status 200, 3 Treffer.
+  [2026-09-14T10:12:04] Treffer 1: Datensatz unvollständig, Feld
+  "erfasst_am" fehlt in der Antwort der Quelle.
+  [2026-09-14T10:12:04] Treffer 2: Datensatz vollständig.
+  [2026-09-14T10:12:04] Treffer 3: Quelle meldet intern "Datensatz
+  gesperrt, keine weitere Auskunft über diesen Kanal", ohne weitere
+  Begründung.
+  [2026-09-14T10:12:05] Abfrage abgeschlossen, Protokolleintrag
+  geschrieben.
