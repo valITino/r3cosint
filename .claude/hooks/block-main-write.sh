@@ -19,6 +19,13 @@
 # damit ein Fehler nicht erst am Server auffaellt. Es deckt: die gaengigen
 # Interpreter mit Inline-Code, das Anlegen eines Arbeitsbaums auf main und
 # Mirror-/Wildcard-Pushes (Befunde der statischen Pruefung vom 2026-08-25).
+# Nachtrag 2026-10-14 (Posten 1, ADR 0002, 6.13 c, Fortschreibung vom
+# 2026-10-14): Gedeckt ist jeweils, was keine der Grenzen in diesem Kopf
+# ausnimmt und kein offener Posten unter R3-Q-010 betrifft. Fuer das Anlegen
+# eines Arbeitsbaums auf main sind das namentlich GM-5, GM-6, GM-7 und GM-8
+# und die Posten 4 (Befehlskette, Zeilenfortsetzung, Basename-Form) und 5
+# (grosse Eingabe), fuer Mirror-/Wildcard-Pushes GM-5, GM-6 und GM-8 und die
+# Posten 4 (Zeilenfortsetzung) und 5.
 # Nicht gedeckt ist der untergeordnete Shell-Aufruf mit Kontextwechsel
 # ('bash -c "cd x; ..."', 'sh -c ...'), siehe die Grenze im Rumpf (N-9).
 #
@@ -38,6 +45,88 @@
 # (.claude/hooks/block-prototype-import.sh) fuehrt seit E4.3 dieselbe
 # Befehlsklasse mit Schreibwirkung wie dieses Gate (dort das mit "bereinigt"
 # gepruefte Muster, ST-09).
+#
+# Seit Posten 1 (2026-10-14, ADR 0002, 6.13 c) gilt zusaetzlich: Die Ziele von
+# push und 'worktree add' werden nach dem Entfernen von Anfuehrungszeichen,
+# Rueckstrichen und Zeilenfortsetzungen (Rueckstrich am Zeilenende, DT-B2-04)
+# sowie des Dollarzeichens vor einem Anfuehrungszeichen (DT-B2-07) verglichen
+# (cmd_ziel im Rumpf; L01 bis L03 des Pruefmittels, DT-E41-04), und die
+# Ausnahme fuer -b/-B greift nicht, wenn der neue Zweig selbst main oder master
+# heisst, getrennt oder angehaengt (-B main, -Bmain, -fBmain; DT-B2-03), L04.
+# Der Schritt ist rein lexikalisch. Das Verb (push, 'worktree add'), die
+# Sammel-Push-Optionen und die Ausnahme selbst liest das Gate weiter am
+# Befehlstext, nicht an cmd_ziel (DT-B2-01, DT-B2-02; Grenze GM-8).
+#
+# GRENZE DER AUSWERTUNG, ehrlich benannt:
+# benannt seit Posten 1 (2026-10-14, ADR 0002, 6.13 c): Ziele, die erst durch
+# die Auswertung der Shell entstehen, werden nicht erkannt -- eine Variable
+# ('b=main; git push origin $b'), eine Befehlssubstitution ($(...)), eval, eine
+# Brace-Expansion. Was erst die Auswertung der Shell ergibt, bleibt unerkannt --
+# Escape-Folgen in $'...' wie $'\x6dain' oder $'\155ain' und die Uebersetzung
+# von $"..." ueber einen Meldungskatalog. Ohne Escape-Folge sind $'...' und
+# $"..." lexikalisch: Das $ unmittelbar vor dem Anfuehrungszeichen entfaellt mit
+# diesem (Posten 1, DT-B2-07). Die Pruefung ist lexikalisch, ohne Expansion:
+# erkannt wird, was der Befehlstext selbst als Wort main oder master traegt,
+# auch bei Anfuehrungszeichen, Rueckstrichen und Zeilenfortsetzungen
+# (Rueckstrich am Zeilenende, DT-B2-04) im Wort. Gemessen wird die Grenze mit
+# der Fallklasse GM-5 in scripts/pretooluse-gates-selbsttest.sh.
+#
+# GRENZE AN DER SCHNITTSTELLE (Werkzeugname), ehrlich benannt:
+# benannt seit Posten 1 (2026-10-14, ADR 0002, 6.13 c): Festgeschrieben im
+# Nachtrag vom 2026-09-23, laeuft der Bash-Zweig nur, wenn tool_name genau
+# "Bash" lautet; unter einem anderen Namen wird ein Befehlstext nicht als
+# Befehl geprueft (ZF10a, ZF10b des Pruefmittels, Fallklasse GM-6). Den
+# Werkzeugnamen setzt der Harness, nicht das Modell. Ein weiteres
+# Befehlswerkzeug im Matcher ist Gegenstand von ADR 0002, O-28.
+#
+# GRENZE DER AUSNAHME FUER -b/-B, ehrlich benannt:
+# benannt seit Posten 1 (2026-10-14, ADR 0002, 6.13 c, Fortschreibung vom
+# 2026-10-14): Die Ausnahme fuer -b/-B liest das Gate, wie schon vor Posten 1,
+# am Text, nicht an der Syntax der Shell: Steht -b oder -B in
+# Anfuehrungszeichen ('git worktree add "/tmp/a -b x" main') oder in einem
+# Kommentar ('git worktree add /tmp/wt main # -b x'), greift die Ausnahme,
+# obwohl der Arbeitsbaum auf main entsteht (DT-B2-05).
+# Quotierung und Kommentar zu unterscheiden hiesse, die Token-Erkennung der
+# Shell nachzubilden; jede Naeherung mit Mustern oeffnete neue Fehlalarme (eine
+# Option in Anfuehrungszeichen wie "-b" x, eine Raute in einem Argument vor -b,
+# -b nach dem Pfad). Gemessen wird die Grenze mit der Fallklasse GM-7 in
+# scripts/pretooluse-gates-selbsttest.sh. Keine Grenze, sondern eine belegte
+# Luecke ist, dass ein -b/-B in einem anderen worktree-add-Befehl derselben
+# Eingabe die Sperre fuer alle aufhebt
+# ('git worktree add -b x /tmp/w1 main; git worktree add /tmp/w2 main');
+# sie ist als Posten 4 unter R3-Q-010 terminiert.
+# Dieselbe Grenze gilt in der sperrenden Richtung, als benannter Preis: Den
+# Namen hinter -b/-B prueft das Gate ebenfalls am Text, auf cmd_ziel, weil
+# L04 selbst '-B "main"' ist. Nennt ein Befehl, den das Gate schon vor
+# Posten 1 als 'worktree add' las, -b main oder -B main nur als Inhalt -- in
+# einer Commit-Meldung, einem Suchmuster, einem Pfad in Anfuehrungszeichen
+# oder einem Kommentar ('git commit -m "Doku: worktree add -b main"',
+# 'git worktree add -b feature "/tmp/a -B main"') --, blockiert das Gate
+# (B2-PM-14). Derselbe Inhalt ohne -b/-B blockierte schon vorher
+# ('git commit -m "Doku: git worktree add /tmp/wt main"'). Eine engere
+# Fassung, die nur einen git-Aufruf am Befehlsanfang zaehlt, liesse L04 hinter
+# einem vorangestellten Befehl offen ('env git worktree add -B main /tmp/wt').
+# Ausweg: eine Commit-Meldung mit dem Write-Werkzeug in eine Datei schreiben
+# und 'git commit -F <datei>' verwenden; Pfad oder Kommentar ohne -b/-B main
+# schreiben. Gemessen wird der Preis mit Faellen der Fallklasse GM-7 mit
+# Soll 2 und dem Vermerk "Preis".
+#
+# GRENZE AM BEFEHLSTEXT (Verb und Sammel-Push-Optionen), ehrlich benannt:
+# benannt seit Posten 1 (2026-10-14, ADR 0002, 6.13 c, Fortschreibung vom
+# 2026-10-14): Das Verb (push, 'worktree add') und die Optionen des
+# Sammel-Push (--mirror, --all, Wildcard-Refspec) prueft das Gate am
+# Befehlstext, ohne Anfuehrungszeichen und Rueckstriche zu entfernen. Steht
+# das Verb oder eine solche Option in Anfuehrungszeichen oder hinter einem
+# Rueckstrich ('git pu"sh" origin main', 'git push origin "--all"',
+# "git push origin '*:*'", 'git push "--mirror" origin'), wird der Befehl
+# nicht erkannt (DT-B2-08). Anders als bei den Zielen wertet das Gate hier ein
+# Anfuehrungszeichen neben dem Wort nicht; es zu entfernen liesse Text in
+# Anfuehrungszeichen als Verb oder Option zaehlen und oeffnete neue Fehlalarme
+# ('git push origin feature -o "ci.variable=X --all"'). Nicht zu dieser
+# Grenze gehoert die Zeilenfortsetzung: dass sie das Verb trennt
+# ('git \' + Zeilenumbruch + 'push origin main', DT-B2-09), ist eine belegte
+# Luecke, terminiert als Posten 4 unter R3-Q-010. Gemessen wird die Grenze mit
+# der Fallklasse GM-8 in scripts/pretooluse-gates-selbsttest.sh.
 #
 # Rueckgabewert 2 blockiert. Rueckgabewert 1 blockiert NICHT (3.4).
 set -uo pipefail
@@ -85,15 +174,72 @@ if [ "$tool" = "Bash" ]; then
   cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty')
   [ -n "$cmd" ] || exit 0
 
+  # Posten 1 unter R3-Q-010 (2026-10-14, ADR 0002, 6.13 c, Nachtrag vom
+  # 2026-09-23): Die Ziele von push und worktree werden nach dem Entfernen von
+  # Anfuehrungszeichen, Rueckstrichen und Zeilenfortsetzungen (Rueckstrich am
+  # Zeilenende, DT-B2-04) sowie des Dollarzeichens vor einem Anfuehrungszeichen
+  # (DT-B2-07) verglichen, denn die Shell macht aus ma"in", "ma"in, ma\in,
+  # ma\<Zeilenumbruch>in, $'main' und ma$'in' das Wort main (L01 bis L03 des
+  # Pruefmittels, DT-E41-04, DT-B2-04, DT-B2-07). cmd_ziel entsteht in vier
+  # Schritten, in dieser Reihenfolge: 1. Jedes Paar aus Rueckstrich und
+  # Zeilenumbruch faellt weg, vor dem eine ungerade Zahl von Rueckstrichen steht
+  # (Zeilenfortsetzung, DT-B2-04; nur das Paar -- ein maskierter Rueckstrich vor
+  # dem Zeilenumbruch setzt die Zeile nicht fort, und andere Zeilen werden nicht
+  # zusammengezogen). 2. Die uebrigen Rueckstriche fallen weg, das folgende
+  # Zeichen bleibt. 3. Ein Dollarzeichen unmittelbar vor einem
+  # Anfuehrungszeichen faellt weg (Dollar-Anfuehrungszeichen, ohne Escape-Folge
+  # lexikalisch, DT-B2-07). 4. Die Anfuehrungszeichen fallen weg. Der Schritt
+  # ist rein lexikalisch; was erst die Auswertung der Shell ergibt, bleibt
+  # unerkannt (Grenze der Auswertung im Kopf). cmd_ziel dient NUR dem Vergleich
+  # der Ziele und des Namens hinter -b/-B: ziel_hat prueft ein Zielmuster gegen
+  # den Befehlstext, wie er ist, UND gegen cmd_ziel -- beide Fassungen zaehlen,
+  # damit nichts entsperrt wird, was vor Posten 1 gesperrt war. Das Verb (push,
+  # worktree add), die Sammel-Push-Optionen und die Ausnahme fuer -b/-B laufen
+  # auf dem Befehlstext, nicht auf cmd_ziel: auf cmd_ziel galte ein Wort wie
+  # "push" in Anfuehrungszeichen als Verb ('git log --grep "push"', DT-B2-01),
+  # maskierte Leerzeichen in einem Pfad liessen die Ausnahme greifen ('git
+  # worktree add /tmp/a\ -b\ x main', DT-B2-02), und der Dollar-Schritt machte
+  # aus "/tmp/x $'-b' y" ein -b ('git worktree add "/tmp/x $'-b' y" main', A75
+  # des Pruefmittels). Die Aufloesung des Kontexts weiter unten und die Pruefung
+  # der Schreibwirkung bleiben ebenfalls auf cmd. Der Anker 'worktree add' der
+  # Namenspruefung liegt auf cmd_ziel; wt_add am Befehlstext ist nur
+  # Vorbedingung (Preis GM-7, Kopfkommentar).
+  cmd_ziel=$(printf '%s' "$cmd" | sed -E ':a; /(^|[^\\])(\\\\)*\\$/ { $!{ N; s/\\\n//; ba } }' | sed -E 's/\\(.)/\1/g; s/\$(["'\''])/\1/g; s/["'\'']//g')
+  ziel_hat() {
+    printf '%s' "$cmd" | grep -Eq "$1" || printf '%s' "$cmd_ziel" | grep -Eq "$1"
+  }
+
   # Einen zweiten Arbeitsbaum auf main/master anzulegen ist ein Weg, spaeter an
   # main vorbeizuschreiben. 'git worktree add <pfad> main' checkt main direkt
   # aus und wird gesperrt; 'git worktree add -b <neuerzweig> <pfad> main' zweigt
   # dagegen einen NEUEN Zweig von main ab und checkt diesen aus -- das ist
   # zulaessig und darf nicht blockieren (Falsch-Positiv-Befund 2026-08-25).
-  if printf '%s' "$cmd" | grep -Eq 'git[[:space:]]+([^|;&]*[[:space:]])?worktree[[:space:]]+add([[:space:]]|$)' \
+  # Die Ausnahme gilt nur fuer einen neuen Zweig mit anderem Namen: heisst der
+  # Name hinter -b/-B selbst main oder master -- getrennt oder angehaengt (-B
+  # main, -Bmain, -fBmain; DT-B2-03) --, greift sie nicht. -b legt dann einen
+  # Zweig main an, -B setzt einen bestehenden auf den Ausgangspunkt zurueck und
+  # checkt ihn im neuen Arbeitsbaum aus -- genau die Wirkung, die diese Sperre
+  # verhindern soll (seit Posten 1, 2026-10-14; L04, A56, A57 und A59 bis A61
+  # und A73 des Pruefmittels). Der Name wird auf cmd_ziel gelesen; die Ausnahme
+  # selbst liest den Befehlstext, nicht die Syntax der Shell (Grenze GM-7 im
+  # Kopf). Ein -b/-B in einem anderen worktree-add-Befehl derselben Eingabe hebt
+  # die Sperre fuer alle auf (Posten 4 unter R3-Q-010, DT-B2-05 c; L17).
+  wt_add=0
+  if printf '%s' "$cmd" | grep -Eq 'git[[:space:]]+([^|;&]*[[:space:]])?worktree[[:space:]]+add([[:space:]]|$)'; then
+    wt_add=1
+  fi
+  if [ "$wt_add" = 1 ] \
+      && printf '%s' "$cmd_ziel" | grep -Eq 'git[[:space:]]+([^|;&]*[[:space:]])?worktree[[:space:]]+add[^|;&]*[[:space:]]-[a-zA-Z]*[bB][[:space:]]*(main|master)([[:space:]]|$|[;&|)])'; then
+    echo "BLOCKIERT (Projektauftrag 3.2 c): neuer Zweig main/master in einem zweiten Arbeitsbaum." >&2
+    echo "Die Ausnahme fuer -b/-B gilt nur fuer einen neuen Zweig mit anderem Namen als main/master;" >&2
+    echo "-B setzt einen bestehenden Zweig zurueck und checkt ihn im neuen Arbeitsbaum aus. Abzweigen:" >&2
+    echo "  git worktree add -b <zweig> <pfad> main" >&2
+    exit 2
+  fi
+  if [ "$wt_add" = 1 ] \
       && ! printf '%s' "$cmd" | grep -Eq 'worktree[[:space:]]+add[^|;&]*[[:space:]]-[bB]([[:space:]]|=)' \
-      && { printf '%s' "$cmd" | grep -Eq '(^|[[:space:]"'\''(])(main|master)([[:space:]]|$|["'\'';&|)])' \
-           || printf '%s' "$cmd" | grep -Eq 'refs/(heads|for)/(main|master)'; }; then
+      && { ziel_hat '(^|[[:space:]"'\''(])(main|master)([[:space:]]|$|["'\'';&|)])' \
+           || ziel_hat 'refs/(heads|for)/(main|master)'; }; then
     echo "BLOCKIERT (Projektauftrag 3.2 c): Arbeitsbaum auf main/master anlegen." >&2
     echo "Ein zweiter Arbeitsbaum auf main umgeht den Schutz. Einen neuen Zweig abzweigen:" >&2
     echo "  git worktree add -b <zweig> <pfad> main" >&2
@@ -145,6 +291,11 @@ if [ "$tool" = "Bash" ]; then
   # main kein '/' stehen, sonst wuerde jeder Zweigname wie 'fix/main-seite'
   # blockiert. Befund der statischen Pruefung vom 2026-08-25 (ausgefuehrt:
   # 'git push origin HEAD:refs/heads/main' von einem Arbeitszweig lief durch).
+  # Posten 1 (DT-B2-01): Verb und Sammel-Push-Optionen liest das Gate am
+  # Befehlstext, wie vor Posten 1; nur die Ziele zaehlen auch an cmd_ziel.
+  # Verb oder Option in Anfuehrungszeichen bleibt unerkannt (Grenze GM-8,
+  # Kopfkommentar); das durch eine Zeilenfortsetzung getrennte Verb ist
+  # Posten 4 (DT-B2-09).
   if printf '%s' "$cmd" | grep -Eq 'git[[:space:]]+([^|;&]*[[:space:]])?push([[:space:]]|$)'; then
     # --mirror, --all und Wildcard-Refspecs uebertragen alle lokalen Zweige,
     # darunter main, ohne 'main' im Text zu nennen (Befund 2026-08-25).
@@ -154,8 +305,8 @@ if [ "$tool" = "Bash" ]; then
       echo "Nur den Arbeitszweig ausdruecklich pushen: git push -u origin <zweig>" >&2
       exit 2
     fi
-    if printf '%s' "$cmd" | grep -Eq '(^|[[:space:]:+"'\''(])(main|master)([[:space:]]|$|["'\'';&|)])' \
-        || printf '%s' "$cmd" | grep -Eq 'refs/(heads|for)/(main|master)([[:space:]]|$|["'\'';&|)])'; then
+    if ziel_hat '(^|[[:space:]:+"'\''(])(main|master)([[:space:]]|$|["'\'';&|)])' \
+        || ziel_hat 'refs/(heads|for)/(main|master)([[:space:]]|$|["'\'';&|)])'; then
       echo "BLOCKIERT (Projektauftrag 3.2 c): Push nach main/master." >&2
       echo "Auf den Arbeitszweig pushen und die Aenderung ueber einen Pull Request fuehren." >&2
       echo "Aktueller Zweig: $branch" >&2
