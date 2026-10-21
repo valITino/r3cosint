@@ -73,6 +73,54 @@
 # tool_input als Zeichenkette versehene Eingabe still mit Rueckgabewert 0
 # durch.
 #
+# Seit Posten 5 (2026-10-21, ADR 0002, 6.13 c, SR-001 des Schwachstellenregisters)
+# gilt zusaetzlich: Jede Pruefung eines Textes mit 'grep -q' -- bei Bash die
+# Schreibwirkung und das Importmuster, an den Dateiwerkzeugen die Richtung 2 und
+# die Richtung 1 -- laeuft ueber die Hilfsfunktion trifft (im Rumpf), nicht mehr
+# ueber 'printf | grep -Eq'. Nicht ueber trifft laufen die Schritte mit sed, tr und jq
+# (cmd_flach, bereinigt, payload_norm, payload); sie pruefen keinen Rueckgabewert:
+# fehlt sed oder tr, laeuft ein sonst gesperrter Befehl durch (Posten 6 unter
+# R3-Q-010, 2026-10-21, erfasst, nicht gebaut, terminiert mit der naechsten Aenderung
+# an diesem Gate; L23, L24).
+# GRUND: Unter 'set -uo pipefail' liefert die Pipeline aus printf und 'grep -q'
+# den Wert 141 (SIGPIPE), wenn grep nach einem fruehen Treffer endet, waehrend
+# printf noch schreibt; die Bedingung galt dann als nicht erfuellt, und der Befehl
+# lief durch (B2-GATE-D05, DT-B2-10: ab etwa 64 KiB zufaellig, ab 128 KiB sicher).
+# Das Gate hatte dieselbe Bauform wie das main-Gate. Gemessen am 2026-10-21 vor dem Bau: L22
+# (Bash), B64 (Richtung 1 ueber Write) und B65 (Richtung 2 ueber Write) gaben bei einer
+# Kommentarzeile aus 200000 Zeichen Rueckgabewert 0.
+# FORM: dieselben Muster, dieselbe Pipeline; den Status liefert aber grep
+# (PIPESTATUS), nicht die Pipeline. grep 0 ist ein Treffer, auch wenn der Schreiber
+# mit 141 endete. grep 1 gilt nur als kein Treffer, wenn der Schreiber ganz
+# geschrieben hat (Status 0). Jeder andere Ausgang -- ein Fehler von grep, ein
+# Fehler des Schreibers ohne Treffer -- endet mit Rueckgabewert 2 und einer Meldung
+# auf stderr, wie eine nicht auswertbare Eingabe (fail-closed). Gewaehlt nach
+# Messung (200000 und 1000000 Zeichen, je 30 Laeufe): Ein Here-String braucht ab
+# Pipe-Groesse eine Temp-Datei; scheitert diese (kein Platz), ist der Rueckgabewert
+# 1 und von 'kein Treffer' nicht zu unterscheiden. 'grep -E' ohne -q mit Ausgabe
+# nach /dev/null haengt an der Bauart von GNU grep. Die Form ist keine Auswertung
+# und keine neue Erkennung. Die Vergleiche lesen die Elemente von PIPESTATUS mit
+# leerem Vorgabewert (${st[1]:-}), damit ein unvollstaendiges PIPESTATUS unter
+# 'set -u' nicht mit Rueckgabewert 1 und damit als Durchlass endet.
+# GRENZE: Der Wettlauf zwischen printf und grep bleibt bestehen -- grep kann enden,
+# bevor der Schreiber fertig ist --, entscheidet aber nicht mehr: Die Schwelle von
+# etwa 64 KiB bis 128 KiB faellt aus der Entscheidung. Es bleibt die Zeitgrenze des
+# Hooks in .claude/settings.json (15 s); ein Hook, der sie reisst, wird abgebrochen
+# und laesst durch. Die Zeitgrenze (15 s) zieht der Harness; bis Posten 7 ohne
+# Fallklasse (6.13 d, ausgenommen laut ADR 0002, 6.13 c, Nachtrag vom 2026-10-21).
+# Posten 7 unter R3-Q-010 (2026-10-21, erfasst, nicht gebaut): keines der beiden Gates
+# zieht eine eigene Zeitgrenze (ADR 0002, 6.12.12); eine Ueberschreitung ist ein
+# Durchlass. Fuer dieses Gate ist keine Eingabe ueber 15 s gefunden (Berichtigung Delta 2,
+# ST-C2-D-05): gemessen am 2026-10-21 (CPU frei, ganzes Gate, Bash und Write): Zeile aus
+# '&' 5000000 Zeichen 1,2 s bzw. 1,6 s, 10000000 Zeichen 2,6 s bzw. 3,7 s; '#' und 'a'
+# 10000000 Zeichen 2,4 s bis 3,6 s; Leerzeichen und '"' 5000000 Zeichen 1,2 s bis 2,0 s;
+# bei 93 Laeufen aus 31 Formen aus 150000 gleichen Zeichen hoechstens 0,13 s. Das main-Gate
+# hat eine Eingabe ueber 15 s (dort beschrieben). Das Pruefmittel zieht je Gate-Aufruf eine
+# eigene Grenze von 14 s und wertet eine Ueberschreitung als Durchlass. Nicht gemessen
+# ist die Wirkung im laufenden Harness.
+# Fehlt grep, blockiert das Gate mit Rueckgabewert 2 und einer Meldung (S11; vorher
+# Durchlass).
+#
 # BENANNTE GRENZE (P-10, ADR 0002, 6.13 c: benannte Grenze, keine neue
 # Faehigkeit): 5.6 nennt drei Trennungen: eigenes Verzeichnis, keine
 # gemeinsamen Abhaengigkeiten, keine Importe in beide Richtungen. Dieses
@@ -100,6 +148,16 @@
 #
 # Rueckgabewert 2 blockiert und gibt stderr als Begruendung an Claude zurueck.
 # Rueckgabewert 1 blockiert NICHT (3.4) und wird hier nirgends verwendet.
+# Seit Delta 2 (2026-10-21, ADR 0002, 6.13 c; ST-C2-D-01): Die Variable POSIXLY_CORRECT
+# wird hier aus der Umgebung des Gates entfernt, vor dem ersten sed. GNU sed liest unter
+# ihr [^\n] als "nicht Rueckstrich und nicht n": 's#//[^\n]*##' (Kommentarentfernung in
+# cmd_flach und payload_norm) entfernte einen Zeilenkommentar nur bis zum ersten n; der
+# Rest des Kommentars ('ntar' in '// Kommentar') blieb zwischen 'from' und dem Pfad stehen,
+# und der Import war kein Import mehr (S18, Dateiwerkzeuge). Im groben Netz fuer Bash trennt
+# ein '&' oder '|' im Rest Import und Pfad zusaetzlich (S19; Berichtigung Delta 3,
+# ST-C2-E-04: nicht das '&' war die Ursache). Mutation MP15. bash startet unter der
+# Variable im POSIX-Modus; das Entfernen der Variable beendet ihn.
+unset POSIXLY_CORRECT
 set -uo pipefail
 
 if ! command -v jq >/dev/null 2>&1; then
@@ -124,6 +182,30 @@ if ! printf '%s' "$input" | jq -es 'length == 1 and (.[0] | type == "object" and
   fi
   exit 2
 fi
+
+# Posten 5 (2026-10-14 erfasst, 2026-10-21 gebaut, ADR 0002, 6.13 c, SR-001):
+# trifft TEXT GREP-ARGUMENTE ist die eine Stelle, an der dieses Gate einen Text mit
+# 'grep -q' gegen ein Muster prueft (die Muster stehen unveraendert an den
+# Aufrufstellen). Andere Pruefungen eines Musters laufen nicht ueber trifft: der
+# jq-Ausdruck mit test() zur Auswahl der Felder der Werkzeugeingabe (ST-C2-D-04).
+# Rueckgabewert 0: Treffer, 1: kein Treffer; jeder andere Ausgang beendet das Gate
+# mit Rueckgabewert 2 und einer Meldung. Grund, Form und Grenze: Kopfkommentar,
+# Absatz "Seit Posten 5".
+pruefung_unmoeglich() {
+  echo "Gate prototyp-trennung: Pruefung nicht moeglich ($1); das Gate kann nicht pruefen und blockiert (ADR 0002, 6.13 b)." >&2
+  echo "Naechster Schritt: grep im PATH pruefen (command -v grep) und den Befehl wiederholen; bleibt die Meldung, den Befehl in getrennte Aufrufe zerlegen." >&2
+  exit 2
+}
+trifft() {
+  local text="$1"
+  local -a st
+  shift
+  printf '%s' "$text" | grep -Eq "$@"
+  st=("${PIPESTATUS[@]}")
+  [ "${st[1]:-}" = 0 ] && return 0
+  [ "${st[1]:-}" = 1 ] && [ "${st[0]:-}" = 0 ] && return 1
+  pruefung_unmoeglich "grep ${st[1]:-?}, Schreiber ${st[0]:-?}"
+}
 
 proj="${CLAUDE_PROJECT_DIR:-$PWD}"
 
@@ -169,8 +251,8 @@ if [ "$tool" = "Bash" ]; then
     -e 's/[0-9]?>>?[[:space:]]*\/dev\/null([[:space:]]|$|[;|&)])/\1/g' \
     -e 's/[0-9]?>>?[[:space:]]*(\/tmp\/([^[:space:].;|&)]|\.[^.[:space:];|&)])*|"?\$\{?(TMPDIR|RUNNER_TEMP|SCRATCH[A-Z_]*)\}?([^[:space:].;|&)]|\.[^.[:space:];|&)])*)([[:space:];|&)]|$)/\5/g')
   schreibwirkung='(>>?|\btee[[:space:]]|sed[[:space:]]+-[a-zA-Z]*i|<<)|(\b(mv|cp|rm|mkdir|touch|truncate|ln|install|patch|dd)[[:space:]]|\b(python[0-9.]*|perl|ruby|node|deno|php|Rscript)[[:space:]]+([^|;&]*[[:space:]]+)?-[a-zA-Z]*(c|e|i|p|r|n)([^a-zA-Z]|$)|\b(ed|ex)[[:space:]])'
-  if printf '%s' "$bereinigt" | grep -Eq "$schreibwirkung" \
-      && printf '%s' "$cmd_flach" | grep -Eq "(from|require|import|@import|__import__|import_module)[^|&]*prototype([./\"'[:space:]]|\$)"; then
+  if trifft "$bereinigt" -e "$schreibwirkung" \
+      && trifft "$cmd_flach" -e "(from|require|import|@import|__import__|import_module)[^|&]*prototype([./\"'[:space:]]|\$)"; then
     echo "BLOCKIERT (Projektauftrag 5.6): Shell-Befehl mit Schreibwirkung und einem Import, der 'prototype' beruehrt." >&2
     echo "Importe zwischen prototype/ und Produktionscode sind in beide Richtungen untersagt." >&2
     echo "Die Datei mit dem Write-Werkzeug schreiben -- dort prueft das Gate pfadgenau." >&2
@@ -277,7 +359,7 @@ if [ "${rel#prototype/}" != "$rel" ]; then
   # Namen der Variable WURZELN (src, app, lib, server, packages, apps): ein
   # "import app" waere in einem Python-Prototyp ein plausibles Fremdmodul,
   # und der Fehlalarm daraus teurer als die engere Deckung.
-  if printf '%s' "$pruefstoff" | grep -Eq \
+  if trifft "$pruefstoff" \
       -e "(from|require\(|import\(|@import|import)[[:space:]]*\(?[[:space:]]*${Q}((\.\./)*|\./(\.\./)+)(${WURZELN})/" \
       -e "(from|require\(|import\(|@import|import)[[:space:]]*\(?[[:space:]]*${Q}[@~#]/" \
       -e "(src|href)=${Q}(\./)?(\.\./)+(${WURZELN})/" \
@@ -303,7 +385,7 @@ fi
 # "prototype_alt/" treffen nicht, weil auf "prototype" ein Buchstabe folgt,
 # der keine der drei Alternativen ist; "prototyp/" enthaelt die Zeichenkette
 # "prototype" gar nicht.
-if printf '%s' "$pruefstoff" | grep -Eq \
+if trifft "$pruefstoff" \
     -e "(from|require\(|import\(|@import|import)[[:space:]]*\(?[[:space:]]*${Q}(${NQ}*[/\\\\])?prototype(/|\\\\|${Q})" \
     -e "(src|href)=${Q}(${NQ}*[/\\\\])?prototype(/|\\\\|${Q})" \
     -e "^[[:space:]]*(from|import)[[:space:]]+prototype([.[:space:]]|\$)" \
