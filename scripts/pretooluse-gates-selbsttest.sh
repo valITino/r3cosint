@@ -42,12 +42,96 @@
 # (Meldungskatalog); L01 bis L04 tragen den frueheren Wortlaut wieder; 318
 # Faelle, 26 Mutationen, 28 Fallklassen.
 #
+# Nachtrag am 2026-10-21 (Posten 5 und Posten 4 unter R3-Q-010, ADR 0002, 6.13 c,
+# Nachtrag vom 2026-10-14; Schwachstellenregister SR-001): Zuerst die Faelle mit
+# Soll, dann die Gates, zuletzt die Vermerke (ADR 0002, 6.13 g). Posten 5 (beide
+# Gates, B2-GATE-D05): L20 hat Soll 2; dazu A80 bis A84 (je eine Pruefstelle des
+# main-Gates), L22, B64 und B65 (Bash, Richtung 1 und Richtung 2 am Prototyp-Gate;
+# vor dem Bau gaben alle 0) und die Gegenproben G72, G73, P40 und P41; S10 und S11
+# messen den Zweig "Pruefung nicht moeglich" (PATH ohne grep, Soll 2), S12 die
+# Abschnittsbildung von Posten 4 a (PATH ohne tr, Soll 2, Mutation MM21); Mutationen
+# MM16 und MP12 (der Abbruch des Schreibers gilt wieder als kein Treffer) sowie
+# MM20 und MP13 (der Zweig gibt 1 statt zu blockieren). Posten 4 am main-Gate:
+# L17, L19 und L21 haben Soll 2; dazu A85 bis A88 und A101 (Befehlskette), A89 und
+# A90 (Preis, Fallklasse KM-14), A91 und A92 (Zeilenfortsetzung), A93 bis A100
+# (Basename-Form), A102 und A103 (Preis: Woerter nur als Inhalt, Fallklasse KM-17) und die
+# Gegenproben G74 bis G77 und G81 bis G87; G78 und G79 (heutige Fehlalarme) sowie
+# G80 (Preis in GM-7) wechseln von 2 auf 0; G88 und G89 (GM-5) und G90, G91 (GM-9)
+# messen Grenzen. MM12 ist neu gefasst, MM17 bis MM19 sind neu. Zahlen: vor diesem
+# Nachtrag 318 Faelle, 26 Mutationen, 28 Fallklassen; jetzt 372 Faelle,
+# 34 Mutationen, 35 Fallklassen (neu KM-14 bis KM-18, KP-5, GM-9). Die Ausgabezeile
+# kuerzt Eingaben ueber 1000 Zeichen (L20 und die uebrigen grossen Eingaben).
+# Posten 6 (neu, Entscheid des Koordinators auf Einordnung des Software Architects,
+# nicht gebaut): L23 und L24 messen, dass die sed- und tr-Schritte des Prototyp-Gates
+# keinen Rueckgabewert pruefen; ohne sed (Bash-Weg) oder tr (Weg der Dateiwerkzeuge)
+# laeuft ein mit vollem PATH gesperrter Befehl durch (Soll 0, Klasse belegte-luecke,
+# terminiert mit der naechsten Aenderung am Prototyp-Gate).
+#
+# Nachtrag am 2026-10-21 (Delta nach der Verifikation von C2; Befunde DT-C2-01 bis
+# DT-C2-05, ST-C2-01 bis ST-C2-07, H-1; Entscheide des Software Architects): Zuerst die
+# Faelle mit Soll, dann die Gates, zuletzt die Vermerke (ADR 0002, 6.13 g). Jeder
+# Gate-Aufruf laeuft mit einer eigenen Zeitgrenze von 14 s (unter der Hook-Grenze von
+# 15 s); eine Ueberschreitung (Rueckgabewert 124 von timeout) wertet das Pruefmittel als
+# Durchlass 0 und vermerkt sie in grund. DT-C2-01: A104, A105 (50000
+# Zeilenfortsetzungen), G94, MM22 (alte Schleife), MM14 neu gefasst. DT-C2-02: G92, G93
+# mit G80 als Preise in GM-7 (Entscheid a). ST-C2-02: G95, A106 bis A109, MM23, MM17 und
+# MM12 neu gefasst. DT-C2-03: A110, A111, G96, MM26. DT-C2-04: A112 bis A115, MM27.
+# DT-C2-05: PATH-Variante grep-Attrappe, S13, S14, MM24, MP14. H-1: A116, A117 (150000
+# Zeichen, linear gemessen). ST-C2-03 iii: G101. ST-C2-04: G97 bis G100 (GM-9
+# verallgemeinert). ST-C2-06: PATH-Varianten sed-ohne-z und sed-ohne-trenner, S15, S16,
+# MM25. Zahlen: vor dem Delta 372 Faelle, 34 Mutationen, 35 Fallklassen; jetzt 400
+# Faelle, 41 Mutationen, 35 Fallklassen (KM-15 bis KM-18, KP-5 und GM-9 um Faelle
+# erweitert, GM-7 um G92 und G93). Berichtigung zum Nachtrag vom selben Tag oben: S12
+# misst seit dem Delta die Abschnittsbildung mit einem sed, das nur diesen Aufruf
+# verweigert (PATH sed-ohne-trenner, Mutation MM21), nicht mehr den Wegfall von tr: die
+# Abschnitte entstehen mit sed. Posten 7 (keine eigene Zeitgrenze im Gate) ist erfasst,
+# nicht gebaut, ohne Fall und ohne Fallklasse.
+#
+# Nachtrag am 2026-10-21 (Delta 2 nach der Re-Verifikation des Delta; Befunde ST-C2-D-01 bis
+# ST-C2-D-07, DT-C2-D-01; Entscheide des Koordinators): Zuerst die Faelle mit Soll, dann die
+# Gates, zuletzt die Vermerke (ADR 0002, 6.13 g). ST-C2-D-07 (neue Fehlalarmklasse, im Bau
+# behoben): G102, G103 mit Soll 0, Gegenproben A118, A119, MM28. DT-C2-D-01 (deckt
+# ST-C2-D-06): A120 bis A129 mit Soll 2, Gegenprobe G104, MM29; der geplante Fall mit Soll 0
+# zu ST-C2-D-06 entfaellt, der Fall mit Operanden in Anfuehrungszeichen und Leerraum ist A124.
+# MM27 zielt auf die Operatorliste (umleit) der neuen Fassung. ST-C2-D-01: neue PATH-Wahl
+# posix (voller PATH, dazu POSIXLY_CORRECT=1 in der Umgebung des Gates), S17 (main), S18
+# (Prototyp, neue Fallklasse KP-6), MM30, MP15. ST-C2-D-02 bis ST-C2-D-05: Saetze in den
+# Kopfkommentaren der Gates und die Messwerte der Faelle A116 und A117 (Endstand 0,23 s und 0,21 s).
+# Posten 7: Eine Eingabe ueber 15 s ist gefunden (10000000 Zeichen '&' hinter 'git worktree
+# add', 19,6 s); sie ist kein Fall, weil ein Lauf die Grenze von 14 s des Pruefmittels
+# uebersteigt, und bleibt Gegenstand von Posten 7. Zahlen: vor Delta 2
+# 400 Faelle, 41 Mutationen, 35 Fallklassen; jetzt 417 Faelle, 45 Mutationen, 36
+# Fallklassen (KM-16 um S17, KM-17 um A118 bis A129 erweitert).
+# Nachtrag am 2026-10-21 (Delta 3 nach der dynamischen Pruefung und dem statischen Bericht zu
+# Delta 2; Befunde DT-C2-E-01, DT-C2-E-02, ST-C2-E-01 bis ST-C2-E-08; Entscheide des
+# Koordinators): Zuerst die Faelle mit Soll, dann das Gate, dann die Vermerke (ADR 0002,
+# 6.13 g). DT-C2-E-01 (blockierend): A131 bis A136 mit Soll 2 (< oder > in einem Wort in
+# Anfuehrungszeichen vor dem Pfad), Gegenproben G107, G108, MM31 (zweite Fassung der
+# Basename-Form entfernt); MM19 zielt auf die Bedingung beider Fassungen, MM28 auf den neuen
+# Wortlaut der Umleitung mit Deskriptor, MM29 auf die neue Operandenfassung. DT-C2-E-02: A130
+# ({fd}>/dev/null, MM32), G105 (Befehlssubstitution, Grenze GM-5), G106 (Option mit getrenntem
+# Wert in Anfuehrungszeichen, Grenze GM-9). ST-C2-E-02: A137, A138 (maskierte Anfuehrung im
+# Operanden, MM33; ersetzt die Benennung von R6 als GM-5). ST-C2-E-01: A139 bis A142 als Preis in
+# sicherer Richtung (KM-17). ST-C2-E-04: S19 (Bash-Weg am Prototyp-Gate mit PATH-Wahl posix),
+# Vermerk zu S18 berichtigt, MP15 erwartet auch S19. ST-C2-E-08: die Erweiterung des leeren
+# Arrays posix_zusatz ist gegen bash vor 4.4 unter set -u abgesichert. Zahlen: vor Delta 3
+# 417 Faelle, 45 Mutationen, 36 Fallklassen; jetzt 435 Faelle, 48 Mutationen, 36 Fallklassen.
+# Nachtrag am 2026-10-21 (Delta 4 nach dem statischen Bericht zu Delta 3, ST-C2-F-01 bis
+# ST-C2-F-03, und der dynamischen Pruefung von Delta 3, DT-C2-F-01 bis DT-C2-F-04; das
+# Kriterium Posten 4 c ist zum dritten Mal in Pruefung, nach Projektauftrag 3.4 der letzte
+# Versuch): Zuerst die Faelle mit Soll, dann das Gate, dann die Vermerke (ADR 0002, 6.13 g).
+# Einzige Musteraenderung: Die Klasse in doppelten Anfuehrungszeichen laesst den Rueckstrich
+# nur noch unmittelbar vor dem Zeilenende zu (Mischlesung ausgeschlossen); A143 bis A146 mit
+# Soll 2, G109 mit Soll 0, Mutation MM34 (Klasse von Delta 3); MM33 und MM29 tragen den neuen
+# Suchtext. Weiter nur Faelle und Benennungen: G110 bis G112 (Grenze GM-9), G113, A147 und
+# A148 ({fd2}, {FD}), A149 (Preis KM-17). Zahlen: vor Delta 4 435 Faelle, 48 Mutationen, 36
+# Fallklassen; jetzt 447 Faelle, 49 Mutationen, 36 Fallklassen.
 # "Jedes Hook-Skript wird vor dem Einbau gegen einen blockierenden und einen
 # durchzulassenden Fall geprueft. Ein ungetestetes Gate ist kein Gate."
 # (.claude/rules/claude-konfiguration.md, Abschnitt "Hooks")
 #
 # ZWEI MODI:
-#   1. Normalmodus (kein Parameter): 318 vorgemessene Faelle laufen gegen die
+#   1. Normalmodus (kein Parameter): 447 vorgemessene Faelle laufen gegen die
 #      Gate-Dateien DES ARBEITSBAUMS (oder, nur fuer Pruefrollen, gegen eine
 #      per Umgebungsvariable ueberschriebene Kopie, siehe Abschnitt 3a weiter
 #      unten). main-Faelle laufen gegen einen Wegwerf-Klon auf main, einen auf
@@ -58,7 +142,7 @@
 #      JSON von der Standardeingabe und urteilen.
 #   2. Modus --mutationen (Gegenprobe): zuerst eine GRUNDLINIE -- die
 #      vollstaendige Fallliste gegen die UNVERAENDERTEN Gates; ist sie nicht
-#      gruen, endet der Modus sofort mit Rueckgabewert 2. Danach 26 fest im
+#      gruen, endet der Modus sofort mit Rueckgabewert 2. Danach 49 fest im
 #      Skript hinterlegte Mutationen, die je GENAU EINE Sperre schwaechen oder
 #      eine Ausnahme entfernen (MP4, MP5), in einer Kopie eines Gates; die
 #      vollstaendige Fallliste des betroffenen Gates laeuft gegen die Kopie.
@@ -79,7 +163,7 @@
 # NIEDRIGERES MASS als scripts/dod-gate-selbsttest.sh (ADR 0002, 6.13 d
 # verlangt das ausdruecklich): keine Zusicherungstabelle, keine mechanischen
 # mehrstufigen Deckungen, keine separate Mutationsdatei -- die Fallliste, die
-# 26 Mutationen, die 28 Fallklassen der Kopfkommentare und die Zuordnung zu
+# 49 Mutationen, die 36 Fallklassen der Kopfkommentare und die Zuordnung zu
 # den sieben Abnahmekriterien stehen FEST im Skript (Datenteil weiter unten).
 #
 # Verifikation dieses Skripts UND der beiden Gates: Static und Dynamic
@@ -98,7 +182,7 @@
 # NEU-1 der statischen Nachpruefung vom 2026-09-23); heute ruft die Kette es
 # nicht auf.
 #
-# Rueckgabewert 0: Normalmodus -- alle 318 Faelle bestanden UND je Gate
+# Rueckgabewert 0: Normalmodus -- alle 447 Faelle bestanden UND je Gate
 # mindestens ein Fall mit Soll 2 und einer mit Soll 0 UND je Gate mindestens
 # ein Fall der Klasse blockierend und einer der Klasse durchlaufend UND die
 # gemessene Gesamtzahl entspricht der erwarteten Zahl UND der Arbeitsbaum
@@ -108,7 +192,7 @@
 # geprueft; eine fehlende Kennung erscheint dort als FEHLEND und wirkt seit
 # E4.2 auf den Rueckgabewert -- Restbefund N-2/T-4 der statischen
 # Nachpruefung vom 2026-09-23, behoben). Modus --mutationen -- die
-# Grundlinie ist gruen UND alle 26 Mutationen erkannt UND der Arbeitsbaum
+# Grundlinie ist gruen UND alle 49 Mutationen erkannt UND der Arbeitsbaum
 # blieb unveraendert. Sonst Rueckgabewert 2. Rueckgabewert 3: der Lauf kommt
 # nicht zustande (ein Werkzeug fehlt, ein Klon ist nicht anlegbar, unbekannter
 # Parameter) -- mit Meldung auf stderr.
@@ -315,6 +399,56 @@ for w in cat grep sed tr git; do
   p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
   ln -s "$p" "$BIN_OHNE_JQ/$w"
 done
+BIN_OHNE_GREP="$T/bin-ohne-grep"
+mkdir -p "$BIN_OHNE_GREP"
+for w in cat sed tr jq git; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_OHNE_GREP/$w"
+done
+BIN_OHNE_SED="$T/bin-ohne-sed"
+BIN_OHNE_TR="$T/bin-ohne-tr"
+mkdir -p "$BIN_OHNE_SED" "$BIN_OHNE_TR"
+for w in cat grep tr jq git; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_OHNE_SED/$w"
+done
+for w in cat grep sed jq git; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_OHNE_TR/$w"
+done
+# Delta 2026-10-21 (DT-C2-05, ST-C2-06): ein grep, der mit 1 endet, ohne zu lesen (der Schreiber
+# bricht dann ab), und ein sed, das -z nicht kennt (andere Aufrufe gehen an das echte sed)
+BIN_GREP_ATTRAPPE="$T/bin-grep-attrappe"
+BIN_SED_OHNE_Z="$T/bin-sed-ohne-z"
+mkdir -p "$BIN_GREP_ATTRAPPE" "$BIN_SED_OHNE_Z"
+for w in cat sed tr jq git; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_GREP_ATTRAPPE/$w"
+done
+printf '#!/bin/sh\nexit 1\n' > "$BIN_GREP_ATTRAPPE/grep"
+chmod +x "$BIN_GREP_ATTRAPPE/grep"
+for w in cat grep tr jq git; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_SED_OHNE_Z/$w"
+done
+SED_ECHT=$(command -v sed) || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug 'sed' nicht aufloesbar." >&2; exit 3; }
+printf '#!/bin/sh\ncase "$1" in -z*) exit 2 ;; esac\nexec "%s" "$@"\n' "$SED_ECHT" > "$BIN_SED_OHNE_Z/sed"
+chmod +x "$BIN_SED_OHNE_Z/sed"
+# ein sed, das nur die Abschnittsbildung von Posten 4 a (Trenner mit vorangestelltem Zeilenumbruch) verweigert
+BIN_SED_OHNE_TRENNER="$T/bin-sed-ohne-trenner"
+mkdir -p "$BIN_SED_OHNE_TRENNER"
+for w in cat grep tr jq git; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_SED_OHNE_TRENNER/$w"
+done
+cat > "$BIN_SED_OHNE_TRENNER/sed" <<SEDEOF
+#!/bin/sh
+case "\$1" in
+  's/[;&|]/\\n&/g') exit 2 ;;
+esac
+exec "$SED_ECHT" "\$@"
+SEDEOF
+chmod +x "$BIN_SED_OHNE_TRENNER/sed"
 
 # -----------------------------------------------------------------------------
 # 8. Hilfsfunktionen zum Bauen der JSON-Eingaben (bj/wj, Sonderformen und
@@ -344,10 +478,27 @@ ph() {
 bj_ph() { bj "$(ph "$1")" "${2:-Bash}"; }
 wj_ph() { wj "$(ph "$1")" "$(ph "$2")" "${3:-Write}"; }
 
+# Posten 5 (2026-10-21, ADR 0002, 6.13 c, SR-001): grosse Eingaben. Eine
+# Kommentarzeile aus 200000 Zeichen liegt ueber der Schwelle von 128 KiB, ab der
+# die Pipeline aus printf und grep -q unter pipefail sicher mit 141 (SIGPIPE)
+# endet (DT-B2-10). jq --arg scheitert ab 128 KB an der Argumentlaenge; die
+# grossen Eingaben gehen deshalb ueber die Standardeingabe von jq (-Rs).
+GROSS=$(head -c 200000 /dev/zero | tr '\0' '#')
+bj_gross() { printf '%s\n# %s' "$(ph "$1")" "$GROSS" | jq -Rsc '{tool_name:"Bash", tool_input:{command:.}}'; }
+wj_gross() { printf '%s\n// %s' "$2" "$GROSS" | jq -Rsc --arg f "$(ph "$1")" '{tool_name:"Write", tool_input:{file_path:$f, content:.}}'; }
+# Delta DT-C2-01 (2026-10-21): 50000 Zeilen 'x \' (300 KB) hinter einem Befehl; die
+# alte Schleife :a;N;ba brauchte dafuer ueber 60 s (quadratisch).
+FORT=$(yes 'x \' | head -n 50000)
+bj_fort() { printf '%s\n%s\nx' "$(ph "$1")" "$FORT" | jq -Rsc '{tool_name:"Bash", tool_input:{command:.}}'; }
+# H-1 (Delta 2026-10-21): Zeilen aus 150000 Leerzeichen bzw. Ziffern
+LEER=$(head -c 150000 /dev/zero | tr '\0' ' ')
+ZIFF=$(head -c 150000 /dev/zero | tr '\0' '1')
+bj_zeile() { printf '%s\n%s' "$(ph "$1")" "$2" | jq -Rsc '{tool_name:"Bash", tool_input:{command:.}}'; }
+
 # -----------------------------------------------------------------------------
 # 9. Buchhaltung
 # -----------------------------------------------------------------------------
-ERWARTETE_FAELLE=318
+ERWARTETE_FAELLE=447
 VOLLSTAENDIGKEIT_OK=1
 declare -a ALLE_KENNUNGEN=()
 declare -a BESTANDENE_KENNUNGEN=()
@@ -385,16 +536,18 @@ declare -a GRUNDLINIE_GEFALLEN=()
 # Posten 4 c (Basename-Form), L20 Posten 5 (B2-GATE-D05). L18 (DT-B2-07) stand
 # hier bis zur Einordnung des Software Architects vom 2026-10-14 und ist
 # geschlossen.
+# Nachtrag 2026-10-21 (Posten 4 und 5 unter R3-Q-010): L17, L19, L20 und L21 sind
+# geschlossen (Soll 2, Klasse blockierend; ihr frueherer Wortlaut steht im Vermerk
+# hinter "vormals belegte Luecke: ") und hier entfernt; L05 bis L09 bleiben. Neu sind
+# L23 und L24 (Posten 6, Prototyp-Gate: sed/tr ohne Rueckgabewert-Pruefung).
 declare -A BEFUND_VON=()
 BEFUND_VON[L05]="Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c)"
 BEFUND_VON[L06]="Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c)"
 BEFUND_VON[L07]="Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c)"
 BEFUND_VON[L08]="Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c)"
 BEFUND_VON[L09]="Posten 3 unter R3-Q-010 (ADR 0002, 6.13 c)"
-BEFUND_VON[L17]="DT-B2-05 (Posten 4 unter R3-Q-010)"
-BEFUND_VON[L19]="DT-B2-09 (Delta-Pruefung Posten 1, 2026-10-14): Verb durch Zeilenfortsetzung getrennt; Posten 4 unter R3-Q-010"
-BEFUND_VON[L20]="B2-GATE-D05 (2026-10-14): grosse Eingabe, SIGPIPE unter pipefail; Posten 5 unter R3-Q-010"
-BEFUND_VON[L21]="Basename-Form (2026-10-14, echtes git 2.43.0): worktree add ../main ohne commit-ish checkt main aus; Posten 4 unter R3-Q-010"
+BEFUND_VON[L23]="Posten 6 unter R3-Q-010 (2026-10-21): Prototyp-Gate, sed/tr ohne Rueckgabewert-Pruefung, ohne sed oder tr im PATH rc 0"
+BEFUND_VON[L24]="Posten 6 unter R3-Q-010 (2026-10-21): Prototyp-Gate, sed/tr ohne Rueckgabewert-Pruefung, ohne sed oder tr im PATH rc 0"
 
 # -----------------------------------------------------------------------------
 # 10. Ein Fall (fall <kennung> <gate> <klasse> <soll> <kontext> <cwd> <pfad>
@@ -436,10 +589,20 @@ fall() {
   if [ "$cwd_wahl" = "/" ]; then zielpfad="/"; else zielpfad="$kontext_pfad"; fi
 
   local pfadvar
+  # Delta 2 (2026-10-21, ST-C2-D-01): die PATH-Wahl posix ist der volle PATH mit POSIXLY_CORRECT=1
+  # in der Umgebung des Gates; der Prozess des Pruefmittels selbst bleibt unberuehrt.
+  local -a posix_zusatz=()
   case "$pfad_wahl" in
     voll) pfadvar="$PATH_VOLL" ;;
+    posix) pfadvar="$PATH_VOLL"; posix_zusatz=(POSIXLY_CORRECT=1) ;;
     ohne-git) pfadvar="$BIN_OHNE_GIT" ;;
     ohne-jq) pfadvar="$BIN_OHNE_JQ" ;;
+    ohne-grep) pfadvar="$BIN_OHNE_GREP" ;;
+    ohne-sed) pfadvar="$BIN_OHNE_SED" ;;
+    ohne-tr) pfadvar="$BIN_OHNE_TR" ;;
+    grep-attrappe) pfadvar="$BIN_GREP_ATTRAPPE" ;;
+    sed-ohne-z) pfadvar="$BIN_SED_OHNE_Z" ;;
+    sed-ohne-trenner) pfadvar="$BIN_SED_OHNE_TRENNER" ;;
     *)
       echo "pretooluse-gates-selbsttest: FEHLER -- unbekannte PATH-Wahl '$pfad_wahl' bei Fall $kennung." >&2
       exit 3
@@ -448,8 +611,15 @@ fall() {
 
   : > "$T/lauf-aus"
   : > "$T/lauf-fehler"
-  ( cd "$zielpfad" 2>/dev/null && printf '%s' "$eingabe" | env PATH="$pfadvar" CLAUDE_PROJECT_DIR="$kontext_pfad" "$TIMEOUT_BIN" 20 "$BASH_BIN" "$gate_pfad" >"$T/lauf-aus" 2>"$T/lauf-fehler" )
+  ( cd "$zielpfad" 2>/dev/null && printf '%s' "$eingabe" | env PATH="$pfadvar" CLAUDE_PROJECT_DIR="$kontext_pfad" ${posix_zusatz[@]+"${posix_zusatz[@]}"} "$TIMEOUT_BIN" 14 "$BASH_BIN" "$gate_pfad" >"$T/lauf-aus" 2>"$T/lauf-fehler" )
   local ist=$?
+  # Delta DT-C2-01 (2026-10-21): Jeder Gate-Aufruf hat eine eigene Zeitgrenze von 14 s,
+  # unter der Hook-Grenze von 15 s in .claude/settings.json. Reisst ein Hook diese
+  # Grenze, bricht der Harness ihn ab und laesst durch (.claude/rules/
+  # claude-konfiguration.md, Abschnitt Hooks); das Pruefmittel bildet das nach und
+  # wertet die Ueberschreitung (Rueckgabewert 124 von timeout) als Durchlass 0.
+  local zeitgrenze=""
+  if [ "$ist" = 124 ]; then ist=0; zeitgrenze="zeitgrenze-14s-ueberschritten"; fi
 
   local stdout_bytes stderr_bytes
   stdout_bytes=$(wc -c < "$T/lauf-aus" | tr -d ' ')
@@ -465,7 +635,7 @@ fall() {
   # Prototyp-Gate an einem Dateiwerkzeug, die zur Datei passende Richtung.
   # Bash-Faelle des Prototyp-Gates nennen keine Richtung (die Bash-Meldung
   # kennt das Konstrukt "Richtung" nicht) und werden hier ausgenommen.
-  if [ "$soll" = "2" ] && [ "$pfad_wahl" = "voll" ]; then
+  if [ "$soll" = "2" ] && { [ "$pfad_wahl" = "voll" ] || [ "$pfad_wahl" = "posix" ]; }; then
     local stderr_text
     stderr_text=$(cat "$T/lauf-fehler")
     if [ "$art" = "ROH" ]; then
@@ -504,6 +674,9 @@ fall() {
     urteil="GEFALLEN"
     grund="${gruende%,}"
   fi
+  if [ -n "$zeitgrenze" ]; then
+    if [ "$grund" = "-" ]; then grund="$zeitgrenze"; else grund="$grund,$zeitgrenze"; fi
+  fi
 
   if [ "$GRUNDLINIE_MODUS" = "1" ]; then
     GRUNDLINIE_GESAMT=$((GRUNDLINIE_GESAMT+1))
@@ -517,6 +690,9 @@ fall() {
 
   if [ -z "$AKTIVE_MUTATION_GATE" ]; then
     local eingabe_anzeige="${eingabe//$'\n'/\\n}"
+    if [ "${#eingabe_anzeige}" -gt 1000 ]; then
+      eingabe_anzeige="${eingabe_anzeige:0:200} ...[gekuerzt, ${#eingabe_anzeige} Zeichen]"
+    fi
     printf '%s gate=%s werkzeug=%s soll=%s ist=%s %s klasse=%s stdout=%s stderr=%s grund=%s vermerk="%s" eingabe=%s\n' \
       "$kennung" "$gate" "$werkzeug" "$soll" "$ist" "$urteil" "$klasse" "$stdout_bytes" "$stderr_bytes" "$grund" "$vermerk" "$eingabe_anzeige"
 
@@ -570,7 +746,7 @@ abnahmekriterium_definieren() {
   AK_ID+=("$1"); AK_DOMAIN+=("$2"); AK_KENNUNGEN+=("$3"); AK_ANMERKUNG+=("$4")
 }
 
-# --- 11a. Sechsundzwanzig Mutationen (ADR 0002, 6.13 d) ---------------
+# --- 11a. Neunundvierzig Mutationen (ADR 0002, 6.13 d) ---------------
 mutation_definieren MM1 main 'worktree[[:space:]]+add([[:space:]]|$)' 'worktree[[:space:]]+addNIE([[:space:]]|$)' 'Sperre Arbeitsbaum auf main anlegen entfernt' 'A07 A08 A09 A37'
 mutation_definieren MM2 main 'if ! command -v git >/dev/null 2>&1; then' 'if false; then' 'git-Wache entfernt (ST-03)' 'S03'
 mutation_definieren MM3 main '(commit|merge|revert|cherry-pick|rebase|reset|am|apply|stash[[:space:]]+(pop|apply))' '(NIE)' 'Sperre schreibender git-Verben entfernt' 'A10 A14 A20 A21 A22 A30 A31 ZF3a ZF3b ZF3c ZF3d ZF3e ZF3f ZF3g'
@@ -596,10 +772,105 @@ mutation_definieren MP11 prototyp 'length == 1' 'length >= 1' 'N-3: Kardinalitae
 mutation_definieren MM9 main "; s/[\"'\\'']//g" '' 'Posten 1 zurueckgesetzt: das Entfernen der Anfuehrungszeichen in cmd_ziel ausser Kraft (die Rueckstriche bleiben)' 'L01 L03 A54 L04'
 mutation_definieren MM10 main 's/\\(.)/\1/g; ' '' 'Posten 1 zurueckgesetzt: das Entfernen der Rueckstriche in cmd_ziel ausser Kraft (die Anfuehrungszeichen bleiben)' 'L02 A55 A67'
 mutation_definieren MM11 main '[[:space:]]-[a-zA-Z]*[bB][[:space:]]*(main|master)' '[[:space:]]-[a-zA-Z]*[bB][[:space:]]*(NIE)' 'Posten 1 zurueckgesetzt: die Pruefung des Namens hinter -b/-B ausser Kraft, die Ausnahme greift wieder fuer main/master (L04)' 'L04 A56 A57'
-mutation_definieren MM12 main "\"\$cmd\" | grep -Eq 'worktree[[:space:]]+add[^|;&]*[[:space:]]-[bB]" "\"\$cmd_ziel\" | grep -Eq 'worktree[[:space:]]+add[^|;&]*[[:space:]]-[bB]" 'Posten 1, Behebung DT-B2-02 zurueckgesetzt: die Ausnahme fuer -b/-B liest wieder cmd_ziel statt den Befehlstext (maskierte Leerzeichen im Pfad werden zu " -b ", ein Dollarzeichen vor Anfuehrungszeichen gibt ein -b)' 'A58 A75'
+MM12_SUCH=$(cat <<'X'
+printf '%s' "$cmd_verb" | sed 's/[;&|]/\n&/g'
+X
+)
+MM12_ERS=$(cat <<'X'
+printf '%s' "$cmd_ziel" | sed 's/[;&|]/\n&/g'
+X
+)
+mutation_definieren MM12 main "$MM12_SUCH" "$MM12_ERS" 'Posten 1, Behebung DT-B2-02 zurueckgesetzt: die Abschnitte und damit die Ausnahme fuer -b/-B lesen wieder cmd_ziel statt den Befehlstext (maskierte Leerzeichen im Pfad werden zu " -b ", ein Dollarzeichen vor Anfuehrungszeichen gibt ein -b)' 'A58 A75'
 mutation_definieren MM13 main '-[a-zA-Z]*[bB][[:space:]]*(main|master)' '-[bB][[:space:]]+(main|master)' 'Posten 1, Behebung DT-B2-03 zurueckgesetzt: der Name hinter -b/-B nur getrennt und ohne Buchstaben davor (angehaengte und gebuendelte Werte -Bmain, -bmain, -fBmain, -qbmaster werden nicht erkannt)' 'A59 A60 A61 A73'
-mutation_definieren MM14 main '(^|[^\\])(\\\\)*\\$/ {' 'NIE_GESETZT/ {' 'Posten 1, Behebung DT-B2-04 zurueckgesetzt: der Schritt fuer die Zeilenfortsetzung in cmd_ziel ausser Kraft (Rueckstrich am Zeilenende)' 'A62 A63 A64'
+mutation_definieren MM14 main 's/\\\n|(\\[^\n])/\1/g' 's/NIE_GESETZT\n|(\\[^\n])/\1/g' 'Posten 1, Behebung DT-B2-04 zurueckgesetzt: der Schritt fuer die Zeilenfortsetzung (seit dem Delta vom 2026-10-21 in einem Durchgang mit sed -z) ausser Kraft: Rueckstrich und Zeilenumbruch fallen nicht mehr weg' 'A62 A63 A64'
 mutation_definieren MM15 main 's/\$(' 's/NIE_GESETZT(' 'Posten 1, Einordnung DT-B2-07 zurueckgesetzt: der Dollar-Schritt in cmd_ziel ausser Kraft (das Dollarzeichen vor einem Anfuehrungszeichen bleibt stehen)' 'L18 A69 A70 A71 A72'
+mutation_definieren MM16 main '[ "${st[1]:-}" = 0 ] && return 0' '[ "${st[1]:-}" = 0 ] && { [ "${st[0]:-}" = 0 ] && return 0; return 1; }' 'Posten 5 zurueckgesetzt (SR-001, B2-GATE-D05): bei einem Treffer gilt der Abbruch des Schreibers (SIGPIPE, 141) wieder als kein Treffer, wie bei printf | grep -Eq unter pipefail vor dem Bau; die Hilfsfunktion trifft liefert dann bei grossen Eingaben 1 statt 0' 'L20 A80 A81 A82 A83 A84'
+mutation_definieren MP12 prototyp '[ "${st[1]:-}" = 0 ] && return 0' '[ "${st[1]:-}" = 0 ] && { [ "${st[0]:-}" = 0 ] && return 0; return 1; }' 'Posten 5 zurueckgesetzt (SR-001, B2-GATE-D05): wie MM16 am Prototyp-Gate; bei grossen Eingaben gilt der Abbruch des Schreibers wieder als kein Treffer (Bash, Richtung 1 und Richtung 2 am Dateiinhalt)' 'L22 B64 B65'
+MM17_SUCH=$(cat <<'X'
+sed 's/[;&|]/\n&/g'
+X
+)
+mutation_definieren MM17 main "$MM17_SUCH" 'cat' 'Posten 4 a zurueckgesetzt (DT-B2-05 c): die Abschnitte werden nur noch am Zeilenumbruch getrennt, nicht mehr an ; & |; ein -b/-B in einem anderen Abschnitt derselben Zeile hebt die Sperre wieder fuer alle auf' 'L17 A85 A87 A88 A90 A101'
+mutation_definieren MM18 main 'cmd_verb="$cmd_fort"' 'cmd_verb="$cmd"' 'Posten 4 b zurueckgesetzt (DT-B2-09): Verb, Sammel-Push-Optionen und Ausnahme lesen wieder den Befehlstext mit seinen Zeilenfortsetzungen' 'L19 A91 A92 G78 G79 G80'
+mutation_definieren MM19 main 'if trifft "$basis_text" -e "$basis_muster" || trifft "$basis_alt" -e "$basis_muster"; then' 'if false; then' 'Posten 4 c zurueckgesetzt (L21): die Pruefung der Basename-Form ist ausser Kraft' 'L21 A93 A94 A95 A96 A97 A98 A99 A100'
+mutation_definieren MM20 main 'pruefung_unmoeglich "grep ${st[1]:-?}, Schreiber ${st[0]:-?}"' 'return 1' 'Posten 5 zurueckgesetzt (Zweig Pruefung nicht moeglich): ein Fehler von grep, etwa ein fehlendes grep (127), gilt wieder als kein Treffer, statt das Gate mit Rueckgabewert 2 zu beenden' 'S10'
+mutation_definieren MM21 main '[ $? = 0 ] || pruefung_unmoeglich "Abschnittsbildung"' '[ $? = 0 ] || true' 'Posten 4 a zurueckgesetzt (Abschnittsbildung fail-closed): ein Fehler des sed, das die Abschnitte bildet, wird uebergangen, der Rest bleibt leer und die Eingabe laeuft durch' 'S12'
+MM22_SUCH=$(cat <<'X'
+sed -zE 's/\\\n|(\\[^\n])/\1/g'
+X
+)
+MM22_ERS=$(cat <<'X'
+sed -E ':a; /(^|[^\\])(\\\\)*\\$/ { $!{ N; s/\\\n//; ba } }'
+X
+)
+mutation_definieren MM22 main "$MM22_SUCH" "$MM22_ERS" 'DT-C2-01 zurueckgesetzt: die Zeilenfortsetzung wird wieder mit der Schleife :a; N; ba entfernt, bei 50000 Fortsetzungen quadratisch (ueber 60 s); das Pruefmittel zieht je Gate-Aufruf eine Zeitgrenze von 14 s und wertet Rueckgabewert 124 als Durchlass' 'A105'
+MM23_ERS=$(cat <<'X'
+tr ';&|' '\n\n\n'
+X
+)
+mutation_definieren MM23 main "$MM17_SUCH" "$MM23_ERS" 'ST-C2-02 zurueckgesetzt: die Abschnitte entstehen wieder mit tr (der Trenner wird durch einen Zeilenumbruch ersetzt statt erhalten); ein main hinter einem Trenner liegt am Zeilenanfang und gilt als Ziel' 'G95'
+mutation_definieren MM24 main '[ "${st[1]:-}" = 1 ] && [ "${st[0]:-}" = 0 ] && return 1' '[ "${st[1]:-}" = 1 ] && return 1' 'DT-C2-05 zurueckgesetzt (Posten 5): grep 1 gilt als kein Treffer, auch wenn der Schreiber abgebrochen hat (Vergleich mit dem Schreiber entfernt)' 'S13'
+mutation_definieren MP14 prototyp '[ "${st[1]:-}" = 1 ] && [ "${st[0]:-}" = 0 ] && return 1' '[ "${st[1]:-}" = 1 ] && return 1' 'DT-C2-05 zurueckgesetzt (Posten 5) am Prototyp-Gate: grep 1 gilt als kein Treffer, auch wenn der Schreiber abgebrochen hat' 'S14'
+mutation_definieren MM25 main '[ $? = 0 ] || pruefung_unmoeglich "Zeilenfortsetzungen"' '[ $? = 0 ] || true' 'ST-C2-06 zurueckgesetzt: ein Fehler des sed, das die Zeilenfortsetzung entfernt, wird uebergangen, cmd_fort bleibt leer und die Eingabe laeuft durch' 'S15'
+mutation_definieren MM26 main '[[:space:]]+([^[:space:]-][^[:space:]]*)?/(main|master)' '[[:space:]]+[^[:space:]-][^[:space:]]*/(main|master)' 'DT-C2-03 zurueckgesetzt: die Basename-Form verlangt wieder ein Zeichen vor dem Schraegstrich (/main wird nicht erkannt)' 'A110 A111'
+MM27_SUCH=$(cat <<'X'
+umleit='(<<<|<<-?|<>|>>|>|<)'
+X
+)
+MM27_ERS=$(cat <<'X'
+umleit='(>>?|<)'
+X
+)
+mutation_definieren MM27 main "$MM27_SUCH" "$MM27_ERS" 'DT-C2-04 zurueckgesetzt: <<<, <<, <> samt getrenntem Operanden werden vor der Wortzaehlung nicht entfernt' 'A112 A113 A114 A115'
+mutation_definieren MP13 prototyp 'pruefung_unmoeglich "grep ${st[1]:-?}, Schreiber ${st[0]:-?}"' 'return 1' 'Posten 5 zurueckgesetzt (Zweig Pruefung nicht moeglich) am Prototyp-Gate: ein fehlendes grep (127) gilt wieder als kein Treffer, statt das Gate mit Rueckgabewert 2 zu beenden' 'S11'
+MM28_SUCH=$(cat <<'X'
+s/(^|[[:space:]])${deskr}${umleit}[[:space:]]*${operand}/\1/g; s/${umleit}[[:space:]]*${operand}//g
+X
+)
+MM28_ERS=$(cat <<'X'
+s/[0-9]*${umleit}[[:space:]]*${operand}//g
+X
+)
+mutation_definieren MM28 main "$MM28_SUCH" "$MM28_ERS" 'ST-C2-D-07 zurueckgesetzt (Delta 2): eine Ziffer vor dem Umleitungszeichen gilt wieder immer als Dateideskriptor, auch am Wortende (../main1>x verliert das Wortende und wird gesperrt)' 'G102 G103'
+MM29_SUCH=$(cat <<'X'
+operand='([^[:space:]"'\''\\]|\\.|"([^"\\]|\\.)*("|\\?$)|'\''[^'\'']*('\''|$))*'
+X
+)
+MM29_ERS=$(cat <<'X'
+operand='([^[:space:]"'\''\\]|\\.)*'
+X
+)
+mutation_definieren MM29 main "$MM29_SUCH" "$MM29_ERS" 'DT-C2-D-01 zurueckgesetzt (Delta 2): der Operand einer Umleitung kennt keine Anfuehrungszeichen mehr (nur Woerter und maskierte Zeichen); die zweite Haelfte eines Operanden in Anfuehrungszeichen bleibt als zweites Wort stehen und hebt die Sperre auf' 'A120 A121 A122 A123 A124 A125 A126 A127'
+mutation_definieren MM30 main 'unset POSIXLY_CORRECT' ':' 'ST-C2-D-01 zurueckgesetzt (Delta 2): das main-Gate entfernt POSIXLY_CORRECT nicht mehr aus seiner Umgebung' 'S17'
+mutation_definieren MP15 prototyp 'unset POSIXLY_CORRECT' ':' 'ST-C2-D-01 zurueckgesetzt (Delta 2): das Prototyp-Gate entfernt POSIXLY_CORRECT nicht mehr aus seiner Umgebung' 'S18 S19'
+mutation_definieren MM31 main '|| trifft "$basis_alt" -e "$basis_muster"' '' 'DT-C2-E-01 zurueckgesetzt (Delta 3): die Basename-Form laeuft nur noch in der Fassung von Delta 2; ein < oder > in einem Wort in Anfuehrungszeichen vor dem Pfad laesst den Operanden den Pfad verschlucken und die Sperre entfaellt' 'A131 A132 A133 A134 A135 A136'
+MM32_SUCH=$(cat <<'X'
+deskr='([0-9]+|\{[A-Za-z_][A-Za-z0-9_]*\})'
+X
+)
+MM32_ERS=$(cat <<'X'
+deskr='([0-9]+)'
+X
+)
+mutation_definieren MM32 main "$MM32_SUCH" "$MM32_ERS" 'DT-C2-E-02 zurueckgesetzt (Delta 3): ein Wort {name} vor dem Umleitungszeichen ist kein Dateideskriptor mehr; {fd} bleibt als zweites Wort stehen' 'A130'
+MM33_SUCH=$(cat <<'X'
+"([^"\\]|\\.)*("|\\?$)
+X
+)
+MM33_ERS=$(cat <<'X'
+"[^"]*("|$)
+X
+)
+mutation_definieren MM33 main "$MM33_SUCH" "$MM33_ERS" 'ST-C2-E-02 zurueckgesetzt (Delta 3): ein Operand in doppelten Anfuehrungszeichen kennt keine maskierte Anfuehrung mehr; die Anfuehrung endet am maskierten Zeichen und der Rest bleibt als zweites Wort stehen' 'A137 A138 A144 A145'
+MM34_SUCH=$(cat <<'X'
+"([^"\\]|\\.)*("|\\?$)
+X
+)
+MM34_ERS=$(cat <<'X'
+"([^"\\]|\\.)*\\?("|$)
+X
+)
+mutation_definieren MM34 main "$MM34_SUCH" "$MM34_ERS" 'ST-C2-F-01 zurueckgesetzt (Delta 4): der Rueckstrich vor dem schliessenden Anfuehrungszeichen ist wieder zugelassen (Klasse von Delta 3); ein maskiertes Anfuehrungszeichen kann als Rueckstrich plus schliessendes Anfuehrungszeichen gelesen werden (Mischlesung), der Operand verschluckt einen Pfad dahinter oder ein commit-ish' 'A143 A144 A145 G109'
 
 # --- 11b. Fallklassen der Kopfkommentare (ADR 0002, 6.13 d) -----------
 fallklasse_definieren KM-1 main gedeckt 'Fall 1: Dateiaenderung, waehrend HEAD auf main/master steht' 'A12 A13 A48'
@@ -626,19 +897,27 @@ fallklasse_definieren GP-1 prototyp grenze 'gemeinsame Abhaengigkeiten werden ni
 fallklasse_definieren GP-2 prototyp grenze 'Asymmetrie der Pfadschreibweise in Richtung 2 (Wurzelpfad, Vorspann, src=/href= ohne Schraegstrich oder mit Rueckstrich, doppelter Rueckstrich, mehrfaches ./)' 'L10 L11 L12 L13 L14 L15 L16'
 fallklasse_definieren GP-3 prototyp grenze 'symmetrische Luecken beider Richtungen (Leerraum vor der Klammer, @import url(, Leerraum um =, __import__ ohne Punkt)' 'L05 L06 L07 L08'
 fallklasse_definieren KM-13 main gedeckt 'Ziele von push und worktree nach Entfernen von Anfuehrungszeichen, Rueckstrichen, Zeilenfortsetzungen und dem Dollar vor Anfuehrungszeichen verglichen; die Ausnahme fuer -b/-B greift nicht fuer main/master, getrennt, angehaengt oder gebuendelt (Posten 1, 2026-10-14)' 'L01 L02 L03 L04 L18 A54 A55 A56 A57 A58 A59 A60 A61 A62 A63 A64 A67 A68 A69 A70 A71 A72 A73 A74 A75 A76 A77'
-fallklasse_definieren GM-5 main grenze "Grenze der Auswertung: Ziele aus Variable, Befehlssubstitution, eval, Brace-Expansion und Escape-Folgen in \$'...'-Wort (hex und oktal) und die Uebersetzung von \$\"...\" ueber einen Meldungskatalog werden nicht erkannt (Posten 1, 2026-10-14)" 'G47 G48 G49 G61 G62 G63 G64 G68 G71'
+fallklasse_definieren GM-5 main grenze "Grenze der Auswertung: Ziele aus Variable, Befehlssubstitution, eval, Brace-Expansion und Escape-Folgen in \$'...'-Wort (hex und oktal) und die Uebersetzung von \$\"...\" ueber einen Meldungskatalog werden nicht erkannt (Posten 1, 2026-10-14); seit Posten 4 a (2026-10-21) auch ein worktree add in einer Befehlssubstitution oder in Rueckwaertsakzenten innerhalb eines Ausnahme-Abschnitts (G88, G89); seit Delta 3 (2026-10-21) auch eine Befehlssubstitution als Umleitungsoperand (G105)" 'G47 G48 G49 G61 G62 G63 G64 G68 G71 G88 G89 G105'
 fallklasse_definieren GM-6 main grenze 'Grenze an der Schnittstelle: Werkzeugname ungleich Bash (ZF10a, ZF10b; ADR 0002, 6.13 c, Nachtrag vom 2026-09-23; im Kopfkommentar seit Posten 1)' 'ZF10a ZF10b'
-fallklasse_definieren GM-7 main grenze 'Ausnahme fuer -b/-B am Text, nicht an der Syntax der Shell: -b/-B in Anfuehrungszeichen oder Kommentar (DT-B2-05 a/b); als benannter Preis in sperrender Richtung: -b/-B main nur als Inhalt (A78, A79; B2-PM-14)' 'G59 G60 A78 A79'
+fallklasse_definieren GM-7 main grenze 'Ausnahme fuer -b/-B am Text, nicht an der Syntax der Shell: -b/-B in Anfuehrungszeichen oder Kommentar (DT-B2-05 a/b); als benannter Preis in sperrender Richtung: -b/-B main nur als Inhalt (A78, A79; B2-PM-14); seit Posten 4 b (2026-10-21) auch -b/-B in Anfuehrungszeichen jeder Art oder im Kommentar, auch wenn es erst ueber eine Zeilenfortsetzung neben worktree add rueckt: das Gate entfernt den Rueckstrich vor dem Zeilenumbruch auch dort, wo die Shell ihn nicht entfernt (einfache Anfuehrungszeichen, Kommentar; G80, G93), und liest -b dort als Ausnahme, wo die Shell die Zeile tatsaechlich fortsetzt (doppelte Anfuehrungszeichen; G92)' 'G59 G60 G80 G92 G93 A78 A79'
 fallklasse_definieren GM-8 main grenze 'Grenze am Befehlstext: Verb oder Sammel-Push-Option in Anfuehrungszeichen oder hinter Rueckstrich wird nicht erkannt (DT-B2-08)' 'G69 G70'
+fallklasse_definieren KM-14 main gedeckt 'Zielpruefung am Befehlstext, nicht am Abschnitt (Preis in sicherer Richtung, Posten 4 a, 2026-10-21): steht nach dem Abziehen der Ausnahme-Abschnitte noch ein worktree add ohne Ausnahme im Text, sperrt jedes main an anderer Stelle derselben Eingabe; Ausweg: getrennte Bash-Aufrufe' 'A89 A90'
+fallklasse_definieren KM-15 main gedeckt 'Posten 4 a (DT-B2-05 c, 2026-10-21): die Ausnahme fuer -b/-B gilt nur fuer den worktree-add-Abschnitt, in dem sie steht; Abschnitte trennen ; & | und der Zeilenumbruch' 'L17 A85 A86 A87 A88 A101 A106 A107 A108 A109 S12'
+fallklasse_definieren KM-16 main gedeckt 'Posten 4 b (DT-B2-09, 2026-10-21): Verb, Sammel-Push-Optionen und Ausnahme werden auf dem Befehlstext mit entfernten Zeilenfortsetzungen geprueft' 'L19 A91 A92 A104 A105 S15 S16 S17'
+fallklasse_definieren KM-17 main gedeckt 'Posten 4 c (Basename-Form, 2026-10-21): ein worktree add ohne Ausnahme mit genau einem Wort, das auf /main oder /master endet, ohne --detach oder -d; Preis (bestehende Klasse Woerter nur als Inhalt): die Phrase als Inhalt sperrt wie schon die bisherige Sperrform (A102, A103); seit Delta 3 (2026-10-21) Preis in sicherer Richtung: schliesst ein Operand in Anfuehrungszeichen erst hinter einem Zeilenumbruch oder ; & |, sieht die Basename-Pruefung das commit-ish nicht (A139, A140); ebenso bei einem Wort in Anfuehrungszeichen mit < oder > hinter dem Pfad (A141, A142) und bei < oder > am Ende eines solchen Worts unmittelbar vor --detach oder -d (A149)' 'L21 A93 A94 A95 A96 A97 A98 A99 A100 A102 A103 A110 A111 A112 A113 A114 A115 A118 A119 A120 A121 A122 A123 A124 A125 A126 A127 A128 A129 A130 A131 A132 A133 A134 A135 A136 A137 A138 A139 A140 A141 A142 A143 A144 A145 A146 A147 A148 A149'
+fallklasse_definieren KM-18 main gedeckt 'Posten 5 (SR-001, B2-GATE-D05, 2026-10-21): grosse Eingabe -- der Abbruch des Schreibers gilt nie als kein Treffer; kann eine Pruefung nicht laufen, blockiert das Gate' 'L20 A80 A81 A82 A83 A84 A116 A117 S10 S13'
+fallklasse_definieren KP-5 prototyp gedeckt 'Posten 5 (SR-001, B2-GATE-D05, 2026-10-21) am Prototyp-Gate: grosse Eingabe bei Bash und am Dateiinhalt (Richtung 1 und Richtung 2); kann eine Pruefung nicht laufen, blockiert das Gate' 'L22 B64 B65 S11 S14'
+fallklasse_definieren KP-6 prototyp gedeckt 'Delta 2 (ST-C2-D-01, 2026-10-21) am Prototyp-Gate: POSIXLY_CORRECT in der Umgebung aendert, wie GNU sed [^\n] liest (Kommentarentfernung); das Gate entfernt die Variable zu Beginn' 'S18 S19'
+fallklasse_definieren GM-9 main grenze 'Grenze der Basename-Form (Posten 4 c, 2026-10-21): eine Option mit getrenntem Wert (--reason) zaehlt als zweites Wort, ein Pfad in Anfuehrungszeichen zerfaellt in mehrere Woerter (Leerzeichen, Semikolon, Raute, Umleitungszeichen, Zeilenumbruch; G91, G97 bis G100); seit Delta 3 (2026-10-21) auch eine Option mit getrenntem Wert in Anfuehrungszeichen (G106); seit Delta 4 (2026-10-21) auch < oder > als letztes Zeichen eines Worts in Anfuehrungszeichen vor dem Pfad (G111), ; & | oder ein Zeilenumbruch in einem solchen Wort (G112) und die Verbindung beider Fehlformen aus Delta 3 (G110)' 'G90 G91 G97 G98 G99 G100 G106 G110 G111 G112'
 
 # --- 11c. Abnahmekriterien (Backlog R3-Q-010; ADR 0002, 6.13 f) -------------------------
 abnahmekriterium_definieren R3-Q-010_prototyp_gate_pfadformen fallliste 'B02 B03 B06 ZF5a ZF5b ZF5c ZF6a ZF6b ZF5e B43 B45 B46 B50 B51 ZF6f P01 P05 P09 P27 P30 P31 P32' 'geschlossen mit E4.2 (vormals ST-04/ST-05); Gegenproben P01 P05 P09 P27 P30 P31 P32'
 abnahmekriterium_definieren R3-Q-010_prototyp_gate_richtungsgleichheit fallliste 'B07 B08 ZF6c ZF6d B35 B41 B42 B44 B47 B48 B49 P10 P02 B34 P28 P29' 'geschlossen mit E4.2 (vormals P-01); Gegenprobe P10; Richtung 1 zum Vergleich P02 B34; Gegenproben P28 P29'
 abnahmekriterium_definieren R3-Q-010_prototyp_gate_schreibwirkung fallliste 'B09 ZF7a ZF7c ZF7d ZF7b P06 P14 P15 P33 B52 B53 B54 B55 B56 B57 B58 B59 P36 P37 P38 B60 B61 B62 P39 B63' 'geschlossen mit E4.3 (vormals ST-09); Gegenproben P06 P14 P15 P33 B52 P36 P37; P38 vorgemessen mit Abweichung vom Behebungsauftrag (rc=2 statt 0), gemeldet, nicht angepasst; DT-E43-6 (E4.3-Nachtrag, 2026-09-23) mit B60 B61 B62, Gegenprobe P39; DT-E43-8 (E4.3-Nachtrag, 2026-09-23) mit B63'
 abnahmekriterium_definieren R3-Q-010_gates_unlesbare_eingabe fallliste 'S01 S02 ZF8a ZF8b S04 S05 ZF8c ZF8d G01 P04 G40 P34' 'geschlossen mit E4.3 (vormals ST-13); Gegenproben G01 P04 G40 P34'
-abnahmekriterium_definieren R3-Q-010_pruefmittel_je_gate gemischt 'G01 G02 G03 G05 G06 P01 P03 P04 P05 MM1 MM2 MM3 MM4 MM5 MP1 MP2 MP3 MP4 MP5 MM7 MM8 MP10 MP11 MM9 MM10 MM11 MM12 MM13 MM14 MM15' 'Zaehlung je Gate, Mutationsmodus MM1-MM5/MP1-MP5 und MM7/MM8/MP10/MP11 (DT-E43-6, N-3) und MM9 bis MM15 (Posten 1, 2026-10-14), Regressionsschutz G01 G02 G03 G05 G06 P01 P03 P04 P05'
+abnahmekriterium_definieren R3-Q-010_pruefmittel_je_gate gemischt 'G01 G02 G03 G05 G06 P01 P03 P04 P05 MM1 MM2 MM3 MM4 MM5 MP1 MP2 MP3 MP4 MP5 MM7 MM8 MP10 MP11 MM9 MM10 MM11 MM12 MM13 MM14 MM15 MM16 MM17 MM18 MM19 MM20 MM21 MM22 MM23 MM24 MM25 MM26 MM27 MM28 MM29 MM30 MM31 MM32 MM33 MM34 MP12 MP13 MP14 MP15' 'Zaehlung je Gate, Mutationsmodus MM1-MM5/MP1-MP5 und MM7/MM8/MP10/MP11 (DT-E43-6, N-3) und MM9 bis MM15 (Posten 1, 2026-10-14) und MM16 bis MM34, MP12 bis MP15 (Posten 4 und 5 sowie Delta, Delta 2, Delta 3 und Delta 4, 2026-10-21), Regressionsschutz G01 G02 G03 G05 G06 P01 P03 P04 P05'
 abnahmekriterium_definieren R3-Q-010_main_gate_fremdbelegt fallliste 'A02 A03 A04 A05 A06 A38 A39 A40 A41 A42 A07 A08 A09 S03 G01 G02 G03' 'ST-01 trennscharf im Kontext AK; ST-02/ST-03 behoben; Gegenproben G01 G02 G03'
-abnahmekriterium_definieren R3-Q-010_benannte_grenzen fallklassen 'KM-1 KM-2 KM-3 KM-4 KM-5 KM-6 KM-7 KM-8 KM-9 GM-1 GM-2 GM-3 GM-4 KP-1 KP-2 KM-10 KM-11 KM-12 KP-3 KP-4 GP-1 GP-2 GP-3 KM-13 GM-5 GM-6 GM-7 GM-8' 'Fallklassen der Kopfkommentare; P-10 benannt (GP-1), nicht geschlossen; Posten 1 (2026-10-14): KM-13, GM-5, GM-6, GM-7, GM-8'
+abnahmekriterium_definieren R3-Q-010_benannte_grenzen fallklassen 'KM-1 KM-2 KM-3 KM-4 KM-5 KM-6 KM-7 KM-8 KM-9 GM-1 GM-2 GM-3 GM-4 KP-1 KP-2 KM-10 KM-11 KM-12 KP-3 KP-4 GP-1 GP-2 GP-3 KM-13 GM-5 GM-6 GM-7 GM-8 KM-14 KM-15 KM-16 KM-17 KM-18 KP-5 GM-9 KP-6' 'Fallklassen der Kopfkommentare; P-10 benannt (GP-1), nicht geschlossen; Posten 1 (2026-10-14): KM-13, GM-5, GM-6, GM-7, GM-8; Posten 4 und 5 (2026-10-21): KM-14 bis KM-18, KP-5, GM-9; Delta 2 (2026-10-21): KP-6'
 
 # -----------------------------------------------------------------------------
 # 12. Fallliste -- Teil 4.1 der Fallliste: main-Gate, Soll 2
@@ -736,6 +1015,82 @@ faelle_4_1_main_soll2() {
   fall ZF3h main blockierend 2 AK - voll JSON Bash 'Zusatzfall 3 / N1: Shell-Schreibwirkung im gewechselten Kontext' "$(bj_ph 'cd ../zweiter-main && sed -i s/a/b/ datei.txt')"
   fall S03 main blockierend 2 MK - ohne-git JSON Bash 'ST-03 behoben: git fehlt im Suchpfad, Gate blockiert mit Meldung auf stderr' "$(bj_ph 'git commit -m x')"
   fall S06 main blockierend 2 MK - ohne-jq JSON Bash 'jq-Wache des main-Gates (Kopfkommentar "analog zur jq-Wache")' "$(bj_ph 'git status')"
+  fall S10 main blockierend 2 AK - ohne-grep JSON Bash 'Posten 5 unter R3-Q-010 (SR-001): fehlt grep im Suchpfad, kann das Gate nicht pruefen und blockiert mit Meldung auf stderr (vorher Durchlass, gemessen 0); Zweig Pruefung nicht moeglich der Hilfsfunktion trifft; Mutation MM20' "$(bj_ph 'git status')"
+  fall S12 main blockierend 2 AK - sed-ohne-trenner JSON Bash 'Posten 4 a unter R3-Q-010, Abschnittsbildung fail-closed (Delta 2026-10-21): scheitert das sed, das die Abschnitte bildet (hier nachgebildet; die uebrigen sed-Aufrufe laufen), kann das Gate die Abschnitte nicht bilden und blockiert mit Meldung auf stderr; mit vollem PATH ist dieselbe Eingabe zulaessig (G03); Mutation MM21' "$(bj_ph 'git worktree add -b x /tmp/wt main')"
+  fall S13 main blockierend 2 AK - grep-attrappe JSON Bash 'DT-C2-05 (Delta 2026-10-21): grep endet mit 1, ohne zu lesen (Attrappe); der Schreiber bricht ab (141), kein Treffer ist dann nicht glaubwuerdig und das Gate blockiert; Mutation MM24' "$(bj_gross 'git status')"
+  fall S15 main blockierend 2 AK - sed-ohne-z JSON Bash 'ST-C2-06 (Delta 2026-10-21): ein sed ohne -z (Attrappe) kann die Zeilenfortsetzung nicht entfernen; das Gate blockiert mit Meldung auf stderr; Mutation MM25' "$(bj_ph 'git status')"
+  fall S16 main blockierend 2 AK - ohne-sed JSON Bash 'ST-C2-06 (Delta 2026-10-21): fehlt sed im Suchpfad, kann das Gate die Zeilenfortsetzung nicht entfernen und blockiert mit Meldung auf stderr (das alte Gate gab hier 0)' "$(bj_ph 'git status')"
+  fall S17 main blockierend 2 AK - posix JSON Bash 'ST-C2-D-01 (Delta 2 2026-10-21): POSIXLY_CORRECT=1 in der Umgebung des Gates; GNU sed liest dann [^\n] als "nicht Rueckstrich und nicht n", zwei Rueckstriche vor dem Zeilenumbruch galten als Fortsetzung, das -b dahinter als Ausnahme, der Befehl lief durch (rc 0); das Gate entfernt die Variable zu Beginn; Mutation MM30' "$(bj_ph $'git worktree add \'/tmp/a\\\\\n -b x\' main')"
+  fall A80 main blockierend 2 AK - voll JSON Bash 'Posten 5 unter R3-Q-010 (SR-001, B2-GATE-D05): grosse Eingabe, Sammel-Push --mirror mit einer Kommentarzeile aus 200000 Zeichen; Pruefstellen Verb und Sammel-Push-Option ohne Abbruch des Schreibers' "$(bj_gross 'git push --mirror origin')"
+  fall A81 main blockierend 2 AK - voll JSON Bash 'Posten 5 unter R3-Q-010 (SR-001, B2-GATE-D05): grosse Eingabe, Arbeitsbaum auf main mit einer Kommentarzeile aus 200000 Zeichen; Pruefstellen wt_add und Zielmuster ohne Abbruch des Schreibers' "$(bj_gross 'git worktree add /tmp/wt main')"
+  fall A82 main blockierend 2 AK - voll JSON Bash 'Posten 5 unter R3-Q-010 (SR-001, B2-GATE-D05): grosse Eingabe, -B main mit einer Kommentarzeile aus 200000 Zeichen; Pruefstelle Namenspruefung ohne Abbruch des Schreibers' "$(bj_gross 'git worktree add -B main /tmp/wt')"
+  fall A83 main blockierend 2 MK - voll JSON Bash 'Posten 5 unter R3-Q-010 (SR-001, B2-GATE-D05): grosse Eingabe, schreibendes git-Verb auf main mit einer Kommentarzeile aus 200000 Zeichen; Pruefstelle schreibende Verben ohne Abbruch des Schreibers' "$(bj_gross 'git commit -m x')"
+  fall A84 main blockierend 2 MK - voll JSON Bash 'Posten 5 unter R3-Q-010 (SR-001, B2-GATE-D05): grosse Eingabe, Shell-Schreibwirkung auf main mit einer Kommentarzeile aus 200000 Zeichen; Pruefstelle Schreibwirkung ohne Abbruch des Schreibers' "$(bj_gross 'echo hallo > datei.txt')"
+  fall A85 main blockierend 2 AK - voll JSON Bash 'Posten 4 a unter R3-Q-010 (DT-B2-05 c): die Ausnahme fuer -b/-B gilt nur fuer den worktree-add-Abschnitt, in dem sie steht; Trenner &&' "$(bj_ph 'git worktree add -b x /tmp/w1 main && git worktree add /tmp/w2 main')"
+  fall A86 main blockierend 2 AK - voll JSON Bash 'Posten 4 a unter R3-Q-010 (DT-B2-05 c): die Ausnahme gilt nur im eigenen Abschnitt; Trenner Zeilenumbruch' "$(bj_ph $'git worktree add -b x /tmp/w1 main\ngit worktree add /tmp/w2 main')"
+  fall A87 main blockierend 2 AK - voll JSON Bash 'Posten 4 a unter R3-Q-010 (DT-B2-05 c): die Ausnahme gilt nur im eigenen Abschnitt; Trenner ||' "$(bj_ph 'git worktree add -b x /tmp/w1 main || git worktree add /tmp/w2 main')"
+  fall A88 main blockierend 2 AK - voll JSON Bash 'Posten 4 a unter R3-Q-010 (DT-B2-05 c): die Ausnahme gilt nur im eigenen Abschnitt; Trenner |' "$(bj_ph 'git worktree add -b x /tmp/w1 main | git worktree add /tmp/w2 main')"
+  fall A89 main blockierend 2 AK - voll JSON Bash 'Preis in sicherer Richtung, vorbestehend, von Posten 4 a nicht geaendert: ein worktree add ohne Ausnahme sperrt, wenn main an anderer Stelle derselben Eingabe steht (die Zielpruefung liest den Befehlstext, nicht den Abschnitt)' "$(bj_ph 'git worktree add /tmp/w2 feature; git log main')"
+  fall A90 main blockierend 2 AK - voll JSON Bash 'Preis Posten 4 a (gemessen vorher 0): nach dem Abschneiden des Ausnahme-Abschnitts bleibt ein worktree add ohne Ausnahme, und main steht an anderer Stelle; gesperrt wie A89, dieselbe Klasse' "$(bj_ph 'git worktree add -b x /tmp/w1 main; git worktree add /tmp/w2 feature; git log main')"
+  fall A91 main blockierend 2 AK - voll JSON Bash 'Posten 4 b unter R3-Q-010 (DT-B2-09): das Verb worktree add durch eine Zeilenfortsetzung getrennt' "$(bj_ph $'git worktree \\\nadd /tmp/wt main')"
+  fall A92 main blockierend 2 AK - voll JSON Bash 'Posten 4 b unter R3-Q-010 (DT-B2-09): die Sammel-Push-Option --all durch eine Zeilenfortsetzung getrennt' "$(bj_ph $'git push origin --\\\nall')"
+  fall A93 main blockierend 2 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010 (Basename-Form): ein Wort, das auf /master endet, kein commit-ish' "$(bj_ph 'git worktree add /tmp/wt/master')"
+  fall A94 main blockierend 2 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010 (Basename-Form): Option vor dem Wort' "$(bj_ph 'git worktree add -f ../main')"
+  fall A95 main blockierend 2 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010 (Basename-Form): Option hinter dem Wort' "$(bj_ph 'git worktree add ../main -q')"
+  fall A96 main blockierend 2 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010 (Basename-Form): Pfad in Anfuehrungszeichen' "$(bj_ph 'git worktree add "../main"')"
+  fall A97 main blockierend 2 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010 (Basename-Form): ein Kommentar hinter dem Wort zaehlt nicht als zweites Wort' "$(bj_ph 'git worktree add ../main # neu')"
+  fall A98 main blockierend 2 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010 (Basename-Form): Umleitungen hinter dem Wort zaehlen nicht als Woerter' "$(bj_ph 'git worktree add ../main >/dev/null 2>&1')"
+  fall A99 main blockierend 2 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010 (Basename-Form): schliessende Klammer einer Subshell hinter dem Wort' "$(bj_ph '(git worktree add ../main)')"
+  fall A100 main blockierend 2 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010 (Basename-Form): im Abschnitt hinter &&' "$(bj_ph 'git status && git worktree add ../main')"
+  fall A101 main blockierend 2 AK - voll JSON Bash 'Posten 4 a unter R3-Q-010 (DT-B2-05 c): die Reihenfolge der Abschnitte spielt keine Rolle, der Abschnitt ohne Ausnahme steht vorn' "$(bj_ph 'git worktree add /tmp/w2 main; git worktree add -b x /tmp/w1 main')"
+  fall A102 main blockierend 2 AK - voll JSON Bash 'Preis, Woerter nur als Inhalt (bestehende Klasse, Fallklasse KM-17 von Posten 4 c, nicht GM-7): die Phrase git worktree add ../main steht nur als Inhalt (echo in Anfuehrungszeichen); gemessen vorher 0; Ausweg: den Text mit dem Write-Werkzeug in eine Datei schreiben' "$(bj_ph 'echo "git worktree add ../main" > /tmp/x.txt')"
+  fall A103 main blockierend 2 AK - voll JSON Bash 'Vergleichsfall zu A102, Woerter nur als Inhalt: die bisherige Sperrform als Inhalt (git worktree add mit main als Ziel in einer Commit-Meldung) sperrt vorher wie nachher; Ausweg: git commit -F <datei>' "$(bj_ph 'git commit -m "Doku: git worktree add /tmp/wt main"')"
+  fall A104 main blockierend 2 AK - voll JSON Bash 'Posten 4 b, Delta DT-C2-01 (2026-10-21): zwei Zeilenfortsetzungen hintereinander (Gleichheit mit der alten Schleife); eine Form, die das Kontextzeichen verbraucht, liesse hier die zweite stehen' "$(bj_ph $'git \\\n\\\npush origin main')"
+  fall A105 main blockierend 2 AK - voll JSON Bash 'DT-C2-01 (Delta 2026-10-21): 50000 Zeilenfortsetzungen (300 KB); die Schleife :a;N;ba brauchte dafuer ueber 60 s und riss die Hook-Grenze von 15 s (der Harness laesst dann durch); das Pruefmittel zieht je Gate-Aufruf eine Zeitgrenze von 14 s und wertet Rueckgabewert 124 als Durchlass; Mutation MM22 (alte Schleife)' "$(bj_fort 'git push origin main')"
+  fall A106 main blockierend 2 AK - voll JSON Bash 'ST-C2-02 (Delta 2026-10-21): ein Trenner (&&) vor worktree add; der Trenner bleibt am Anfang des Abschnitts, die Basename-Form (Posten 4 c) muss ihn zulassen' "$(bj_ph 'true && git worktree add ../main')"
+  fall A107 main blockierend 2 AK - voll JSON Bash 'ST-C2-02 (Delta 2026-10-21): ein Trenner (;) vor worktree add; die Basename-Form muss ihn zulassen' "$(bj_ph 'x; git worktree add ../main')"
+  fall A108 main blockierend 2 AK - voll JSON Bash 'ST-C2-02 (Delta 2026-10-21): ein Trenner (|) vor worktree add; die Basename-Form muss ihn zulassen' "$(bj_ph 'x | git worktree add ../main')"
+  fall A109 main blockierend 2 AK - voll JSON Bash 'ST-C2-02 (Delta 2026-10-21): ein Trenner vor worktree add mit main als commit-ish; das Zielmuster sieht main hinter einem Leerzeichen' "$(bj_ph 'true && git worktree add /tmp/w2 main')"
+  fall A110 main blockierend 2 AK - voll JSON Bash 'DT-C2-03 (Delta 2026-10-21): Basename-Form ohne Praefix vor dem Schraegstrich; der Pfad /main legt den Arbeitsbaum auf main an; Mutation MM26' "$(bj_ph 'git worktree add /main')"
+  fall A111 main blockierend 2 AK - voll JSON Bash 'DT-C2-03 (Delta 2026-10-21): wie A110 mit master und einer Option davor' "$(bj_ph 'git worktree add -f /master')"
+  fall A112 main blockierend 2 AK - voll JSON Bash 'DT-C2-04 (Delta 2026-10-21): Umleitung <<< mit getrenntem Operanden zaehlt nicht als zweites Wort; Mutation MM27' "$(bj_ph 'git worktree add ../main <<< x')"
+  fall A113 main blockierend 2 AK - voll JSON Bash 'DT-C2-04 (Delta 2026-10-21): der Operand von <<< sieht aus wie eine Option (-d) und darf die Sperre nicht aufheben' "$(bj_ph 'git worktree add ../main <<< -d')"
+  fall A114 main blockierend 2 AK - voll JSON Bash 'DT-C2-04 (Delta 2026-10-21): Heredoc (<<) mit getrenntem Wort hinter dem Pfad' "$(bj_ph $'git worktree add ../main << x\nx')"
+  fall A115 main blockierend 2 AK - voll JSON Bash 'DT-C2-04 (Delta 2026-10-21): Umleitung <> mit getrenntem Operanden' "$(bj_ph 'git worktree add ../main <> x')"
+  fall A116 main blockierend 2 AK - voll JSON Bash 'H-1 (Delta 2026-10-21): die sed-Ausdruecke der Basename-Form bleiben bei einer Zeile aus 150000 Leerzeichen linear (gemessen 0,22 s im Endstand nach Delta 3; vorher 0,23 s und 0,20 s); bei einem quadratischen Ausdruck uebersteigt der Lauf die Zeitgrenze von 14 s und das Pruefmittel wertet das als Durchlass' "$(bj_zeile $'git worktree add -b x /tmp/w1 feature\ngit push origin main' "#${LEER}x)")"
+  fall A117 main blockierend 2 AK - voll JSON Bash 'H-1 (Delta 2026-10-21): wie A116 mit einer Zeile aus 150000 Ziffern und einem Umleitungszeichen am Ende (gemessen 0,25 s im Endstand nach Delta 3; vorher 0,21 s und 0,18 s)' "$(bj_zeile $'git worktree add -b x /tmp/w1 feature\ngit push origin main' "#${ZIFF}x>")"
+  fall A118 main blockierend 2 AK - voll JSON Bash 'ST-C2-D-07 (Delta 2 2026-10-21), Gegenprobe zu G102: eine Ziffer nach Leerraum vor dem Umleitungszeichen ist ein Dateideskriptor und faellt mit der Umleitung weg; der Arbeitsbaum entsteht auf main' "$(bj_ph 'git worktree add ../main 2>/dev/null')"
+  fall A119 main blockierend 2 AK - voll JSON Bash 'ST-C2-D-07 (Delta 2 2026-10-21): eine Umleitung am Wort ohne Ziffer davor faellt weg; Gegenprobe zu G102 und G103' "$(bj_ph 'git worktree add ../main>x')"
+  fall A120 main blockierend 2 AK - voll JSON Bash 'DT-C2-D-01 (Delta 2 2026-10-21): <<< mit einem Operanden in doppelten Anfuehrungszeichen mit Leerraum; die zweite Haelfte blieb als zweites Wort stehen (commit-ish), die Sperre entfiel, obwohl git den Arbeitsbaum auf main anlegt; Mutation MM29' "$(bj_ph 'git worktree add ../main <<< "a b"')"
+  fall A121 main blockierend 2 AK - voll JSON Bash 'DT-C2-D-01 (Delta 2 2026-10-21): wie A120 mit einfachen Anfuehrungszeichen' "$(bj_ph "git worktree add ../main <<< 'a b'")"
+  fall A122 main blockierend 2 AK - voll JSON Bash 'DT-C2-D-01 (Delta 2 2026-10-21): wie A120 ohne Leerraum vor dem Operanden' "$(bj_ph 'git worktree add ../main <<<"a b"')"
+  fall A123 main blockierend 2 AK - voll JSON Bash 'DT-C2-D-01 (Delta 2 2026-10-21): Eingabeumleitung < mit Operanden in Anfuehrungszeichen mit Leerraum' "$(bj_ph 'git worktree add ../main < "a b"')"
+  fall A124 main blockierend 2 AK - voll JSON Bash 'DT-C2-D-01 und ST-C2-D-06 (Delta 2 2026-10-21): Ausgabeumleitung > mit Operanden in Anfuehrungszeichen mit Leerraum; der fuer ST-C2-D-06 geplante Fall mit Soll 0 entfaellt, weil die Luecke geschlossen ist' "$(bj_ph 'git worktree add ../main > "a b"')"
+  fall A125 main blockierend 2 AK - voll JSON Bash 'DT-C2-D-01 (Delta 2 2026-10-21): Dateideskriptor 2 mit Leerraum davor und Operanden in Anfuehrungszeichen' "$(bj_ph 'git worktree add ../main 2> "/tmp/a b"')"
+  fall A126 main blockierend 2 AK - voll JSON Bash 'DT-C2-D-01 (Delta 2 2026-10-21): >> mit drei Woertern in Anfuehrungszeichen' "$(bj_ph 'git worktree add ../main >> "a b c"')"
+  fall A127 main blockierend 2 AK - voll JSON Bash 'DT-C2-D-01 (Delta 2 2026-10-21): der Pfad selbst steht in Anfuehrungszeichen, dahinter <<< mit Operanden in Anfuehrungszeichen' "$(bj_ph 'git worktree add "../main" <<< "a b"')"
+  fall A128 main blockierend 2 AK - voll JSON Bash 'DT-C2-D-01 (Delta 2 2026-10-21): Operand mit maskiertem Leerzeichen' "$(bj_ph 'git worktree add ../main <<< a\ b')"
+  fall A129 main blockierend 2 AK - voll JSON Bash 'DT-C2-D-01 (Delta 2 2026-10-21): eine Anfuehrung, die am Zeilenende nicht geschlossen ist (sie schliesst in der naechsten Zeile), reicht fuer den Operanden bis zum Zeilenende; Mutation MM29' "$(bj_ph $'git worktree add ../main > "a\nb"')"
+  fall A130 main blockierend 2 AK - voll JSON Bash 'DT-C2-E-02 (Delta 3 2026-10-21): ein Wort {name} vor dem Umleitungszeichen ist wie eine Ziffer ein Dateideskriptor (bash: {fd}>/dev/null); vorher blieb {fd} als zweites Wort stehen und hob die Sperre auf; Mutation MM32' "$(bj_ph 'git worktree add ../main {fd}>/dev/null')"
+  fall A131 main blockierend 2 AK - voll JSON Bash 'DT-C2-E-01 (Delta 3 2026-10-21): < oder > in einem Wort in Anfuehrungszeichen vor dem Pfad; die Fassung von Delta 2 las die schliessende Anfuehrung als offene, der Operand nahm den Pfad mit und die Sperre entfiel (vor Delta 2: 2, mit Delta 2: 0); die zweite Fassung sperrt; Mutation MM31' "$(bj_ph 'git worktree add --lock --reason="a>b" ../main')"
+  fall A132 main blockierend 2 AK - voll JSON Bash 'DT-C2-E-01 (Delta 3 2026-10-21): wie A131 mit einfachen Anfuehrungszeichen und <' "$(bj_ph "git worktree add --lock --reason='a<b' ../main")"
+  fall A133 main blockierend 2 AK - voll JSON Bash 'DT-C2-E-01 (Delta 3 2026-10-21): wie A131, das Wort mit > steht in einer Option vor worktree' "$(bj_ph 'git -c "core.dstprobe=a>b" worktree add ../main')"
+  fall A134 main blockierend 2 AK - voll JSON Bash 'DT-C2-E-01 (Delta 3 2026-10-21): wie A131, das Wort mit > ist eine Variablenzuweisung vor dem Befehl' "$(bj_ph 'X="a>b" git worktree add ../main')"
+  fall A135 main blockierend 2 AK - voll JSON Bash 'DT-C2-E-01 (Delta 3 2026-10-21): wie A134 mit einfachen Anfuehrungszeichen, < und master' "$(bj_ph "X='a<b' git worktree add ../master")"
+  fall A136 main blockierend 2 AK - voll JSON Bash 'DT-C2-E-01 (Delta 3 2026-10-21): wie A131 mit einer echten Umleitung 2>/dev/null am Ende' "$(bj_ph 'git worktree add --lock --reason="a>b" ../main 2>/dev/null')"
+  fall A137 main blockierend 2 AK - voll JSON Bash 'ST-C2-E-02 (Delta 3 2026-10-21, deckt DT-C2-E-02 R6): maskierte Anfuehrung in einem Operanden in doppelten Anfuehrungszeichen; die Anfuehrung endete am maskierten Zeichen und der Rest blieb als zweites Wort stehen; Mutation MM33' "$(bj_ph 'git worktree add ../main <<< "a\"b c"')"
+  fall A138 main blockierend 2 AK - voll JSON Bash 'ST-C2-E-02 (Delta 3 2026-10-21): wie A137 mit Leerraum um die maskierte Anfuehrung und einer Ausgabeumleitung' "$(bj_ph 'git worktree add ../main > "a \" b"')"
+  fall A139 main blockierend 2 AK - voll JSON Bash 'ST-C2-E-01 (SST Delta 2, Delta 3 2026-10-21), Preis in sicherer Richtung (KM-17), Preis, Operand ueber Abschnittsgrenze: schliesst der Operand in Anfuehrungszeichen erst hinter einem Zeilenumbruch, sieht die Basename-Pruefung das commit-ish (feature) nicht mehr und sperrt; vor Delta 2: 0' "$(bj_ph $'git worktree add ../main <<< "a c\nb" feature')"
+  fall A140 main blockierend 2 AK - voll JSON Bash 'ST-C2-E-01 (Delta 3 2026-10-21), Preis in sicherer Richtung (KM-17), Preis, Operand ueber Abschnittsgrenze, hier ein Semikolon in der Anfuehrung; vor Delta 2: 0' "$(bj_ph 'git worktree add ../main > "a c;b" feature')"
+  fall A141 main blockierend 2 AK - voll JSON Bash 'ST-C2-E-01 (Delta 3 2026-10-21), Preis in sicherer Richtung (KM-17), Preis, Operand ueber Wortgrenze: ein < oder > in einem Wort in Anfuehrungszeichen HINTER dem Pfad laesst die Fassung von Delta 2 den Rest des Abschnitts (hier das commit-ish feature) verschlucken; die Basename-Pruefung sperrt; vor Delta 2: 0' "$(bj_ph 'git worktree add ../main --lock --reason="a>b" feature')"
+  fall A142 main blockierend 2 AK - voll JSON Bash 'ST-C2-E-01 (Delta 3 2026-10-21), Preis in sicherer Richtung (KM-17), Preis, Operand ueber Wortgrenze: wie A141, verschluckt wird --detach; vor Delta 2: 0' "$(bj_ph 'git worktree add ../main --reason="a>b" --detach')"
+  fall A143 main blockierend 2 AK - voll JSON Bash 'ST-C2-F-01 (Delta 4 2026-10-21), R1: der Operand "a b\"c"d\" ist laut Shell ein Wort (a b"cd"), dahinter steht der Pfad; die Mischlesung (maskiertes " als Rueckstrich plus schliessende Anfuehrung) verschluckte den Pfad und die Sperre entfiel (Delta 2: 2, Delta 3: 0); Mutation MM34' "$(bj_ph 'git worktree add > "a b\"c"d\" ../main')"
+  fall A144 main blockierend 2 AK - voll JSON Bash 'ST-C2-F-01 (Delta 4 2026-10-21), R3: maskierte Anfuehrungen in einem Operanden hinter 2> verschluckten den Pfad (Delta 3: 0); Mutation MM33 und MM34' "$(bj_ph 'git worktree add 2> "err \"1\".log" ../main')"
+  fall A145 main blockierend 2 AK - voll JSON Bash 'ST-C2-F-01 (Delta 4 2026-10-21), R4: wie A144 mit einer Ausgabeumleitung (Delta 3: 0); Mutation MM33 und MM34' "$(bj_ph 'git worktree add > "out \"q\"" ../main')"
+  fall A146 main blockierend 2 AK - voll JSON Bash 'ST-C2-F-01 (Delta 4 2026-10-21), R5: ein Rueckstrich unmittelbar vor dem Zeilenende (hier vor dem Trenner |) bleibt zugelassen; der Pfad steht vor der Umleitung' "$(bj_ph 'git worktree add ../main > "a b\|c"')"
+  fall A147 main blockierend 2 AK - voll JSON Bash 'DT-C2-F-03 (Delta 4 2026-10-21): ein Deskriptor {name} mit Ziffer im Namen; eine auf Kleinbuchstaben beschraenkte Klasse (Mutation X5 des DST) liesse {fd2} als zweites Wort stehen' "$(bj_ph 'git worktree add ../main {fd2}>/dev/null')"
+  fall A148 main blockierend 2 AK - voll JSON Bash 'DT-C2-F-03 (Delta 4 2026-10-21): ein Deskriptor {NAME} in Grossbuchstaben' "$(bj_ph 'git worktree add ../main {FD}>/dev/null')"
+  fall A149 main blockierend 2 AK - voll JSON Bash 'DT-C2-F-04 (Delta 4 2026-10-21), Preis in sicherer Richtung (KM-17), Preis, Operand ueber Wortgrenze: ein < oder > am Ende eines Worts in Anfuehrungszeichen unmittelbar vor --detach laesst die zweite Fassung --detach als Operanden lesen und sperren; vor Delta 2: 2, mit Delta 2: 0' "$(bj_ph 'git worktree add --lock --reason="a>" --detach ../main')"
 }
 
 # -----------------------------------------------------------------------------
@@ -820,13 +1175,55 @@ faelle_4_2_main_soll0() {
   fall G69 main grenze 0 AK - voll JSON Bash 'DT-B2-08: Sammel-Push-Option in Anfuehrungszeichen (Grenze GM-8); heute 0, die Shell entfernt die Anfuehrungszeichen und git pusht alle Zweige' "$(bj_ph 'git push origin "--all"')"
   fall G70 main grenze 0 AK - voll JSON Bash 'DT-B2-08: Verb in Anfuehrungszeichen (Grenze GM-8); heute 0; vor Posten 1 0, erste Fassung 2, seit DT-B2-01 wieder 0' "$(bj_ph 'git pu"sh" origin main')"
   fall G71 main grenze 0 AK - voll JSON Bash 'Grenze der Auswertung (GM-5, B2-PM-15): $"..." uebersetzt die Shell ueber einen Meldungskatalog; ein Katalog kann zweig zu main uebersetzen, der Befehlstext traegt das Wort main nicht, gemessen 0' "$(bj_ph 'git push origin $"zweig"')"
-  fall L17 main belegte-luecke 0 AK - voll JSON Bash 'Posten 4 unter R3-Q-010 (DT-B2-05 c), terminiert mit der naechsten Aenderung am main-Gate; heute 0: ein -b/-B in einem anderen worktree-add-Befehl derselben Eingabe hebt die Sperre fuer alle auf, der zweite Arbeitsbaum entsteht auf main' "$(bj_ph 'git worktree add -b x /tmp/w1 main; git worktree add /tmp/w2 main')"
+  fall L17 main blockierend 2 AK - voll JSON Bash 'Posten 4 a unter R3-Q-010 (DT-B2-05 c), geschlossen am 2026-10-21; Mutation MM17; vormals belegte Luecke: Posten 4 unter R3-Q-010 (DT-B2-05 c), terminiert mit der naechsten Aenderung am main-Gate; heute 0: ein -b/-B in einem anderen worktree-add-Befehl derselben Eingabe hebt die Sperre fuer alle auf, der zweite Arbeitsbaum entsteht auf main' "$(bj_ph 'git worktree add -b x /tmp/w1 main; git worktree add /tmp/w2 main')"
   fall L18 main blockierend 2 AK - voll JSON Bash 'Posten 1 unter R3-Q-010, DT-B2-07 (Einordnung des Software Architects vom 2026-10-14: belegte Luecke, jetzt schliessen; vormals Soll 0 und Klasse belegte-luecke): -B mit dem Wort main in Dollar-Anfuehrungszeichen, das Dollarzeichen vor dem Anfuehrungszeichen entfaellt in cmd_ziel; Mutation MM15; geschlossen am 2026-10-14' "$(bj_ph "git worktree add -B \$'main' /tmp/wt")"
-  fall L19 main belegte-luecke 0 AK - voll JSON Bash 'Posten 4 unter R3-Q-010, Buchstabe b (DT-B2-09), terminiert mit der naechsten Aenderung am main-Gate; heute 0: die Zeilenfortsetzung trennt das Verb, die Verb-Erkennung liest den Befehlstext zeilenweise' "$(bj_ph "$(printf 'git \\\npush origin main')")"
+  fall L19 main blockierend 2 AK - voll JSON Bash 'Posten 4 b unter R3-Q-010 (DT-B2-09), geschlossen am 2026-10-21; Mutation MM18; vormals belegte Luecke: Posten 4 unter R3-Q-010, Buchstabe b (DT-B2-09), terminiert mit der naechsten Aenderung am main-Gate; heute 0: die Zeilenfortsetzung trennt das Verb, die Verb-Erkennung liest den Befehlstext zeilenweise' "$(bj_ph "$(printf 'git \\\npush origin main')")"
   # L20: die JSON-Eingabe entsteht ueber die Standardeingabe von jq, weil ein
   # Argument ab 128 KiB beim exec scheitert (E2BIG) und bj_ph deshalb ausfaellt.
-  fall L20 main belegte-luecke 0 AK - voll JSON Bash 'Posten 5 unter R3-Q-010 (B2-GATE-D05, vorbestehend, beide Gates): grosse Eingabe -- unter set -o pipefail liefert printf | grep -Eq den Wert 141, wenn grep nach einem fruehen Treffer endet, die Bedingung gilt als nicht erfuellt und der Push nach main laeuft durch; heute 0' "$(printf 'git push origin main\n# %s' "$(head -c 200000 /dev/zero | tr '\0' '#')" | jq -Rsc '{tool_name:"Bash", tool_input:{command:.}}')"
-  fall L21 main belegte-luecke 0 AK - voll JSON Bash 'Posten 4 unter R3-Q-010, Buchstabe c (Basename-Form, echtes git 2.43.0): worktree add <pfad>/main ohne commit-ish checkt den bestehenden Zweig main im neuen Arbeitsbaum aus; terminiert mit der naechsten Aenderung am main-Gate; heute 0' "$(bj_ph 'git worktree add ../main')"
+  fall L20 main blockierend 2 AK - voll JSON Bash 'geschlossen am 2026-10-21, Posten 5, SR-001 (B2-GATE-D05); Mutation MM16; vormals belegte Luecke: Posten 5 unter R3-Q-010 (B2-GATE-D05, vorbestehend, beide Gates): grosse Eingabe -- unter set -o pipefail liefert printf | grep -Eq den Wert 141, wenn grep nach einem fruehen Treffer endet, die Bedingung gilt als nicht erfuellt und der Push nach main laeuft durch; heute 0' "$(bj_gross 'git push origin main')"
+  fall L21 main blockierend 2 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010 (Basename-Form), geschlossen am 2026-10-21; Mutation MM19; vormals belegte Luecke: Posten 4 unter R3-Q-010, Buchstabe c (Basename-Form, echtes git 2.43.0): worktree add <pfad>/main ohne commit-ish checkt den bestehenden Zweig main im neuen Arbeitsbaum aus; terminiert mit der naechsten Aenderung am main-Gate; heute 0' "$(bj_ph 'git worktree add ../main')"
+  fall G72 main durchlaufend 0 AK - voll JSON Bash 'Posten 5 unter R3-Q-010, Gegenprobe zu A81 und A82: ein Arbeitsbaum mit neuem Zweig ab main (Ausnahme -b) und eine Kommentarzeile aus 200000 Zeichen bleibt zulaessig; Pruefstelle Ausnahme (negiert) ohne Abbruch des Schreibers' "$(bj_gross 'git worktree add -b x /tmp/wt main')"
+  fall G73 main durchlaufend 0 AK - voll JSON Bash 'Posten 5 unter R3-Q-010, Gegenprobe zu L20 und A80: ein Push auf den Arbeitszweig mit einer Kommentarzeile aus 200000 Zeichen bleibt zulaessig' "$(bj_gross 'git push -u origin claude/pruefzweig')"
+  fall G74 main durchlaufend 0 AK - voll JSON Bash 'Posten 4 a unter R3-Q-010, Gegenprobe zu L17: hinter dem Ausnahme-Abschnitt steht ein Befehl, der kein worktree add ist' "$(bj_ph 'git worktree add -b x /tmp/w1 main; git status')"
+  fall G75 main durchlaufend 0 AK - voll JSON Bash 'Posten 4 a unter R3-Q-010, Gegenprobe zu A85: zwei Abschnitte, beide mit gueltiger Ausnahme' "$(bj_ph 'git worktree add -b x /tmp/w1 main && git worktree add -b y /tmp/w2 main')"
+  fall G76 main durchlaufend 0 AK - voll JSON Bash 'Posten 4 a unter R3-Q-010, Gegenprobe zu A90: nach dem Abschneiden des Ausnahme-Abschnitts bleibt kein worktree add, main in einem anderen Befehl sperrt nicht' "$(bj_ph 'git worktree add -b x /tmp/w1 main; git log main')"
+  fall G77 main durchlaufend 0 AK - voll JSON Bash 'Posten 4 b unter R3-Q-010, Gegenprobe zu A91: Verb durch Zeilenfortsetzung getrennt, die Ausnahme steht auf demselben Text (zulaessig)' "$(bj_ph $'git worktree \\\nadd -b x /tmp/wt main')"
+  fall G78 main durchlaufend 0 AK - voll JSON Bash 'Posten 4 b unter R3-Q-010, heutiger Fehlalarm in sicherer Richtung (gemessen vorher 2): die Ausnahme steht hinter der Zeilenfortsetzung, die Shell liest ein zulaessiges worktree add mit -b' "$(bj_ph $'git worktree add \\\n  -b x /tmp/wt main')"
+  fall G79 main durchlaufend 0 AK - voll JSON Bash 'Posten 4 b unter R3-Q-010, heutiger Fehlalarm in sicherer Richtung (gemessen vorher 2): die Shell liest x--all als ein Wort, das ist kein Sammel-Push' "$(bj_ph $'git push origin feature -o x\\\n--all')"
+  fall G80 main grenze 0 AK - voll JSON Bash 'Posten 4 b unter R3-Q-010, Preis in der Grenze GM-7 (gemessen vorher 2): in einfachen Anfuehrungszeichen setzt der Rueckstrich vor dem Zeilenumbruch die Zeile nicht fort, das Gate entfernt das Paar trotzdem (lexikalischer Schritt) und liest -b als Ausnahme; die Shell legt den Arbeitsbaum auf main an' "$(bj_ph $'git worktree add \'/tmp/a \\\n-b x\' main')"
+  fall G81 main durchlaufend 0 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010, Gegenprobe zu L21: origin/main als zweites Wort ist das commit-ish und legt einen losgeloesten Arbeitsbaum an' "$(bj_ph 'git worktree add /tmp/wt origin/main')"
+  fall G82 main durchlaufend 0 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010, Gegenprobe zu L21: --detach' "$(bj_ph 'git worktree add --detach ../main')"
+  fall G83 main durchlaufend 0 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010, Gegenprobe zu L21: -d (echtes git 2.43.0: losgeloester Arbeitsbaum)' "$(bj_ph 'git worktree add -d ../main')"
+  fall G84 main durchlaufend 0 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010, Gegenprobe zu L21: ein zweites Wort ist das commit-ish' "$(bj_ph 'git worktree add ../main feature')"
+  fall G85 main durchlaufend 0 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010, Gegenprobe zu L21: neuer Zweig x in einem Pfad namens main (Ausnahme -b)' "$(bj_ph 'git worktree add -b x ../main')"
+  fall G86 main durchlaufend 0 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010, Gegenprobe zu L21: der Pfad endet auf main-fix, nicht auf main' "$(bj_ph 'git worktree add ../main-fix')"
+  fall G87 main durchlaufend 0 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010, Gegenprobe zu A98: ein zweites Wort ist das commit-ish, auch mit Umleitung' "$(bj_ph 'git worktree add ../main feature 2>&1')"
+  fall G88 main grenze 0 AK - voll JSON Bash 'Posten 4 a unter R3-Q-010, Grenze GM-5 (Befehlssubstitution): ein worktree add in einer Befehlssubstitution innerhalb eines Ausnahme-Abschnitts bleibt unerkannt, gemessen 0 vor und nach Posten 4; die Shell fuehrt es aus und legt einen Arbeitsbaum auf main an' "$(bj_ph 'git worktree add -b x /tmp/w1 $(git worktree add /tmp/w2 main)')"
+  fall G89 main grenze 0 AK - voll JSON Bash 'Posten 4 a unter R3-Q-010, Grenze GM-5 (Rueckwaertsakzente): wie G88, das worktree add steht in Rueckwaertsakzenten innerhalb eines Ausnahme-Abschnitts; gemessen 0 vor und nach Posten 4' "$(bj_ph 'git worktree add -b x /tmp/w1 `git worktree add /tmp/w2 main`')"
+  fall G90 main grenze 0 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010, Grenze der Basename-Form (GM-9): eine Option mit getrenntem Wert (--reason) zaehlt als zweites Wort, die Shell legt den Arbeitsbaum auf main an; gemessen 0 vor und nach Posten 4' "$(bj_ph 'git worktree add --lock --reason x ../main')"
+  fall G91 main grenze 0 AK - voll JSON Bash 'Posten 4 c unter R3-Q-010, Grenze der Basename-Form (GM-9): ein Pfad mit Leerzeichen in Anfuehrungszeichen zerfaellt in zwei Woerter, die Shell legt den Arbeitsbaum auf main an; das Gate zerlegt nur an Leerraum und nachbildet die Token-Erkennung der Shell nicht; gemessen 0 vor und nach Posten 4' "$(bj_ph 'git worktree add "/tmp/my wt/main"')"
+  fall G92 main grenze 0 AK - voll JSON Bash 'DT-C2-02 U-1 (Delta 2026-10-21, Entscheid des Software Architects Option a), Preis in der Grenze GM-7: in doppelten Anfuehrungszeichen entfernt die Shell den Rueckstrich vor dem Zeilenumbruch tatsaechlich, das Gate liest -b auf dem zusammengesetzten Text als Ausnahme; die Shell legt den Arbeitsbaum auf main an; vor Posten 4 gab das Gate hier 2' "$(bj_ph $'git worktree add "/tmp/a \\\n-b x" main')"
+  fall G93 main grenze 0 AK - voll JSON Bash 'DT-C2-02 U-2 (Delta 2026-10-21, Entscheid des Software Architects Option a), Preis in der Grenze GM-7: ein Kommentar setzt in der Shell keine Zeile fort, das Gate entfernt das Paar trotzdem und liest -b im Kommentar als Ausnahme; die Shell legt den Arbeitsbaum auf main an; vor Posten 4 gab das Gate hier 2' "$(bj_ph $'git worktree add /tmp/wt main # \\\n -b x')"
+  fall G94 main durchlaufend 0 AK - voll JSON Bash 'DT-C2-01, Gegenprobe zu A105: dieselben 50000 Zeilenfortsetzungen hinter einem zulaessigen Befehl' "$(bj_fort 'git status')"
+  fall G95 main durchlaufend 0 AK - voll JSON Bash 'ST-C2-02 (Delta 2026-10-21), neue Fehlalarmklasse geschlossen: ein main hinter einem Trenner im Muster eines grep ist kein Ziel; mit tr statt erhaltenem Trenner gab das Gate hier 2, vor Posten 4 gab es 0; Mutation MM23' "$(bj_ph 'git worktree add /tmp/w feature && git branch | grep -E "dev|main"')"
+  fall G96 main durchlaufend 0 AK - voll JSON Bash 'DT-C2-03, Gegenprobe zu A110: /mainx endet nicht auf /main' "$(bj_ph 'git worktree add /mainx')"
+  fall G97 main grenze 0 AK - voll JSON Bash 'ST-C2-04 (Delta 2026-10-21), Grenze GM-9: ein Pfad in Anfuehrungszeichen zerfaellt an einem Semikolon in zwei Abschnitte, die Shell legt den Arbeitsbaum auf main an; gemessen 0' "$(bj_ph 'git worktree add "/tmp/a;b/main"')"
+  fall G98 main grenze 0 AK - voll JSON Bash 'ST-C2-04 (Delta 2026-10-21), Grenze GM-9: ein Pfad in Anfuehrungszeichen mit Leerzeichen und Raute wird als Kommentar gelesen; gemessen 0' "$(bj_ph 'git worktree add "/tmp/a #b/main"')"
+  fall G99 main grenze 0 AK - voll JSON Bash 'ST-C2-04 (Delta 2026-10-21), Grenze GM-9: ein Pfad in Anfuehrungszeichen mit < wird als Umleitung gelesen; gemessen 0' "$(bj_ph 'git worktree add "/tmp/a<b/main"')"
+  fall G100 main grenze 0 AK - voll JSON Bash 'ST-C2-04 (Delta 2026-10-21), Grenze GM-9: ein Zeilenumbruch in Anfuehrungszeichen trennt den Pfad in zwei Abschnitte; gemessen 0' "$(bj_ph $'git worktree add "/tmp/a\nb/main"')"
+  fall G101 main durchlaufend 0 AK - voll JSON Bash 'ST-C2-03 iii (Delta 2026-10-21), vormals Fehlalarm (Zielpruefung am Rohtext): die Shell liest foomain als ein Wort; vor Posten 4 gab das Gate hier 2; gewollt' "$(bj_ph $'git worktree add /tmp/wt foo\\\nmain')"
+  fall G102 main durchlaufend 0 AK - voll JSON Bash 'ST-C2-D-07 (Delta 2 2026-10-21), neue Fehlalarmklasse geschlossen: die 1 vor dem > gehoert zum Wort ../main1 (kein Leerraum davor, also kein Dateideskriptor); der Umleitungsschritt frass das Wortende und das Gate gab 2 (Ende C2 und erstes Delta), HEAD vor Posten 4 gab 0; Mutation MM28' "$(bj_ph 'git worktree add ../main1>x')"
+  fall G103 main durchlaufend 0 AK - voll JSON Bash 'ST-C2-D-07 (Delta 2 2026-10-21): wie G102 mit /dev/null und einem Pfad unter einem Verzeichnis; Mutation MM28' "$(bj_ph 'git worktree add ../x/main2>/dev/null')"
+  fall G104 main durchlaufend 0 AK - voll JSON Bash 'DT-C2-D-01 (Delta 2 2026-10-21), Gegenprobe zu A120: das zweite Wort (feature) ist das commit-ish, die Umleitung ist kein Wort; der Arbeitsbaum entsteht auf feature' "$(bj_ph 'git worktree add ../main feature <<< "a b"')"
+  fall G105 main grenze 0 AK - voll JSON Bash 'DT-C2-E-02 (Delta 3 2026-10-21), Grenze GM-5 (Auswertung der Shell): eine Befehlssubstitution als Operand zerfaellt an Leerraum, die zweite Haelfte bleibt als zweites Wort stehen; gemessen 0' "$(bj_ph 'git worktree add ../main <<< $(echo a b)')"
+  fall G106 main grenze 0 AK - voll JSON Bash 'DT-C2-E-02 (Delta 3 2026-10-21), Grenze GM-9: eine Option mit getrenntem Wert, hier in Anfuehrungszeichen (--reason="a b"), zaehlt als zwei Woerter; gemessen 0 (vorbestehend)' "$(bj_ph 'git worktree add --lock --reason="a b" ../main')"
+  fall G107 main durchlaufend 0 AK - voll JSON Bash 'DT-C2-E-01 (Delta 3 2026-10-21), Gegenprobe zu A131: das zweite Wort (feature) ist das commit-ish' "$(bj_ph 'git worktree add --lock --reason="a>b" ../main feature')"
+  fall G108 main durchlaufend 0 AK - voll JSON Bash 'DT-C2-E-01 (Delta 3 2026-10-21), Gegenprobe zu A131: mit -b ist der Abschnitt eine Ausnahme (neuer Zweig, main nur Ausgangspunkt)' "$(bj_ph 'git worktree add --reason="a>b" -b x ../w main')"
+  fall G109 main durchlaufend 0 AK - voll JSON Bash 'ST-C2-F-01 (Delta 4 2026-10-21), R2, Gegenprobe zu A143: der Operand "a\"b"c\" ist laut Shell ein Wort (a"bc"), dahinter steht das commit-ish feature; die Mischlesung verschluckte feature und das Gate sperrte (neue Fehlalarmform von Delta 3); Mutation MM34' "$(bj_ph 'git worktree add ../main > "a\"b"c\" feature')"
+  fall G110 main grenze 0 AK - voll JSON Bash 'ST-C2-F-02 (Delta 4 2026-10-21), Grenze GM-9: die Verbindung beider Fehlformen aus Delta 3 (ein Wort in Anfuehrungszeichen mit > vor dem Pfad UND ein Operand in Anfuehrungszeichen mit Leerraum dahinter); gemessen 0' "$(bj_ph 'git worktree add --reason="a>b" ../main > "x y"')"
+  fall G111 main grenze 0 AK - voll JSON Bash 'DT-C2-F-01 (Delta 4 2026-10-21), Grenze (benannt unter GM-9): < oder > als letztes Zeichen eines Worts in Anfuehrungszeichen vor dem Pfad; die Anfuehrung wird als offen gelesen und der Pfad verschluckt; gemessen 0 (vorbestehend, vor Delta 2: 0)' "$(bj_ph 'git worktree add --lock --reason="a>" ../main')"
+  fall G112 main grenze 0 AK - voll JSON Bash 'DT-C2-F-02 (Delta 4 2026-10-21), Grenze GM-9: ein Semikolon in einem Wort in Anfuehrungszeichen vor dem Pfad trennt den Pfad vom Abschnitt; gemessen 0 (vorbestehend)' "$(bj_ph 'git worktree add --lock --reason="a;b" ../main')"
+  fall G113 main durchlaufend 0 AK - voll JSON Bash 'DT-C2-F-03 (Delta 4 2026-10-21): -d (losgeloester Arbeitsbaum) mit einer Umleitung; ohne den Abzug von --detach und -d in der zweiten Fassung wuerde sie sperren (Mutation X3 des DST)' "$(bj_ph 'git worktree add -d ../main > /tmp/log')"
 }
 
 # -----------------------------------------------------------------------------
@@ -893,6 +1290,10 @@ faelle_4_4_proto_soll2() {
   fall ZF7b prototyp blockierend 2 AB - voll JSON Bash 'Interpreterklasse seit E4.3 erkannt, vorher nur wegen des Zeichens >' "$(bj_ph "$(printf 'perl -e '"'"'open(F,">frontend/src/a.ts"); print F "import h from \\"../prototype/helper\\";"'"'"'')")"
   fall ZF10c prototyp blockierend 2 AB - voll JSON write 'Klasse blockierend nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); vormals Pruefstand: Zusatzfall 10: der Dateiwerkzeug-Pfad prueft den Werkzeugnamen nicht -- blockiert (2); heutiger Stand' "$(wj_ph 'frontend/src/a.ts' 'import h from "../prototype/helper";' 'write')"
   fall S07 prototyp blockierend 2 AB - ohne-jq JSON Write 'jq-Wache des Prototyp-Gates' "$(wj_ph 'frontend/src/a.ts' 'const a = 1;')"
+  fall S11 prototyp blockierend 2 AB - ohne-grep JSON Bash 'Posten 5 unter R3-Q-010 (SR-001): fehlt grep im Suchpfad, kann das Gate nicht pruefen und blockiert mit Meldung auf stderr (vorher Durchlass, gemessen 0); Zweig Pruefung nicht moeglich der Hilfsfunktion trifft; Mutation MP13' "$(bj_ph 'ls prototype/')"
+  fall S14 prototyp blockierend 2 AB - grep-attrappe JSON Bash 'DT-C2-05 (Delta 2026-10-21): grep endet mit 1, ohne zu lesen (Attrappe); der Schreiber bricht ab (141), kein Treffer ist dann nicht glaubwuerdig und das Gate blockiert; Mutation MP14' "$(bj_gross 'ls prototype/')"
+  fall S18 prototyp blockierend 2 AB - posix JSON Write 'ST-C2-D-01 (Delta 2 2026-10-21): wie B25 mit "& mehr" im Zeilenkommentar; unter POSIXLY_CORRECT=1 entfernt GNU sed einen Zeilenkommentar nur bis zum ersten n (B25 ohne & verhaelt sich genauso): der Rest des Kommentars steht zwischen from und dem Pfad, der Import ist kein Import mehr und laeuft durch (rc 0); nicht das & ist die Ursache (ST-C2-E-04); das Gate entfernt die Variable zu Beginn; Mutation MP15' "$(wj_ph 'frontend/src/a.ts' "$(printf 'import h from // Kommentar & mehr\n  "../prototype/helper";')")"
+  fall S19 prototyp blockierend 2 AB - posix JSON Bash 'ST-C2-E-04 (Delta 3 2026-10-21): Bash-Weg zu S18: ein Heredoc mit B25-Form und "& mehr" im Zeilenkommentar; unter POSIXLY_CORRECT=1 bleibt vom Kommentar der Rest nach dem ersten n stehen, das & trennt Import und Pfad im groben Netz fuer Bash (rc 0); das Gate entfernt die Variable zu Beginn; Mutation MP15' "$(bj_ph $'cat > frontend/src/a.ts <<\'EOF\'\nimport h from // Kommentar & mehr\n  "../prototype/helper";\nEOF')"
   fall B53 prototyp blockierend 2 AB - voll JSON Bash 'tee ohne Pipe, dieselbe Klasse wie das main-Gate (B-1)' "$(bj_ph "tee frontend/src/a.ts < <(printf '%s\n' 'import h from \"../prototype/helper\";')")"
   fall B54 prototyp blockierend 2 AB - voll JSON Bash 'Dateiwerkzeug mv mit Import im Kommentar (B-2)' "$(bj_ph 'mv /tmp/helper.ts frontend/src/a.ts # import h from "../prototype/helper"')"
   fall B55 prototyp blockierend 2 AB - voll JSON Bash 'ed/ex-Glied mit Import im Kommentar (B-2)' "$(bj_ph "ex -c 'wq' frontend/src/a.ts # import h from \"../prototype/helper\"")"
@@ -904,6 +1305,9 @@ faelle_4_4_proto_soll2() {
   fall B61 prototyp blockierend 2 AB - voll JSON Bash 'Umleitungsziel mit ".." fuehrt in den Arbeitsbaum zurueck, Variablenform (DT-E43-6)' "$(bj_ph "echo \"import x from '../prototype/a'\" > \"\$TMPDIR\"/../{AB}/frontend/a.js")"
   fall B62 prototyp blockierend 2 AB - voll JSON Bash '"/dev/null" ohne Wortgrenze bleibt Schreibwirkung (DT-E43-6)' "$(bj_ph "echo \"import x from '../prototype/a'\" > /dev/nullx")"
   fall B63 prototyp blockierend 2 AB - voll JSON Bash 'Trenner hinter fluechtigem Ziel bleibt Schreibwirkung (DT-E43-8)' "$(bj_ph "echo \"import x from '../prototype/a'\" > /tmp/x;cp a {AB}/frontend/a.js")"
+  fall L22 prototyp blockierend 2 AB - voll JSON Bash 'geschlossen am 2026-10-21, Posten 5, SR-001; Mutation MP12; Posten 5 unter R3-Q-010 (SR-001, B2-GATE-D05), neuer Fall am Prototyp-Gate: Umleitung mit Import aus prototype/ und eine Kommentarzeile aus 200000 Zeichen; Pruefstellen Schreibwirkung und Importmuster am Befehlstext ohne Abbruch des Schreibers' "$(bj_gross 'echo "import h from \"../prototype/helper\";" > frontend/src/a.ts')"
+  fall B64 prototyp blockierend 2 AB - voll JSON Write 'Posten 5 unter R3-Q-010 (SR-001, B2-GATE-D05): Richtung 1 ueber das Write-Werkzeug, Import aus prototype/ in der ersten Zeile und eine Kommentarzeile aus 200000 Zeichen; Pruefstelle Richtung 1 am Dateiinhalt ohne Abbruch des Schreibers' "$(wj_gross 'frontend/src/a.ts' 'import h from "../prototype/helper";')"
+  fall B65 prototyp blockierend 2 AB - voll JSON Write 'Posten 5 unter R3-Q-010 (SR-001, B2-GATE-D05): Richtung 2 ueber das Write-Werkzeug, Import aus dem Produktionscode in der ersten Zeile und eine Kommentarzeile aus 200000 Zeichen; Pruefstelle Richtung 2 am Dateiinhalt ohne Abbruch des Schreibers' "$(wj_gross 'prototype/x.js' 'import a from "../backend/api";')"
 }
 
 # -----------------------------------------------------------------------------
@@ -983,6 +1387,10 @@ faelle_4_5_proto_soll0() {
   fall L14 prototyp grenze 0 AB - voll JSON Write 'Klasse grenze nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); steht in GP-2; vormals Pruefstand: benannte Grenze GP-2, heute 0; Aufnahme: Fortschreibung 6.13 c' "$(wj_ph 'prototype/x.js' 'import a from "..\\backend\\api";')"
   fall L15 prototyp grenze 0 AB - voll JSON Write 'Klasse grenze nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); steht in GP-2; vormals Pruefstand: benannte Grenze GP-2, heute 0; Aufnahme: Fortschreibung 6.13 c' "$(wj_ph 'prototype/x.mjs' 'import "./././../backend/x.mjs";')"
   fall L16 prototyp grenze 0 AB - voll JSON Write 'Klasse grenze nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); steht in GP-2; vormals Pruefstand: benannte Grenze GP-2, heute 0; Aufnahme: Fortschreibung 6.13 c' "$(wj_ph 'prototype/demo.html' '<link href="~/frontend/x.css">')"
+  fall P40 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 5 unter R3-Q-010, Gegenprobe zu L22: Schreibwirkung ohne Importmuster und eine Kommentarzeile aus 200000 Zeichen bleibt zulaessig' "$(bj_gross 'echo "siehe prototype/" > notiz.txt')"
+  fall P41 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 5 unter R3-Q-010, Gegenprobe zu B64 und B65: Dateiinhalt ohne Import und eine Kommentarzeile aus 200000 Zeichen bleibt zulaessig' "$(wj_gross 'frontend/src/a.ts' 'const a = 1;')"
+  fall L23 prototyp belegte-luecke 0 AB - ohne-sed JSON Bash 'Posten 6 unter R3-Q-010 (2026-10-21), belegte Luecke, nicht gebaut, terminiert mit der naechsten Aenderung am Prototyp-Gate: die sed-Schritte (cmd_flach, bereinigt) pruefen keinen Rueckgabewert; ohne sed im PATH laeuft B11 (sperrt mit vollem PATH) durch; Soll = heutiger Stand 0' "$(bj_ph 'echo "import h from \"../prototype/helper\";" > frontend/src/a.ts')"
+  fall L24 prototyp belegte-luecke 0 AB - ohne-tr JSON Write 'Posten 6 unter R3-Q-010 (2026-10-21), belegte Luecke, nicht gebaut, terminiert mit der naechsten Aenderung am Prototyp-Gate: der tr-Schritt von payload_norm prueft keinen Rueckgabewert; ohne tr im PATH laeuft ein Import mit Zeilenumbruch (sperrt mit vollem PATH) durch; Soll = heutiger Stand 0' "$(wj_ph 'frontend/src/a.ts' $'import h from\n  "../prototype/helper";')"
 }
 
 # -----------------------------------------------------------------------------
