@@ -5,6 +5,9 @@
 #
 # Bau auf Weisung vom 2026-09-02, foermliche Freigabe ausstehend (ADR 0002,
 # Abschnitt 10). Grundlage: ADR 0002, Abschnitt 6.12.19 (G17).
+# Stand 2026-10-22 (PS-2, Etappe S3): gelesen wird ADR 0003, Teil B, vormals
+# ADR 0002, 6.12 (docs/adr/0003-definition-of-done-gate.md); die Verweise
+# "ADR 0002, 6.12.x" im Text unten gelten ueber die Weiterleitungen weiter.
 #
 # "Jedes Hook-Skript wird vor dem Einbau gegen einen blockierenden und einen
 # durchzulassenden Fall geprueft. Ein ungetestetes Gate ist kein Gate."
@@ -4805,7 +4808,7 @@ _schwaechung_kopie_bauen() {
 # -----------------------------------------------------------------------------
 _grammatik_fallfunktionen_liste() {
   GRAMMATIK_FUNKTIONEN=()
-  local adr_pfad="$REPO_WURZEL/docs/adr/0002-architekturentscheid-ziel-stack.md"
+  local adr_pfad="$REPO_WURZEL/docs/adr/0003-definition-of-done-gate.md"
   local -A gesehen=()
   local zeile kennung zeile_maskiert fall_zelle fn
   while IFS= read -r zeile; do
@@ -5026,7 +5029,7 @@ pruefe_stderr_enthaelt Z-257 "Aussage E21: vierter Block ohne passende Uebergabe
 # -----------------------------------------------------------------------------
 fall_z258() {
 local adr_pfad258 k258 fallname258 anzahl_funktionen258
-adr_pfad258="$REPO_WURZEL/docs/adr/0002-architekturentscheid-ziel-stack.md"
+adr_pfad258="$REPO_WURZEL/docs/adr/0003-definition-of-done-gate.md"
 tabelle_lesen "$adr_pfad258"
 
 # S12-05: Erhebungsmuster wie bei den Aufrufstellen der Pfaddeckung
@@ -5123,7 +5126,7 @@ pruefe_wahr Z-260 "selbsttest" "fehlt" "Zusammenfassung des Selbsttestlaufs, Blo
 # -----------------------------------------------------------------------------
 fall_z260() {
 local adr_pfad260 deckung_ausgabe260 gegenstand_ausgabe260 zeile260 muster260 anz_tab260
-adr_pfad260="$REPO_WURZEL/docs/adr/0002-architekturentscheid-ziel-stack.md"
+adr_pfad260="$REPO_WURZEL/docs/adr/0003-definition-of-done-gate.md"
 tabelle_lesen "$adr_pfad260"
 
 # S12-01, Nachbildung der drei Abgleichzeilen wie im Normalmodus -- im
@@ -5176,7 +5179,7 @@ _z260_pruefen
 # -----------------------------------------------------------------------------
 fall_z261() {
 local adr_pfad261 deckung_ausgabe261 grammatikdeckung_zeile261 fremde261
-adr_pfad261="$REPO_WURZEL/docs/adr/0002-architekturentscheid-ziel-stack.md"
+adr_pfad261="$REPO_WURZEL/docs/adr/0003-definition-of-done-gate.md"
 tabelle_lesen "$adr_pfad261"
 deckung_ausgabe261=$(schluessel_und_grammatikdeckung "$adr_pfad261")
 grammatikdeckung_zeile261=$(printf '%s\n' "$deckung_ausgabe261" | grep -E '^Grammatikdeckung: [0-9]+ Kuerzel, [0-9]+ ohne Zeile, [0-9]+ fremde Etiketten$' | tail -n1)
@@ -5196,7 +5199,7 @@ pruefe_wahr Z-261 "selbsttest" "gleich" "Zusammenfassung des Selbsttestlaufs, Ze
 fall_z253_254() {
 local muster253
 muster253=$(sed -n "s/^marken_muster='\(.*\)'\$/\1/p" "$GATE")
-local adr253="$REPO_WURZEL/docs/adr/0002-architekturentscheid-ziel-stack.md"
+local adr253="$REPO_WURZEL/docs/adr/0003-definition-of-done-gate.md"
 
 local lage_element253 schwelle_element253
 lage_element253=$(grep -E '^\| `LAGE` \|' "$adr253" | head -n1 | awk -F'|' '{print $3}')
@@ -5846,7 +5849,7 @@ zusammenfassung_und_deckung_ausgeben() {
   # bestimmt, nicht ueber einen absoluten Pfad der Arbeitsumgebung (das
   # Skript liegt unter scripts/).
   # -----------------------------------------------------------------------------
-  adr_pfad="$REPO_WURZEL/docs/adr/0002-architekturentscheid-ziel-stack.md"
+  adr_pfad="$REPO_WURZEL/docs/adr/0003-definition-of-done-gate.md"
   echo
   echo "=== Deckung gegen Tabelle 6.12.19 ($adr_pfad) ==="
 
@@ -6084,7 +6087,7 @@ zusammenfassung_und_deckung_ausgeben() {
 
 mutationsmodus_ausfuehren() {
   local selbsttest_pfad="$REPO_WURZEL/scripts/dod-gate-selbsttest.sh"
-  local adr_pfad="$REPO_WURZEL/docs/adr/0002-architekturentscheid-ziel-stack.md"
+  local adr_pfad="$REPO_WURZEL/docs/adr/0003-definition-of-done-gate.md"
   local mut_pfad="$REPO_WURZEL/scripts/dod-gate-mutationen.txt"
   local start_zeit ende_zeit
   start_zeit=$(date +%s)
