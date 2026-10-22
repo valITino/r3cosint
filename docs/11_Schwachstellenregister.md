@@ -7,7 +7,7 @@ Punkt 6 der Bereitschaftsliste (5.16) lautet "Penetrationstest durchgeführt, Be
 Pflege: nur der Vulnerability Manager. Finder melden, bewerten nicht; behoben wird durch die schreibberechtigten Rollen.
 Form: ein Abschnitt je Eintrag (Quelle, CWE, CVSS 3.1, Bauteil, Status, Fälligkeit, Verweis); Kennung SR-nnn, fortlaufend, nie geändert, nach dem Muster von 6.6
 (gilt für Anforderungen; hier Festlegung des Registers) im Commit-Betreff der Behebung und, soweit der Test es zulässt, im Testnamen oder Fallvermerk.
-Übersicht 2026-10-21: offen 2 (SR-003, SR-004), in Behebung 2 (SR-001, SR-002), behoben mit Nachweis 0, akzeptiert mit Begründung 0.
+Übersicht 2026-10-21: offen 2 (SR-003, SR-004), in Behebung 2 (SR-001, SR-002), behoben mit Nachweis 0, akzeptiert mit Begründung 0. Nachtrag 2026-10-21 nach dem Merge des Pull Requests #27: offen 2 (SR-003, SR-004), in Behebung 0, behoben mit Nachweis 2 (SR-001, SR-002), akzeptiert mit Begründung 0.
 
 Bewertungsgrundlage SR-001 bis SR-003 (gleicher Angreifer, gleiche Wirkung): Angreifer ist das Modell selbst, über die Eingabe des Gates, deren Länge es setzt (Befehlstext; am Prototyp-Gate auch
 Dateiinhalt bei Write, Edit und NotebookEdit, MultiEdit vorsorglich). Es läuft durch, was beide Gates als gedeckt führen (ADR 0002, 6.13 c), unter anderem Push nach main, Arbeitsbaum auf main, Mirror- und
@@ -38,6 +38,8 @@ Befehlsgrösse im Harness sowie Edit und NotebookEdit (MultiEdit vorsorglich) ei
 - Schliesskriterium (erfüllt, Nachweis 2026-10-21): L20 (main-Gate), L22 (Prototyp-Gate, Bash), B64 und B65 (Prototyp-Gate Write, beide Richtungen) je Soll 2 in 30 von 30 Läufen (altes Gate 30 von 30 Durchlass),
   Vermerke von L20 und L22 nennen SR-001; Mutationen MM16 und MP12 erkannt; Prüfmittel in beiden Modi Rückgabewert 0 (447 Fälle, 49 Mutationen, 36 Fallklassen); Verifikation in vier Delta-Runden, je Static und Dynamic Software Tester auf einem anderen Modell.
 - Vermerk ST-C2-D-01: Unter gesetzter Umgebungsvariable POSIXLY_CORRECT liessen beide Gates durch (Fälle S17, S18, S19); behoben mit unset POSIXLY_CORRECT als erster Anweisung beider Gates (Mutationen MM30, MP15).
+- Nachtrag 2026-10-21, Status: behoben mit Nachweis (vorher "in Behebung"; Fälligkeit eingehalten). Die im Verweis angekündigte Commit-Prüfsumme ist `dd654f0a8d22254926e52bce6a3be98f9ad7c98a` (Commit der Behebung), Nachweisverzeichnis (Kopf des Pull Requests) `c84e2a36b22cd328e1887d6fc317a023ddccb639`.
+  Schliesskriterium wie oben erfüllt (L20, L22, B64, B65 je Soll 2 in 30 von 30 Läufen; MM16, MP12 erkannt; beide Modi Rückgabewert 0). Abnahme von Posten 5 durch Merge des Pull Requests #27 am 2026-10-21 (erster Formweg, ADR 0002, Abschnitt 10), Merge-Commit `998f81d9fffe3970baf870d04e44576eda534fcc`.
 
 ## SR-002 Zeitgrenze des main-Gates bei vielen Zeilenfortsetzungen gerissen (DT-C2-01)
 - Befund: Die Entfernung der Zeilenfortsetzungen lief seit Posten 1 als sed-Schleife, quadratisch in der Zahl der Fortsetzungen; ab etwa 150 KB reisst das main-Gate die Hook-Zeitgrenze des Harness
@@ -53,6 +55,8 @@ Befehlsgrösse im Harness sowie Edit und NotebookEdit (MultiEdit vorsorglich) ei
 - Schliesskriterium (erfüllt, Nachweis 2026-10-21): Fall A105 (300 KB Fortsetzungen) Soll 2, Messeingabe mit 50000 Fortsetzungen in 30 von 30 Läufen Rückgabewert 2, längster Lauf 0,12 s; Gegenprobe G94;
   Gleichheit mit der Schleife an 88573 Zeichenfolgen; Mutation MM22 erkannt; Prüfmittel mit Zeitgrenze 14 s je Gate-Aufruf; beide Modi Rückgabewert 0; Verifikation in vier Delta-Runden, je Static und Dynamic Software Tester auf einem anderen Modell.
 - Restpunkt DT-C2-G-01 (Posten 4 c, nicht SR-002; nicht geschlossene Grenze der Behebung): Ein Umleitungsoperator mit & vor dem Pfad trennt den Abschnitt (Durchlass der Basename-Form); vorbestehend, offen, Fall und Bewertung mit der nächsten Änderung am main-Gate.
+- Nachtrag 2026-10-21, Status: behoben mit Nachweis (vorher "in Behebung"; Fälligkeit eingehalten, wie SR-001). Die im Verweis angekündigte Commit-Prüfsumme ist `dd654f0a8d22254926e52bce6a3be98f9ad7c98a` (Commit der Behebung), Nachweisverzeichnis (Kopf des Pull Requests) `c84e2a36b22cd328e1887d6fc317a023ddccb639`.
+  Schliesskriterium wie oben erfüllt (A105, G94, MM22, beide Modi Rückgabewert 0). Abnahme von Posten 4 durch Merge des Pull Requests #27 am 2026-10-21 (erster Formweg, ADR 0002, Abschnitt 10), Merge-Commit `998f81d9fffe3970baf870d04e44576eda534fcc`.
 
 ## SR-003 Keine eigene Zeitgrenze in den PreToolUse-Gates (Posten 7)
 - Befund: Keines der beiden Gates zieht eine eigene Zeitgrenze, obwohl `.claude/rules/claude-konfiguration.md` es für jedes Gate verlangt (ADR 0002, 6.12.12); überschreitet ein Hook die Grenze des Harness
@@ -69,7 +73,7 @@ Befehlsgrösse im Harness sowie Edit und NotebookEdit (MultiEdit vorsorglich) ei
 
 ## SR-004 Prototyp-Gate: Rückgabewerte von sed und tr nicht geprüft (Posten 6)
 - Befund: Die sed- und tr-Schritte des Prototyp-Gates (Bash-Weg: cmd_flach, bereinigt; Dateiwerkzeuge: payload_norm) prüfen ihren Rückgabewert nicht; ohne sed oder tr im PATH läuft ein sonst gesperrter Befehl durch
-  (Fälle L23 Bash ohne sed, L24 Write ohne tr: Rückgabewert 0 statt 2, gemessen). Am main-Gate mit Posten 4 geschlossen (gebaut, noch nicht committet); vorbestehend, weder Posten 2 noch Posten 5.
+  (Fälle L23 Bash ohne sed, L24 Write ohne tr: Rückgabewert 0 statt 2, gemessen). Am main-Gate mit Posten 4 geschlossen (gebaut, noch nicht committet); vorbestehend, weder Posten 2 noch Posten 5. Nachtrag 2026-10-21: "noch nicht committet" überholt; Posten 4 (main-Gate) ist durch den Merge des Pull Requests #27 abgenommen, Merge-Commit `998f81d9fffe3970baf870d04e44576eda534fcc`; am Prototyp-Gate bleibt der Befund offen (Posten 6).
 - Quelle: Messung SecDevOps Engineer 2026-10-21, Einordnung Software Architect (Posten 6). CWE: CWE-252 (Unchecked Return Value), Folge CWE-636. Bauteil: `.claude/hooks/block-prototype-import.sh`.
 - CVSS 3.1: Bewertung mit dem Bau (C3). Status: offen. Fälligkeit: mit der nächsten Änderung am Prototyp-Gate (Einheit C3, zusammen mit Posten 2), spätestens vor der Freigabe des Grundgerüsts.
   Verweis: Posten 6 unter R3-Q-010 (Sammelposten, Nachführung im Backlog durch den Product Owner); vorgesehen: Rückgabewert jedes Schritts prüfen wie am main-Gate. Akzeptanzbegründung: keine.
