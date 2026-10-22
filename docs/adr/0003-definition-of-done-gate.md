@@ -1,6 +1,215 @@
 # ADR 0003 — Definition-of-Done-Gate (R3-Q-001)
 
-Verschoben am 2026-10-22 aus `docs/adr/0002-architekturentscheid-ziel-stack.md`, Abschnitt 6.12, unverändert (Prozess-Schnitt PS-2); Wortlaut dort bis zum Schnitt beim Commit `ac6e0c17672ad9f0d139a59dba8ca319f46056c4`.
+| | |
+|---|---|
+| **Titel** | Definition-of-Done-Gate: ein Hook für `Stop`, `SubagentStop` und `TaskCompleted`, der `make dod` aufruft und dessen Ausgabe liest, mit Liste terminierter Lagen C, Selbsttest und Mutationsprobe |
+| **Status** | **angenommen** — Entscheidpunkte E-A bis E-K freigegeben am 2026-09-07, Prüfmittel abgenommen am 2026-09-08 (ADR 0002, Abschnitt 10); als eigener ADR angelegt mit PS-2 am 2026-10-22, Teil A neu, Teil B unverändert |
+| **Datum** | 2026-10-22 |
+| **Kennung** | R3-Q-001 |
+| **Grundlage** | Projektauftrag 3.3 und 3.4; `docs/05_Product_Backlog.md`, Eintrag R3-Q-001; `docs/06_Definition_of_Ready_und_Done.md`, Teil 2 und Abschnitt "Durchsetzung"; ADR 0002, Abschnitt 6 (Definition-of-Done-Befehlskette), Abschnitt 8 und Abschnitt 10; `docs/adr/0001-rollenmodell.md`; `.claude/rules/dokumentation.md`, Absatz zu Architecture Decision Records |
+| **Herkunft** | Verschoben aus ADR 0002, 6.12, mit PS-2 am 2026-10-22, unverändert als Teil B; Wortlaut bis zum Schnitt: `docs/adr/0002-architekturentscheid-ziel-stack.md` beim Commit `ac6e0c17672ad9f0d139a59dba8ca319f46056c4`, Abschnitt "6.12 Zwölfte Fortschreibung vom 2026-09-02" |
+| **Verfasst durch** | Software Architect (4.3) |
+
+**Betroffene Dateien.** Dieser ADR legt an:
+`docs/adr/0003-definition-of-done-gate.md` — sonst nichts. Teil B ist der
+Wortlaut von ADR 0002, 6.12, verschoben und nicht abgeschrieben; neu sind der
+Kopf, Teil A und der Nachtrag vom 2026-10-22 am Ende von Teil B. Beschrieben
+und nicht geändert werden `.claude/hooks/dod-gate.sh`,
+`.claude/hooks/dod-gate-terminierte-lagen.txt`,
+`.claude/hooks/dod-gate-pfadausnahmen.txt`, `scripts/dod-gate-selbsttest.sh`,
+`scripts/dod-gate-mutationen.txt`, die Hook-Einträge in `.claude/settings.json`
+und das Ziel `dod` im `Makefile`. Betroffen, aber nicht durch diesen ADR
+geändert, ist `scripts/dod-gate-selbsttest.sh` als Leser dieser Datei: Er liest
+die Tabellen von 6.12 mechanisch und wird mit PS-2 von ADR 0002 auf diese Datei
+umgestellt.
+
+Teil A fasst zusammen; bei einem Widerspruch gelten Teil B und ADR 0002, Abschnitt 10, bis Teil A berichtigt ist.
+Nur Teil A wird überschrieben; jede Änderung an Teil A bekommt einen datierten
+Eintrag am Ende von Teil B in der Form "Vorher galt / Jetzt gilt / Weshalb"
+(ADR 0002, 6.1, Absatz Anlass). Teil B ist ausschliesslich anfügbar. Seine
+Überschriften und Kennungen sind dieselben wie in ADR 0002 bis zum Schnitt: Ein
+Verweis wie "ADR 0002, 6.12.27 g" findet in Teil B dieselbe Stelle. Freigaben
+und Abnahmen werden weiter in ADR 0002, Abschnitt 10 eingetragen.
+
+**Lesestellen des Selbsttests.** `scripts/dod-gate-selbsttest.sh` liest aus der
+ADR-Datei jede Zeile, die mit der Kennung einer Zusicherung beginnt (Prüftabelle
+in 6.12.19), das erste Vorkommen der Kopfzeile der Klassifizierungstabelle
+(6.12.4) und der Elementtabelle (6.12.7), jede Kopfzeile einer Tabelle der
+Aussagenkürzel (6.12.9, 6.12.15) und das erste Vorkommen der Elementzeilen
+`LAGE` und `SCHWELLE`. Teil A steht vor Teil B und trägt deshalb keine dieser
+Zeilenformen: keine Tabellenzeile, die mit einer Kennung `Z-nnn` beginnt, und
+keine Tabelle mit einer dieser Kopfzeilen. Kennungen von Zusicherungen stehen
+in Teil A nie am Anfang einer Tabellenzeile.
+
+---
+
+## Teil A — Stand
+
+### Entscheid
+
+R3-Q-001 verlangt, dass eine Arbeitseinheit erst endet, wenn die
+Definition-of-Done-Kette nachweisbar gelaufen ist und nichts gefunden hat
+(Projektauftrag 3.4, Ebenen 2 bis 4). Ein Skript, `.claude/hooks/dod-gate.sh`,
+bedient dafür die Ereignisse `Stop`, `SubagentStop` und `TaskCompleted` ohne
+Matcher und ruft im geprüften Arbeitsbaum den einen Befehl `make dod` auf
+(Teil B, 6.12.2). Es wertet Rückgabewert und Ausgabe der Kette unabhängig
+voneinander aus — Lage-Marken, D19-Zeile, Baumzeile und Schlusszeile — und
+blockiert mit Rückgabewert 2, wenn eines fehlt oder sie sich widersprechen
+(6.12.3, 6.12.8). Befund und ausgefallenes Prüfmittel unterscheidet es an der
+Lage der Marke; eine Lage C lässt es nur mit Meldung durch, wenn sie in der
+selbstprüfenden Liste `.claude/hooks/dod-gate-terminierte-lagen.txt` terminiert
+ist (6.12.4 bis 6.12.7). Die harte Zusicherung, dass eine Aufgabe bei roter
+Kette nicht abschliessbar ist, trägt allein `TaskCompleted`, und nur, wenn die
+Arbeitseinheit als Aufgabe geführt wird (E-H, O-23); `Stop` und `SubagentStop`
+erzwingen je Beendigungsversuch genau eine Fortsetzung, weil das Gate bei
+gesetztem `stop_hook_active` mit 0 endet, ohne den Zähler zu verändern (6.12.2,
+6.12.10). Dreimaliges Scheitern am gleichen Kriterium zählt es ausserhalb des
+Arbeitsbaums: Beim dritten Mal verlangt es die Übergabedatei, ab dem vierten
+lässt es bei `Stop` und `SubagentStop` durch, bei `TaskCompleted` nicht (6.12.9,
+E-J). Seine Zeit begrenzt es im Skript selbst, 600 s für die Kette und 120 s
+Wartezeit auf die Sperre unter den 900 s je Hook-Eintrag in
+`.claude/settings.json`, weil ein Hook, der die äussere Grenze reisst,
+durchlässt (6.12.12). Bei `SubagentStop` läuft es nur für Rollen mit `Edit`,
+`Write` oder `NotebookEdit`; `Bash` zählt nicht dazu, die Lücke ist bis R3-Q-005
+benannt (6.12.14, E-K). Sein Prüfmittel ist der Selbsttest
+`scripts/dod-gate-selbsttest.sh` mit der Prüftabelle in 6.12.19 — je Zeile eine
+Zusicherung mit Kanal, Prädikat und Mutation —, der Mutationsprobe
+`scripts/dod-gate-mutationen.txt` und den Deckungen aus 6.12.27 und 6.12.28;
+abgenommen ist es am 2026-09-08 mit Teil 1 des Abnahmekriteriums erfüllt und
+Teil 2 auf dem vorab festgelegten Ersatzweg, die Grenzen unten mitgetragen und
+nicht geschlossen (ADR 0002, Abschnitt 10). Was ein Durchlass des Gates aussagt
+und was nicht, steht in Teil B, 6.12.18.
+
+### Festlegungen
+
+| Kennung | Festlegung | seit | Fundort in Teil B |
+|---|---|---|---|
+| G1 | Ein Skript für `Stop`, `SubagentStop` und `TaskCompleted`, verzweigt über `hook_event_name`, kein Matcher; die harte Zusicherung trägt allein `TaskCompleted` | 2026-09-02 | Teil B, 6.12.2 |
+| G2 | Ausgewertet werden Rückgabewert und Ausgabe von `make dod`; fehlt eines oder widersprechen sie sich, blockiert das Gate; die Zahl der gelesenen Marken wird gegen die Zahl der Schlusszeile gehalten, mindestens eine Marke, keine eigene Zahl im Gate | 2026-09-02; Nachtrag 6.12.24 k | Teil B, 6.12.3 |
+| G3 | Befund gegen Ausfall an der Lage der Marke, nicht am Rückgabewert und nicht am Meldungstext; dazu die Schlüssel `LISTE …`, `KETTE schlusszeile-widerspruch` und `KETTE baum-widerspruch` | 2026-09-02; Nachträge 6.12.23, 6.12.24 | Teil B, 6.12.4 |
+| G4 | Terminierte Lagen C in einer versionierten, selbstprüfenden Liste neben dem Hook, sechs Selbstprüfungen, jede blockierend; eine fehlende Liste ist Lage C des Gates, eine vorhandene leere ist zulässig | 2026-09-02 | Teil B, 6.12.5; 6.12.11 |
+| G5 | Die Kette bricht bei Lage C nicht mehr ab, sondern läuft weiter und sammelt; abgebrochen wird bei einem Befund | 2026-09-02 | Teil B, 6.12.6 |
+| G6 | Die Lage-Marke trägt das fehlende Prüfmittel strukturiert (`FEHLT=<pfad>`), nicht der Meldungstext; ein C-Zweig ohne Angabe fällt geschlossen | 2026-09-02 | Teil B, 6.12.7 |
+| G7 | Vier eindeutige Schlusszeilen (die vierte: vollständig gelaufen, D19 mit Befund), eine eigenständige D19-Zeile, eine Zeile mit dem geprüften Baum | 2026-09-02; vierte Form Nachtrag 6.12.23 | Teil B, 6.12.8 |
+| G8 | Zählung ausserhalb des Arbeitsbaums; Schlüssel ist das Kriterium, bei mehreren Abweichungen das erste in Kettenreihenfolge; beim dritten Mal wird die Übergabedatei verlangt, ab dem vierten Durchlass nur bei `Stop` und `SubagentStop`; der Durchlass löscht den Zähler nicht | 2026-09-02; Nachträge 6.12.23, 6.12.24 | Teil B, 6.12.9 |
+| G9 | Ist `stop_hook_active` wahr: Rückgabewert 0, Meldung über `systemMessage`, Zähler unverändert | 2026-09-02 | Teil B, 6.12.10 |
+| G10 | Acht blockierende Prüfmittel: `jq`, `git`, GNU Make mit dem `Makefile` im bestimmten Baum, die Lagenliste, `timeout`, `flock`, `sha256sum`, `mktemp`; fehlt eines, Lage C des Gates mit Rückgabewert 2 und Beschaffungsweg; das neunte, ein beschreibbares Zustandsverzeichnis, trägt nur das Zählwerk und hat keinen eigenen Ausgang | 2026-09-02; Nachtrag 6.12.24 g | Teil B, 6.12.11 |
+| G11 | `timeout: 900` je Hook-Eintrag in `.claude/settings.json`; `make dod` im Skript unter `timeout` mit 600 s; Wartezeit auf die Sperre 120 s; bei Überschreitung `KETTE zeitueberschreitung` und Rückgabewert 2 | 2026-09-02 | Teil B, 6.12.12 |
+| G12 | Geprüft wird die über `git` bestimmte, physisch aufgelöste Wurzel des Arbeitsbaums; eigene Läufe über `flock` serialisiert; Sperr- und Wegwerfdatei nachweislich ausserhalb des Baums, notfalls fest unter `/tmp` | 2026-09-02; Nachtrag 6.12.24 | Teil B, 6.12.13 |
+| G13 | Bei `SubagentStop` läuft das Gate nur für Rollen mit `Edit`, `Write` oder `NotebookEdit`, die Rolle aufgelöst über das Frontmatter-Feld `name:`; `Bash` zählt nicht dazu | 2026-09-02 (Runde 1) | Teil B, 6.12.14 |
+| G14 | Jeder Durchlass, der kein sauberes Grün ist, meldet sich über `systemMessage`; kein `continue: false`; kein eigenes Protokoll des Gates; die Ausgabe der Kette wird in einer Wegwerfdatei ausserhalb des Baums abgefangen | 2026-09-02 | Teil B, 6.12.15; 6.12.11 |
+| G15 | Kein Zwischenspeicher des Urteils: das Gate läuft bei jedem Ereignis | 2026-09-02 | Teil B, 6.12.16 |
+| G16 | Die Vollständigkeit der Git-Historie ist Prüfmittel von D20; ein flacher Klon ist Lage C mit Beschaffungsweg `git fetch --unshallow` | 2026-09-02 | Teil B, 6.12.17 |
+| G17 | Selbsttest mit Formprüfungen gegen eine Attrappe und je einem roten und grünen Lauf gegen das echte `Makefile`; alle acht Kombinationen der D19-Zeile, die echten Rollendateien im G13-Fall, eigene Fälle für G12 | 2026-09-02; Nachtrag 6.12.24 | Teil B, 6.12.19 |
+| O-24 | Je Zeile der Prüftabelle genau eine messbare Zusicherung mit dauerhafter Kennung, je Kennung genau eine Prüfung, Deckung mechanisch in beide Richtungen; jede Zusicherung nennt ihren Messumfang; jeder Block mit Schlüssel `GATE <Prüfmittel>` wird gezählt, einzige Ausnahme `GATE jq`; Selbsttest gegen Nebenläufigkeit gesperrt | 2026-09-03 | Teil B, 6.12.25 |
+| O-25 | Spalte Kanal mit festem, abschliessendem Wertevorrat, mechanisch abgeglichen; Spalte Mutation mit je der Änderung, die genau diese Zusicherung fehlschlagen lassen muss, ausführbar in `scripts/dod-gate-mutationen.txt`, geprüft im Modus `--mutationen` | 2026-09-03 | Teil B, 6.12.26 a, b |
+| O-26 | Spalte Prädikat zwischen Kanal und Zusicherung, geschlossener Vorrat von neun Werten, Prädikatabgleich je Kennung; Schlüsseldeckung gegen die Klassifizierungstabelle 6.12.4 in beide Richtungen; Grammatikdeckung je Element der Marke; Abnahmekriterium in zwei Teilen | 2026-09-06 | Teil B, 6.12.27 b bis d, g |
+| O-27 | Pfaddeckung, Grammatik am Gegenstand (Schwächungen des `marken_muster`), je Aufrufstelle einer Aussage eine Messung, fail-closed-Ausfall der bestehenden Deckungen; Teil 2 des Abnahmekriteriums auf das falsche Grün am Gate bezogen | 2026-09-07 | Teil B, 6.12.28 b bis g |
+| S8-07 | Keine Nicht-ASCII-Zeichen in `.claude/hooks/dod-gate.sh` und `scripts/dod-gate-selbsttest.sh`, weder in Mustern noch in Vergleichswerten, Meldungen oder Kommentaren | 2026-09-06 | Teil B, 6.12.27 h |
+
+### Entscheidpunkte E-A bis E-K
+
+Umgesetzt hat der Koordinator am 2026-09-02 je die Option, die der Software
+Architect empfohlen hatte; förmlich freigegeben sind alle elf am 2026-09-07
+durch Merge des Pull Requests #13 (Merge-Commit
+`135e3614197a8150ad3d96fbf32eb0e893c9cbbc`), keine ist zurückgewiesen. Den
+Wortlaut der Optionen führt ADR 0002, Abschnitt 10, Unterabschnitt "Vorlage der
+zwölften Fortschreibung (Abschnitt 6.12) und Weisung vom 2026-09-02".
+
+| Punkt | Entscheid | Datum | Fundort |
+|---|---|---|---|
+| E-A | 6.12 als Ganzes: Bau nach 6.12 | 2026-09-07 | Teil B, 6.12 |
+| E-B | Terminierte Lagen C (G4), Option (a) | 2026-09-07 | Teil B, 6.12.5 |
+| E-C | Die Kette bricht bei Lage C nicht mehr ab (G5), Option (a) | 2026-09-07 | Teil B, 6.12.6 |
+| E-D | `FEHLT=` strukturiert in der Marke (G6), Option (a) | 2026-09-07 | Teil B, 6.12.7 |
+| E-E | `gitleaks` bleibt blockierend, Option (a) mit (b); seit 2026-09-22 bereitgestellt durch den `SessionStart`-Hook `.claude/hooks/session-start-gitleaks.sh` (Kanal, kein Gate; fehlt `gitleaks` trotzdem, meldet D11 Lage C) | 2026-09-07; Nachträge 2026-09-22 | ADR 0002, Abschnitt 10, Unterabschnitt "Vorlage der zwölften Fortschreibung (Abschnitt 6.12) und Weisung vom 2026-09-02", Zeile E-E mit den Nachträgen vom 2026-09-22; ADR 0002, Abschnitt 10, Unterabschnitt "Abnahme der beiden Starthooks E-E und E-F — erteilt und eingetragen am 2026-09-22"; Teil B, 6.12.27 a erwähnt E-E (Umgebung am 2026-09-06) |
+| E-F | Flacher Klon blockiert (G16), Option (a); Beschaffungsweg seit 2026-09-22 als `SessionStart`-Hook `.claude/hooks/session-start-git-historie.sh`; bleibt der Klon flach, meldet D20 Lage C `FEHLT=git-historie` | 2026-09-07; Nachträge 2026-09-22 | Teil B, 6.12.17; ADR 0002, Abschnitt 10, Zeile E-F |
+| E-G | Laufzeit je Beendigungsversuch (G15, O-20), Option (a) | 2026-09-07 | Teil B, 6.12.16; 6.12.12 |
+| E-H | Reichweite der Zusicherung, Voraussetzung Aufgabenliste (G9, O-23), Option (a): Wortlaut befolgen und vorschreiben, dass jede Arbeitseinheit als Aufgabe geführt wird | 2026-09-07 | Teil B, 6.12.2, 6.12.10, 6.12.27 a; Vorschrift in `CLAUDE.md`, "Vor jeder Arbeitseinheit" |
+| E-I | Abnahmekriterium `R3-Q-001_gate_blockiert`, Option (a): präzisieren | 2026-09-07 | ADR 0002, Abschnitt 10, Unterabschnitt "Vorlage der zwölften Fortschreibung (Abschnitt 6.12) und Weisung vom 2026-09-02", Zeile E-I: "Abnahmekriterium `R3-Q-001_gate_blockiert`", umgesetzte Option "(a) präzisieren"; ADR 0002, Abschnitt 9, Zeile "Zwölfte Fortschreibung 2026-09-02 — Entwurf": "Das Abnahmekriterium `R3-Q-001_gate_blockiert` ist zu präzisieren", mit dem Vorschlag, "rot" zu ersetzen durch "Befund — `A_FAIL`, D19 `VERLETZT` …" |
+| E-J | Durchlass nach der Eskalation, Option (a): nur `Stop` und `SubagentStop`, `TaskCompleted` blockiert weiter | 2026-09-07 | Teil B, 6.12.9 |
+| E-K | `Bash` zählt nicht als Schreibwerkzeug (G13), Option (a), mit benannter Lücke bis R3-Q-005 | 2026-09-07 | Teil B, 6.12.14 |
+
+### Zahlen
+
+| Grösse | Wert | Stand | Fundort |
+|---|---|---|---|
+| Zeilen der Prüftabelle in 6.12.19 | 263, davon eine zurückgezogen (`Z-110`) | 2026-09-08 | Teil B, 6.12.28 j Punkte 6 und 9 |
+| Zusicherungen | 262 | 2026-09-08 | Teil B, 6.12.28 j Punkte 6 und 9; ADR 0002, Abschnitt 10, Abnahmevorlage |
+| Messhüllen | 264 | 2026-09-08 | Teil B, 6.12.28 j Punkte 6 und 9 |
+| Einträge in `scripts/dod-gate-mutationen.txt` | 262: 250 `sed`, 12 `keine` | 2026-09-08 | Teil B, 6.12.28 j Punkte 6 und 9 |
+| Normalmodus des Selbsttests | Rückgabewert 0, 262 von 262 | 2026-09-08 | Teil B, 6.12.28 j Punkt 9 |
+| Mutationsmodus `--mutationen` | Rückgabewert 0: 250 geprüft, 250 erkannt, 0 nicht erkannt, 12 ohne Mutation, 0 wirkungslos | 2026-09-08 | Teil B, 6.12.28 j Punkt 9 |
+| Ausgangsstellen der Pfaddeckung | 40 (14 Ausstiege, 26 Aufrufstellen) | 2026-09-08 | Teil B, 6.12.28 h; j Punkte 6 und 9 |
+| Schwächungen des `marken_muster` | 35 (vor der Entdopplung) | 2026-09-08 | Teil B, 6.12.28 h; j Punkte 6 und 9 |
+| Aufrufstellen zu `E21` | 3 | 2026-09-08 | Teil B, 6.12.28 h; j Punkte 6 und 9 |
+| Schlüssel aus 6.12.4 | 18 | 2026-09-08 | Teil B, 6.12.28 h; j Punkte 6 und 9 |
+| Literale aus dem Gate (Gegenstandsdeckung) | 24 | 2026-09-08 | Teil B, 6.12.28 h; j Punkte 6 und 9 |
+| Grammatikkürzel aus 6.12.7 | 12 | 2026-09-08 | Teil B, 6.12.28 h; j Punkte 6 und 9 |
+| Aussagenkürzel aus 6.12.9 und 6.12.15 | 31 | 2026-09-08 | Teil B, 6.12.28 h; j Punkte 6 und 9 |
+| Zeitgrenzen | 900 s aussen, 600 s für die Kette, 120 s Wartezeit auf die Sperre | 2026-09-02 | Teil B, 6.12.12 |
+
+### Abnahmekriterium
+
+| Teil | Massstab | Fassung | Stand |
+|---|---|---|---|
+| Teil 1 | Tabelleneigene Mutationen zu 100 Prozent erkannt (`nicht_erkannt=0`, `wirkungslos=0`), beide Modi Rückgabewert 0, Deckung in beide Richtungen, Kanal- und Prädikatabgleich ohne Abweichung, Schlüssel-, Gegenstands-, Grammatik- und Aussagendeckung; seit 6.12.28 g dazu Pfaddeckung (`0 nicht beschritten`), Grammatikschwächungen (`0 ohne fallende Zusicherung`, `w > 0`), Aufrufstellendeckung zu `E21` und die drei fail-closed-Zeilen aus 6.12.28 f | Teil B, 6.12.27 g; erweitert in 6.12.28 g | erfüllt (Fremdbeleg); beide Modi Rückgabewert 0 am 2026-09-08 |
+| Teil 2 | Eine Fremdmutationsrunde ohne blockierenden Befund; blockierend ist allein eine Fremdmutation, die am Gate ein falsches Grün erzeugt und keine Zusicherung fallen lässt; falsches Rot, abweichende Meldungsform und ein Rückgabewert ausser 0 und 2 beim Block sind nachrangig und Posten im Backlog; Kategorien Schlüssel, Grammatik, Schwellen und Ereignisfolge, Ausgabeform; mindestens sechs Fremdmutationen je Kategorie, blind gewählt; Runde 12 ist die letzte | Teil B, 6.12.28 g; der Wortlaut davor bleibt in 6.12.27 g stehen | nicht erfüllt: Runde 12 hatte den blockierenden Befund `DT12-M14`; die Abnahme trägt der in 6.12.28 g vorab festgelegte Ersatzweg — behoben, statisch nachgeprüft, gezielt wiederholt, keine Runde 13 |
+| Verlauf | Runde 9 erster Fehlschlag an Teil 2 (`DT9-01` bis `DT9-03`), Runde 10 zweiter (sieben von 35 wirksamen Fremdmutationen unerkannt), Runde 11 dritter (zehn von 29 unerkannt), Abbruch nach 3.4 und Vorlage O-27; Runde 12 nach der Neufassung: 29 blind gewählte Fremdmutationen, 28 erkannt, eine mit falschem Grün | Teil B, 6.12.27 g und k; 6.12.28 j; ADR 0002, Abschnitt 8, O-27 | abgeschlossen mit der Abnahme vom 2026-09-08 |
+
+### Grenzen und Restlücken
+
+| Nr. | Grenze oder Restlücke | Art | Fundort |
+|---|---|---|---|
+| 1 | Die Grammatik der D19-Zeile (6.12.8) ist nicht am Gegenstand gedeckt; gedeckt ist die eine belegte Verstossform (`Z-262`, `Z-263`) | Restlücke, mit abgenommen | Teil B, 6.12.28 j Punkt 5 |
+| 2 | Zeichen im Inneren eines Wortliterals werden nicht einzeln geschwächt; erstes und letztes Zeichen sind die Nahtstellen und werden geschwächt | Restlücke, benannte Grenze | Teil B, 6.12.28 c Punkt 3; j Punkt 5 |
+| 3 | Eine Alternative mit einem bestimmten fremden Literal ist nur als Klasse erfasst (`U5`); die Alternativendeckung (`Z-253`, `Z-254`) hält die Alternativen der Marke gegen 6.12.7, für die D19-Grammatik besteht kein Gegenstück | Restlücke, benannte Grenze | Teil B, 6.12.28 c; j Punkt 5 |
+| 4 | `Z-260` erreicht keine Zeile ohne Zahl an erster Stelle | Grenze | Teil B, 6.12.28 f Punkt 11, Nachtrag |
+| 5 | Die Blockdeckung ist selbst nicht mutationsgedeckt und gilt im Normallauf, nicht im isolierten Einzelfall-Lauf | Grenze | Teil B, 6.12.28 f Punkt 11, Nachtrag |
+| 6 | Keine wortlautgenaue Feindeckung der Aussagen- und Grammatikkürzel Zeile für Zeile; kein Lauf gegen einen unabhängig geklonten Baum | Grenze der Prüfrollen an ihrer eigenen Prüfung | Teil B, 6.12.28 j Punkt 11 |
+| 7 | Das Gate misst das Recht einer Rolle (`tools`-Feld), nicht ihre Fähigkeit: eine Rolle mit `Bash` und ohne `Edit` oder `Write` könnte schreiben und wird nicht geprüft | benannte Lücke, freigegeben mit E-K, bis R3-Q-005 | Teil B, 6.12.14 |
+| 8 | Das Gate stützt sich auf die ganze Kette und damit auf den nicht abgenommenen Belegprüfer D20; ein Befund von D20 blockiert jede Arbeitseinheit | bekannte Lücke ausserhalb der Einheit, O-15 | Teil B, 6.12.18; ADR 0002, Abschnitt 8, O-15; Abschnitt 10, Abnahmevorlage Punkt 5 |
+| 9 | Fehlt `jq`, blockiert das Gate, kann den Block aber nicht zählen | benannte Grenze | Teil B, 6.12.23 c |
+| 10 | `Stop` und `SubagentStop` erzwingen je Beendigungsversuch genau eine Fortsetzung; die Obergrenze der Referenz von acht aufeinanderfolgenden Blocks ist innerhalb eines Beendigungsversuchs unerreichbar und wird nicht gebraucht | gewollt schwach | Teil B, 6.12.2; 6.12.10 |
+| 11 | Ohne geführte Aufgabe feuert `TaskCompleted` nicht; die Kette wird dann nur angemahnt, nicht erzwungen | Voraussetzung, E-H, O-23 | Teil B, 6.12.2 |
+| 12 | Ob 600 s für die Kette mit dem Grundgerüst reichen, ist nicht gemessen | offen, O-20 | Teil B, 6.12.12 |
+
+### Offene Punkte
+
+| Punkt | Gegenstand | Stand | Fundort |
+|---|---|---|---|
+| O-15 | Abnahme des Belegprüfers D20, auf den sich das Gate über die ganze Kette stützt | offen; das Werkzeug ist nach 3.4 abgebrochen und nicht abgenommen; Entscheid über das Abnahmekriterium beim Auftraggeber; vor der Freigabe des Grundgerüsts | Teil B, 6.12.18; ADR 0002, Abschnitt 8; Abschnitt 10, Abnahme vom 2026-09-08 |
+| O-19 | Die Umgebungsvariable `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` ist nicht belegt; das Gate stützt sich nicht auf sie | offen; mit der nächsten Nachführung von `docs/06_Definition_of_Ready_und_Done.md` | Teil B, 6.12.2; ADR 0002, Abschnitt 8 |
+| O-20 | Laufzeit der Kette mit dem Grundgerüst gegen die innere Grenze von 600 s | offen; gemessen sind 6,4 bis 7,0 s je Lauf des Gates ohne `backend/` und `deploy/` (Fremdbeleg); die Grenzen bleiben, bis der Auftraggeber entscheidet; mit dem Grundgerüst, sobald `backend/` und `deploy/` bestehen | Teil B, 6.12.12, 6.12.16, 6.12.24 j; ADR 0002, Abschnitt 8 |
+| O-23 | Voraussetzung der harten Zusicherung: geführte Aufgabenliste | Zwei Stände: ADR 0002, Abschnitt 8 trägt zu O-23 keinen Entscheidvermerk; beantwortet ist O-23 durch Entscheid E-H, Option (a), freigegeben am 2026-09-07, und Teil B, 6.12.27 a nennt "O-23, Entscheid E-H"; massgeblich ist ADR 0002, Abschnitt 10 | Teil B, 6.12.2; 6.12.27 a; ADR 0002, Abschnitt 8; Abschnitt 10, Unterabschnitt "Förmliche Freigabe der Entscheidpunkte E-A bis E-K (2026-09-07)" |
+| O-25 | Spalten Kanal und Mutation der Prüftabelle | Zwei Stände: Teil B sagt in 6.12.28 i und j (Punkt 7 und Nachtrag vom 2026-09-08) "O-25 bleibt offen"; ADR 0002, Abschnitt 8 führt O-25 als entschieden am 2026-09-03, und ADR 0002, Abschnitt 10, Berichtigung vom 2026-09-22 sagt: entschieden am 2026-09-03 und nicht Gegenstand der Abnahme, die Wendung "bleibt offen" bleibt als Stand davor stehen; massgeblich ist Abschnitt 10 | Teil B, 6.12.26; 6.12.28 i, j; ADR 0002, Abschnitt 8; Abschnitt 10, Abnahme vom 2026-09-08, Berichtigung vom 2026-09-22 |
+| O-27 | Deckung am Gegenstand für Pfade und Grammatik, Teil 2 des Abnahmekriteriums | entschieden am 2026-09-07 (Wahl an den Koordinator delegiert, beide Wege zusammen), ausgeformt in 6.12.28, Runde 12 am 2026-09-07; zuletzt offen war die Abnahme selbst, erteilt am 2026-09-08 | Teil B, 6.12.27 k; 6.12.28; ADR 0002, Abschnitt 8 |
+| R3-Q-005 | Rollen-Schreibgrenzen als PreToolUse-Gate, Etappe 0 | nicht gebaut; bis dahin besteht die Lücke aus E-K | Teil B, 6.12.14; `docs/05_Product_Backlog.md`; `docs/adr/0001-rollenmodell.md` |
+
+### Abnahmen
+
+| Datum | Gegenstand | Merge-Commit | Eintrag in ADR 0002, Abschnitt 10 |
+|---|---|---|---|
+| 2026-09-02 | Vorlage von 6.12 und Weisung des Auftraggebers; nach der Lesart des Koordinators Beginn des Baus, keine Freigabe | keiner; vorgelegt mit Commit `21cc3ddbf45668c2e185958f8e2a8d42eeaf0150` | "Vorlage der zwölften Fortschreibung (Abschnitt 6.12) und Weisung vom 2026-09-02" |
+| 2026-09-07 | Förmliche Freigabe der Entscheidpunkte E-A bis E-K, Merge des Pull Requests #13 | `135e3614197a8150ad3d96fbf32eb0e893c9cbbc` | "Förmliche Freigabe der Entscheidpunkte E-A bis E-K (2026-09-07)" |
+| 2026-09-08, eingetragen 2026-09-21 | Abnahme des Prüfmittels aus R3-Q-001 (Gate, Lagenliste, Selbsttest, Mutationsdatei, Festlegung in 6.12 samt Nachträgen 6.12.23 bis 6.12.28), Merge des Pull Requests #15, ohne Auflagen | `9870b0d115b8ef330a7c19777af5741093e4f0e9` | "Abnahmevorlage für das DoD-Gate aus R3-Q-001 (vorgelegt am 2026-09-08)"; "Abnahme des DoD-Gates aus R3-Q-001 — erteilt am 2026-09-08, eingetragen am 2026-09-21" |
+| 2026-09-22 | Abnahme der beiden Starthooks zu E-E und E-F, Merge des Pull Requests #17; die Abnahme des Gates wird dadurch weder erweitert noch berührt | `a462aacfcedaa5ae62e92b14335f9db6718499be` | "Abnahme der beiden Starthooks E-E und E-F — erteilt und eingetragen am 2026-09-22" |
+
+Spätere Einträge in ADR 0002, Abschnitt 10 nennen das DoD-Gate nur als weder
+erweitert noch berührt.
+
+### Restpunkte
+
+| Nr. | Restpunkt | fällig | Fundort |
+|---|---|---|---|
+| 1 | Die Restlücken 1 bis 3 schliessen; die systematische Antwort für die D19-Grammatik wäre ein Schwächungslauf über das D19-Muster nach dem Muster von 6.12.28 c | offen; im Backlog unter R3-Q-001 als Sammelposten "Offene Posten aus Runde 12" geführt | `docs/05_Product_Backlog.md`, Eintrag R3-Q-001; ADR 0002, Abschnitt 10, Abnahmevorlage Punkt 3; Teil B, 6.12.28 j Punkt 5 |
+| 2 | Die nachrangigen Posten abarbeiten, die der Backlog unter R3-Q-001 führt: die weiterhin offenen Posten S11-02, S11-03, S11-09, S11-10, S10-06, SST-B5-09, S9-05 und die nachrangigen Befunde der Runde 12 SST-P3-01 bis SST-P3-04, S12-04, S12-05 | offen; nachrangig, kein Abbruchgrund | `docs/05_Product_Backlog.md`, Eintrag R3-Q-001; Teil B, 6.12.27 g; 6.12.28 g |
+| 3 | Den Belegprüfer D20 abnehmen (O-15) | vor der Freigabe des Grundgerüsts | ADR 0002, Abschnitt 8 |
+| 4 | Die Laufzeit der Kette mit dem Grundgerüst messen und, reichen 600 s nicht, beide Zeitgrenzen als Fortschreibung anheben (O-20) | mit dem Grundgerüst, sobald `backend/` und `deploy/` bestehen | Teil B, 6.12.12; ADR 0002, Abschnitt 8 |
+| 5 | Die Rollen-Schreibgrenzen hart durchsetzen (R3-Q-005) und damit die Lücke aus E-K schliessen | Etappe 0 | Teil B, 6.12.14; `docs/05_Product_Backlog.md` |
+| 6 | Mit O-19 entscheiden, wie Projektauftrag, `docs/06_Definition_of_Ready_und_Done.md` und `docs/adr/0001-rollenmodell.md` mit der nicht belegten Variable umgehen | mit der nächsten Nachführung von `docs/06_Definition_of_Ready_und_Done.md` | ADR 0002, Abschnitt 8 |
+
+---
 
 ## Teil B — Entscheidlog
 
@@ -6054,3 +6263,10 @@ erteilt der Auftraggeber auf einem der beiden Formwege aus Abschnitt 10.
 
 ---
 
+#### Nachtrag vom 2026-10-22 — Schnitt aus ADR 0002 und Teil A angelegt (PS-2)
+
+| | |
+|---|---|
+| **Vorher galt** | Das Definition-of-Done-Gate aus R3-Q-001 stand als Abschnitt 6.12 in ADR 0002 (Zeilen 1948 bis 7997 im Stand vor dem Schnitt), mit Status-Block, den Unterabschnitten 6.12.1 bis 6.12.28 und allen Nachträgen. Eine Zusammenfassung des Stands gab es nicht; Festlegungen, Zahlen und Abnahmen standen verteilt über 6.12 und ADR 0002, Abschnitt 10. Frühere Fassungen blieben im Text stehen und wurden nicht umgeschrieben (ADR 0002, 6.1, Absatz Anlass) |
+| **Jetzt gilt** | Der Wortlaut von 6.12 steht unverändert als Teil B dieses ADR, in derselben Reihenfolge und mit denselben Überschriften und Kennungen; "ADR 0002, 6.12.n" und "ADR 0003, Teil B, 6.12.n" bezeichnen dieselbe Stelle, und an der alten Stelle in ADR 0002 steht eine Weiterleitung hierher. Davor steht neu Teil A — Stand: Entscheid, Festlegungen, Entscheidpunkte, Zahlen, Abnahmekriterium, Grenzen und Restlücken, offene Punkte, Abnahmen und Restpunkte als Tabellen; Teil A trägt keine der Zeilenformen, die `scripts/dod-gate-selbsttest.sh` aus der Datei liest. Teil A wird überschrieben, Teil B nur angefügt; jede Änderung an Teil A bekommt hier einen datierten Eintrag "Vorher galt / Jetzt gilt / Weshalb". Bei einem Widerspruch gelten Teil B und ADR 0002, Abschnitt 10, bis Teil A berichtigt ist. Freigaben und Abnahmen bleiben in ADR 0002, Abschnitt 10. An Gate, Lagenliste, Selbsttest und Mutationsdatei ändert dieser Eintrag nichts, ebenso wenig an einer Festlegung, einer Zahl, einem Entscheid oder einer Abnahme zum Gate |
+| **Weshalb** | Prozess-Schnitt PS-1, angenommen durch Merge des Pull Requests #29 am 2026-10-22 (Merge-Commit `d7d539ebea07043201d58e36c8abafec54045848`): Die Regel `.claude/rules/dokumentation.md`, Absatz zu Architecture Decision Records, verlangt, dass ein ADR den aktuellen Stand abbildet (Teil A) und ein datiertes Entscheidlog führt (Teil B), begrenzt Teil A auf höchstens etwa 2'000 Zeilen und lagert darüber ein Thema in einen eigenen ADR aus, mit Weiterleitung an der alten Stelle; bis zur Aufteilung (PS-2) galt für ADR 0002 der Stand vom 2026-10-22. PS-2 ist diese Aufteilung, auf die Weisungen des Auftraggebers vom 2026-10-22 (Wortlaut: "Ich vertraue dir und deinen super Fähigkeiten und gehen nach deiner Empfehlung"; "Mach einfach, ich erlaube es dir. Vertraue dir."). Der Wortlaut bis zum Schnitt bleibt in git: `docs/adr/0002-architekturentscheid-ziel-stack.md` beim Commit `ac6e0c17672ad9f0d139a59dba8ca319f46056c4`, Abschnitt "6.12 Zwölfte Fortschreibung vom 2026-09-02". Verschoben hat den Text der DevOps Engineer; Teil A und diesen Eintrag schreibt der Software Architect (4.3) |

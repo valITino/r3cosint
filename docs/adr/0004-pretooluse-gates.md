@@ -1,6 +1,213 @@
 # ADR 0004 — PreToolUse-Gates und Prüfmittel (R3-Q-010)
 
-Verschoben am 2026-10-22 aus `docs/adr/0002-architekturentscheid-ziel-stack.md`, Abschnitt 6.13, unverändert (Prozess-Schnitt PS-2); Wortlaut dort bis zum Schnitt beim Commit `ac6e0c17672ad9f0d139a59dba8ca319f46056c4`.
+| | |
+|---|---|
+| **Titel** | Die beiden PreToolUse-Gates `.claude/hooks/block-main-write.sh` und `.claude/hooks/block-prototype-import.sh`, ihre belegten Lücken und ihr Prüfmittel `scripts/pretooluse-gates-selbsttest.sh` |
+| **Status** | **angenommen** — Umfang freigegeben am 2026-09-22 (Teil B, 6.13, Status-Block), R3-Q-010 abgenommen am 2026-09-23 (ADR 0002, Abschnitt 10); abgenommen sind Posten 1, 2, 4, 5, 6 und der Teil von Posten 7 am Prototyp-Gate, offen Posten 3, 8, 9, 10 und der Teil von Posten 7 am main-Gate (Teil A, Posten und belegte Lücken) |
+| **Datum** | 2026-10-22 |
+| **Kennung** | R3-Q-010 |
+| **Grundlage** | Projektauftrag 3.2 c, 3.3, 3.4, 4.2, 5.6, 6.6; Eintrag R3-Q-010 mit Sammelposten in `docs/05_Product_Backlog.md`; `docs/10_Zustandsbericht_2026-09-02.md` (BER-05); `.claude/rules/claude-konfiguration.md` (Abschnitt "Hooks"); `.claude/rules/dokumentation.md`; `docs/adr/0001-rollenmodell.md`; ADR 0002 (6.1, Absatz "Anlass"; 6.12.12; O-8; O-28; Abschnitt 10); `docs/11_Schwachstellenregister.md` |
+| **Herkunft** | verschoben aus ADR 0002, 6.13, mit PS-2 am 2026-10-22, unverändert als Teil B; Wortlaut bis zum Schnitt beim Commit `ac6e0c17672ad9f0d139a59dba8ca319f46056c4` |
+| **Verfasst durch** | Software Architect (4.3) |
+
+**Betroffene Dateien.** Dieser ADR legt an: `docs/adr/0004-pretooluse-gates.md` — sonst nichts. Er legt fest, was für `.claude/hooks/block-main-write.sh`, `.claude/hooks/block-prototype-import.sh` (Matcher in `.claude/settings.json`) und das Prüfmittel `scripts/pretooluse-gates-selbsttest.sh` gilt; geändert werden diese Dateien nur in Bau-Einheiten nach Teil B, 6.13 e und g. Bezug haben `docs/11_Schwachstellenregister.md` (SR-001 bis SR-006), die Sammelposten unter R3-Q-010 in `docs/05_Product_Backlog.md`, die Hook-Regel in `.claude/rules/claude-konfiguration.md` und die Gate-Zeilen in `CLAUDE.md`. Freigaben und Abnahmen stehen in ADR 0002, Abschnitt 10.
+
+Teil A fasst zusammen; bei einem Widerspruch gelten Teil B und ADR 0002, Abschnitt 10, bis Teil A berichtigt ist. Jede Änderung an Teil A bekommt einen datierten Eintrag am Ende von Teil B in der Form "Vorher galt / Jetzt gilt / Weshalb" (ADR 0002, 6.1, Überschrift und Absatz "Anlass"); Teil B ist ausschliesslich anfügbar.
+
+---
+
+## Teil A — Stand
+
+Stand vom 2026-10-22.
+
+**Fundorte.** Teil B ist der unveränderte Text von ADR 0002, 6.13; Teil A verweist auf dessen Überschriften und Kennungen. "Status-Block" ist der Block am Anfang von 6.13. In 6.13 c stehen zwei Nachträge vom 2026-10-21: "zum Bau von Posten 4 und 5" meint den Nachtrag "Posten 4 und 5 gebaut; Einordnungen aus Bau und Verifikation; Posten 6 und 7 erfasst", "Festlegung für C3" den Nachtrag "zur Abnahme von Posten 4 und 5 — Festlegung für C3". Zahlen, Daten und Prüfsummen stammen aus Teil B, aus ADR 0002, Abschnitt 10, aus `docs/11_Schwachstellenregister.md` und aus den Übergaben vom 2026-10-21 (`docs/uebergaben/2026-10-21_abschnitt-c-posten-4-5.md`) und vom 2026-10-22 (`docs/uebergaben/2026-10-22_c3-prototyp-gate.md`); der Gegenstand der Fallklassen ist aus ihrer Liste im Prüfmittel gekürzt. Offene Fragen stehen mit Zuständigkeit in der Tabelle Restpunkte.
+
+### Entscheid
+
+1. Gegenstand sind die beiden bestehenden PreToolUse-Gates: `.claude/hooks/block-main-write.sh` schützt main (Projektauftrag 3.2 c), `.claude/hooks/block-prototype-import.sh` trennt Prototyp und Produktionscode bis zur Prototyp-Freigabe (5.6); massgeblich sind allein belegte Lücken, eine Härtung ohne ausgeführte Probe ist nicht Gegenstand (6.13 a und c).
+2. E4 ist kein Kettenschritt der Definition of Done: D10 bleibt Lage C, eine D-Nummer wird nicht vergeben, und ob die Stapelprüfung für D10 als Betriebsart des Prototyp-Gates entsteht, bleibt als ADR 0002, O-8 offen und mit dem Grundgerüst terminiert (6.13 a).
+3. Was ein Gate nicht prüfen kann, sperrt mit Rückgabewert 2 und Meldung — nicht auswertbare Eingabe (Entscheid zu ST-13, 6.13 b), ein fehlendes Werkzeug, eine Prüfstelle ohne gültigen Ausgang (Posten 4 bis 6) und am Prototyp-Gate die Überschreitung der eigenen Zeitgrenze (Posten 7); noch offen sind die jq-Schritte am Prototyp-Gate (Posten 8) und die eigene Zeitgrenze am main-Gate.
+4. Eine Textprüfung ist nicht dicht: Was nur über die Auswertung durch die Shell, eine Zerlegung nach ihrer Syntax oder eine Angabe des Harness erkennbar wäre, wird nicht geschlossen, sondern als Grenze benannt und mit einem durchlaufenden Fall gemessen; die harte Zusicherung für main trägt das serverseitige Regelwerk, die Gates sind die zweite Verteidigungslinie (6.13 c).
+5. Neue Befunde werden nach dem Massstab Erreichbarkeit, Vertrag, Mittel eingeordnet — als belegte Lücke, Grenze, gewolltes Verhalten oder Preis in sicherer Richtung (6.13 c, Nachträge ab 2026-09-23); belegte Lücken werden Posten unter R3-Q-010, terminiert mit der nächsten Änderung am jeweiligen Gate, spätestens vor der Freigabe des Grundgerüsts.
+6. Prüfmittel ist ein einziges versioniertes Skript, `scripts/pretooluse-gates-selbsttest.sh`, mit Fallliste je Gate, Mutationsmodus `--mutationen` und einer einmal aus den Kopfkommentaren abgezählten Liste der Fallklassen: Jede als gedeckt behauptete Klasse braucht einen blockierenden, jede benannte Grenze einen durchlaufenden Fall (6.13 d).
+7. Gebaut wird nach 6.13 g — zuerst das Soll auf 2, der Lauf fällt, dann das Gate, zuletzt der Vermerk —, mit einer Mutation je Behebung, einem blockierenden und einem durchzulassenden Gegenstand je Sachverhalt und grünem Regressionsschutz (6.13 d, Punkt 6; 6.13 f, Punkt 1 und 2).
+8. Gate und Prüfmittel baut der SecDevOps Engineer; verifiziert wird durch Static und Dynamic Software Tester auf einem anderen Modell als die Umsetzung, abgenommen durch den Merge des Pull Requests (6.13 e; 6.13 f, Punkt 4; ADR 0002, Abschnitt 10).
+
+### Festlegungen
+
+| Kennung | Festlegung | seit | Fundort in Teil B |
+|---|---|---|---|
+| 6.13 a | Gegenstand sind beide PreToolUse-Gates; E4 ist kein Kettenschritt der Definition of Done (D10 bleibt Lage C, keine D-Nummer); abgegrenzt von R3-Q-005 und vom DoD-Gate (ADR 0002, 6.12); eine Berührung mit ADR 0002, O-8 legt eine Fortschreibung fest, nicht der Bau | 2026-09-21 | 6.13 a |
+| 6.13 b | Belegte Lücken, Stand 2026-09-21 (ST-01 bis ST-05, ST-09, ST-13, P-01, P-10, kein Prüfmittel); Entscheid zu ST-13: nicht auswertbare Eingabe sperrt mit Rückgabewert 2, auch JSON mit `tool_input` als Zeichenkette; seither Bezug jedes Fehlerpfads ("blockiert, was das Gate nicht prüfen kann") | 2026-09-21; die Befunde der Tabelle bis 2026-09-23 mit E4.1 bis E4.3 behoben, fremdverifiziert oder als Grenze benannt | 6.13 b; 6.13, Status-Block, Nachträge vom 2026-09-23 zu E4.1, E4.2 und E4.3 |
+| 6.13 c | Nicht Gegenstand: ST-06 bis ST-08, ST-10, ST-12, ST-14, ST-15, K-01, die Abhängigkeitsanalyse aus P-10 und jede Härtung ohne belegte Lücke; ST-11 als ADR 0002, O-28 geführt; benannte Grenzen werden festgeschrieben und als durchlaufende Fälle gemessen, nicht geschlossen; seit 2026-09-23 auch der Massstab für neue Befunde und die Posten unter R3-Q-010 | 2026-09-21; Nachträge vom 2026-09-23, 2026-10-14, 2026-10-21 (zwei) und 2026-10-22 | 6.13 c mit seinen Nachträgen |
+| 6.13 d | Ein einziges Prüfmittel; Form 1 bis 6 (Angaben je Fall, Wegwerf-Klone für das main-Gate, keine Änderung an versionierten Dateien, Kopfzeile mit Commit und SHA-256-Präfix je Gate, Rückgabewert, Mutationsprobe im Skript); Mass ohne Zusicherungstabelle; Fallklassen einmal aus den Kopfkommentaren abgezählt; Ausgangsmenge: 37 Proben vom 2026-09-21, zehn Zusatzfälle, die rekonstruierbaren Proben vom 2026-08-25 | 2026-09-21; Punkt 2 präzisiert am 2026-09-23; die Annahme "einstellig" für die Mutationen ist seit E4.1 überschritten | 6.13 d; 6.13, Status-Block, Nachtrag vom 2026-09-23 — E4.1 gebaut |
+| 6.13 e | Umsetzung von Gates und Prüfmittel: SecDevOps Engineer; Verifikation: Static und Dynamic Software Tester auf einem anderen Modell als die Umsetzung; Kopfkommentare und Hook-Regel führt die umsetzende Rolle nach, dieses ADR der Software Architect, den Backlog der Product Owner, die Gate-Tabelle in `CLAUDE.md` der Koordinator | 2026-09-21 | 6.13 e |
+| 6.13 f | Massgeblich sind die sieben Tests von R3-Q-010; dazu (1) je Sachverhalt ein blockierender und ein durchzulassender Gegenstand, (2) Regressionsschutz: G01, G02, G03, G05, G06 und P01, P03, P04, P05 bleiben grün, (3) der Lauf ändert keine versionierte Datei, (4) Fremdverifikation auf einem anderen Modell vor jeder Fertigmeldung | 2026-09-21 | 6.13 f |
+| 6.13 g | Schnitt E4.1 (Prüfmittel, keine Zeile an den Gates), E4.2 (Erkennungslücken am Prototyp-Gate), E4.3 (Ränder und Grenzen); Reihenfolge E4.1, E4.2, E4.3, E3, Grundgerüst; Bauvorschrift: Soll zuerst auf 2, dann Gate, zuletzt Vermerk; ein verbliebener Vermerk "belegte Lücke" ist ein offener Befund | 2026-09-21; freigegeben am 2026-09-22 | 6.13 g; 6.13, Status-Block, Nachtrag vom 2026-09-22 |
+
+Teil B, 6.13 h ("Nachzuführen") ist eine Liste für ADR 0002, Abschnitt 9, keine Festlegung. Die sieben Abnahmekriterien nach 6.13 f — `R3-Q-010_prototyp_gate_pfadformen`, `R3-Q-010_prototyp_gate_richtungsgleichheit`, `R3-Q-010_prototyp_gate_schreibwirkung`, `R3-Q-010_gates_unlesbare_eingabe`, `R3-Q-010_pruefmittel_je_gate`, `R3-Q-010_main_gate_fremdbelegt`, `R3-Q-010_benannte_grenzen` — sind bis 2026-09-23 gebaut und verifiziert (6.13, Status-Block, Nachtrag vom 2026-09-23 — E4.3 gebaut, mit dem Nachtrag vom selben Tag).
+
+### Fallklassen des Prüfmittels
+
+Stand 2026-10-22: 479 Fälle, 66 Mutationen, 39 Fallklassen (main-Gate 27, Prototyp-Gate 12).
+
+| Kürzel | Gate | Typ | Gegenstand | seit |
+|---|---|---|---|---|
+| KM-1 | main | gedeckt | Dateiänderung, während HEAD auf main oder master steht | 2026-09-23 (E4.1 bis E4.3) |
+| KM-2 | main | gedeckt | Bash-Befehl, der auf main oder master committet | 2026-09-23 (E4.1 bis E4.3) |
+| KM-3 | main | gedeckt | Bash-Befehl, der auf main oder master merged | 2026-09-23 (E4.1 bis E4.3) |
+| KM-4 | main | gedeckt | Bash-Befehl, der nach main oder master pusht | 2026-09-23 (E4.1 bis E4.3) |
+| KM-5 | main | gedeckt | gängige Interpreter mit Inline-Code | 2026-09-23 (E4.1 bis E4.3) |
+| KM-6 | main | gedeckt | Anlegen eines Arbeitsbaums auf main | 2026-09-23 (E4.1 bis E4.3) |
+| KM-7 | main | gedeckt | Mirror- und Wildcard-Pushes | 2026-09-23 (E4.1 bis E4.3) |
+| KM-8 | main | gedeckt | fehlendes git sperrt | 2026-09-23 (E4.1 bis E4.3) |
+| KM-9 | main | gedeckt | fehlendes jq sperrt (jq-Wache; Fall S06) | 2026-09-23 (E4.1 bis E4.3) |
+| KM-10 | main | gedeckt | unlesbare Eingabe sperrt (ST-13) | 2026-09-23 (E4.1 bis E4.3) |
+| KM-11 | main | gedeckt | Subshell in Klammern wird erkannt (N-9) | 2026-09-23 (E4.1 bis E4.3) |
+| KM-12 | main | gedeckt | Schreibwirkung in einem geschützten Kontext, auch bei flüchtigen Zielen mit ".." oder "/dev/null" ohne Wortgrenze und mit Trenner dahinter (DT-E43-6, DT-E43-8) | 2026-09-23 (E4.3-Nachtrag) |
+| KM-13 | main | gedeckt | Posten 1: Ziele bereinigt verglichen; Ausnahme für -b/-B nicht für main oder master, getrennt, angehängt oder gebündelt | 2026-10-14 (Posten 1) |
+| KM-14 | main | gedeckt | Zielprüfung am Befehlstext, nicht am Abschnitt (Preis in sicherer Richtung) | 2026-10-21 (C2) |
+| KM-15 | main | gedeckt | Posten 4 a: Ausnahme für -b/-B nur im eigenen worktree-add-Abschnitt | 2026-10-21 (C2) |
+| KM-16 | main | gedeckt | Posten 4 b: Prüfungen am Befehlstext ohne Zeilenfortsetzungen; dazu POSIXLY_CORRECT (S17) | 2026-10-21 (C2) |
+| KM-17 | main | gedeckt | Posten 4 c: Basename-Form, mit Preisen (Tabelle Preise) | 2026-10-21 (C2) |
+| KM-18 | main | gedeckt | Posten 5: grosse Eingabe; kann eine Prüfung nicht laufen, sperrt das Gate | 2026-10-21 (C2) |
+| GM-1 | main | grenze | Interpreter, der mit eigener Datei-API schreibt | 2026-09-23 (E4.1 bis E4.3) |
+| GM-2 | main | grenze | zweiter Arbeitsbaum auf main, ausserhalb der Sitzung angelegt | 2026-09-23 (E4.1 bis E4.3) |
+| GM-3 | main | grenze | Aufruf ausserhalb eines Repositories | 2026-09-23 (E4.1 bis E4.3) |
+| GM-4 | main | grenze | Kontextwechsel in einem untergeordneten Shell-Aufruf | 2026-09-23 (E4.1 bis E4.3) |
+| GM-5 | main | grenze | Auswertung durch die Shell | 2026-10-14 (Posten 1) |
+| GM-6 | main | grenze | Schnittstelle: Werkzeugname ungleich Bash | 2026-10-14 (Posten 1) |
+| GM-7 | main | grenze | Ausnahme für -b/-B am Text, nicht an der Syntax der Shell | 2026-10-14 (Posten 1) |
+| GM-8 | main | grenze | Befehlstext: Verb und Sammel-Push-Optionen | 2026-10-14 (Posten 1) |
+| GM-9 | main | grenze | Basename-Form: Zerlegung nur an Leerraum | 2026-10-21 (C2) |
+| KP-1 | Prototyp | gedeckt | Richtung 1: Produktionscode importiert aus prototype/ | 2026-09-23 (E4.1 bis E4.3) |
+| KP-2 | Prototyp | gedeckt | Richtung 2: Prototyp importiert aus dem Produktionscode | 2026-09-23 (E4.1 bis E4.3) |
+| KP-3 | Prototyp | gedeckt | unlesbare Eingabe sperrt (ST-13) | 2026-09-23 (E4.1 bis E4.3) |
+| KP-4 | Prototyp | gedeckt | Schreibwirkung derselben Befehlsklassen wie am main-Gate (ST-09) | 2026-09-23 (E4.1 bis E4.3) |
+| KP-5 | Prototyp | gedeckt | Posten 5: grosse Eingabe bei Bash und am Dateiinhalt | 2026-10-21 (C2) |
+| KP-6 | Prototyp | gedeckt | POSIXLY_CORRECT wird zu Beginn entfernt (ST-C2-D-01) | 2026-10-21 (C2) |
+| KP-7 | Prototyp | gedeckt | Posten 2: vier Schreibweisen des Konstrukts in beiden Richtungen; vormals GP-3 (grenze) | 2026-10-22 (C3) |
+| KP-8 | Prototyp | gedeckt | Posten 6: sed- und tr-Schritte prüfen ihren Rückgabewert | 2026-10-22 (C3) |
+| KP-9 | Prototyp | gedeckt | Posten 7, Teil am Prototyp-Gate: eigene Zeitgrenze | 2026-10-22 (C3) |
+| GP-1 | Prototyp | grenze | gemeinsame Abhängigkeiten und ihre Auflösung (P-10) | 2026-09-23 (E4.1 bis E4.3) |
+| GP-2 | Prototyp | grenze | Pfadschreibweise der Richtung 2 (präfixgebunden) | 2026-09-23 (E4.1 bis E4.3) |
+| GP-4 | Prototyp | grenze | Schnittstelle: Werkzeugname ungleich Bash | 2026-10-22 (C3) |
+
+Zählung: 15 Klassen mit E4.1, 22 mit E4.3, 23 mit dem E4.3-Nachtrag, 28 mit Posten 1, 36 mit C2, 39 mit C3 (Fundorte: Tabelle Zahlen); welche der 22 Klassen bis E4.3 schon mit E4.1 bestanden, nennt Teil B nicht einzeln. GP-3 (symmetrische Lücken, Typ "grenze") ist seit 2026-10-22 als KP-7 gedeckt (6.13 c, Nachtrag vom 2026-10-22). Posten 8 bis 10 und die Grenze aus DT-C3-05 ändern die Zählung erst mit C4.
+
+### Grenzen
+
+| Kennung | Gate | Grenze | Fälle | Fundort in Teil B |
+|---|---|---|---|---|
+| GM-1 | main | Interpreter mit Skriptdatei oder eigener Datei-API, ohne Inline-Code im Text | in Teil B nicht einzeln genannt | 6.13, Status-Block, Nachtrag vom 2026-09-23 — E4.3 gebaut |
+| GM-2 | main | zweiter Arbeitsbaum auf main, ausserhalb der Sitzung angelegt | in Teil B nicht einzeln genannt | 6.13 c (Absatz "Die im Kopfkommentar des main-Gates benannten Grenzen"); Status-Block wie GM-1 |
+| GM-3 | main | Aufruf ausserhalb eines Repositories | ZF4a, ZF4b | wie GM-2; 6.13, Status-Block, Nachtrag vom 2026-09-23 — E4.1 gebaut |
+| GM-4 | main | Kontextwechsel in einem untergeordneten Shell-Aufruf; eine Subshell in Klammern wird erkannt (ZF2a, KM-11) | ZF2b, ZF2c | wie GM-2; Status-Block wie GM-1 |
+| GM-5 | main | Auswertung: Variable, Befehlssubstitution, eval, Brace-Expansion, Escape-Folgen in `$'...'`, Übersetzung von `$"..."` über einen Meldungskatalog; seit Posten 4 a auch ein worktree add in einer Befehlssubstitution innerhalb eines Ausnahme-Abschnitts, seit Delta 3 eine Befehlssubstitution als Umleitungsoperand | u. a. G63, G64, G68, G71, G88, G89, G105 | 6.13, Status-Block, Nachtrag vom 2026-10-14; 6.13 c, Nachtrag vom 2026-10-14 (DT-B2-07); 6.13 c, Nachtrag vom 2026-10-21 zum Bau von Posten 4 und 5 |
+| GM-6 | main | Schnittstelle: Werkzeugname ungleich Bash; den Namen setzt der Harness, nicht das Modell | ZF10a, ZF10b | 6.13 c, Nachträge vom 2026-09-23 und 2026-10-14 |
+| GM-7 | main | Ausnahme für -b/-B am Text, nicht an der Syntax der Shell: -b/-B in Anführungszeichen oder im Kommentar, seit Posten 4 b auch über eine Zeilenfortsetzung neben worktree add; Preis in sperrender Richtung siehe Tabelle Preise | G59, G60, G80, G92, G93 | 6.13 c, Nachtrag vom 2026-10-14 (DT-B2-05 a und b); 6.13 c, Nachtrag vom 2026-10-21 zum Bau von Posten 4 und 5 (Absatz "Posten 4 b") |
+| GM-8 | main | Befehlstext: Verb oder Sammel-Push-Option in Anführungszeichen oder hinter Rückstrich wird nicht erkannt | G69, G70 | 6.13 c, Nachtrag vom 2026-10-14 (DT-B2-08) |
+| GM-9 | main | Basename-Form: Zerlegung nur an Leerraum (Option mit getrenntem Wert, auch in Anführungszeichen; Pfad in Anführungszeichen zerfällt in Wörter; `<` oder `>` am Wortende und Trenner in einem Wort in Anführungszeichen vor dem Pfad); Umleitungen nur über Einzelmuster erkannt, Operandenmuster seit Delta 4 nicht mehr erweitert | G90, G91, G97 bis G100, G106, G110 bis G112 | 6.13 c, Nachtrag vom 2026-10-21 zum Bau von Posten 4 und 5 (Absatz "Posten 4 c, Preise und Grenzen") |
+| Zeitgrenze | main | keine eigene Zeitgrenze, es gilt die des Harness (15 s); bis zum Bau des Teils von Posten 7 am main-Gate von 6.13 d ausgenommen, ohne Fall und Fallklasse | — | 6.13 c, Nachtrag vom 2026-10-21 zum Bau von Posten 4 und 5 (Absatz "Zeitgrenze und 6.13 d"); 6.13 c, Nachtrag vom 2026-10-21 — Festlegung für C3 (Absatz "Posten 7, Teil am main-Gate") |
+| GP-1 | Prototyp | gemeinsame Abhängigkeiten und ihre Auflösung (Alias, baseUrl, Workspace) werden nicht geprüft (P-10) | P35 | 6.13, Status-Block, Nachtrag vom 2026-09-23 — E4.3 gebaut; 6.13 c, Nachtrag vom 2026-10-22 (P52) |
+| GP-2 | Prototyp | Pfadschreibweise der Richtung 2 präfixgebunden: Wurzelpfad, beliebiger Vorspann, `src=` ohne Schrägstrich hinter der Wurzel, `href=` mit Rückstrich, doppelter Rückstrich, mehrfaches "./", Alias "~/"; Lesart seit E4.2: Bezugsform ist das Konstrukt | L10 bis L16 | 6.13, Status-Block, Nachtrag vom 2026-09-23 — E4.2 gebaut (Lesart des Koordinators); 6.13 c, Nachtrag vom 2026-09-23 |
+| Python-Formen | Prototyp | in Richtung 2 bewusst nur für die Bauwurzeln backend, frontend und deploy erkannt ("import app" wäre ein Fehlalarm); der Kopfkommentar nennt die Einschränkung ("bewusst nur die Bauwurzeln"), die Klassenliste führt keine Fallklasse dafür (siehe Restpunkte) | — | 6.13, Status-Block, Nachtrag vom 2026-09-23 — E4.2 gebaut |
+| GP-4 | Prototyp | Schnittstelle: Werkzeugname ungleich Bash, Gegenstück zu GM-6; im Kopfkommentar seit 2026-10-22 | ZF10d | 6.13 c, Nachträge vom 2026-09-23 und 2026-10-22 |
+| DT-C3-05 | Prototyp | Waisenprozess: ignoriert ein vom inneren Lauf aufgerufenes Werkzeug TERM, endet das Gate nach 12,011 s mit 2, das Werkzeug läuft etwa 11 s weiter; Grenze mit Fallklasse in C4, nur wenn die Ausgabekanäle des Gates nicht erst mit dem Waisenprozess schliessen, sonst Lücke | noch keiner (mit C4: Fall mit Soll 2) | 6.13 c, Nachtrag vom 2026-10-22 |
+| ZF9 | Prototyp | gewolltes Verhalten: eine Datei unter .claude/ liegt ausserhalb dessen, was das Gate trennt, solange keine Bauwurzel unter die Ausnahmeliste fällt | ZF9 (durchlaufend) | 6.13 c, Nachtrag vom 2026-09-23 |
+| ZF10c | Prototyp | gewolltes Verhalten, fail-closed: ein unbekannter Werkzeugname am Zweig der Dateiwerkzeuge sperrt | ZF10c (Soll 2) | 6.13 c, Nachtrag vom 2026-09-23 |
+| P52 | Prototyp | gewollter Durchlass: blosser JS-Modulname `import("backend")`, ebenso die statische Form `import x from "backend"`; eine Auflösungskonfiguration fällt unter GP-1 | P52; Mutation MP32 | 6.13 c, Nachtrag vom 2026-10-22 |
+
+### Preise in sicherer Richtung
+
+| Kennung | Gate | Gegenstand | Ausweg | Fundort in Teil B |
+|---|---|---|---|---|
+| DT-B2-03 | main | -Bbmain wird mit der Prüfung des Namens hinter -b/-B mitgesperrt; die Ausnahme ist nicht verbreitert | — | 6.13, Status-Block, Nachtrag vom 2026-10-14; 6.13 c, Nachtrag vom 2026-10-14 |
+| B2-PM-14, B2-GATE-D03 (GM-7, sperrende Richtung) | main | -b/-B main als Inhalt (Commit-Meldung, Suchmuster, Pfad in Anführungszeichen, Kommentar) sperrt; Fälle A78, A79 | Commit-Meldung mit dem Write-Werkzeug in eine Datei schreiben, dann `git commit -F <datei>` | 6.13 c, Nachtrag vom 2026-10-14 |
+| B2-GATE-D04 (KM-13) | main | `git push origin \$'main'` (maskiertes Dollarzeichen) sperrt, vorbestehend; Fall A77 | — | 6.13 c, Nachtrag vom 2026-10-14 |
+| KM-14 | main | Zielprüfung am Befehlstext, nicht am Abschnitt: bleibt nach dem Abziehen der Ausnahme-Abschnitte ein worktree add ohne Ausnahme, sperrt jedes main an anderer Stelle derselben Eingabe; Fälle A89, A90 | getrennte Bash-Aufrufe | 6.13 c, Nachtrag vom 2026-10-21 zum Bau von Posten 4 und 5 (Absatz "Posten 4 a") |
+| KM-17 (A102) | main | `echo "git worktree add ../main" > /tmp/x.txt` sperrt, Klasse "Wörter nur als Inhalt"; derselbe Inhalt in der bisherigen Sperrform sperrte schon vorher (A103) | Write-Werkzeug oder `git commit -F` | 6.13 c, Nachtrag vom 2026-10-21 zum Bau von Posten 4 und 5 (Absatz "Posten 4 c, Preise und Grenzen") |
+| KM-17 (A139 bis A142, A149) | main | ein Operand in Anführungszeichen schliesst erst hinter einer Abschnittsgrenze oder einem Zeilenumbruch (A139, A140); `<` oder `>` in Anführungszeichen hinter dem Pfad (A141, A142) oder am Wortende vor --detach (A149) verschluckt das commit-ish oder --detach | den Befehl aufteilen | wie A102 |
+| Umleitungsoperanden | main | die erste Zielprüfung liest weiter die Operanden von Umleitungen, vorbestehend | — | 6.13 c, Nachtrag vom 2026-10-21 zum Bau von Posten 4 und 5 (Restpunkte) |
+| -bfeature | main | `git worktree add -bfeature /tmp/wt main` gibt 2 wie vor Posten 1, weil die Ausnahme Leerraum oder "=" hinter -b/-B verlangt; Fehlalarm in sicherer Richtung, nicht Gegenstand | — | 6.13 c, Nachtrag vom 2026-10-14 (Restpunkte) |
+| Zeitgrenze 12 s | Prototyp | eine Eingabe, deren Prüfung länger als 12 s braucht, sperrt (6.13 b) | — | 6.13 c, Nachtrag vom 2026-10-21 — Festlegung für C3 (Absatz "Posten 7, Teil am Prototyp-Gate") |
+| P38 | Prototyp | `python3 -c` mit einem Importtext über die Trennung und Umleitung nach /dev/null sperrt (Soll 2, Klasse "pruefstand"), weil die Interpreterklasse auf dem bereinigten Text unabhängig von der Umleitung trifft (DT-E43-5); Restbefund der Abnahme von R3-Q-010, nicht entschieden | — | 6.13, Status-Block, Nachtrag vom 2026-09-23 — Abnahme erteilt; 6.13 c, Nachträge vom 2026-09-23 und 2026-10-14; Gegenstand nach dem Vermerk des Falls im Prüfmittel |
+
+ST-C2-G-03 ist ein Fehlalarm in sicherer Richtung derselben Klasse wie A139 bis A142, aber noch nicht als Preis benannt (Tabelle Restpunkte).
+
+### Posten und belegte Lücken
+
+| Posten | Gate | Gegenstand, Fälle | Status | terminiert | Register |
+|---|---|---|---|---|---|
+| 1 | main | Ziele von push und `worktree add` nach dem Entfernen von Anführungszeichen, Rückstrichen, Zeilenfortsetzungen und dem Dollar vor Anführungszeichen verglichen; Ausnahme für -b/-B nicht für main oder master; L01 bis L04, L18 | abgenommen am 2026-10-16 (Merge #26) | — | kein Eintrag |
+| 2 | Prototyp | vier Schreibweisen des Konstrukts in beiden Richtungen an den Dateiwerkzeugen (`require (`, `@import url(`, `src =` und `href =`, `__import__` ohne Punkt); L05 bis L08, B66 bis B73, Gegenproben P42 bis P54 (P52 gewollter Durchlass) | abgenommen am 2026-10-22 (Merge #28) | — | kein Eintrag |
+| 3 | Prototyp | lexikalische Bereinigung des Dateipfads (Segmente "." und "..", doppelte Schrägstriche) vor jeder Zuordnung; L09 (Soll 0, BEFUND_VON) | offen, belegte Lücke | C4, spätestens vor der Freigabe des Grundgerüsts | kein Eintrag (siehe Restpunkte) |
+| 4 | main | a) Ausnahme für -b/-B nur im eigenen worktree-add-Abschnitt (L17); b) Verb, Sammel-Push-Optionen, Ausnahme und Abschnitte ohne Zeilenfortsetzungen geprüft (L19); c) Basename-Form `git worktree add <pfad>/main` sperrt (L21) | abgenommen am 2026-10-21 (Merge #27) | — | SR-002 (DT-C2-01, mit 4 b behoben), behoben mit Nachweis; für L17, L19, L21 kein Eintrag |
+| 5 | beide | grosse Eingabe: der Abbruch des Schreibers durch SIGPIPE gilt nie als kein Treffer (`trifft`, Status aus PIPESTATUS); L20, L22, B64, B65 | abgenommen am 2026-10-21 (Merge #27) | — | SR-001, behoben mit Nachweis |
+| 6 | Prototyp | sed- und tr-Schritte prüfen ihren Rückgabewert (`schritt_geprueft` an sieben Stellen); L23, L24 | abgenommen am 2026-10-22 (Merge #28) | — | SR-004, im Register in Behebung (Stand 2026-10-22) |
+| 7, Teil am Prototyp-Gate | Prototyp | eigene Zeitgrenze: Selbstaufruf unter `timeout -k 1 12`; S25 bis S28 | abgenommen am 2026-10-22 (Merge #28) | — | SR-003, Prototyp-Teil in Behebung |
+| 7, Teil am main-Gate | main | keine eigene Zeitgrenze; gemessen 8 MB 14,22 s, über 15 s zwischen 8 und 9 MB; ohne Fall | offen, belegte Lücke | eigene Einheit vor der Freigabe des Grundgerüsts, Einordnung ausstehend | SR-003, main-Gate-Teil offen; Eintrag offen |
+| 8 | Prototyp | jq-Schritte (tool, cmd, fp, payload) prüfen ihren Rückgabewert nicht; DT-C3-02: MultiEdit mit einem Objekt in `edits[1].new_string` läuft durch | offen, belegte Lücke, noch ohne Fall | C4, spätestens vor der Freigabe des Grundgerüsts | SR-005, offen |
+| 9 | Prototyp | a) an den Dateiwerkzeugen Formen ohne Anführungszeichen und in Grossschreibung (DT-C3-01); b) `src=` und `href=` am Bash-Weg | offen, belegte Lücke, noch ohne Fall | C4, spätestens vor der Freigabe des Grundgerüsts | SR-006, offen |
+| 10 | Prüfmittel | Fall und Mutation für `-k 1` (DT-C3-03, ST-C3-04), `import_module` je Richtung (ST-C3-03), statische JS-Form als Gegenprobe zu P52 | offen | C4, spätestens vor der Freigabe des Grundgerüsts | kein Eintrag, weil das Gate selbst wirkt |
+
+Fundorte in Teil B: Posten 1 bis 3 in 6.13 c, Nachtrag vom 2026-09-23 (Absatz "Die drei Posten unter R3-Q-010"); Posten 4 und 5 in 6.13 c, Nachtrag vom 2026-10-14; Posten 6 und 7 in 6.13 c, Nachtrag vom 2026-10-21 zum Bau von Posten 4 und 5; der Bau von C3 in 6.13 c, Nachtrag vom 2026-10-21 — Festlegung für C3; Posten 8 bis 10 in 6.13 c, Nachtrag vom 2026-10-22; Bau und Verifikation je Posten im Status-Block. Register nach `docs/11_Schwachstellenregister.md`; "kein Eintrag" bei Posten 1, 2 und 4 nach dem Entscheid des Koordinators vom 2026-10-22 gegen rückwirkende Einträge (Übergabe vom 2026-10-22, Entscheide). C4 umfasst Posten 3, 8, 9 und 10; sein Schnitt ist vor dem Bau festzulegen (Projektauftrag 3.3).
+
+### Zahlen
+
+| Datum | Stand | Fälle | Mutationen | Fallklassen | Fundort in Teil B |
+|---|---|---|---|---|---|
+| 2026-09-23 | E4.1 gebaut | 202 (main 112, Prototyp 90) | 10 | 15 | 6.13, Status-Block, Nachtrag vom 2026-09-23 — E4.1 gebaut |
+| 2026-09-23 | E4.2 gebaut | 225 | 11 | in Teil B nicht genannt (siehe Restpunkte) | 6.13, Status-Block, Nachtrag vom 2026-09-23 — E4.2 gebaut |
+| 2026-09-23 | E4.3 gebaut | 247 (main 114, Prototyp 133) | 15 | 22 | 6.13, Status-Block, Nachtrag vom 2026-09-23 — E4.3 gebaut |
+| 2026-09-23 | E4.3-Nachtrag; Stand der Abnahme von R3-Q-010 | 258 | 19 | 23 | 6.13, Status-Block, Nachtrag vom selben Tag (E4.3-Nachtrag, Aufgabe #4); ADR 0002, Abschnitt 10 |
+| 2026-10-14 | Posten 1, dritte Baurunde | 318 | 26 | 28 (main 21, Prototyp 7) | 6.13, Status-Block, Nachtrag vom 2026-10-14 (Absatz "Prüfmittel"); 6.13 c, Nachtrag vom 2026-10-14 (Zählung der Fallklassen) |
+| 2026-10-21 | Posten 4 und 5 (C2) | 447 (main 298, Prototyp 149) | 49 | 36 (main 27, Prototyp 9) | 6.13, Status-Block, Nachtrag vom 2026-10-21 — Posten 4 und 5 gebaut; 6.13 c, Nachtrag vom 2026-10-21 zum Bau von Posten 4 und 5 (Zählung der Fallklassen) |
+| 2026-10-22 | C3: Posten 2, 6 und Teil von Posten 7 am Prototyp-Gate | 479 (main 298, Prototyp 181) | 66 | 39 (main 27, Prototyp 12) | 6.13, Status-Block, Nachtrag vom 2026-10-22 — C3; 6.13 c, Nachtrag vom 2026-10-22 (Zählung der Fallklassen) |
+
+Die Zahlen je Gate für E4.1 und E4.3 sind Summen der in Teil B genannten Fälle mit Soll 2 und Soll 0 (E4.1: main 62 und 50, Prototyp 39 und 51; E4.3: main 67 und 47, Prototyp 82 und 51). Am Stand vom 2026-10-22 enden beide Modi mit Rückgabewert 0: Lauf B 479 von 479, Mutationsmodus 66 von 66 erkannt (auf dem Endstand beim Dynamic Software Tester). Stand der Dateien am Ende von C3 (SHA-256): Prototyp-Gate `348ba80862f036adf874c0ead117dc2854e24f877137ac20357072be567d7389`, Prüfmittel `7ce0db32e576c8f79ae571c303543a0421df7bf9a38557768d1d6aa26af8cef0`, main-Gate unverändert `b2732614ce3c51a7233d41439a044fe2401920bcb5640b75c919b812a58586cb` (6.13, Status-Block, Nachtrag vom 2026-10-22 — C3).
+
+### Restpunkte
+
+| Kennung | Gate | Gegenstand | Stand, Termin | Fundort |
+|---|---|---|---|---|
+| DT-C2-G-01 | main | ein Umleitungsoperator mit "&" vor dem Pfad (`>&`, `&>`, `2>&1`, `2>&-`) trennt den Pfad vom worktree-add-Abschnitt; die Basename-Form greift nicht (Durchlass, Mechanismus wie G112) | offen; Fall mit Soll 0 unter GM-9 mit der nächsten Änderung am main-Gate (Einheit zum Teil von Posten 7) | 6.13 c, Nachtrag vom 2026-10-21 zum Bau von Posten 4 und 5 (Restpunkte); Übergaben vom 2026-10-21 und 2026-10-22; SR-002 (Restpunkt) |
+| ST-C2-G-03 | main | ein leeres oder nur aus Leerraum bestehendes Umleitungsziel in Anführungszeichen lässt die zweite Fassung das folgende Wort als Operanden lesen; Fehlalarm in sicherer Richtung wie A139 bis A142 (KM-17), noch nicht als Preis benannt, ohne Fall | offen, mit der Einheit zum Teil von Posten 7 | wie DT-C2-G-01 |
+| ST-C2-G-01, ST-C2-G-02 | main | zwei Ungenauigkeiten im Kopfkommentar: G109 verschluckte das commit-ish, nicht einen Pfad; der Rückstrich ist im Operanden auch als Paar zugelassen | offen, wie ST-C2-G-03 | wie DT-C2-G-01 |
+| ohne Fall | main | `git worktree add ../main/` gibt 0 (git lehnt "main/" als Zweignamen ab), `git worktree add -- ../main` gibt 2 | offen, ohne Fall | 6.13 c, Nachtrag vom 2026-10-21 zum Bau von Posten 4 und 5 (Restpunkte) |
+| Grenzen ohne Sperre | main | G105, G106, G110 bis G112 | als Grenze geführt (GM-5, GM-9; Tabelle Grenzen) | Übergabe vom 2026-10-21 |
+| jq am main-Gate | main | ob das main-Gate die Bauform von Posten 8 trägt, ist nicht gemessen | misst der Dynamic Software Tester mit der nächsten Änderung am main-Gate | 6.13 c, Nachtrag vom 2026-10-22 (Posten 8) |
+| B2-GATE-R3-01, B2-PM-19 | main | GM-8 ist nur mit G69 und G70 gemessen; die Formen hinter einem Rückstrich, `'*:*'` und `"--mirror"` in Anführungszeichen sowie `worktree "add"` haben keinen eigenen Fall; die Fallwahl trifft der Software Architect | offen: Die Fallwahl war mit der nächsten Änderung am Prüfmittel fällig; C2 und C3 haben das Prüfmittel geändert, seine Klassenliste führt für GM-8 weiter nur G69 und G70. Zuständig: Software Architect, mit C4 | 6.13 c, Nachtrag vom 2026-10-14 (Restpunkte) |
+| B2-GATE-R3-02 | main | die Nachtragszeile im Kopfkommentar ordnet GM-5 auch Mirror- und Wildcard-Pushes zu; kein Fall misst eine Sammel-Push-Option, die erst durch die Auswertung entsteht | offen, ungemessen | 6.13 c, Nachtrag vom 2026-10-14 (Restpunkte) |
+| DT-C3-04 | Prototyp | der Wortlaut "unter 40 %" im Kopfkommentar ist widerlegt; zu ersetzen durch das gemessene Maximum mit Datum (5,06 s am 2026-10-22) | offen, mit C4 | 6.13 c, Nachtrag vom 2026-10-22 (Berichtigung vom 2026-10-22) |
+| DT-C3-05, Bedingung | Prototyp | Messung, wann die Ausgabekanäle des Gates beim Waisenprozess schliessen; sie entscheidet zwischen Grenze und Lücke (Tabelle Grenzen) | offen, mit C4, Dynamic Software Tester | 6.13 c, Nachtrag vom 2026-10-22 |
+| "Killed" | Prototyp | bei Rückgabewert 137 schreibt die äussere bash zusätzlich "Killed" auf die Fehlerausgabe; das ist kein Text des Gates | Rauschen, kein Befund | 6.13 c, Nachtrag vom 2026-10-22 (Restpunkte); Übergabe vom 2026-10-22 |
+| Lauf C | Prüfmittel | Lauf C des SecDevOps Engineers lief gegen den Stand vor den letzten Kommentaränderungen; auf dem Endstand belegt der Dynamic Software Tester 66 von 66 | Hinweis, kein Befund | 6.13, Status-Block, Nachtrag vom 2026-10-22 — C3; Übergabe vom 2026-10-22 |
+| Harness | beide | die Wirkung der Gates im laufenden Harness ist nicht gemessen; die Hooks wirken in den Sitzungen nicht | offen; von der Abnahme von Posten 4 und 5 ausdrücklich nicht umfasst | 6.13 c, Nachträge vom 2026-10-14, 2026-10-21 und 2026-10-22; ADR 0002, Abschnitt 10 |
+| dod-gate.sh | — | `.claude/hooks/dod-gate.sh` trägt die Bauform von vor Posten 5 an zwei Stellen; nach dem Lesebefund nicht betroffen, nicht gemessen, nicht geändert | Neubewertung nach SR-001 bei mehrzeiliger tools_zeile oder gemessenem Fehlerstatus | 6.13 c, Nachtrag vom 2026-10-21 zum Bau von Posten 4 und 5 (Absatz "Posten 5, Fehlerpfad und Fälle"); SR-001 (Bauteil); Übergabe vom 2026-10-21 |
+| DT-C2-G-02 | — | betraf nur ein Skript des Dynamic Software Testers | kein Befund am Gate | Übergabe vom 2026-10-21 |
+| Restbefunde der Abnahme von R3-Q-010, Gates | beide | nicht behoben: DT-E43-4 (`deno eval`, `node --eval` und `bun -e` an beiden Gates nicht erkannt, Parität besteht) und P38 (Tabelle Preise); R-1/E-1 und DST-E42-N1 sind seit 2026-09-23 als Grenze GP-2 entschieden | offen | 6.13, Status-Block, Nachtrag vom 2026-09-23 — Abnahme erteilt; 6.13 c, Nachtrag vom 2026-09-23 (L12 bis L16) |
+| Restbefunde der Abnahme von R3-Q-010, Prüfmittel | Prüfmittel | NEU-1 (Überschreibung am Rückgabewert nicht erkennbar, vor einer Einbindung in die Kette zu neutralisieren), NEU-4 (ungestagte Löschung macht den Lauf rot, die Meldung nennt die Ursache nicht), N-DT-1 (relativer Überschreibungspfad) | offen: nach dem 2026-09-23 in keiner Übergabe mehr geführt, ihr Stand am Prüfmittel ist ungeklärt. Zuständig: Koordinator | 6.13, Status-Block, Nachtrag vom 2026-09-23 — Abnahme erteilt; `docs/uebergaben/2026-09-23_e4-1-pruefmittel-pretooluse-gates.md`; in den Übergaben zu E4.2 und E4.3 als unverändert geführt |
+| Posten 3, Register | Prototyp | Posten 3 (L09) hat keinen Registereintrag; der Entscheid des Koordinators vom 2026-10-22 gegen rückwirkende Einträge nennt Posten 1, 2 und 4 | offen: ob L09 einen Eintrag braucht, entscheidet der Vulnerability Manager mit C4 | Übergabe vom 2026-10-22 (Entscheide); `docs/11_Schwachstellenregister.md` |
+| Python-Formen, Fallklasse | Prototyp | der Kopfkommentar des Prototyp-Gates nennt die Einschränkung der Python-Formen in Richtung 2 auf die Bauwurzeln backend, frontend und deploy ("bewusst nur die Bauwurzeln"); die Klassenliste im Prüfmittel führt dafür keine eigene Fallklasse "grenze" | offen: Einordnung nach 6.13 d mit C4. Zuständig: Software Architect | 6.13, Status-Block, Nachtrag vom 2026-09-23 — E4.2 gebaut; `.claude/hooks/block-prototype-import.sh` (Kopfkommentar) |
+| Fallklassen nach E4.2 | Prüfmittel | Teil B nennt für den Stand nach E4.2 (225 Fälle, 11 Mutationen) keine Zahl der Fallklassen | Tatsache, keine Prüfung offen | 6.13, Status-Block, Nachtrag vom 2026-09-23 — E4.2 gebaut |
+| Textbefunde | — | nachrangige Befunde der Textprüfungen: B2-ADR-06 und B2-ADR-14 bis B2-ADR-16 (Übergabe der Einheit vom 2026-10-14); C2-TEXT-SA-01 bis -03 und -06 bis -08 (Werte ohne Fundort, Zuordnung der Preise A139 bis A142 und A149, Zitat der Zeitgrenze, zwei Restpunkte ohne Fundort, Form); am Register C2-TEXT-REG-PO-KOORD-04 bis -06, -08 und -09; C1-PM-PO-CLAUDE-03 und -04 | offen, nachrangig; Teil B bleibt unverändert, eine Berichtigung geht über Teil A oder einen Nachtrag | 6.13 c, Nachtrag vom 2026-10-14; Übergabe vom 2026-10-21 |
+
+Nicht aufgeführt sind die Punkte der beiden Übergaben, die nicht R3-Q-010 betreffen (O-29, R3-Q-005, D20 mit ADR 0002, O-15, `R3-Q-011_regel_im_startkontext`, Terminierung von `Skill`, Berichtigung des Verweises auf den Grundsatz in ADR 0002, 6.1, Absatz "Anlass", Geltungsbereich des Registers, Restpunkte zu PS-1).
+
+### Abnahmen
+
+| Datum | Gegenstand | Merge-Commit | Eintrag in ADR 0002, Abschnitt 10 |
+|---|---|---|---|
+| 2026-09-22 | Freigabe, keine Abnahme: Umfang von R3-Q-010, Schnitt E4.1 bis E4.3 und Reihenfolge (zweiter Formweg, Weisung im Wortlaut) | — | kein eigener Unterabschnitt; Wortlaut in Teil B, 6.13, Status-Block, Nachtrag vom 2026-09-22 |
+| 2026-09-23 | R3-Q-010 im Umfang der drei Übergaben vom 2026-09-23 einschliesslich der Restbefunde, ohne Auflagen (Merge #21); Prüfmittel mit 258 Fällen, 19 Mutationen und 23 Fallklassen | `9a84b9ccd1ecb81b19739f64defc5881e83e2db5` | "Abnahme von R3-Q-010 — E4, die beiden PreToolUse-Gates und ihr Prüfmittel — erteilt und eingetragen am 2026-09-23"; bestätigt durch Merge #23 am 2026-09-24 (`3e5caf71b2bca97b7f9764a19841025875974df7`) |
+| 2026-10-16 | Posten 1 (main-Gate, L01 bis L04, Grenzen GM-5 bis GM-8) im Umfang der Übergabe vom 2026-10-14 einschliesslich der Restbefunde (Merge #26) | `5ada002023c0ff160c26c78659727c7e8623c6f5` | "Abnahme von Posten 1 unter R3-Q-010 — main-Gate, L01 bis L04, Grenzen GM-5 bis GM-8 — erteilt am 2026-10-16, eingetragen am 2026-10-21"; bestätigt durch Merge #27 |
+| 2026-10-21 | Posten 4 (main-Gate: L17, L19, L21) und Posten 5 (beide Gates: L20, L22, B64, B65) im Umfang der Übergabe vom 2026-10-21 einschliesslich der Restbefunde, Preise und Grenzen (Merge #27) | `998f81d9fffe3970baf870d04e44576eda534fcc` | "Abnahme von Posten 4 und 5 unter R3-Q-010 — main-Gate L17, L19, L21; beide Gates L20, L22, B64, B65 — erteilt am 2026-10-21, eingetragen am 2026-10-21" |
+| 2026-10-22 | Posten 2, Posten 6 und Teil von Posten 7 am Prototyp-Gate (C3), ohne Kommentare und Reviews (Merge #28) | `95cafc9cc31773a6c29d977ec9c3b97af5a1f047` | "Abnahme von Posten 2, 6 und des Teils von Posten 7 am Prototyp-Gate unter R3-Q-010 — Prototyp-Gate L05 bis L08, L23, L24, eigene Zeitgrenze — erteilt am 2026-10-22, eingetragen am 2026-10-22" |
+
+Alle Abnahmen sind über den ersten Formweg erteilt, den Merge des Pull Requests. Was jeweils nicht umfasst ist, nennt der Eintrag in ADR 0002, Abschnitt 10; offen ist, was die Tabelle Posten als offen führt.
+
+---
 
 ## Teil B — Entscheidlog
 
@@ -2075,3 +2282,14 @@ dieser Einheit nichts.
 
 ---
 
+#### Nachtrag vom 2026-10-22 — Schnitt aus ADR 0002 und Teil A angelegt (PS-2)
+
+**Vorher galt.** Die Festlegung zu R3-Q-010 stand als ADR 0002, 6.13 ("Neunzehnte Fortschreibung vom 2026-09-21"), mit dem Status-Block, den Buchstaben a bis h und allen Nachträgen bis zum Nachtrag vom 2026-10-22 zum Bau von C3 in 6.13 c. Einen Stand als Tabellen gab es nicht; was galt, ergab erst die Folge der Nachträge, die frühere Sätze als Stand ihres Tages stehen lassen (ADR 0002, 6.1, Absatz "Anlass"). Wortlaut bis zum Schnitt beim Commit `ac6e0c17672ad9f0d139a59dba8ca319f46056c4`, Datei `docs/adr/0002-architekturentscheid-ziel-stack.md`, 6.13.
+
+**Jetzt gilt.** Der Text von ADR 0002, 6.13 steht verschoben, nicht abgeschrieben, als Teil B dieses ADR: Reihenfolge, Überschriften, Kennungen (6.13 a bis h, Status-Block, Nachträge) und Wortlaut wie bis zum Schnitt; ein Verweis "ADR 0002, 6.13 …" in anderen Dateien findet dieselbe Stelle in Teil B. An der alten Stelle in ADR 0002 steht die Weiterleitung nach `.claude/rules/dokumentation.md` (Titel, neuer Ort, Commit-Prüfsumme des Schnitts). Neu ist Teil A mit dem Stand vom 2026-10-22: Entscheid, Festlegungen, Fallklassen, Grenzen, Preise, Posten und belegte Lücken, Zahlen, Restpunkte und Abnahmen als Tabellen. Teil A fasst zusammen und trifft keine neue Festlegung; bei einem Widerspruch gelten Teil B und ADR 0002, Abschnitt 10, bis Teil A berichtigt ist. Teil A wird künftig überschrieben; jede Änderung daran bekommt einen datierten Eintrag am Ende von Teil B in der Form dieses Nachtrags, und Teil B bleibt ausschliesslich anfügbar. Freigaben und Abnahmen werden weiter in ADR 0002, Abschnitt 10 eingetragen. An den beiden Gates, am Prüfmittel, an `.claude/settings.json` und am `Makefile` ändert der Schnitt keine Zeile.
+
+**Weshalb.** Prozess-Schnitt PS-1: Die Regel in `.claude/rules/dokumentation.md`, fortgeschrieben am 2026-10-22 und angenommen durch den Merge des Pull Requests #29 (Merge-Commit `d7d539ebea07043201d58e36c8abafec54045848`), verlangt, dass ein ADR den aktuellen Stand als Teil A abbildet und ein datiertes Entscheidlog als Teil B führt, je Änderung "Vorher galt / Jetzt gilt / Weshalb"; bis zur Aufteilung (PS-2) galt für ADR 0002 der Stand vom 2026-10-22. Weisungen vom 2026-10-22 (zweiter Formweg), im Wortlaut: "Ich vertraue dir und deinen super Fähigkeiten und gehen nach deiner Empfehlung"; "Mach einfach, ich erlaube es dir. Vertraue dir." Schnitt und Form folgen der Vorlage `docs/vorlagen/2026-10-22_prozess-schnitt.md` und ihrem Anhang `docs/vorlagen/2026-10-22_prozess-schnitt/anhang-a-adr-aufteilung-software-architect.md` (Abschnitt "Form der neuen ADR"). Der Grund aus ADR 0002, 6.1, Absatz "Anlass" — "die früheren Fassungen bleiben im Text stehen, weil ein Nachweisdokument, dessen Irrtum verschwindet, als Nachweis untauglich ist" — bleibt gewahrt: Teil B behält jede frühere Fassung im Wortlaut, und der Wortlaut bis zum Schnitt bleibt beim Commit `ac6e0c17672ad9f0d139a59dba8ca319f46056c4` fest verweisbar.
+
+**Abnahme von C3.** Die Abnahme von Posten 2, Posten 6 und des Teils von Posten 7 am Prototyp-Gate ist am 2026-10-22 erteilt (erster Formweg): Merge des Pull Requests #28, Merge-Commit `95cafc9cc31773a6c29d977ec9c3b97af5a1f047`, ohne Kommentare und ohne Reviews; eingetragen in ADR 0002, Abschnitt 10, wo auch der Umfang nach dem Text des Pull Requests steht. Nach der Vorlage im Status-Block (Nachtrag vom 2026-10-22 — C3) nicht umfasst sind Posten 3, 8, 9 und 10, der Teil von Posten 7 am main-Gate, die Restpunkte am main-Gate und der Prozess-Schnitt. Die Sätze im Status-Block und in 6.13 c, die diese Abnahme als künftig beschreiben, bleiben als Stand davor stehen (ADR 0002, 6.1, Absatz "Anlass").
+
+Verfasst durch den Software Architect (4.3).
