@@ -126,12 +126,42 @@
 # Suchtext. Weiter nur Faelle und Benennungen: G110 bis G112 (Grenze GM-9), G113, A147 und
 # A148 ({fd2}, {FD}), A149 (Preis KM-17). Zahlen: vor Delta 4 435 Faelle, 48 Mutationen, 36
 # Fallklassen; jetzt 447 Faelle, 49 Mutationen, 36 Fallklassen.
+# Nachtrag am 2026-10-22 (C3: Posten 2, Posten 6 und Teil von Posten 7 am Prototyp-Gate unter R3-Q-010,
+# ADR 0002, 6.13 c, Nachtrag vom 2026-10-21 zur Abnahme von Posten 4 und 5 -- Festlegung fuer C3):
+# Zuerst die Faelle mit Soll (Lauf A gegen das unveraenderte Gate: 19 von 471 Faellen fielen, mit S28 20 von
+# 473, mit S29 und S30 22 von 475, mit B72 und B73 24 von 479), dann das Gate, zuletzt die Vermerke (ADR 0002, 6.13 g). Posten 2: L05 bis
+# L08 haben Soll 2 und die Klasse blockierend (Vermerk mit dem frueheren Wortlaut); je Schreibweise ein Fall
+# fuer Richtung 2 (B66 bis B69, B71) und href in Richtung 1 (B70), die Gegenproben P42 bis P51 (dieselbe
+# Schreibweise ohne Bezug ueber die Trennung), P52 (gewollter Durchlass, Entscheid des Software Architects vom
+# 2026-10-22: import("backend") bleibt frei) und, als eigener Sachverhalt, JS-Zuweisungen an src/href mit Leerraum
+# (B72, B73, Gegenproben P53, P54); Mutationen MP16 bis MP20 und MP32. Posten 6: L23 und L24
+# haben Soll 2; je geprueftem sed- oder tr-Schritt ein Fall, an dem er scheitert (S20 bis S24, S29, S30; die
+# Schritte, die ein fehlendes Werkzeug nicht als erste erreichen, ueber sed-Attrappen nach dem Muster von
+# sed-ohne-z: sed-ohne-schleife, sed-ohne-bereinigung, sed-ohne-kommentar); Mutationen MP21 bis MP27. Weshalb
+# S29 und S30 zu den Faellen der Festlegung hinzukommen: Fehlt sed ganz (L23, S23), faengt die Pruefung des
+# naechsten sed-Schritts den Ausfall auf; ohne eine Attrappe, die nur den Aufruf fuer die Zeilenkommentare
+# verweigert, bliebe die Pruefung des ersten Schritts (MP21, MP25) von keinem Fall erreicht und die Mutation
+# unerkannt. Posten 7 (Prototyp-Gate): S25 (cat um 20 s verzoegert, Soll 2), S26 (um 4 s, Soll 0), S27 (PATH
+# ohne timeout, Soll 2), S28 (timeout endet mit 125, Soll 2: Zweig "jeder andere Ausgang"); Mutationen MP28 bis
+# MP31; alle PATH-Varianten fuehren jetzt timeout, ausser ohne-timeout und der Attrappe timeout-fehler.
+# Neue mechanische Pruefung in fall() (Entscheid 3 des Koordinators vom 2026-10-22): Bei Soll 2 am Prototyp-
+# Gate nennt die Meldung bei den PATH-Wahlen ohne-sed, sed-ohne-schleife, sed-ohne-bereinigung und
+# sed-ohne-kommentar das Werkzeug mit seinem Rueckgabewert ("(sed, Rueckgabewert "), bei ohne-tr "(tr,
+# Rueckgabewert ", bei langsames-cat "Zeitgrenze", bei ohne-timeout "timeout ist nicht installiert", bei
+# timeout-fehler "Rueckgabewert 125". GRUND: Fehlt ein Werkzeug, schreibt die Shell selbst "command not found"
+# auf stderr (vorgemessen am unveraenderten Gate: L23 282 Bytes, L24 93, S20 93, S23 188); "stderr nicht leer"
+# allein unterscheidet das nicht von einer Meldung des Gates, und eine Shell-Meldung ist kein Gate-Urteil. Die
+# Pruefung wirkt nur bei gate=prototyp und Soll 2 und aendert keinen bestehenden Fall (S16 am main-Gate, ebenfalls
+# PATH ohne sed, besteht unveraendert). Fallklassen: GP-3 ist KP-7 (gedeckt; vormals GP-3 (grenze), seit
+# 2026-10-22 gedeckt), neu GP-4 (Grenze an der Schnittstelle, ZF10d), KP-8 (Rueckgabewerte der sed- und tr-
+# Schritte), KP-9 (Zeitgrenze des Gates). Zahlen: vor C3 447 Faelle, 49 Mutationen, 36 Fallklassen; jetzt 479
+# Faelle, 66 Mutationen (MP16 bis MP32), 39 Fallklassen.
 # "Jedes Hook-Skript wird vor dem Einbau gegen einen blockierenden und einen
 # durchzulassenden Fall geprueft. Ein ungetestetes Gate ist kein Gate."
 # (.claude/rules/claude-konfiguration.md, Abschnitt "Hooks")
 #
 # ZWEI MODI:
-#   1. Normalmodus (kein Parameter): 447 vorgemessene Faelle laufen gegen die
+#   1. Normalmodus (kein Parameter): 479 vorgemessene Faelle laufen gegen die
 #      Gate-Dateien DES ARBEITSBAUMS (oder, nur fuer Pruefrollen, gegen eine
 #      per Umgebungsvariable ueberschriebene Kopie, siehe Abschnitt 3a weiter
 #      unten). main-Faelle laufen gegen einen Wegwerf-Klon auf main, einen auf
@@ -142,9 +172,9 @@
 #      JSON von der Standardeingabe und urteilen.
 #   2. Modus --mutationen (Gegenprobe): zuerst eine GRUNDLINIE -- die
 #      vollstaendige Fallliste gegen die UNVERAENDERTEN Gates; ist sie nicht
-#      gruen, endet der Modus sofort mit Rueckgabewert 2. Danach 49 fest im
+#      gruen, endet der Modus sofort mit Rueckgabewert 2. Danach 66 fest im
 #      Skript hinterlegte Mutationen, die je GENAU EINE Sperre schwaechen oder
-#      eine Ausnahme entfernen (MP4, MP5), in einer Kopie eines Gates; die
+#      eine Ausnahme entfernen (MP4, MP5, MP32), in einer Kopie eines Gates; die
 #      vollstaendige Fallliste des betroffenen Gates laeuft gegen die Kopie.
 #      Erwartet: mindestens der benannte Mindestsatz an Kennungen faellt. Im
 #      Mutationsmodus laeuft der Normallauf nicht.
@@ -163,7 +193,7 @@
 # NIEDRIGERES MASS als scripts/dod-gate-selbsttest.sh (ADR 0002, 6.13 d
 # verlangt das ausdruecklich): keine Zusicherungstabelle, keine mechanischen
 # mehrstufigen Deckungen, keine separate Mutationsdatei -- die Fallliste, die
-# 49 Mutationen, die 36 Fallklassen der Kopfkommentare und die Zuordnung zu
+# 66 Mutationen, die 39 Fallklassen der Kopfkommentare und die Zuordnung zu
 # den sieben Abnahmekriterien stehen FEST im Skript (Datenteil weiter unten).
 #
 # Verifikation dieses Skripts UND der beiden Gates: Static und Dynamic
@@ -182,7 +212,7 @@
 # NEU-1 der statischen Nachpruefung vom 2026-09-23); heute ruft die Kette es
 # nicht auf.
 #
-# Rueckgabewert 0: Normalmodus -- alle 447 Faelle bestanden UND je Gate
+# Rueckgabewert 0: Normalmodus -- alle 479 Faelle bestanden UND je Gate
 # mindestens ein Fall mit Soll 2 und einer mit Soll 0 UND je Gate mindestens
 # ein Fall der Klasse blockierend und einer der Klasse durchlaufend UND die
 # gemessene Gesamtzahl entspricht der erwarteten Zahl UND der Arbeitsbaum
@@ -192,7 +222,7 @@
 # geprueft; eine fehlende Kennung erscheint dort als FEHLEND und wirkt seit
 # E4.2 auf den Rueckgabewert -- Restbefund N-2/T-4 der statischen
 # Nachpruefung vom 2026-09-23, behoben). Modus --mutationen -- die
-# Grundlinie ist gruen UND alle 49 Mutationen erkannt UND der Arbeitsbaum
+# Grundlinie ist gruen UND alle 66 Mutationen erkannt UND der Arbeitsbaum
 # blieb unveraendert. Sonst Rueckgabewert 2. Rueckgabewert 3: der Lauf kommt
 # nicht zustande (ein Werkzeug fehlt, ein Klon ist nicht anlegbar, unbekannter
 # Parameter) -- mit Meldung auf stderr.
@@ -391,28 +421,28 @@ fi
 BIN_OHNE_GIT="$T/bin-ohne-git"
 BIN_OHNE_JQ="$T/bin-ohne-jq"
 mkdir -p "$BIN_OHNE_GIT" "$BIN_OHNE_JQ"
-for w in cat grep sed tr jq; do
+for w in cat grep sed tr jq timeout; do
   p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
   ln -s "$p" "$BIN_OHNE_GIT/$w"
 done
-for w in cat grep sed tr git; do
+for w in cat grep sed tr git timeout; do
   p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
   ln -s "$p" "$BIN_OHNE_JQ/$w"
 done
 BIN_OHNE_GREP="$T/bin-ohne-grep"
 mkdir -p "$BIN_OHNE_GREP"
-for w in cat sed tr jq git; do
+for w in cat sed tr jq git timeout; do
   p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
   ln -s "$p" "$BIN_OHNE_GREP/$w"
 done
 BIN_OHNE_SED="$T/bin-ohne-sed"
 BIN_OHNE_TR="$T/bin-ohne-tr"
 mkdir -p "$BIN_OHNE_SED" "$BIN_OHNE_TR"
-for w in cat grep tr jq git; do
+for w in cat grep tr jq git timeout; do
   p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
   ln -s "$p" "$BIN_OHNE_SED/$w"
 done
-for w in cat grep sed jq git; do
+for w in cat grep sed jq git timeout; do
   p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
   ln -s "$p" "$BIN_OHNE_TR/$w"
 done
@@ -421,13 +451,13 @@ done
 BIN_GREP_ATTRAPPE="$T/bin-grep-attrappe"
 BIN_SED_OHNE_Z="$T/bin-sed-ohne-z"
 mkdir -p "$BIN_GREP_ATTRAPPE" "$BIN_SED_OHNE_Z"
-for w in cat sed tr jq git; do
+for w in cat sed tr jq git timeout; do
   p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
   ln -s "$p" "$BIN_GREP_ATTRAPPE/$w"
 done
 printf '#!/bin/sh\nexit 1\n' > "$BIN_GREP_ATTRAPPE/grep"
 chmod +x "$BIN_GREP_ATTRAPPE/grep"
-for w in cat grep tr jq git; do
+for w in cat grep tr jq git timeout; do
   p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
   ln -s "$p" "$BIN_SED_OHNE_Z/$w"
 done
@@ -437,7 +467,7 @@ chmod +x "$BIN_SED_OHNE_Z/sed"
 # ein sed, das nur die Abschnittsbildung von Posten 4 a (Trenner mit vorangestelltem Zeilenumbruch) verweigert
 BIN_SED_OHNE_TRENNER="$T/bin-sed-ohne-trenner"
 mkdir -p "$BIN_SED_OHNE_TRENNER"
-for w in cat grep tr jq git; do
+for w in cat grep tr jq git timeout; do
   p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
   ln -s "$p" "$BIN_SED_OHNE_TRENNER/$w"
 done
@@ -449,6 +479,82 @@ esac
 exec "$SED_ECHT" "\$@"
 SEDEOF
 chmod +x "$BIN_SED_OHNE_TRENNER/sed"
+# C3 (2026-10-22, ADR 0002, 6.13 c, Festlegung fuer C3): Das Prototyp-Gate ruft ab Posten 7 selbst timeout auf; alle PATH-Varianten
+# oben fuehren deshalb timeout, ausser der folgenden. Posten 7: PATH ohne timeout (das Gate sperrt mit einer Meldung, die timeout
+# nennt) und zwei PATH-Varianten mit verlangsamtem cat (jeder innere Lauf liest die Eingabe mit cat): 20 s (ueber der Grenze des
+# Pruefmittels von 14 s und ueber der des Gates von 12 s) und 4 s (deutlich darunter, Gegenprobe). Posten 6: PATH-Varianten mit
+# einem sed, das nur die Schleife ueber die Blockkommentare bzw. nur die Bereinigung (sed -E) verweigert, fuer die Pruefstellen,
+# die ein fehlendes sed nicht als erste erreicht.
+BIN_OHNE_TIMEOUT="$T/bin-ohne-timeout"
+mkdir -p "$BIN_OHNE_TIMEOUT"
+for w in cat grep sed tr jq git; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_OHNE_TIMEOUT/$w"
+done
+CAT_ECHT=$(command -v cat) || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug 'cat' nicht aufloesbar." >&2; exit 3; }
+SLEEP_ECHT=$(command -v sleep) || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug 'sleep' nicht aufloesbar." >&2; exit 3; }
+BIN_LANGSAMES_CAT="$T/bin-langsames-cat"
+BIN_KURZES_CAT="$T/bin-kurzes-cat"
+mkdir -p "$BIN_LANGSAMES_CAT" "$BIN_KURZES_CAT"
+for w in grep sed tr jq git timeout; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_LANGSAMES_CAT/$w"
+  ln -s "$p" "$BIN_KURZES_CAT/$w"
+done
+printf '#!/bin/sh\n"%s" 20\nexec "%s" "$@"\n' "$SLEEP_ECHT" "$CAT_ECHT" > "$BIN_LANGSAMES_CAT/cat"
+printf '#!/bin/sh\n"%s" 4\nexec "%s" "$@"\n' "$SLEEP_ECHT" "$CAT_ECHT" > "$BIN_KURZES_CAT/cat"
+chmod +x "$BIN_LANGSAMES_CAT/cat" "$BIN_KURZES_CAT/cat"
+BIN_SED_OHNE_SCHLEIFE="$T/bin-sed-ohne-schleife"
+BIN_SED_OHNE_BEREINIGUNG="$T/bin-sed-ohne-bereinigung"
+mkdir -p "$BIN_SED_OHNE_SCHLEIFE" "$BIN_SED_OHNE_BEREINIGUNG"
+for w in cat grep tr jq git timeout; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_SED_OHNE_SCHLEIFE/$w"
+  ln -s "$p" "$BIN_SED_OHNE_BEREINIGUNG/$w"
+done
+cat > "$BIN_SED_OHNE_SCHLEIFE/sed" <<SEDEOF
+#!/bin/sh
+case "\$1" in
+  's#/\*[^*]*\*/##g') exit 2 ;;
+esac
+exec "$SED_ECHT" "\$@"
+SEDEOF
+chmod +x "$BIN_SED_OHNE_SCHLEIFE/sed"
+cat > "$BIN_SED_OHNE_BEREINIGUNG/sed" <<SEDEOF
+#!/bin/sh
+case "\$1" in
+  -E) exit 2 ;;
+esac
+exec "$SED_ECHT" "\$@"
+SEDEOF
+chmod +x "$BIN_SED_OHNE_BEREINIGUNG/sed"
+# Posten 7 (C3, 2026-10-22): ein timeout, das mit 125 endet (Fehler von timeout); misst den Zweig "jeder andere Ausgang"
+# der Abbildung des Prototyp-Gates (ADR 0002, 6.13 c, Festlegung fuer C3).
+BIN_TIMEOUT_FEHLER="$T/bin-timeout-fehler"
+mkdir -p "$BIN_TIMEOUT_FEHLER"
+for w in cat grep sed tr jq git; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_TIMEOUT_FEHLER/$w"
+done
+printf '#!/bin/sh\nexit 125\n' > "$BIN_TIMEOUT_FEHLER/timeout"
+chmod +x "$BIN_TIMEOUT_FEHLER/timeout"
+# C3 (2026-10-22, Posten 6): ein sed, das nur den Aufruf fuer die Zeilenkommentare (erster sed-Schritt von cmd_flach und von
+# payload_norm) verweigert. Fehlt sed ganz, faengt die Pruefung des naechsten sed-Schritts den Ausfall auf; diese Attrappe
+# erreicht allein die Pruefung des ersten Schritts (Mutationen MP21 und MP25).
+BIN_SED_OHNE_KOMMENTAR="$T/bin-sed-ohne-kommentar"
+mkdir -p "$BIN_SED_OHNE_KOMMENTAR"
+for w in cat grep tr jq git timeout; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_SED_OHNE_KOMMENTAR/$w"
+done
+cat > "$BIN_SED_OHNE_KOMMENTAR/sed" <<SEDEOF
+#!/bin/sh
+case "\$1" in
+  's#//[^\\n]*##') exit 2 ;;
+esac
+exec "$SED_ECHT" "\$@"
+SEDEOF
+chmod +x "$BIN_SED_OHNE_KOMMENTAR/sed"
 
 # -----------------------------------------------------------------------------
 # 8. Hilfsfunktionen zum Bauen der JSON-Eingaben (bj/wj, Sonderformen und
@@ -498,7 +604,7 @@ bj_zeile() { printf '%s\n%s' "$(ph "$1")" "$2" | jq -Rsc '{tool_name:"Bash", too
 # -----------------------------------------------------------------------------
 # 9. Buchhaltung
 # -----------------------------------------------------------------------------
-ERWARTETE_FAELLE=447
+ERWARTETE_FAELLE=479
 VOLLSTAENDIGKEIT_OK=1
 declare -a ALLE_KENNUNGEN=()
 declare -a BESTANDENE_KENNUNGEN=()
@@ -540,14 +646,10 @@ declare -a GRUNDLINIE_GEFALLEN=()
 # geschlossen (Soll 2, Klasse blockierend; ihr frueherer Wortlaut steht im Vermerk
 # hinter "vormals belegte Luecke: ") und hier entfernt; L05 bis L09 bleiben. Neu sind
 # L23 und L24 (Posten 6, Prototyp-Gate: sed/tr ohne Rueckgabewert-Pruefung).
+# Nachtrag 2026-10-22 (C3, Posten 2 und 6): L05 bis L08 sowie L23 und L24 sind geschlossen (Soll 2, Klasse blockierend;
+# ihr frueherer Wortlaut steht im Vermerk hinter "vormals belegte Luecke: ") und hier entfernt; es bleibt L09 (Posten 3, C4).
 declare -A BEFUND_VON=()
-BEFUND_VON[L05]="Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c)"
-BEFUND_VON[L06]="Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c)"
-BEFUND_VON[L07]="Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c)"
-BEFUND_VON[L08]="Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c)"
 BEFUND_VON[L09]="Posten 3 unter R3-Q-010 (ADR 0002, 6.13 c)"
-BEFUND_VON[L23]="Posten 6 unter R3-Q-010 (2026-10-21): Prototyp-Gate, sed/tr ohne Rueckgabewert-Pruefung, ohne sed oder tr im PATH rc 0"
-BEFUND_VON[L24]="Posten 6 unter R3-Q-010 (2026-10-21): Prototyp-Gate, sed/tr ohne Rueckgabewert-Pruefung, ohne sed oder tr im PATH rc 0"
 
 # -----------------------------------------------------------------------------
 # 10. Ein Fall (fall <kennung> <gate> <klasse> <soll> <kontext> <cwd> <pfad>
@@ -603,6 +705,13 @@ fall() {
     grep-attrappe) pfadvar="$BIN_GREP_ATTRAPPE" ;;
     sed-ohne-z) pfadvar="$BIN_SED_OHNE_Z" ;;
     sed-ohne-trenner) pfadvar="$BIN_SED_OHNE_TRENNER" ;;
+    ohne-timeout) pfadvar="$BIN_OHNE_TIMEOUT" ;;
+    langsames-cat) pfadvar="$BIN_LANGSAMES_CAT" ;;
+    kurzes-cat) pfadvar="$BIN_KURZES_CAT" ;;
+    sed-ohne-schleife) pfadvar="$BIN_SED_OHNE_SCHLEIFE" ;;
+    sed-ohne-bereinigung) pfadvar="$BIN_SED_OHNE_BEREINIGUNG" ;;
+    timeout-fehler) pfadvar="$BIN_TIMEOUT_FEHLER" ;;
+    sed-ohne-kommentar) pfadvar="$BIN_SED_OHNE_KOMMENTAR" ;;
     *)
       echo "pretooluse-gates-selbsttest: FEHLER -- unbekannte PATH-Wahl '$pfad_wahl' bei Fall $kennung." >&2
       exit 3
@@ -670,6 +779,45 @@ fall() {
     fi
   fi
 
+  # C3 (2026-10-22, Posten 6 und Posten 7 am Prototyp-Gate): bei Soll 2 an diesen PATH-Wahlen nennt die Meldung des Prototyp-Gates
+  # das Werkzeug mit seinem Rueckgabewert (sed, tr), die Zeitgrenze (langsames-cat) oder timeout (ohne-timeout); Wortlaut nach
+  # ADR 0002, 6.13 b. Nur Prototyp-Gate: der Fall S16 fuehrt dieselbe PATH-Wahl ohne-sed am main-Gate, dessen Meldung unveraendert bleibt.
+  if [ "$soll" = "2" ] && [ "$gate" = "prototyp" ]; then
+    local stderr_wahl
+    stderr_wahl=$(cat "$T/lauf-fehler")
+    case "$pfad_wahl" in
+      ohne-sed|sed-ohne-schleife|sed-ohne-bereinigung|sed-ohne-kommentar)
+        case "$stderr_wahl" in
+          *"(sed, Rueckgabewert "*) : ;;
+          *) gruende="${gruende}meldung-ohne-sed," ;;
+        esac
+        ;;
+      ohne-tr)
+        case "$stderr_wahl" in
+          *"(tr, Rueckgabewert "*) : ;;
+          *) gruende="${gruende}meldung-ohne-tr," ;;
+        esac
+        ;;
+      langsames-cat)
+        case "$stderr_wahl" in
+          *"Zeitgrenze"*) : ;;
+          *) gruende="${gruende}meldung-ohne-zeitgrenze," ;;
+        esac
+        ;;
+      ohne-timeout)
+        case "$stderr_wahl" in
+          *"timeout ist nicht installiert"*) : ;;
+          *) gruende="${gruende}meldung-ohne-timeout," ;;
+        esac
+        ;;
+      timeout-fehler)
+        case "$stderr_wahl" in
+          *"Rueckgabewert 125"*) : ;;
+          *) gruende="${gruende}meldung-ohne-rueckgabewert-125," ;;
+        esac
+        ;;
+    esac
+  fi
   if [ -n "$gruende" ]; then
     urteil="GEFALLEN"
     grund="${gruende%,}"
@@ -746,13 +894,13 @@ abnahmekriterium_definieren() {
   AK_ID+=("$1"); AK_DOMAIN+=("$2"); AK_KENNUNGEN+=("$3"); AK_ANMERKUNG+=("$4")
 }
 
-# --- 11a. Neunundvierzig Mutationen (ADR 0002, 6.13 d) ---------------
+# --- 11a. Sechsundsechzig Mutationen (ADR 0002, 6.13 d; 49 bis C2, MP16 bis MP32 mit C3) ---------------
 mutation_definieren MM1 main 'worktree[[:space:]]+add([[:space:]]|$)' 'worktree[[:space:]]+addNIE([[:space:]]|$)' 'Sperre Arbeitsbaum auf main anlegen entfernt' 'A07 A08 A09 A37'
 mutation_definieren MM2 main 'if ! command -v git >/dev/null 2>&1; then' 'if false; then' 'git-Wache entfernt (ST-03)' 'S03'
 mutation_definieren MM3 main '(commit|merge|revert|cherry-pick|rebase|reset|am|apply|stash[[:space:]]+(pop|apply))' '(NIE)' 'Sperre schreibender git-Verben entfernt' 'A10 A14 A20 A21 A22 A30 A31 ZF3a ZF3b ZF3c ZF3d ZF3e ZF3f ZF3g'
 mutation_definieren MM4 main 'is_protected "$branch" || exit 0' 'exit 0' 'Sperre der Dateiwerkzeuge auf main entfernt (Kopfkommentar Fall 1)' 'A12 A13'
 mutation_definieren MM5 main "(^|[[:space:]:+\"'\\''(])(main|master)([[:space:]]|\$|[\"'\\'';&|)])" "(^|[[:space:]:+])(main|master)([[:space:]]|\$|[\"'\\''])" 'ST-01-Behebung zurueckgesetzt: Zeichenklassen der Push-Zielpruefung auf den Stand vor 0b3510a (kein Anfuehrungszeichen, kein Semikolon, keine Klammer); seit Posten 1 (2026-10-14) deckt cmd_ziel die Anfuehrungszeichen zusaetzlich, daher fallen A38, A39 und, seit dem Dollar-Schritt (DT-B2-07), A68 bei dieser Mutation nicht mehr' 'A40 A41'
-mutation_definieren MP1 prototyp '-e "(src|href)=${Q}(${NQ}*[/\\\\])?prototype(/|\\\\|${Q})"' '-e "(NIE)=${Q}(${NQ}*[/\\\\])?prototype(/|\\\\|${Q})"' 'HTML-Formen src=/href= der Richtung 1 entfernt' 'P02 B34'
+mutation_definieren MP1 prototyp '-e "${ATTR}${Q}(${NQ}*[/\\\\])?prototype(/|\\\\|${Q})"' '-e "(NIE)=${Q}(${NQ}*[/\\\\])?prototype(/|\\\\|${Q})"' 'HTML-Formen src=/href= der Richtung 1 entfernt' 'P02 B34'
 mutation_definieren MP2 prototyp '(>>?|\btee[[:space:]]|sed[[:space:]]+-[a-zA-Z]*i|<<)' '(NIE)' 'Erkennung der Schreibwirkung bei Bash entfernt (B-1: tee-Glied seit E4.3 ohne Pipe-Bindung)' 'B10 B11 B12 B13 B39 B40 B53'
 mutation_definieren MP9 prototyp '\b(mv|cp|rm|mkdir|touch|truncate|ln|install|patch|dd)[[:space:]]' '\b(NIE)[[:space:]]' 'Dateiwerkzeug-Glied im Prototyp-Gate entfernt (B-2, DT-E43-2)' 'B54 B56'
 mutation_definieren MP3 prototyp "WURZELN='backend|frontend|deploy|src|app|lib|server|packages|apps'" "WURZELN='NIE'" 'Verzeichnisliste WURZELN der Richtung 2 entfernt (Import-Pfade und src=/href=; die Python-Formen fuehren backend/frontend/deploy gesondert)' 'B05 B20 B21 B22 B37'
@@ -871,6 +1019,27 @@ MM34_ERS=$(cat <<'X'
 X
 )
 mutation_definieren MM34 main "$MM34_SUCH" "$MM34_ERS" 'ST-C2-F-01 zurueckgesetzt (Delta 4): der Rueckstrich vor dem schliessenden Anfuehrungszeichen ist wieder zugelassen (Klasse von Delta 3); ein maskiertes Anfuehrungszeichen kann als Rueckstrich plus schliessendes Anfuehrungszeichen gelesen werden (Mischlesung), der Operand verschluckt einen Pfad dahinter oder ein commit-ish' 'A143 A144 A145 G109'
+# --- 11a (Fortsetzung). Siebzehn Mutationen der Einheit C3 (MP16 bis MP32; Posten 2, 6 und 7 am Prototyp-Gate) ---
+# Posten 2: je geaenderter Stelle des Gates eine Mutation; MP32 schuetzt die Gegenprobe P52 (gewollter Durchlass, Entscheid des Software Architects vom 2026-10-22).
+mutation_definieren MP16 prototyp 'require[[:space:]]*\(' 'require\(' 'Posten 2 zurueckgesetzt (C3): require mit Leerraum vor der Klammer wird in beiden Richtungen nicht mehr erkannt (IMPORTWORT wieder mit require\( ohne Leerraum)' 'L05 B66'
+mutation_definieren MP17 prototyp '([[:space:]]+url[[:space:]]*\()?' '' 'Posten 2 zurueckgesetzt (C3): @import url( wird in beiden Richtungen nicht mehr erkannt (der optionale Teil url( in IMPORTWORT entfaellt)' 'L06 B67'
+mutation_definieren MP18 prototyp "ATTR='(src|href)[[:space:]]*=[[:space:]]*'" "ATTR='(src|href)='" 'Posten 2 zurueckgesetzt (C3): Leerraum um das Gleichheitszeichen bei src und href wird in beiden Richtungen nicht mehr erkannt (ATTR wieder ohne Leerraum)' 'L07 B68 B69 B70 B72 B73'
+mutation_definieren MP19 prototyp '-e "(import_module|__import__)[[:space:]]*\([[:space:]]*${Q}prototype${Q}"' '-e "(import_module|__import__)[[:space:]]*\([[:space:]]*${Q}prototypeNIE${Q}"' 'Posten 2 zurueckgesetzt (C3), Richtung 1: __import__ mit dem blossen Modulnamen ohne Punkt wird nicht mehr erkannt (import_module mitgezogen, ohne eigenen Fall)' 'L08'
+mutation_definieren MP20 prototyp '-e "(import_module|__import__)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)${Q}"' '-e "(import_module|__import__)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)NIE${Q}"' 'Posten 2 zurueckgesetzt (C3), Richtung 2: __import__ mit dem blossen Modulnamen ohne Punkt wird nicht mehr erkannt (import_module mitgezogen, ohne eigenen Fall)' 'B71'
+# Posten 6: je geprueftem sed- oder tr-Schritt eine Mutation, die den Aufruf von schritt_geprueft entfernt.
+mutation_definieren MP21 prototyp 'schritt_geprueft $? sed "Zeilenkommentare am Bash-Weg"' ':' 'Posten 6 zurueckgesetzt (C3): die Pruefung des Rueckgabewerts des ersten sed-Schritts von cmd_flach (Zeilenkommentare) entfaellt; ein sed, das nur diesen Aufruf verweigert, laesst den Befehl durch' 'S29'
+mutation_definieren MP22 prototyp 'schritt_geprueft $? sed "Blockkommentare am Bash-Weg"' ':' 'Posten 6 zurueckgesetzt (C3): die Pruefung des Rueckgabewerts des sed-Schritts der Schleife ueber die Blockkommentare von cmd_flach entfaellt; ein sed, das nur diesen Aufruf verweigert, laesst den Befehl durch' 'S21'
+mutation_definieren MP23 prototyp 'schritt_geprueft $? tr "Zeilenumbrueche am Bash-Weg"' ':' 'Posten 6 zurueckgesetzt (C3): die Pruefung des Rueckgabewerts des tr-Schritts von cmd_flach entfaellt; ohne tr laeuft der Befehl durch' 'S20'
+mutation_definieren MP24 prototyp 'schritt_geprueft $? sed "Bereinigung der Umleitungsziele am Bash-Weg"' ':' 'Posten 6 zurueckgesetzt (C3): die Pruefung des Rueckgabewerts des sed -E von bereinigt entfaellt; ein sed, das nur sed -E verweigert, laesst den Befehl durch' 'S22'
+mutation_definieren MP25 prototyp 'schritt_geprueft $? sed "Zeilenkommentare am Weg der Dateiwerkzeuge"' ':' 'Posten 6 zurueckgesetzt (C3): die Pruefung des Rueckgabewerts des ersten sed-Schritts von payload_norm (Zeilenkommentare) entfaellt; ein sed, das nur diesen Aufruf verweigert, laesst die Datei durch' 'S30'
+mutation_definieren MP26 prototyp 'schritt_geprueft $? sed "Blockkommentare am Weg der Dateiwerkzeuge"' ':' 'Posten 6 zurueckgesetzt (C3): die Pruefung des Rueckgabewerts des sed-Schritts der Schleife ueber die Blockkommentare von payload_norm entfaellt; ein sed, das nur diesen Aufruf verweigert, laesst die Datei durch' 'S24'
+mutation_definieren MP27 prototyp 'schritt_geprueft $? tr "Zeilenumbrueche am Weg der Dateiwerkzeuge"' ':' 'Posten 6 zurueckgesetzt (C3): die Pruefung des Rueckgabewerts des tr-Schritts von payload_norm entfaellt; ohne tr laeuft ein Import ueber zwei Zeilen durch' 'L24'
+# Posten 7: Grenze entfernt, Ueberschreitung als 0, Wache fuer fehlendes timeout, Zweig "jeder andere Ausgang".
+mutation_definieren MP28 prototyp 'timeout -k 1 12 "$BASH" "$0" --innerer-lauf-zeitgrenze' '"$BASH" "$0" --innerer-lauf-zeitgrenze' 'Posten 7 zurueckgesetzt (C3): die eigene Zeitgrenze des Gates entfaellt (der innere Lauf wird ohne timeout aufgerufen); ein verlangsamtes cat laeuft bis zur Grenze des Pruefmittels von 14 s und gilt dort als Durchlass' 'S25'
+mutation_definieren MP29 prototyp '124|137) echo "Gate prototyp-trennung: Zeitgrenze' '124|137) exit 0 ;; 99) echo "Gate prototyp-trennung: Zeitgrenze' 'Posten 7 zurueckgesetzt (C3): die Ueberschreitung der Zeitgrenze (124, 137) wird als 0 abgebildet statt mit 2 und Meldung' 'S25'
+mutation_definieren MP30 prototyp 'if ! command -v timeout >/dev/null 2>&1; then' 'if false; then' 'Posten 7 zurueckgesetzt (C3): die Wache fuer fehlendes timeout entfaellt; der Aufruf scheitert mit 127 und endet ueber den Zweig fuer andere Ausgaenge ohne die Meldung, die timeout nennt' 'S27'
+mutation_definieren MP31 prototyp '*) echo "Gate prototyp-trennung: Pruefung abgebrochen (Rueckgabewert' '*) exit 0 ;; 98) echo "Gate prototyp-trennung: Pruefung abgebrochen (Rueckgabewert' 'Posten 7 zurueckgesetzt (C3): jeder andere Ausgang als 0, 2, 124 und 137 (hier timeout mit 125) wird als 0 abgebildet statt mit 2 und Meldung' 'S28'
+mutation_definieren MP32 prototyp '-e "(import_module|__import__)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)${Q}"' '-e "(import_module|__import__|import)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)${Q}"' 'Posten 2, gewollter Durchlass zurueckgesetzt (C3, Entscheid des Software Architects vom 2026-10-22): die Endung fuer den blossen Modulnamen gilt auch fuer das JS-import( ; import("backend") in einer Prototyp-Datei wird gesperrt (Fehlalarmklasse)' 'P52'
 
 # --- 11b. Fallklassen der Kopfkommentare (ADR 0002, 6.13 d) -----------
 fallklasse_definieren KM-1 main gedeckt 'Fall 1: Dateiaenderung, waehrend HEAD auf main/master steht' 'A12 A13 A48'
@@ -893,9 +1062,9 @@ fallklasse_definieren KM-11 main gedeckt 'Subshell in Klammern (N-9, E4.3)' 'ZF2
 fallklasse_definieren KM-12 main gedeckt 'Shell-Schreibwirkung in einem geschuetzten Kontext, inklusive fluechtiger Ziele mit ".." und "/dev/null" ohne Wortgrenze sowie Trenner hinter fluechtigem Ziel (DT-E43-6, DT-E43-8, E4.3-Nachtrag)' 'A11 A50 A51 A52 A53'
 fallklasse_definieren KP-3 prototyp gedeckt 'unlesbare Eingabe blockiert (ST-13, E4.3)' 'S04 S05 ZF8c ZF8d S09'
 fallklasse_definieren KP-4 prototyp gedeckt 'Schreibwirkung derselben Befehlsklassen wie das main-Gate: Umleitung, tee, sed -i, Heredoc, Dateiwerkzeuge, Interpreter mit Inline-Code, ed/ex, fluechtige Ziele mit ".." und "/dev/null" ohne Wortgrenze sowie Trenner hinter fluechtigem Ziel (DT-E43-6, DT-E43-8)' 'B09 ZF7a ZF7c ZF7d B53 B54 B55 B56 B57 B58 B59 B60 B61 B62 B63'
-fallklasse_definieren GP-1 prototyp grenze 'gemeinsame Abhaengigkeiten werden nicht geprueft (P-10, E4.3)' 'P35'
+fallklasse_definieren GP-1 prototyp grenze 'gemeinsame Abhaengigkeiten und ihre Aufloesung (Alias, baseUrl, Workspace) werden nicht geprueft (P-10, E4.3; Aufloesung seit 2026-10-22 benannt, Entscheid SA 2026-10-22)' 'P35'
 fallklasse_definieren GP-2 prototyp grenze 'Asymmetrie der Pfadschreibweise in Richtung 2 (Wurzelpfad, Vorspann, src=/href= ohne Schraegstrich oder mit Rueckstrich, doppelter Rueckstrich, mehrfaches ./)' 'L10 L11 L12 L13 L14 L15 L16'
-fallklasse_definieren GP-3 prototyp grenze 'symmetrische Luecken beider Richtungen (Leerraum vor der Klammer, @import url(, Leerraum um =, __import__ ohne Punkt)' 'L05 L06 L07 L08'
+fallklasse_definieren KP-7 prototyp gedeckt 'Posten 2 (C3, 2026-10-22), vormals GP-3 (grenze), seit 2026-10-22 gedeckt: die vier Schreibweisen des Konstrukts in beiden Richtungen an den Dateiwerkzeugen -- Leerraum vor der Klammer bei require, @import url(, Leerraum um das Gleichheitszeichen bei src und href, __import__ mit Modulnamen ohne Punkt (import_module mitgezogen, ohne eigenen Fall und ohne eigene Mutation); gewollter Durchlass (Entscheid des Software Architects vom 2026-10-22): der blosse JS-Modulname import("backend") bleibt frei (P52); JS-Zuweisungen an src/href mit Leerraum sind gesperrt (B72, B73, Gegenproben P53, P54)' 'L05 L06 L07 L08 B66 B67 B68 B69 B70 B71 B72 B73 P42 P43 P44 P45 P46 P47 P48 P49 P50 P51 P52 P53 P54'
 fallklasse_definieren KM-13 main gedeckt 'Ziele von push und worktree nach Entfernen von Anfuehrungszeichen, Rueckstrichen, Zeilenfortsetzungen und dem Dollar vor Anfuehrungszeichen verglichen; die Ausnahme fuer -b/-B greift nicht fuer main/master, getrennt, angehaengt oder gebuendelt (Posten 1, 2026-10-14)' 'L01 L02 L03 L04 L18 A54 A55 A56 A57 A58 A59 A60 A61 A62 A63 A64 A67 A68 A69 A70 A71 A72 A73 A74 A75 A76 A77'
 fallklasse_definieren GM-5 main grenze "Grenze der Auswertung: Ziele aus Variable, Befehlssubstitution, eval, Brace-Expansion und Escape-Folgen in \$'...'-Wort (hex und oktal) und die Uebersetzung von \$\"...\" ueber einen Meldungskatalog werden nicht erkannt (Posten 1, 2026-10-14); seit Posten 4 a (2026-10-21) auch ein worktree add in einer Befehlssubstitution oder in Rueckwaertsakzenten innerhalb eines Ausnahme-Abschnitts (G88, G89); seit Delta 3 (2026-10-21) auch eine Befehlssubstitution als Umleitungsoperand (G105)" 'G47 G48 G49 G61 G62 G63 G64 G68 G71 G88 G89 G105'
 fallklasse_definieren GM-6 main grenze 'Grenze an der Schnittstelle: Werkzeugname ungleich Bash (ZF10a, ZF10b; ADR 0002, 6.13 c, Nachtrag vom 2026-09-23; im Kopfkommentar seit Posten 1)' 'ZF10a ZF10b'
@@ -909,15 +1078,18 @@ fallklasse_definieren KM-18 main gedeckt 'Posten 5 (SR-001, B2-GATE-D05, 2026-10
 fallklasse_definieren KP-5 prototyp gedeckt 'Posten 5 (SR-001, B2-GATE-D05, 2026-10-21) am Prototyp-Gate: grosse Eingabe bei Bash und am Dateiinhalt (Richtung 1 und Richtung 2); kann eine Pruefung nicht laufen, blockiert das Gate' 'L22 B64 B65 S11 S14'
 fallklasse_definieren KP-6 prototyp gedeckt 'Delta 2 (ST-C2-D-01, 2026-10-21) am Prototyp-Gate: POSIXLY_CORRECT in der Umgebung aendert, wie GNU sed [^\n] liest (Kommentarentfernung); das Gate entfernt die Variable zu Beginn' 'S18 S19'
 fallklasse_definieren GM-9 main grenze 'Grenze der Basename-Form (Posten 4 c, 2026-10-21): eine Option mit getrenntem Wert (--reason) zaehlt als zweites Wort, ein Pfad in Anfuehrungszeichen zerfaellt in mehrere Woerter (Leerzeichen, Semikolon, Raute, Umleitungszeichen, Zeilenumbruch; G91, G97 bis G100); seit Delta 3 (2026-10-21) auch eine Option mit getrenntem Wert in Anfuehrungszeichen (G106); seit Delta 4 (2026-10-21) auch < oder > als letztes Zeichen eines Worts in Anfuehrungszeichen vor dem Pfad (G111), ; & | oder ein Zeilenumbruch in einem solchen Wort (G112) und die Verbindung beider Fehlformen aus Delta 3 (G110)' 'G90 G91 G97 G98 G99 G100 G106 G110 G111 G112'
+fallklasse_definieren GP-4 prototyp grenze 'Grenze an der Schnittstelle zum Harness: Werkzeugname ungleich Bash (ZF10d; ADR 0002, 6.13 c, Nachtrag vom 2026-09-23; im Kopfkommentar des Prototyp-Gates seit 2026-10-22; Gegenstueck zu GM-6 am main-Gate)' 'ZF10d'
+fallklasse_definieren KP-8 prototyp gedeckt 'Posten 6 (C3, 2026-10-22): die sed- und tr-Schritte des Prototyp-Gates pruefen ihren Rueckgabewert -- Bash-Weg cmd_flach (sed, sed der Schleife, tr) und bereinigt (sed), Weg der Dateiwerkzeuge payload_norm (sed, sed der Schleife, tr); jeder andere Ausgang als 0 endet mit Rueckgabewert 2 und einer Meldung mit Werkzeug und Rueckgabewert' 'L23 L24 S20 S21 S22 S23 S24 S29 S30'
+fallklasse_definieren KP-9 prototyp gedeckt 'Posten 7, Teil am Prototyp-Gate (C3, 2026-10-22): eigene Zeitgrenze des Gates von 12 s mit Nachlauf 1 s; Ueberschreitung, Fehler von timeout und fehlendes timeout enden mit Rueckgabewert 2 und einer Meldung; Gegenprobe S26' 'S25 S26 S27 S28'
 
 # --- 11c. Abnahmekriterien (Backlog R3-Q-010; ADR 0002, 6.13 f) -------------------------
 abnahmekriterium_definieren R3-Q-010_prototyp_gate_pfadformen fallliste 'B02 B03 B06 ZF5a ZF5b ZF5c ZF6a ZF6b ZF5e B43 B45 B46 B50 B51 ZF6f P01 P05 P09 P27 P30 P31 P32' 'geschlossen mit E4.2 (vormals ST-04/ST-05); Gegenproben P01 P05 P09 P27 P30 P31 P32'
-abnahmekriterium_definieren R3-Q-010_prototyp_gate_richtungsgleichheit fallliste 'B07 B08 ZF6c ZF6d B35 B41 B42 B44 B47 B48 B49 P10 P02 B34 P28 P29' 'geschlossen mit E4.2 (vormals P-01); Gegenprobe P10; Richtung 1 zum Vergleich P02 B34; Gegenproben P28 P29'
+abnahmekriterium_definieren R3-Q-010_prototyp_gate_richtungsgleichheit fallliste 'B07 B08 ZF6c ZF6d B35 B41 B42 B44 B47 B48 B49 P10 P02 B34 P28 P29 L05 L06 L07 L08 B66 B67 B68 B69 B70 B71 P42 P43 P44 P45 P46 P47 P48 P49 P50 P51 P52 B72 B73 P53 P54' 'geschlossen mit E4.2 (vormals P-01); Gegenprobe P10; Richtung 1 zum Vergleich P02 B34; Gegenproben P28 P29; Posten 2 (C3, 2026-10-22): L05 bis L08, B66 bis B73, Gegenproben P42 bis P54'
 abnahmekriterium_definieren R3-Q-010_prototyp_gate_schreibwirkung fallliste 'B09 ZF7a ZF7c ZF7d ZF7b P06 P14 P15 P33 B52 B53 B54 B55 B56 B57 B58 B59 P36 P37 P38 B60 B61 B62 P39 B63' 'geschlossen mit E4.3 (vormals ST-09); Gegenproben P06 P14 P15 P33 B52 P36 P37; P38 vorgemessen mit Abweichung vom Behebungsauftrag (rc=2 statt 0), gemeldet, nicht angepasst; DT-E43-6 (E4.3-Nachtrag, 2026-09-23) mit B60 B61 B62, Gegenprobe P39; DT-E43-8 (E4.3-Nachtrag, 2026-09-23) mit B63'
 abnahmekriterium_definieren R3-Q-010_gates_unlesbare_eingabe fallliste 'S01 S02 ZF8a ZF8b S04 S05 ZF8c ZF8d G01 P04 G40 P34' 'geschlossen mit E4.3 (vormals ST-13); Gegenproben G01 P04 G40 P34'
-abnahmekriterium_definieren R3-Q-010_pruefmittel_je_gate gemischt 'G01 G02 G03 G05 G06 P01 P03 P04 P05 MM1 MM2 MM3 MM4 MM5 MP1 MP2 MP3 MP4 MP5 MM7 MM8 MP10 MP11 MM9 MM10 MM11 MM12 MM13 MM14 MM15 MM16 MM17 MM18 MM19 MM20 MM21 MM22 MM23 MM24 MM25 MM26 MM27 MM28 MM29 MM30 MM31 MM32 MM33 MM34 MP12 MP13 MP14 MP15' 'Zaehlung je Gate, Mutationsmodus MM1-MM5/MP1-MP5 und MM7/MM8/MP10/MP11 (DT-E43-6, N-3) und MM9 bis MM15 (Posten 1, 2026-10-14) und MM16 bis MM34, MP12 bis MP15 (Posten 4 und 5 sowie Delta, Delta 2, Delta 3 und Delta 4, 2026-10-21), Regressionsschutz G01 G02 G03 G05 G06 P01 P03 P04 P05'
+abnahmekriterium_definieren R3-Q-010_pruefmittel_je_gate gemischt 'G01 G02 G03 G05 G06 P01 P03 P04 P05 MM1 MM2 MM3 MM4 MM5 MP1 MP2 MP3 MP4 MP5 MM7 MM8 MP10 MP11 MM9 MM10 MM11 MM12 MM13 MM14 MM15 MM16 MM17 MM18 MM19 MM20 MM21 MM22 MM23 MM24 MM25 MM26 MM27 MM28 MM29 MM30 MM31 MM32 MM33 MM34 MP12 MP13 MP14 MP15 MP16 MP17 MP18 MP19 MP20 MP21 MP22 MP23 MP24 MP25 MP26 MP27 MP28 MP29 MP30 MP31 MP32' 'Zaehlung je Gate, Mutationsmodus MM1-MM5/MP1-MP5 und MM7/MM8/MP10/MP11 (DT-E43-6, N-3) und MM9 bis MM15 (Posten 1, 2026-10-14) und MM16 bis MM34, MP12 bis MP15 (Posten 4 und 5 sowie Delta, Delta 2, Delta 3 und Delta 4, 2026-10-21), Regressionsschutz G01 G02 G03 G05 G06 P01 P03 P04 P05; MP16 bis MP32 mit C3'
 abnahmekriterium_definieren R3-Q-010_main_gate_fremdbelegt fallliste 'A02 A03 A04 A05 A06 A38 A39 A40 A41 A42 A07 A08 A09 S03 G01 G02 G03' 'ST-01 trennscharf im Kontext AK; ST-02/ST-03 behoben; Gegenproben G01 G02 G03'
-abnahmekriterium_definieren R3-Q-010_benannte_grenzen fallklassen 'KM-1 KM-2 KM-3 KM-4 KM-5 KM-6 KM-7 KM-8 KM-9 GM-1 GM-2 GM-3 GM-4 KP-1 KP-2 KM-10 KM-11 KM-12 KP-3 KP-4 GP-1 GP-2 GP-3 KM-13 GM-5 GM-6 GM-7 GM-8 KM-14 KM-15 KM-16 KM-17 KM-18 KP-5 GM-9 KP-6' 'Fallklassen der Kopfkommentare; P-10 benannt (GP-1), nicht geschlossen; Posten 1 (2026-10-14): KM-13, GM-5, GM-6, GM-7, GM-8; Posten 4 und 5 (2026-10-21): KM-14 bis KM-18, KP-5, GM-9; Delta 2 (2026-10-21): KP-6'
+abnahmekriterium_definieren R3-Q-010_benannte_grenzen fallklassen 'KM-1 KM-2 KM-3 KM-4 KM-5 KM-6 KM-7 KM-8 KM-9 GM-1 GM-2 GM-3 GM-4 KP-1 KP-2 KM-10 KM-11 KM-12 KP-3 KP-4 GP-1 GP-2 KP-7 KM-13 GM-5 GM-6 GM-7 GM-8 KM-14 KM-15 KM-16 KM-17 KM-18 KP-5 GM-9 KP-6 GP-4 KP-8 KP-9' 'Fallklassen der Kopfkommentare; P-10 benannt (GP-1), nicht geschlossen; Posten 1 (2026-10-14): KM-13, GM-5, GM-6, GM-7, GM-8; Posten 4 und 5 (2026-10-21): KM-14 bis KM-18, KP-5, GM-9; Delta 2 (2026-10-21): KP-6; C3: GP-3 ist KP-7 (gedeckt), neu GP-4, KP-8, KP-9'
 
 # -----------------------------------------------------------------------------
 # 12. Fallliste -- Teil 4.1 der Fallliste: main-Gate, Soll 2
@@ -1308,6 +1480,24 @@ faelle_4_4_proto_soll2() {
   fall L22 prototyp blockierend 2 AB - voll JSON Bash 'geschlossen am 2026-10-21, Posten 5, SR-001; Mutation MP12; Posten 5 unter R3-Q-010 (SR-001, B2-GATE-D05), neuer Fall am Prototyp-Gate: Umleitung mit Import aus prototype/ und eine Kommentarzeile aus 200000 Zeichen; Pruefstellen Schreibwirkung und Importmuster am Befehlstext ohne Abbruch des Schreibers' "$(bj_gross 'echo "import h from \"../prototype/helper\";" > frontend/src/a.ts')"
   fall B64 prototyp blockierend 2 AB - voll JSON Write 'Posten 5 unter R3-Q-010 (SR-001, B2-GATE-D05): Richtung 1 ueber das Write-Werkzeug, Import aus prototype/ in der ersten Zeile und eine Kommentarzeile aus 200000 Zeichen; Pruefstelle Richtung 1 am Dateiinhalt ohne Abbruch des Schreibers' "$(wj_gross 'frontend/src/a.ts' 'import h from "../prototype/helper";')"
   fall B65 prototyp blockierend 2 AB - voll JSON Write 'Posten 5 unter R3-Q-010 (SR-001, B2-GATE-D05): Richtung 2 ueber das Write-Werkzeug, Import aus dem Produktionscode in der ersten Zeile und eine Kommentarzeile aus 200000 Zeichen; Pruefstelle Richtung 2 am Dateiinhalt ohne Abbruch des Schreibers' "$(wj_gross 'prototype/x.js' 'import a from "../backend/api";')"
+  fall B66 prototyp blockierend 2 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Richtung 2 zu L05: Leerraum vor der Klammer bei require; Gegenprobe P43; Mutation MP16' "$(wj_ph 'prototype/x.js' 'const a = require ("../backend/api");')"
+  fall B67 prototyp blockierend 2 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Richtung 2 zu L06: @import url( ; Gegenprobe P45; Mutation MP17' "$(wj_ph 'prototype/x.css' '@import url("../frontend/style.css");')"
+  fall B68 prototyp blockierend 2 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Richtung 2 zu L07: Leerraum um das Gleichheitszeichen bei src; Gegenprobe P47; Mutation MP18' "$(wj_ph 'prototype/demo.html' '<img src = "../backend/x.png">')"
+  fall B69 prototyp blockierend 2 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Richtung 2: Leerraum um das Gleichheitszeichen bei href; Gegenprobe P49; Mutation MP18' "$(wj_ph 'prototype/demo.html' '<a href = "../frontend/index.html">x</a>')"
+  fall B70 prototyp blockierend 2 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Richtung 1: Leerraum um das Gleichheitszeichen bei href (L07 misst nur src); Gegenprobe P48; Mutation MP18' "$(wj_ph 'frontend/src/demo.html' '<link href = "../prototype/style.css">')"
+  fall B71 prototyp blockierend 2 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Richtung 2 zu L08: __import__ mit Modulnamen ohne Punkt; Gegenprobe P51; Mutation MP20' "$(wj_ph 'prototype/x.py' "m = __import__('backend')")"
+  fall B72 prototyp blockierend 2 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Richtung 2: JS-Zuweisung an src mit Leerraum (gewollt, Entscheid SA 2026-10-22; eigener Sachverhalt nach 6.13 f, Punkt 1); Gegenprobe P53; Mutation MP18' "$(wj_ph 'prototype/x.js' 'el.src = "../backend/y.png";')"
+  fall B73 prototyp blockierend 2 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Richtung 1: JS-Zuweisung an href mit Leerraum (gewollt, Entscheid SA 2026-10-22; eigener Sachverhalt nach 6.13 f, Punkt 1); Gegenprobe P54; Mutation MP18' "$(wj_ph 'frontend/src/a.js' 'link.href = "../prototype/z.css";')"
+  fall S20 prototyp blockierend 2 AB - ohne-tr JSON Bash 'Posten 6 unter R3-Q-010 (C3, 2026-10-22): Bash-Weg, tr-Schritt von cmd_flach als erste Pruefstelle, die ohne tr scheitert; vor der Behebung Durchlass (rc 0); Mutation MP23' "$(bj_ph 'echo "import h from \"../prototype/helper\";" > frontend/src/a.ts')"
+  fall S21 prototyp blockierend 2 AB - sed-ohne-schleife JSON Bash 'Posten 6 unter R3-Q-010 (C3, 2026-10-22): Bash-Weg, sed-Schritt der Schleife ueber die Blockkommentare von cmd_flach (PATH mit einem sed, das nur diesen Aufruf verweigert); vor der Behebung Durchlass (rc 0); Mutation MP22' "$(bj_ph 'echo "import h from \"../prototype/helper\";" > frontend/src/a.ts')"
+  fall S22 prototyp blockierend 2 AB - sed-ohne-bereinigung JSON Bash 'Posten 6 unter R3-Q-010 (C3, 2026-10-22): Bash-Weg, sed-Schritt von bereinigt (PATH mit einem sed, das nur sed -E verweigert); vor der Behebung Durchlass (rc 0); Mutation MP24' "$(bj_ph 'echo "import h from \"../prototype/helper\";" > frontend/src/a.ts')"
+  fall S23 prototyp blockierend 2 AB - ohne-sed JSON Write 'Posten 6 unter R3-Q-010 (C3, 2026-10-22): Weg der Dateiwerkzeuge, erster sed-Schritt von payload_norm (ohne sed im PATH); Eingabe wie B15, nur die normalisierte Fassung trifft; vor der Behebung Durchlass (rc 0); Mutationen MP25 und MP26 an den Einzelstellen (S30, S24)' "$(wj_ph 'frontend/src/a.ts' 'import h from /* c */ "../prototype/helper";')"
+  fall S24 prototyp blockierend 2 AB - sed-ohne-schleife JSON Write 'Posten 6 unter R3-Q-010 (C3, 2026-10-22): Weg der Dateiwerkzeuge, sed-Schritt der Schleife ueber die Blockkommentare von payload_norm (PATH mit einem sed, das nur diesen Aufruf verweigert); Eingabe wie B15; vor der Behebung Durchlass (rc 0); Mutation MP26' "$(wj_ph 'frontend/src/a.ts' 'import h from /* c */ "../prototype/helper";')"
+  fall S25 prototyp blockierend 2 AB - langsames-cat JSON Write 'Posten 7, Teil am Prototyp-Gate (C3, 2026-10-22): ein cat, das 20 s braucht (jeder innere Lauf liest die Eingabe mit cat), mit einer Eingabe, die ohne Verzoegerung mit 0 durchlaeuft; die eigene Zeitgrenze des Gates von 12 s sperrt mit Rueckgabewert 2; ohne die Grenze laeuft der Fall bis zur Grenze des Pruefmittels von 14 s und gilt als Durchlass; Gegenprobe S26; Mutationen MP28 und MP29; gemessen am 2026-10-22: Rueckgabewert 2 nach 12,0 s (Meldung Zeitgrenze, Rueckgabewert 124)' "$(wj_ph 'frontend/src/a.ts' 'const a = 1;')"
+  fall S27 prototyp blockierend 2 AB - ohne-timeout JSON Write 'Posten 7, Teil am Prototyp-Gate (C3, 2026-10-22): PATH ohne timeout, harmlose Eingabe wie S25; das Gate sperrt mit einer Meldung, die timeout nennt, wie bei jq; Mutation MP30' "$(wj_ph 'frontend/src/a.ts' 'const a = 1;')"
+  fall S28 prototyp blockierend 2 AB - timeout-fehler JSON Write 'Posten 7, Teil am Prototyp-Gate (C3, 2026-10-22): ein timeout, das mit 125 endet (Fehler von timeout), harmlose Eingabe wie S25; jeder andere Ausgang als 0 oder 2 endet mit Rueckgabewert 2 und einer Meldung (Zweig der Abbildung); Mutation MP31' "$(wj_ph 'frontend/src/a.ts' 'const a = 1;')"
+  fall S29 prototyp blockierend 2 AB - sed-ohne-kommentar JSON Bash 'Posten 6 unter R3-Q-010 (C3, 2026-10-22): Bash-Weg, erster sed-Schritt von cmd_flach (PATH mit einem sed, das nur den Aufruf fuer die Zeilenkommentare verweigert); die Pruefung dieses Schritts erreicht kein Fall mit fehlendem sed, weil der sed der Schleife den Ausfall aufgefangen haette; vor der Behebung Durchlass (rc 0); Mutation MP21' "$(bj_ph 'echo "import h from \"../prototype/helper\";" > frontend/src/a.ts')"
+  fall S30 prototyp blockierend 2 AB - sed-ohne-kommentar JSON Write 'Posten 6 unter R3-Q-010 (C3, 2026-10-22): Weg der Dateiwerkzeuge, erster sed-Schritt von payload_norm (PATH mit einem sed, das nur den Aufruf fuer die Zeilenkommentare verweigert); Eingabe wie B15; vor der Behebung Durchlass (rc 0); Mutation MP25' "$(wj_ph 'frontend/src/a.ts' 'import h from /* c */ "../prototype/helper";')"
 }
 
 # -----------------------------------------------------------------------------
@@ -1349,10 +1539,10 @@ faelle_4_5_proto_soll0() {
   fall P30 prototyp durchlaufend 0 AB - voll JSON Write 'A1 Gegenprobe: ./ ohne folgendes ../ (Import) (E4.2)' "$(wj_ph 'prototype/x.js' 'const c = require("./app/config");')"
   fall P31 prototyp durchlaufend 0 AB - voll JSON Write 'A2 Gegenprobe: "app" ist keine Bauwurzel, kein Verzeichnisimport ohne Schraegstrich (E4.2)' "$(wj_ph 'prototype/components/x.js' 'import a from "../app";')"
   fall P32 prototyp durchlaufend 0 AB - voll JSON Write 'A3 Gegenprobe: "prototype" ohne vorangehenden Pfadtrenner oder Zeichenkettenanfang (E4.2)' "$(wj_ph 'frontend/src/a.ts' 'import x from "es-prototype";')"
-  fall L05 prototyp belegte-luecke 0 AB - voll JSON Write 'Klasse belegte-luecke nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c), Soll 2 mit dem Bau von Posten 2; vormals Pruefstand: beobachtete Luecke A5-Leerraum-require (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'frontend/src/a.ts' 'const h = require ("../prototype/helper");')"
-  fall L06 prototyp belegte-luecke 0 AB - voll JSON Write 'Klasse belegte-luecke nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c), Soll 2 mit dem Bau von Posten 2; vormals Pruefstand: beobachtete Luecke A5-atimport-url (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'frontend/src/a.css' '@import url("../prototype/theme.css");')"
-  fall L07 prototyp belegte-luecke 0 AB - voll JSON Write 'Klasse belegte-luecke nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c), Soll 2 mit dem Bau von Posten 2; vormals Pruefstand: beobachtete Luecke A5-Leerraum-Gleichheit (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'frontend/src/demo.html' '<img src = "../prototype/x.png">')"
-  fall L08 prototyp belegte-luecke 0 AB - voll JSON Write 'Klasse belegte-luecke nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c), Soll 2 mit dem Bau von Posten 2; vormals Pruefstand: beobachtete Luecke A5-import-ohne-Punkt (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'backend/src/a.py' "m = __import__('prototype')")"
+  fall L05 prototyp blockierend 2 AB - voll JSON Write 'geschlossen am 2026-10-22 (Posten 2; Festlegung ADR 0002, 6.13 c, Nachtrag vom 2026-10-21 zur Abnahme von Posten 4 und 5 -- Festlegung fuer C3), Mutation MP16; vormals belegte Luecke: Klasse belegte-luecke nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c), Soll 2 mit dem Bau von Posten 2; vormals Pruefstand: beobachtete Luecke A5-Leerraum-require (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'frontend/src/a.ts' 'const h = require ("../prototype/helper");')"
+  fall L06 prototyp blockierend 2 AB - voll JSON Write 'geschlossen am 2026-10-22 (Posten 2; Festlegung ADR 0002, 6.13 c, Nachtrag vom 2026-10-21 zur Abnahme von Posten 4 und 5 -- Festlegung fuer C3), Mutation MP17; vormals belegte Luecke: Klasse belegte-luecke nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c), Soll 2 mit dem Bau von Posten 2; vormals Pruefstand: beobachtete Luecke A5-atimport-url (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'frontend/src/a.css' '@import url("../prototype/theme.css");')"
+  fall L07 prototyp blockierend 2 AB - voll JSON Write 'geschlossen am 2026-10-22 (Posten 2; Festlegung ADR 0002, 6.13 c, Nachtrag vom 2026-10-21 zur Abnahme von Posten 4 und 5 -- Festlegung fuer C3), Mutation MP18; vormals belegte Luecke: Klasse belegte-luecke nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c), Soll 2 mit dem Bau von Posten 2; vormals Pruefstand: beobachtete Luecke A5-Leerraum-Gleichheit (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'frontend/src/demo.html' '<img src = "../prototype/x.png">')"
+  fall L08 prototyp blockierend 2 AB - voll JSON Write 'geschlossen am 2026-10-22 (Posten 2; Festlegung ADR 0002, 6.13 c, Nachtrag vom 2026-10-21 zur Abnahme von Posten 4 und 5 -- Festlegung fuer C3), Mutation MP19; vormals belegte Luecke: Klasse belegte-luecke nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c), Soll 2 mit dem Bau von Posten 2; vormals Pruefstand: beobachtete Luecke A5-import-ohne-Punkt (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'backend/src/a.py' "m = __import__('prototype')")"
   fall L09 prototyp belegte-luecke 0 AB - voll JSON Write 'Klasse belegte-luecke nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Posten 3 unter R3-Q-010 (ADR 0002, 6.13 c), Soll 2 mit dem Bau von Posten 3; vormals Pruefstand: beobachtete Luecke B-1-dynamisch-unnormalisierter-Pfad (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph '{AB}/./prototype/x.js' 'import a from "./../backend/api";')"
   fall L10 prototyp grenze 0 AB - voll JSON Write 'Klasse grenze nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); steht in GP-2; vormals Pruefstand: beobachtete Luecke A4-Wurzelpfad (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'prototype/demo.html' '<script src="/backend/app.js"></script>')"
   fall L11 prototyp grenze 0 AB - voll JSON Write 'Klasse grenze nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); steht in GP-2; vormals Pruefstand: beobachtete Luecke A4-beliebiger-Vorspann (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'prototype/x.js' 'import a from "../x/../backend/api";')"
@@ -1374,7 +1564,7 @@ faelle_4_5_proto_soll0() {
   fall ZF7c prototyp blockierend 2 AB - voll JSON Bash 'geschlossen mit E4.3 (vormals ST-09, Zusatzfall 7, php -r)' "$(bj_ph "$(printf 'php -r '"'"'file_put_contents("frontend/src/a.ts","import h from \\"../prototype/helper\\";");'"'"'')")"
   fall ZF7d prototyp blockierend 2 AB - voll JSON Bash 'geschlossen mit E4.3 (vormals ST-09, Zusatzfall 7, ruby -e)' "$(bj_ph "$(printf 'ruby -e '"'"'File.write("frontend/src/a.ts","import h from \\"../prototype/helper\\";")'"'"'')")"
   fall ZF9 prototyp durchlaufend 0 AB - voll JSON Write 'Klasse durchlaufend nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); vormals Pruefstand: Zusatzfall 9: Reichweite der Ausnahmeliste (.claude/*), heute 0; Prueffall, kein Befund (ADR 0002, 6.13 d)' "$(wj_ph '.claude/hooks/x.sh' 'import h from "../prototype/helper";')"
-  fall ZF10d prototyp grenze 0 AB - voll JSON bash 'Klasse grenze nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Fallklasse und Kopfkommentar des Prototyp-Gates folgen mit Posten 2; vormals Pruefstand: Zusatzfall 10: Bash-Pfad haengt an der Gleichheit "Bash", tool_name "bash" endet 0; heutiger Stand' "$(bj_ph "$(printf 'cat > frontend/src/a.ts <<EOT\nimport h from "../prototype/helper";\nEOT')" 'bash')"
+  fall ZF10d prototyp grenze 0 AB - voll JSON bash 'Klasse grenze nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Fallklasse GP-4 und Kopfkommentar des Prototyp-Gates seit 2026-10-22 (C3, Posten 2); vormals Pruefstand: Zusatzfall 10: Bash-Pfad haengt an der Gleichheit "Bash", tool_name "bash" endet 0; heutiger Stand' "$(bj_ph "$(printf 'cat > frontend/src/a.ts <<EOT\nimport h from "../prototype/helper";\nEOT')" 'bash')"
   fall B35 prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals P-01)' "$(wj_ph 'prototype/x.py' 'from backend.api import x')"
   fall B41 prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals P-01)' "$(wj_ph 'prototype/x.py' 'import importlib; m = importlib.import_module("backend.api")')"
   fall B42 prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals P-01)' "$(wj_ph 'prototype/x.py' 'import backend.api')"
@@ -1389,8 +1579,22 @@ faelle_4_5_proto_soll0() {
   fall L16 prototyp grenze 0 AB - voll JSON Write 'Klasse grenze nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); steht in GP-2; vormals Pruefstand: benannte Grenze GP-2, heute 0; Aufnahme: Fortschreibung 6.13 c' "$(wj_ph 'prototype/demo.html' '<link href="~/frontend/x.css">')"
   fall P40 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 5 unter R3-Q-010, Gegenprobe zu L22: Schreibwirkung ohne Importmuster und eine Kommentarzeile aus 200000 Zeichen bleibt zulaessig' "$(bj_gross 'echo "siehe prototype/" > notiz.txt')"
   fall P41 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 5 unter R3-Q-010, Gegenprobe zu B64 und B65: Dateiinhalt ohne Import und eine Kommentarzeile aus 200000 Zeichen bleibt zulaessig' "$(wj_gross 'frontend/src/a.ts' 'const a = 1;')"
-  fall L23 prototyp belegte-luecke 0 AB - ohne-sed JSON Bash 'Posten 6 unter R3-Q-010 (2026-10-21), belegte Luecke, nicht gebaut, terminiert mit der naechsten Aenderung am Prototyp-Gate: die sed-Schritte (cmd_flach, bereinigt) pruefen keinen Rueckgabewert; ohne sed im PATH laeuft B11 (sperrt mit vollem PATH) durch; Soll = heutiger Stand 0' "$(bj_ph 'echo "import h from \"../prototype/helper\";" > frontend/src/a.ts')"
-  fall L24 prototyp belegte-luecke 0 AB - ohne-tr JSON Write 'Posten 6 unter R3-Q-010 (2026-10-21), belegte Luecke, nicht gebaut, terminiert mit der naechsten Aenderung am Prototyp-Gate: der tr-Schritt von payload_norm prueft keinen Rueckgabewert; ohne tr im PATH laeuft ein Import mit Zeilenumbruch (sperrt mit vollem PATH) durch; Soll = heutiger Stand 0' "$(wj_ph 'frontend/src/a.ts' $'import h from\n  "../prototype/helper";')"
+  fall L23 prototyp blockierend 2 AB - ohne-sed JSON Bash 'geschlossen am 2026-10-22 (Posten 6; Festlegung ADR 0002, 6.13 c, Nachtrag vom 2026-10-21 zur Abnahme von Posten 4 und 5 -- Festlegung fuer C3), Mutationen MP21, MP22 und MP24 an den Einzelstellen (S29, S21, S22); vormals belegte Luecke: Posten 6 unter R3-Q-010 (2026-10-21), belegte Luecke, nicht gebaut, terminiert mit der naechsten Aenderung am Prototyp-Gate: die sed-Schritte (cmd_flach, bereinigt) pruefen keinen Rueckgabewert; ohne sed im PATH laeuft B11 (sperrt mit vollem PATH) durch; Soll = heutiger Stand 0' "$(bj_ph 'echo "import h from \"../prototype/helper\";" > frontend/src/a.ts')"
+  fall L24 prototyp blockierend 2 AB - ohne-tr JSON Write 'geschlossen am 2026-10-22 (Posten 6; Festlegung ADR 0002, 6.13 c, Nachtrag vom 2026-10-21 zur Abnahme von Posten 4 und 5 -- Festlegung fuer C3), Mutation MP27; vormals belegte Luecke: Posten 6 unter R3-Q-010 (2026-10-21), belegte Luecke, nicht gebaut, terminiert mit der naechsten Aenderung am Prototyp-Gate: der tr-Schritt von payload_norm prueft keinen Rueckgabewert; ohne tr im PATH laeuft ein Import mit Zeilenumbruch (sperrt mit vollem PATH) durch; Soll = heutiger Stand 0' "$(wj_ph 'frontend/src/a.ts' $'import h from\n  "../prototype/helper";')"
+  fall P42 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Gegenprobe zu L05: require mit Leerraum vor der Klammer, Pfad ohne Bezug ueber die Trennung (Produktionscode)' "$(wj_ph 'frontend/src/a.ts' 'const u = require ("./util");')"
+  fall P43 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Gegenprobe zu B66: require mit Leerraum vor der Klammer, Pfad ohne Bezug ueber die Trennung (Prototyp)' "$(wj_ph 'prototype/x.js' 'const u = require ("./util");')"
+  fall P44 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Gegenprobe zu L06: @import url( ohne Bezug ueber die Trennung (Produktionscode)' "$(wj_ph 'frontend/src/a.css' '@import url("./theme.css");')"
+  fall P45 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Gegenprobe zu B67: @import url( ohne Bezug ueber die Trennung (Prototyp)' "$(wj_ph 'prototype/x.css' '@import url("./theme.css");')"
+  fall P46 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Gegenprobe zu L07: Leerraum um das Gleichheitszeichen bei src ohne Bezug ueber die Trennung (Produktionscode)' "$(wj_ph 'frontend/src/demo.html' '<img src = "./x.png">')"
+  fall P47 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Gegenprobe zu B68: Leerraum um das Gleichheitszeichen bei src ohne Bezug ueber die Trennung (Prototyp)' "$(wj_ph 'prototype/demo.html' '<img src = "./x.png">')"
+  fall P48 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Gegenprobe zu B70: Leerraum um das Gleichheitszeichen bei href ohne Bezug ueber die Trennung (Produktionscode)' "$(wj_ph 'frontend/src/demo.html' '<link href = "./style.css">')"
+  fall P49 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Gegenprobe zu B69: Leerraum um das Gleichheitszeichen bei href ohne Bezug ueber die Trennung (Prototyp)' "$(wj_ph 'prototype/demo.html' '<link href = "./style.css">')"
+  fall P50 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Gegenprobe zu L08: __import__ mit Modulnamen ohne Punkt, ohne Bezug ueber die Trennung (Produktionscode)' "$(wj_ph 'backend/src/a.py' "m = __import__('os')")"
+  fall P51 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Gegenprobe zu B71: __import__ mit Modulnamen ohne Punkt, ohne Bezug ueber die Trennung (Prototyp)' "$(wj_ph 'prototype/x.py' "m = __import__('os')")"
+  fall S26 prototyp durchlaufend 0 AB - kurzes-cat JSON Write 'Posten 7, Teil am Prototyp-Gate (C3, 2026-10-22), Gegenprobe zu S25: dieselbe Eingabe, cat um 4 s verzoegert (deutlich unter der Grenze von 12 s), Rueckgabewert 0; gemessen am 2026-10-22: Rueckgabewert 0 nach 4,0 s' "$(wj_ph 'frontend/src/a.ts' 'const a = 1;')"
+  fall P52 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), gewollter Durchlass (Entscheid SA 2026-10-22): der blosse JS-Modulname import("backend") in einer Prototyp-Datei wird nicht gesperrt, die statische Form ebenso wenig; die Endung fuer den blossen Modulnamen gilt nur fuer import_module und __import__ (Python); Gegenprobe zu B71; Mutation MP32 faellt hier' "$(wj_ph 'prototype/x.js' 'const m = await import("backend");')"
+  fall P53 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Gegenprobe zu B72: JS-Zuweisung an src mit Leerraum ohne Bezug ueber die Trennung (Prototyp)' "$(wj_ph 'prototype/x.js' 'el.src = "./y.png";')"
+  fall P54 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Gegenprobe zu B73: JS-Zuweisung an href mit Leerraum ohne Bezug ueber die Trennung (Produktionscode)' "$(wj_ph 'frontend/src/a.js' 'link.href = "./z.css";')"
 }
 
 # -----------------------------------------------------------------------------
