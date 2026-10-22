@@ -32,8 +32,37 @@ von Hand gepflegt.
 - Aufbau: Kopf (Titel, Status, Datum, Grundlage, betroffene Dateien), Kontext,
   Entscheidung, Konsequenzen.
 - Repo-relative Pfade, keine absoluten Pfade der Arbeitsumgebung.
-- Ein ADR bildet einen Stand ab. Ändert sich der Stand, wird der ADR
-  fortgeschrieben, nicht stillschweigend überholt.
+- Ein ADR bildet den **aktuellen Stand** ab (Teil A: Entscheid, Festlegungen,
+  Fallklassen, Grenzen, Restpunkte als Tabellen) und führt ein datiertes
+  **Entscheidlog** (Teil B: je Änderung "Vorher galt / Jetzt gilt / Weshalb").
+  Frühere Fassungen liegen in git; der Verweis trägt die Commit-Prüfsumme.
+  Ausschliesslich anfügbar bleiben ADR 0002, Abschnitt 10 (Freigabevermerk:
+  Freigaben und Abnahmen) und Teil B jedes ADR (Entscheidlog, datierte
+  Einträge), das Schwachstellenregister und Abnahmeeinträge (Projektauftrag 6.6,
+  Fortschreibung vom 2026-10-22, Prozess-Schnitt PS-1).
+- Teil A eines ADR hat höchstens etwa 2'000 Zeilen (Teil B wächst mit dem
+  Entscheidlog und zählt nicht); wächst Teil A darüber, wird ein Thema in
+  einen eigenen ADR ausgelagert, mit Weiterleitung an der alten Stelle (Titel,
+  neuer Ort, Commit-Prüfsumme des Schnitts). Bis zur Aufteilung (PS-2) gilt für
+  ADR 0002 der Stand vom 2026-10-22.
+
+## Product Backlog (6.6)
+Der Backlog führt jeden Eintrag "### R3-…" wörtlich (Kennung, Abnahmekriterien;
+der Belegprüfer liest die Kennungen aus diesen Überschriften) und seinen Rahmen
+als Tabellen: Übersicht, Sammelposten, Nachführungen (Datum, Einheit, Änderung,
+Fundort), offene Punkte mit Status. Eine Tabellenzelle hat höchstens etwa 600
+Zeichen; Längeres gehört in das ADR oder die Übergabe mit Verweis. Der Stand vor
+dem Umbau (PS-3) liegt eingefroren unter docs/archiv/ (entsteht mit PS-3) mit Verweis per
+Commit-Prüfsumme.
+
+## Übergabe und Pull Request je Sitzung (3.3)
+Je Sitzung eine Übergabedatei unter `docs/uebergaben/` (Abschnitt je Einheit:
+fertig, offen, Entscheide, Nachweise) und ein Pull Request mit Merge-Text
+(Abnahme, Bestätigung, nicht umfasst). Die Prüfung von Dokumenten erfolgt einmal
+statisch je Einheit (Static Software Tester, anderes Modellfeld, ganzer Diff);
+Gegenprüfung nur für Gates, Prüfmittel und Code. Blockierend sind falsche Zahlen,
+Prüfsummen, Daten, Zitate und Zuordnungen sowie Änderungen am Entscheidlog;
+alles andere ist Restpunkt der Übergabe.
 
 ## Verfolgbarkeit (6.6)
 Jede Anforderung trägt eine dauerhafte, eindeutige Kennung, die sich nie ändert,
@@ -53,6 +82,9 @@ Was über `docs/EINGANG_METHODIK.md` aus dem Methodik-Repository hereinkommt, is
 `.claude/rules/` noch den Backlog. Soll etwas davon Vorgabe werden, geht es den
 regulären Weg: als Backlog-Eintrag über den Product Owner, bei präskriptiven
 Themen über die GRC-Rolle.
+Nachtrag vom 2026-10-22 (Prozess-Schnitt PS-1): Mit dem Einfalten von Repo B
+(PS-4) entfällt der Eingang; `docs/EINGANG_METHODIK.md` bleibt eingefroren als
+Stand des letzten Laufs.
 
 ## Sprache
 Deutsch, Schweizer Schreibweise: `ss` statt `ß`.

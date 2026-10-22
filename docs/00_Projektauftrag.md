@@ -70,6 +70,8 @@ Das Vorhaben liegt in zwei Repositories:
 
 **Repo B enthält keine Kopien.** Es verweist auf Repo A über feste Verweise (6.6). Zwei Quellen derselben Wahrheit wären ein Verstoss gegen die Versionierung nach 6.6 und würden früher oder später auseinanderlaufen.
 
+**Fortschreibung *(vorgeschlagen 2026-10-22, Prozess-Schnitt PS-1; angenommen mit dem Merge des zugehörigen Pull Requests)*.** Auf Weisung vom 2026-10-22 ("Nein, FFHS braucht es nicht, nach Übergangsfrist weg") wird Repo B eingefaltet: Die Methodiktexte liegen künftig byte-gleich unter docs/methodik/ (entsteht mit PS-4) in Repo A mit einem Quellenverzeichnis (Quell-Commit, SHA-256); der unveränderte Verlauf von Repo B wird als Zweig archiv/r3coscrum in Repo A aufbewahrt und nie in den Hauptzweig gemergt, damit die zitierten Commit-Prüfsummen auflösbar bleiben; die Übertragung nach Repo B (Arbeitsablauf, Token) und der Eingang aus Repo B entfallen; Repo B wird nur lesbar archiviert und nach der Übergangsfrist (Vorschlag: Merge der Freigabe des Grundgerüsts) gelöscht. Die drei Gründe für den Schnitt nach Funktion gelten unverändert; mit einem Repository entfällt die Repository-Grenze, über die die Kette brechen könnte. Umsetzung in der Einheit PS-4 (Vorlage `docs/vorlagen/2026-10-22_prozess-schnitt.md`).
+
 ---
 
 ## 2. Lieferreihenfolge und Freigabe-Gates [BESTÄTIGT]
@@ -137,6 +139,8 @@ Der Originalauftrag verlangt: "Immer zuerst genau kalkulieren, wie viel Usage ic
 - Am Ende jeder Einheit wird der Stand in eine Übergabedatei geschrieben (Was ist fertig, was steht offen, welche Entscheidungen wurden getroffen), damit ein Abbruch keinen Arbeitsverlust bedeutet.
 - Halbfertige Zustände werden nicht committet. Entweder die Einheit ist nach Definition of Done fertig, oder sie wird zurückgesetzt.
 - Der Auftraggeber prüft `/usage` selbst und entscheidet, ob die nächste Einheit gestartet wird.
+
+**Fortschreibung *(vorgeschlagen 2026-10-22, Prozess-Schnitt PS-1; angenommen mit dem Merge des zugehörigen Pull Requests)*.** Die Übergabedatei wird je Sitzung geführt, mit einem Abschnitt je Arbeitseinheit; je Sitzung entsteht ein Pull Request, dessen Text sagt, was der Merge bedeutet (Abnahme, Bestätigung, nicht umfasst). Die Prüfung von Dokumenten erfolgt einmal statisch je Einheit durch den Static Software Tester auf dem anderen Modellfeld über den ganzen Diff; eine Gegenprüfung gibt es nur für Gates, Prüfmittel und Code. Blockierend sind falsche Zahlen, Prüfsummen, Daten, Zitate und Zuordnungen sowie Änderungen am Entscheidlog; alles andere ist Restpunkt der Übergabe. Beteiligt wird je Einheit nur, wer eine Änderung trägt: der Protocol Master bei Entscheiden und Abnahmen, der Product Owner bei Backlog-Änderungen, der Software Architect bei Festlegungen.
 
 ### 3.4 Iterationspflicht bis zur nachweisbaren Fertigstellung [BESTÄTIGT, mit Präzisierung]
 
@@ -978,6 +982,8 @@ Der Grund ist derselbe wie bei der Verfahrensgarantie zur Behandlung fremder Inh
 **Zuständigkeit:** Protocol Master (4.2) für das Nachweisverzeichnis, DevOps Engineer (4.2) für den Arbeitsablauf.
 
 - **Änderungen.** Neue oder geänderte Anforderungen kommen als neuer Backlog-Eintrag herein und werden vom Product Owner eingeordnet. Betrifft die Änderung den präskriptiven Teil aus 6.2, entscheidet nicht der Product Owner, sondern die GRC-Rolle gemeinsam mit dem Auftraggeber.
+
+**Fortschreibung *(vorgeschlagen 2026-10-22, Prozess-Schnitt PS-1; angenommen mit dem Merge des zugehörigen Pull Requests)*.** Die Historie eines Dokuments liegt in git; frühere Fassungen bleiben über die Commit-Prüfsumme erreichbar und müssen nicht im Text stehen bleiben. Ausschliesslich anfügbar bleiben das Entscheidlog (ADR 0002, Abschnitt 10), das Schwachstellenregister sowie Abnahme- und Freigabeeinträge. Architecture Decision Records bilden den aktuellen Stand ab und führen ein datiertes Entscheidlog; der Product Backlog führt seine Einträge wörtlich und seinen Rahmen als Tabellen. Mit dem Einfalten von Repo B (1.3) entfallen der Baustein 3 (Übertragung nach Repo B) und der Eingang; das Nachweisverzeichnis `docs/NACHWEISE.md` bleibt und wird in Repo A erzeugt.
 
 ### 6.7 Validierung der Anforderungen [NEU]
 

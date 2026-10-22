@@ -59,11 +59,11 @@ docs/uebergaben/2026-08-25_eingangskanal-abgesichert.md|11d5960a326750d5838078e3
 docs/uebergaben/2026-08-25_full-review-konfiguration.md|11d5960a326750d5838078e36cf38b85af677262	Gepinnter Commit der fremden GitHub-Action actions/checkout. Genau so verlangt es 6.6 -- ein Zweigname waere hier der Fehler.
 
 # --- blob/main als abschreckendes Beispiel, kein Verstoss -----------------
-CLAUDE.md:88	Nennt die verbotene Form als Beispiel ("nie über `blob/main/...`"), kein Verstoss. Zeile am 2026-09-02 von 83 auf 88 nachgefuehrt, weil die Tabelle der Gates und die Regel zur Aufgabenfuehrung davor eingefuegt wurden.
+CLAUDE.md:94	Nennt die verbotene Form als Beispiel ("nie über `blob/main/...`"), kein Verstoss. Zeile am 2026-09-02 von 83 auf 88 und am 2026-10-22 (PS-1) auf 94 nachgefuehrt (Absatz zur Uebergabe je Sitzung davor um sechs Zeilen verlaengert), weil die Tabelle der Gates und die Regel zur Aufgabenfuehrung davor eingefuegt wurden.
 .claude/agents/devops-engineer.md:23	Nennt die verbotene Form als Beispiel ("nie über `blob/main`"), kein Verstoss.
 .claude/agents/protocol-master.md:16	Nennt die verbotene Form als Beispiel ("ein Verweis auf `blob/main/...` ist kein Nachweis"), kein Verstoss.
 .claude/rules/dokumentation.md:18	Nennt die verbotene Form als Beispiel ("`blob/main/...` ist kein Nachweis"), kein Verstoss.
-docs/00_Projektauftrag.md:938	Nennt die verbotene Form als Beispiel ("Ein Verweis auf `blob/main/...` ist kein Nachweis"), kein Verstoss.
+docs/00_Projektauftrag.md:942	Nennt die verbotene Form als Beispiel ("Ein Verweis auf `blob/main/...` ist kein Nachweis"), kein Verstoss. Zeile am 2026-10-22 (PS-1) von 938 auf 942 nachgefuehrt (Fortschreibungsabsaetze in 1.3 und 3.3).
 docs/08_Freigabe_Schritt_4.md:133	Nennt die verbotene Form als Beispiel ("kein Verweis auf `blob/main`"), kein Verstoss.
 docs/uebergaben/2026-08-25_full-review-konfiguration.md:16	Nennt die verbotene Form als Beispiel (deterministische Prüfung auf `blob/main` als Prüfgegenstand), kein Verstoss.
 docs/uebergaben/2026-09-01_belegpruefer-abbruch-nach-3-4.md:28	Nennt die beiden verbotenen Formen als Beschreibung dessen, was der Pruefer sucht -- kein Verstoss, sondern seine Fundstellenliste.
