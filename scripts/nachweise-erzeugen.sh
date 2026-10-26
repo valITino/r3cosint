@@ -23,6 +23,7 @@ ARTEFAKTE=(
   "Glossar|docs/03_Glossar.md|Verbindliche Definitionen, Begriffe mit rechtlicher Bedeutung gekennzeichnet"
   "Kontextmodell|docs/04_Kontextmodell.md|Systemgrenze, Kontextgrenze, externe Akteure und Schnittstellen"
   "Product Backlog|docs/05_Product_Backlog.md|Eintraege mit Kennung, Art, Abnahmekriterium und Pruefaufwand; Summen im Dokument"
+  "Product Backlog, Stand bis 2026-10-22 (Archiv)|docs/archiv/05_Product_Backlog_bis_2026-10-22.md|eingefrorener Wortlaut vor dem Umbau des Rahmens in Tabellen (PS-3); wird nicht fortgeschrieben"
   "Definition of Ready und Done|docs/06_Definition_of_Ready_und_Done.md|Eingangs- und Ausgangskriterien, Done als Befehlskette"
   "Roadmap|docs/07_Roadmap.md|Etappenfolge und Schnitt in zwei lieferfaehige Fassungen"
   "Freigabe Schritt 4|docs/08_Freigabe_Schritt_4.md|Pruefvorlage und Freigabeprotokoll zum Freigabe-Gate aus Abschnitt 2"
