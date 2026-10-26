@@ -52,8 +52,11 @@ der Belegprüfer liest die Kennungen aus diesen Überschriften) und seinen Rahme
 als Tabellen: Übersicht, Sammelposten, Nachführungen (Datum, Einheit, Änderung,
 Fundort), offene Punkte mit Status. Eine Tabellenzelle hat höchstens etwa 600
 Zeichen; Längeres gehört in das ADR oder die Übergabe mit Verweis. Der Stand vor
-dem Umbau (PS-3) liegt eingefroren unter docs/archiv/ (entsteht mit PS-3) mit Verweis per
-Commit-Prüfsumme.
+dem Umbau (PS-3) liegt eingefroren unter `docs/archiv/05_Product_Backlog_bis_2026-10-22.md`
+(angelegt mit PS-3 am 2026-10-26, Commit `3c55f996ce43994e230e1bb45367207e476d9b8d`) und wird
+nicht fortgeschrieben; Fundorte im Backlog nennen Kennung, Posten-, Punkt- oder
+Nachführungsnummer, nie eine Zeilennummer; keine Änderung am Backlog ohne Zeile
+in der Tabelle Nachführungen.
 
 ## Übergabe und Pull Request je Sitzung (3.3)
 Je Sitzung eine Übergabedatei unter `docs/uebergaben/` (Abschnitt je Einheit:
