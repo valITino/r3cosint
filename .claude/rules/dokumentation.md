@@ -25,7 +25,10 @@ Verweis, Stand, kurze Beschreibung. Sie wird von der Automatik neu erzeugt —
 Regelfall ist jeder Merge nach `main` mit Änderungen an den Artefaktpfaden,
 dazu Versionsschilder und der manuelle Start (6.6, nachgeführt 2026-08-21;
 Einzelheiten in `.claude/rules/versionierung-und-nachweisfluss.md`) — und nie
-von Hand gepflegt.
+von Hand gepflegt. Nachtrag vom 2026-10-26 (Prozess-Schnitt PS-4): Die Automatik
+(Übertragung nach Repo B) ist entfernt; das Verzeichnis wird in der Sitzung mit
+`scripts/nachweise-erzeugen.sh` erzeugt und mit der Einheit committet (D12 ruft
+den Erzeuger auf), weiterhin nie von Hand gepflegt.
 
 ## Architecture Decision Records
 - Ablage: `docs/adr/NNNN-titel.md`, fortlaufend nummeriert.
@@ -87,7 +90,10 @@ regulären Weg: als Backlog-Eintrag über den Product Owner, bei präskriptiven
 Themen über die GRC-Rolle.
 Nachtrag vom 2026-10-22 (Prozess-Schnitt PS-1): Mit dem Einfalten von Repo B
 (PS-4) entfällt der Eingang; `docs/EINGANG_METHODIK.md` bleibt eingefroren als
-Stand des letzten Laufs.
+Stand des letzten Laufs. Vollzogen am 2026-10-26 (PS-4): Hook entfernt, Kanal
+geschlossen; die Methodiktexte liegen unter `docs/methodik/` (Quellen mit
+Quell-Commit und SHA-256 in `docs/methodik/QUELLEN.md`), der Verlauf im Zweig
+archiv/r3coscrum von r3cosint.
 
 ## Sprache
 Deutsch, Schweizer Schreibweise: `ss` statt `ß`.

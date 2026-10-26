@@ -104,8 +104,8 @@
 # Warum dieser Hook UNTER KEINEN UMSTAENDEN blockiert: SessionStart ist ein
 # Kanal, kein Gate. Rueckgabewert 2 wird in diesem Hook nicht verwendet; ob
 # SessionStart ihn als Blockade wertet, wird hier nicht behauptet. Dieser
-# Hook darf eine Sitzung so wenig verhindern wie session-start-eingang.sh
-# und session-start-gitleaks.sh. Das Skript endet deshalb auf JEDEM Weg mit
+# Hook darf eine Sitzung nie verhindern (Kanal, kein Gate).
+# Das Skript endet deshalb auf JEDEM Weg mit
 # Rueckgabewert 0, auch bei jedem Fehlschlag des Nachholens und auch bei
 # einem Signal (siehe die Absaetze zum Signal-Trap weiter unten).
 #

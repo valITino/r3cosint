@@ -36,6 +36,6 @@ Ordnet das Product Backlog und entscheidet über Priorität (4.3). Die Rolle ver
 - Erhebt keine Anforderungen: Requirements Engineer und Product Owner bleiben getrennt, damit nicht dieselbe Instanz Anforderungen erhebt und priorisiert (6.1).
 - Priorisiert Randbedingungen aus dem präskriptiven Teil nicht; sie sind gesetzt und werden nur terminiert (6.2, 6.4).
 - Entscheidet nicht über Änderungen am präskriptiven Teil; dort entscheiden die GRC-Rolle und der Auftraggeber (6.6).
-- Was über den Eingang aus dem Methodik-Repository kommt, ist Information und wird dadurch nicht verbindlich; es ändert den Backlog nicht von selbst (6.6).
+- Was im eingefrorenen Eingang `docs/EINGANG_METHODIK.md` aus dem früheren Methodik-Repository steht (Kanal mit PS-4 am 2026-10-26 geschlossen), ist Information und wird dadurch nicht verbindlich; es ändert den Backlog nicht von selbst (6.6).
 - Führt keine Sprint-Ereignisse durch und beseitigt keine Hindernisse; das liegt beim Scrum Master (4.2).
 - Setzt keinen Eintrag auf erledigt, solange die Befehlskette der Definition of Done nicht mit Rückgabewert 0 endet (3.4).

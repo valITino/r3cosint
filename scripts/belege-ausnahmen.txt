@@ -86,3 +86,45 @@ docs/10_Zustandsbericht_2026-09-02.md|11d5960a326750d5838078e36cf38b85af677262	G
 
 # --- Prozess-Schnitt PS-2 (2026-10-22): Abschnitte, die in ADR 0002 blieben ---
 docs/adr/0003-definition-of-done-gate.md|6.11	Verweis auf den Abschnitt 6.11 von ADR 0002 in 6.12.18, im unveraendert verschobenen Text (Prozess-Schnitt PS-2, 2026-10-22). 6.11 bleibt Ueberschrift von ADR 0002; ADR 0003 fuehrt sie nicht, und der Projektauftrag kennt keinen Abschnitt 6.11. Entfaellt, sobald D20 ADR 0002 bis 0005 als eine Gliederung liest.
+
+# --- Prozess-Schnitt PS-4 (2026-10-26): Methodik-Repository eingefaltet ------
+# Drei Gruppen, die Fundorte am Stand der Einheit mit D20 (make belege) gemessen.
+# (1) Eingefrorene, byte-gleiche Kopien unter docs/methodik/ (Quell-Commit und
+#     SHA-256 je Datei in docs/methodik/QUELLEN.md): Fundstellen im Wortlaut der
+#     Quelle; die Kopien werden nicht bearbeitet.
+# (2) Belege vergangener Staende, die den mit PS-4 entfernten Arbeitsablauf
+#     .github/workflows/nachweise-uebertragen.yml nennen.
+# (3) Belege, die den mit PS-4 entfernten Hook
+#     .claude/hooks/session-start-eingang.sh nennen: Belege vergangener Staende,
+#     der anfuegbare Teil B der ADR, woertliche Backlog-Eintraege, eingefrorene
+#     Dateien. Geltende Texte (Regeln, CLAUDE.md, Rollentexte) tragen keine Ausnahme.
+# (4) Nachtrag zu den drei Gruppen: ein Verweis auf eine Datei im Nachbarordner
+#     r3coscrum, die dort mit dem Pull Request zu PS-4 entfernt wird.
+# (1) Kopien unter docs/methodik/
+docs/methodik/UEBERGABE.md|docs/06	Kurzform fuer docs/06_Definition_of_Ready_und_Done.md im Fliesstext, kein Pfadverweis; eine Fundstelle in der eingefrorenen, byte-gleichen Kopie des frueheren Methodik-Repositories (Prozess-Schnitt PS-4, 2026-10-26).
+docs/methodik/UEBERGABE.md|.github/workflows/eingang.yml	Arbeitsablauf des frueheren Methodik-Repositories (r3coscrum), kein Pfad dieses Repositories; drei Fundstellen in der eingefrorenen, byte-gleichen Kopie, Beleg eines vergangenen Standes (Prozess-Schnitt PS-4, 2026-10-26).
+docs/methodik/UEBERGABE.md|.github/workflows/nachweise-uebertragen.yml	Arbeitsablauf dieses Repositories, mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt; die eine Fundstelle in der eingefrorenen, byte-gleichen Kopie beschreibt den Stand vor der Entfernung.
+docs/methodik/UEBERGABE.md|11d5960a326750d5838078e36cf38b85af677262	Gepinnter Commit der fremden GitHub-Action actions/checkout (v4.4.0), von der Kopie als Pin in eingang.yml genannt; loest in keinem der beiden Arbeitsbaeume auf, Wortlaut der Quelle in der eingefrorenen, byte-gleichen Kopie (Prozess-Schnitt PS-4, 2026-10-26).
+docs/methodik/UEBERGABE.md|6.12	Abschnitt 6.12 bzw. 6.12.25 bis 6.12.27 des Architekturentscheids 0002 im Stand der Uebergabe (der Text liegt seit dem Prozess-Schnitt PS-2 in ADR 0003, Teil B), nicht des Projektauftrags; vier Fundstellen in der eingefrorenen, byte-gleichen Kopie (Prozess-Schnitt PS-4, 2026-10-26).
+docs/methodik/entscheide.md|882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf	Commit des angebundenen fremden Repositories valITino/claude-skills-fullstack, im Entscheid S6 genannt; loest in keinem der beiden Arbeitsbaeume auf. Dieses Skript kennt nur Objekte der beiden eigenen Arbeitsbaeume; Wortlaut der eingefrorenen, byte-gleichen Kopie (Prozess-Schnitt PS-4, 2026-10-26).
+docs/methodik/entscheide.md:57	Nennt die verbotene Form als Beispiel (Entscheid S6: Verweise auf blob/main sind unzulaessig), kein Verstoss; Wortlaut der eingefrorenen, byte-gleichen Kopie (Prozess-Schnitt PS-4, 2026-10-26).
+# (2) Arbeitsablauf nachweise-uebertragen.yml in Belegen vergangener Staende
+docs/08_Freigabe_Schritt_4.md|.github/workflows/nachweise-uebertragen.yml	Arbeitsablauf, mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt; das Freigabeprotokoll vom 2026-08-20 nennt ihn unter den Artefakten von Schritt 3 und belegt einen vergangenen Stand.
+docs/09_Zustandsbericht_2026-08-21.md|.github/workflows/nachweise-uebertragen.yml	Arbeitsablauf, mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt; der Zustandsbericht vom 2026-08-21 beschreibt ihn im damaligen Stand. Berichte belegen einen vergangenen Stand und werden nicht geaendert.
+docs/10_Zustandsbericht_2026-09-02.md|.github/workflows/nachweise-uebertragen.yml	Arbeitsablauf, mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt; der Zustandsbericht vom 2026-09-02 beschreibt ihn im damaligen Stand. Berichte belegen einen vergangenen Stand und werden nicht geaendert.
+docs/uebergaben/2026-08-21_commit-identitaet-automatik.md|.github/workflows/nachweise-uebertragen.yml	Arbeitsablauf, mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt; die Uebergabe vom 2026-08-21 beschreibt ihn im damaligen Stand. Uebergaben belegen einen vergangenen Stand und werden nicht geaendert.
+docs/uebergaben/2026-08-21_nachweisfluss-automatisierung.md|.github/workflows/nachweise-uebertragen.yml	Arbeitsablauf, mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt; die Uebergabe vom 2026-08-21 beschreibt ihn im damaligen Stand. Uebergaben belegen einen vergangenen Stand und werden nicht geaendert.
+docs/uebergaben/2026-08-21_nachweisluecke-prototyp-demo.md|.github/workflows/nachweise-uebertragen.yml	Arbeitsablauf, mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt; die Uebergabe vom 2026-08-21 beschreibt ihn im damaligen Stand. Uebergaben belegen einen vergangenen Stand und werden nicht geaendert.
+docs/uebergaben/2026-08-25_automatik-gehaertet.md|.github/workflows/nachweise-uebertragen.yml	Arbeitsablauf, mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt; die Uebergabe vom 2026-08-25 beschreibt ihn im damaligen Stand. Uebergaben belegen einen vergangenen Stand und werden nicht geaendert.
+docs/vorlagen/2026-10-22_prozess-schnitt/anhang-b-r3coscrum-kopplung-devops-engineer.md|.github/workflows/nachweise-uebertragen.yml	Arbeitsablauf, mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt; Entwurf der Einheit vom 2026-10-22, angenommen mit dem Merge des Pull Requests #29, bleibt woertlich und beschreibt den Arbeitsablauf vor seiner Entfernung.
+# (3) Hook session-start-eingang.sh in Belegen, anfuegbaren, woertlichen und eingefrorenen Texten
+docs/05_Product_Backlog.md|.claude/hooks/session-start-eingang.sh	Eintragsblock R3-Q-011, Zeilen Abhaengigkeit und Achtung: Eintragsbloecke stehen woertlich (Regel zum Product Backlog in .claude/rules/dokumentation.md); die Zeilen nennen den Hook, der mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt ist.
+docs/EINGANG_METHODIK.md|.claude/hooks/session-start-eingang.sh	Datei eingefroren (Stand des letzten Laufs, Vermerk des Koordinators vom 2026-10-26); die Kopfangabe der Quelle nennt den Hook, der die Datei las und mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt ist.
+docs/adr/0004-pretooluse-gates.md|.claude/hooks/session-start-eingang.sh	Beide Fundstellen liegen in Teil B (Entscheidlog), der ausschliesslich angefuegt wird, und beschreiben den Hook vor seiner Entfernung mit dem Prozess-Schnitt PS-4 (2026-10-26); Teil A (Stand) traegt keine Fundstelle.
+docs/adr/0005-fremde-inhalte-im-harness.md|.claude/hooks/session-start-eingang.sh	Alle drei Fundstellen liegen in Teil B (Entscheidlog), der ausschliesslich angefuegt wird, und beschreiben den Hook vor seiner Entfernung mit dem Prozess-Schnitt PS-4 (2026-10-26); Teil A (Stand) traegt keine Fundstelle.
+docs/archiv/05_Product_Backlog_bis_2026-10-22.md|.claude/hooks/session-start-eingang.sh	Eingefrorener Stand des Backlogs bis 2026-10-22: Eintragsblock R3-Q-011, Zeilen Abhaengigkeit und Achtung, im Wortlaut; der Hook ist mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt.
+docs/uebergaben/2026-08-25_eingangskanal-abgesichert.md|.claude/hooks/session-start-eingang.sh	Hook, mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt; die Uebergabe vom 2026-08-25 beschreibt ihn im damaligen Stand. Uebergaben belegen einen vergangenen Stand und werden nicht geaendert.
+docs/uebergaben/2026-08-25_eingangskanal-repariert.md|.claude/hooks/session-start-eingang.sh	Hook, mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt; die Uebergabe vom 2026-08-25 beschreibt ihn im damaligen Stand (zwei Fundstellen). Uebergaben belegen einen vergangenen Stand und werden nicht geaendert.
+docs/vorlagen/2026-10-22_prozess-schnitt/anhang-b-r3coscrum-kopplung-devops-engineer.md|.claude/hooks/session-start-eingang.sh	Hook, mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt; Entwurf der Einheit vom 2026-10-22, angenommen mit dem Merge des Pull Requests #29, bleibt woertlich und beschreibt den Hook vor seiner Entfernung.
+# (4) Datei im Nachbarordner r3coscrum, Beleg eines vergangenen Standes
+docs/uebergaben/2026-08-25_eingangskanal-repariert.md|r3coscrum/.github/workflows/eingang.yml	Beleg eines vergangenen Standes (Uebergabe vom 2026-08-25): Der Arbeitsablauf gehoert zum frueheren Methodik-Repository und wird mit dem Pull Request in r3coscrum (Prozess-Schnitt PS-4, 2026-10-26) entfernt; lesbar im Archivzweig archiv/r3coscrum. Uebergaben werden nicht geaendert.

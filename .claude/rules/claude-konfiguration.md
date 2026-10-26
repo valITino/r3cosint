@@ -54,9 +54,10 @@ durchsetzen will, braucht einen Hook.
   Ausgabe einer aufgerufenen Kette gelangt nie auf die Standardausgabe des
   Hooks (ADR 0002, 6.12.15). Das gilt für die Gates (`PreToolUse`, `Stop`,
   `SubagentStop`, `TaskCompleted`); ein `SessionStart`-Hook gibt Klartext auf
-  der Standardausgabe aus, der als Kontext übernommen wird — so die drei
-  Hooks `session-start-eingang.sh`, `session-start-gitleaks.sh` und
-  `session-start-git-historie.sh`.
+  der Standardausgabe aus, der als Kontext übernommen wird — so die zwei
+  Hooks `session-start-gitleaks.sh` und `session-start-git-historie.sh`
+  (der Eingangs-Hook ist mit dem Prozess-Schnitt PS-4 am 2026-10-26
+  entfernt; `docs/EINGANG_METHODIK.md` bleibt eingefroren).
 - Das Definition-of-Done-Gate (`dod-gate.sh`, ADR 0002, 6.12) erzwingt die
   Kette hart nur über `TaskCompleted`, und dieses Ereignis feuert nur, wenn
   eine Aufgabenliste geführt wird. Deshalb wird jede Arbeitseinheit als Aufgabe

@@ -10,7 +10,7 @@
 # Warum dieser Hook UNTER KEINEN UMSTAENDEN blockiert: SessionStart ist ein
 # Kanal, kein Gate. Rueckgabewert 2 wird in diesem Hook nicht verwendet; ob
 # SessionStart ihn als Blockade wertet, wird hier nicht behauptet. Dieser
-# Hook darf eine Sitzung so wenig verhindern wie session-start-eingang.sh.
+# Hook darf eine Sitzung nie verhindern (Kanal, kein Gate).
 # Das Skript endet deshalb auf JEDEM Weg mit Rueckgabewert 0, auch bei jedem
 # Fehlschlag der Bereitstellung.
 #
