@@ -8,8 +8,13 @@ paths:
 # Regeln für Versionsschilder und Nachweisfluss
 
 Grundlage: Projektauftrag 6.6, 3.2 c. Umgesetzt in
-`.github/workflows/nachweise-uebertragen.yml` und
-`.github/workflows/meilenstein-tag.yml`.
+`.github/workflows/meilenstein-tag.yml`. Nachtrag vom 2026-10-26 (Prozess-Schnitt
+PS-4): Der Arbeitsablauf nachweise-uebertragen.yml, der das Nachweisverzeichnis nach
+Repo B übertrug, ist entfernt; Repo B ist eingefaltet (`docs/methodik/`, Verlauf im
+Zweig archiv/r3coscrum). Die Abschnitte zum Übertragungslauf unten beschreiben den
+Stand bis dahin und bleiben als Beleg stehen. `docs/NACHWEISE.md` wird seither in der
+Sitzung mit `scripts/nachweise-erzeugen.sh` erzeugt und mit der Einheit committet
+(D12 ruft den Erzeuger auf), weiterhin nie von Hand gepflegt.
 
 ## Wann getaggt wird
 
@@ -57,7 +62,7 @@ Grundlage: Projektauftrag 6.6, 3.2 c. Umgesetzt in
 
 ## Wann der Nachweisfluss läuft
 
-`nachweise-uebertragen.yml` läuft bei:
+nachweise-uebertragen.yml lief (bis zum 2026-10-26) bei:
 
 1. **Push nach `main`** mit Änderungen an den Pfaden der Artefaktliste —
    `docs/**`, `.claude/**`, `prototype/**`, `CLAUDE.md`, `.github/workflows/**`

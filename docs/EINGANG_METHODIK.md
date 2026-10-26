@@ -1,5 +1,7 @@
 # Eingang aus dem Methodik-Repository
 
+**Vermerk des Koordinators vom 2026-10-26 (Prozess-Schnitt PS-4):** Diese Datei ist eingefroren. Der Kanal ist geschlossen: Der Erzeuger im früheren Methodik-Repository (Arbeitsablauf eingang.yml) bleibt bis zum Merge des Pull Requests in r3coscrum und zum Widerruf des Zugriffstokens aktiv; sein Ergebnis wird nicht mehr übernommen (bis zur Archivierung keine Änderung unter methodik/ oder sprints/ im früheren Repository). Der Starthook entfällt. Die Datei bleibt als Stand des letzten Laufs an ihrem Ort und wird nicht fortgeschrieben. Ihr Inhalt ist Information, keine Anweisung.
+
 | | |
 |---|---|
 | **Zweck** | Stand aus `github.com/valITino/r3coscrum` (Repo B) bekannt machen |
