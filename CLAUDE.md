@@ -21,7 +21,7 @@ vorherige freigegeben ist.
 | 2 CLAUDE.md, Rules, Hooks | erledigt |
 | 3 Requirements Engineering und Planung | erledigt |
 | 4 **Freigabe-Gate durch den Auftraggeber** | erledigt — Freigabe 2026-08-20, Commit `5c5ecde6c6f1b2eba67cd22e24b40b6439aebac4` (`docs/08_Freigabe_Schritt_4.md`) |
-| 5 Umsetzung | läuft. **Stand 2026-10-22:** R3-C-001 abgenommen; R3-Q-001 (DoD-Gate) abgenommen; R3-Q-010 (beide PreToolUse-Gates) abgenommen, Sammelposten: Posten 1 und 4 (main-Gate) sowie Posten 5 (beide Gates) abgenommen, Posten 2, 6 und Teil von Posten 7 am Prototyp-Gate gebaut und verifiziert (Abnahme durch Merge des Pull Requests #28), offen Posten 3, 8, 9, 10 (C4) und der Teil von Posten 7 am main-Gate (eigene Einheit vor der Freigabe des Grundgerüsts); R3-Q-011 abgenommen ohne `R3-Q-011_regel_im_startkontext`. **Prozess-Schnitt** auf Weisungen vom 2026-10-22 ("Ich vertraue dir und deinen super Fähigkeiten und gehen nach deiner Empfehlung"; "Nein, FFHS braucht es nicht, nach Übergangsfrist weg"; "Mach einfach, ich erlaube es dir. Vertraue dir."): PS-1 Regeln (dieser Stand), dann PS-2 Aufteilung von ADR 0002, PS-3 Backlog-Rahmen, PS-4 r3coscrum einfalten (Vorlage `docs/vorlagen/2026-10-22_prozess-schnitt.md`); danach C4, O-29, Freigabe des Grundgerüsts. **Nächste Einheit:** PS-2 nach dem Merge von PS-1. Verlauf, Weisungen und Abnahmen seit 2026-08-20: ADR 0002, Abschnitt 10 (Entscheidlog), `docs/05_Product_Backlog.md` (Nachführungen), `docs/uebergaben/`; die frühere Statuszeile liegt in git bis Commit `4a27245973ecbbc5d29b02d0bdfb4d8fa38935a7`. |
+| 5 Umsetzung | läuft. **Stand 2026-10-22:** R3-C-001 abgenommen; R3-Q-001 (DoD-Gate) abgenommen (Stand: ADR 0003, Teil A); R3-Q-010 (beide PreToolUse-Gates) abgenommen (Stand: ADR 0004, Teil A), Sammelposten: Posten 1 und 4 (main-Gate) sowie Posten 5 (beide Gates) abgenommen, Posten 2, 6 und Teil von Posten 7 am Prototyp-Gate abgenommen (Merge des Pull Requests #28 am 2026-10-22), offen Posten 3, 8, 9, 10 (C4) und der Teil von Posten 7 am main-Gate (eigene Einheit vor der Freigabe des Grundgerüsts); R3-Q-011 abgenommen ohne `R3-Q-011_regel_im_startkontext` (Stand: ADR 0005, Teil A). **Prozess-Schnitt** auf Weisungen vom 2026-10-22 ("Ich vertraue dir und deinen super Fähigkeiten und gehen nach deiner Empfehlung"; "Nein, FFHS braucht es nicht, nach Übergangsfrist weg"; "Mach einfach, ich erlaube es dir. Vertraue dir."): PS-1 Regeln angenommen (Merge des Pull Requests #29 am 2026-10-22), PS-2 Aufteilung von ADR 0002 gebaut und verifiziert (dieser Stand: 6.12 nach ADR 0003, 6.13 nach ADR 0004, 6.14 nach ADR 0005, je Teil A Stand und Teil B Entscheidlog; Annahme durch Merge des Pull Requests), dann PS-3 Backlog-Rahmen, PS-4 r3coscrum einfalten (Vorlage `docs/vorlagen/2026-10-22_prozess-schnitt.md`); danach C4, O-29, Freigabe des Grundgerüsts. **Nächste Einheit:** PS-3 nach dem Merge von PS-2. Verlauf, Weisungen und Abnahmen seit 2026-08-20: ADR 0002, Abschnitt 10 (Entscheidlog) und Abschnitt "Fortschreibungen", `docs/05_Product_Backlog.md` (Nachführungen), `docs/uebergaben/`; frühere Statuszeilen liegen in git bis Commit `4a27245973ecbbc5d29b02d0bdfb4d8fa38935a7` (lange Fassung) und bis Commit `287ddbafa1935711c66345241c7e51c5d587601a` (Fassung von PS-1). |
 
 - **Freigabe-Gate Schritt 4 erteilt, Architekturentscheid angenommen**
   (beides 2026-08-20). Gebaut wird entlang ADR 0002; Abweichungen davon nur
@@ -42,7 +42,7 @@ vorherige freigegeben ist.
 5. Jede Arbeitseinheit als Aufgabe führen: beim Beginn mit dem Aufgabenwerkzeug
    anlegen, beim Abschluss auf erledigt setzen. Nur dann feuert
    `TaskCompleted`, das einzige Ereignis, das die Definition of Done hart
-   erzwingt; ohne Aufgabe mahnt das Gate nur an (ADR 0002, 6.12.2, O-23,
+   erzwingt; ohne Aufgabe mahnt das Gate nur an (ADR 0003, Teil B, 6.12.2, O-23,
    Entscheid E-H).
 
 Am Ende jeder Sitzung den Stand in eine Übergabedatei schreiben, mit einem
@@ -134,50 +134,37 @@ Rückgabewert 2 blockiert; Rückgabewert 1 blockiert nicht (3.4).
 
 | Gate | Wirkung |
 |---|---|
-| `block-prototype-import.sh` | Blockiert Importe zwischen `prototype/` und Produktionscode in beide Richtungen (5.6), an den Dateiwerkzeugen und am Bash-Weg, mit Meldung, die 5.6 und die Richtung nennt. Stand 2026-10-22 (C3): vier Schreibweisen des Konstrukts in beiden Richtungen und JS-Zuweisungen mit Leerraum gesperrt; der blosse JS-Modulname `import("backend")` bleibt gewollt frei; jede Prüfung läuft fail-closed (`trifft` für grep, `schritt_geprueft` für sieben sed- und tr-Schritte, nicht auswertbare Eingabe), fehlendes `jq`, `grep`, `sed`, `tr` oder `timeout` sperrt; eigene Zeitgrenze 12 s plus 1 s Nachlauf durch Selbstaufruf unter `timeout`, Überschreitung und jeder andere Ausgang Rückgabewert 2. Offen, mit C4 terminiert: belegte Lücken Posten 3 (L09), Posten 8 (jq-Schritte ohne Prüfung des Rückgabewerts, SR-005) und Posten 9 (Formen ohne Anführungszeichen und Grossschreibung; `src=`/`href=` am Bash-Weg; SR-006); Prüfmittel-Reste Posten 10 (ohne Registereintrag). Prüfmittel `scripts/pretooluse-gates-selbsttest.sh`: 479 Fälle, 66 Mutationen, 39 Fallklassen, beide Modi Rückgabewert 0. Fallklassen, Preise, Grenzen und Entscheidlog: ADR 0002, 6.13 (bis PS-2, danach ADR 0004); frühere Fassung dieser Zeile in git bis Commit `4a27245973ecbbc5d29b02d0bdfb4d8fa38935a7`. |
-| `block-main-write.sh` | Blockiert Dateiänderungen auf main sowie Commit, Merge und Push nach main (3.2 c), auch über Zeilenfortsetzungen, Anführungszeichen, Befehlsketten und die Basename-Form von `worktree add`; eine nicht auswertbare Eingabe und fehlendes `jq`, `git`, `grep` oder `sed` sperren (Rückgabewert 2); ein Abbruch des Schreibers unter SIGPIPE gilt nicht als "kein Treffer", jeder andere Ausgang von `grep` sperrt. Stand 2026-10-21 (Posten 1, 4, 5 abgenommen): L01 bis L04, L17, L19, L20, L21 geschlossen; benannte Grenzen GM-5 bis GM-9 (Auswertung der Shell, Werkzeugname, Ausnahme am Text, Verb in Anführungszeichen, Operanden mit Trennern) und Preise in sicherer Richtung KM-14, KM-17. Offen: Teil von Posten 7 (keine eigene Zeitgrenze; 8 MB `&`-Zeile 14,22 s, über 15 s ab 9 MB; eigene Einheit vor der Freigabe des Grundgerüsts) und der Restpunkt DT-C2-G-01 (Umleitungsoperator mit `&` vor dem Pfad). Prüfmittel wie oben. Fallklassen, Preise, Grenzen und Entscheidlog: ADR 0002, 6.13 (bis PS-2, danach ADR 0004); frühere Fassung dieser Zeile in git bis Commit `4a27245973ecbbc5d29b02d0bdfb4d8fa38935a7`. |
-| `dod-gate.sh` | Lässt eine Antwort (`Stop`), einen Subagenten (`SubagentStop`) und eine Aufgabe (`TaskCompleted`) erst enden, wenn `make dod` im geprüften Arbeitsbaum nachweisbar gelaufen ist und nichts gefunden hat; Lagen C aus `dod-gate-terminierte-lagen.txt` werden mit Meldung geduldet (die Liste prüft sich selbst); dreimaliges Scheitern am gleichen Kriterium verlangt die Übergabedatei (3.4); Rollen ohne `Edit`, `Write` oder `NotebookEdit` prüft es nicht. Abgenommen am 2026-09-08 (Merge #15; ADR 0002, Abschnitt 10); nicht abgenommen ist der Belegprüfer D20 (O-15), R3-Q-005 ist nicht gebaut. Selbsttest `scripts/dod-gate-selbsttest.sh` mit 262 Zusicherungen, Pfad-, Grammatik- und Blockdeckung, Mutationsprobe `scripts/dod-gate-mutationen.txt` (`--mutationen`), Ausnahmedatei `.claude/hooks/dod-gate-pfadausnahmen.txt`; der Selbsttest liest ADR 0002, 6.12 mechanisch (bei PS-2 umzustellen). Entwurf, Nachträge, Abnahmekriterium und Restlücken: ADR 0002, 6.12 (bis PS-2, danach ADR 0003); frühere Fassung dieser Zeile in git bis Commit `4a27245973ecbbc5d29b02d0bdfb4d8fa38935a7`. |
+| `block-prototype-import.sh` | Blockiert Importe zwischen `prototype/` und Produktionscode in beide Richtungen (5.6), an den Dateiwerkzeugen und am Bash-Weg, mit Meldung, die 5.6 und die Richtung nennt. Stand 2026-10-22 (C3, abgenommen durch Merge des Pull Requests #28): vier Schreibweisen des Konstrukts in beiden Richtungen und JS-Zuweisungen mit Leerraum gesperrt; der blosse JS-Modulname `import("backend")` bleibt gewollt frei; jede Prüfung läuft fail-closed (`trifft` für grep, `schritt_geprueft` für sieben sed- und tr-Schritte, nicht auswertbare Eingabe), fehlendes `jq`, `grep`, `sed`, `tr` oder `timeout` sperrt; eigene Zeitgrenze 12 s plus 1 s Nachlauf durch Selbstaufruf unter `timeout`, Überschreitung und jeder andere Ausgang Rückgabewert 2. Offen, mit C4 terminiert: belegte Lücken Posten 3 (L09), Posten 8 (jq-Schritte ohne Prüfung des Rückgabewerts, SR-005) und Posten 9 (Formen ohne Anführungszeichen und Grossschreibung; `src=`/`href=` am Bash-Weg; SR-006); Prüfmittel-Reste Posten 10 (ohne Registereintrag). Prüfmittel `scripts/pretooluse-gates-selbsttest.sh`: 479 Fälle, 66 Mutationen, 39 Fallklassen, beide Modi Rückgabewert 0. Fallklassen, Preise, Grenzen, Posten und Restpunkte: ADR 0004, Teil A (Stand); Entscheidlog: ADR 0004, Teil B (vormals ADR 0002, 6.13); frühere Fassung dieser Zeile in git bis Commit `4a27245973ecbbc5d29b02d0bdfb4d8fa38935a7`. |
+| `block-main-write.sh` | Blockiert Dateiänderungen auf main sowie Commit, Merge und Push nach main (3.2 c), auch über Zeilenfortsetzungen, Anführungszeichen, Befehlsketten und die Basename-Form von `worktree add`; eine nicht auswertbare Eingabe und fehlendes `jq`, `git`, `grep` oder `sed` sperren (Rückgabewert 2); ein Abbruch des Schreibers unter SIGPIPE gilt nicht als "kein Treffer", jeder andere Ausgang von `grep` sperrt. Stand 2026-10-21 (Posten 1, 4, 5 abgenommen): L01 bis L04, L17, L19, L20, L21 geschlossen; benannte Grenzen GM-5 bis GM-9 (Auswertung der Shell, Werkzeugname, Ausnahme am Text, Verb in Anführungszeichen, Operanden mit Trennern) und Preise in sicherer Richtung KM-14, KM-17. Offen: Teil von Posten 7 (keine eigene Zeitgrenze; 8 MB `&`-Zeile 14,22 s, über 15 s ab 9 MB; eigene Einheit vor der Freigabe des Grundgerüsts) und der Restpunkt DT-C2-G-01 (Umleitungsoperator mit `&` vor dem Pfad). Prüfmittel wie oben. Fallklassen, Preise, Grenzen, Posten und Restpunkte: ADR 0004, Teil A (Stand); Entscheidlog: ADR 0004, Teil B (vormals ADR 0002, 6.13); frühere Fassung dieser Zeile in git bis Commit `4a27245973ecbbc5d29b02d0bdfb4d8fa38935a7`. |
+| `dod-gate.sh` | Lässt eine Antwort (`Stop`), einen Subagenten (`SubagentStop`) und eine Aufgabe (`TaskCompleted`) erst enden, wenn `make dod` im geprüften Arbeitsbaum nachweisbar gelaufen ist und nichts gefunden hat; Lagen C aus `dod-gate-terminierte-lagen.txt` werden mit Meldung geduldet (die Liste prüft sich selbst); dreimaliges Scheitern am gleichen Kriterium verlangt die Übergabedatei (3.4); Rollen ohne `Edit`, `Write` oder `NotebookEdit` prüft es nicht. Abgenommen am 2026-09-08 (Merge #15; ADR 0002, Abschnitt 10); nicht abgenommen ist der Belegprüfer D20 (O-15), R3-Q-005 ist nicht gebaut. Selbsttest `scripts/dod-gate-selbsttest.sh` mit 262 Zusicherungen, Pfad-, Grammatik- und Blockdeckung, Mutationsprobe `scripts/dod-gate-mutationen.txt` (`--mutationen`), Ausnahmedatei `.claude/hooks/dod-gate-pfadausnahmen.txt`; der Selbsttest liest ADR 0003, Teil B mechanisch (seit PS-2, 2026-10-22). Stand (Festlegungen, Entscheidpunkte, Abnahmekriterium, Restlücken): ADR 0003, Teil A; Entwurf und Nachträge: ADR 0003, Teil B (vormals ADR 0002, 6.12); frühere Fassung dieser Zeile in git bis Commit `4a27245973ecbbc5d29b02d0bdfb4d8fa38935a7`. |
 
-Daneben laufen drei `SessionStart`-Hooks, alle Kanal, kein Gate — sie
-blockieren nie. `session-start-eingang.sh` gibt den Eingang aus dem
-Methodik-Repository als Kontext mit (6.6). `session-start-git-historie.sh`
-holt bei flachem Klon die Git-Historie nach (`git fetch --unshallow` mit
-expliziter Refspec auf `refs/remotes/origin/*`, leerer Refmap
-`--refmap=''`, ohne Submodule und ohne Git-Hooks des Klons; schreibt nur in
-`.git/`, nie unter refs/heads/; ADR 0002, Abschnitt 10, E-F, Nachträge vom
-2026-09-22) — bleibt der Klon flach, meldet D20 Lage C.
-`session-start-gitleaks.sh` stellt `gitleaks` 8.21.2 bereit, wenn es fehlt:
-Release-Archiv gegen den im Skript
-gepinnten SHA-256-Wert **und** gegen die veröffentlichte Prüfsummendatei
-geprüft, sonst keine Installation; nur `linux_x64` ist gepinnt (ADR 0002,
-Abschnitt 10, E-E, Nachtrag vom 2026-09-22 auf Weisung "gitleaks permanent
-einbauen bitte."). Liegt zum Prüfzeitpunkt, vor jedem Download, unter einem
-Zielverzeichnis bereits ein Eintrag `gitleaks`, lädt der Hook nichts und
-ersetzt nichts; Zielverzeichnisse im PATH kommen zuerst, `curl` läuft ohne
-`.curlrc` und ohne `SSLKEYLOGFILE`. Fehlt `gitleaks` trotzdem, meldet D11 Lage C: der Hook ist
-Bereitstellung, die Kette bleibt das Prüfmittel.
+Daneben laufen drei `SessionStart`-Hooks, alle Kanal, kein Gate — sie blockieren
+nie. `session-start-eingang.sh` gibt den Eingang aus dem Methodik-Repository als
+Kontext mit (6.6; Abbau mit PS-4 nach der Vorlage).
+`session-start-git-historie.sh` holt bei flachem Klon die Git-Historie nach
+(schreibt nur in `.git/`, nie unter refs/heads/; bleibt der Klon flach, meldet D20
+Lage C). `session-start-gitleaks.sh` stellt `gitleaks` 8.21.2 bereit, wenn es
+fehlt (Release-Archiv gegen den gepinnten SHA-256-Wert und die veröffentlichte
+Prüfsummendatei geprüft, nur `linux_x64`; ein vorhandener Eintrag wird nie
+ersetzt; fehlt `gitleaks` trotzdem, meldet D11 Lage C). Einzelheiten und Weisung:
+ADR 0002, Abschnitt 10, E-E und E-F mit Nachträgen vom 2026-09-22.
 
-Alle drei Gates setzen `jq` voraus, das main-Gate und das DoD-Gate auch `git`.
-Fehlt eines, blockieren sie mit einer Meldung, statt stillschweigend
-durchzulassen. Seit Posten 5 (2026-10-21) setzen beide PreToolUse-Gates auch
-`grep` voraus, das main-Gate seit Posten 4 auch `sed`; fehlt eines, blockieren
-sie mit Meldung (Rückgabewert 2). Am Prototyp-Gate gilt das für `sed` und
-`tr` noch nicht (Posten 6). Ein Hook, der die Zeitgrenze aus `settings.json` reisst, wird
-abgebrochen und lässt durch; das DoD-Gate zieht deshalb im Skript eine eigene,
-kürzere Grenze (ADR 0002, 6.12.12). Das DoD-Gate stützt sich auf die ganze
-Kette und damit auf den nicht abgenommenen Belegprüfer (D20, O-15); die harte
-Zusicherung trägt allein `TaskCompleted`, und das nur, wenn die Arbeitseinheit
-als Aufgabe geführt wird (O-23).
-Nachtrag vom 2026-10-22: Seit C3 sperrt auch das Prototyp-Gate bei fehlendem
-`sed`, `tr` oder `timeout` mit Meldung (Rückgabewert 2) und zieht eine eigene
-Zeitgrenze von 12 s im Skript; der Satz zu `sed` und `tr` am Prototyp-Gate oben
-ist Stand vom 2026-10-21. Das main-Gate bleibt ohne eigene Zeitgrenze (Teil von
-Posten 7, eigene Einheit vor der Freigabe des Grundgerüsts).
+Alle drei Gates setzen `jq` voraus, das main-Gate und das DoD-Gate auch `git`,
+beide PreToolUse-Gates auch `grep`, das main-Gate `sed`, das Prototyp-Gate `sed`,
+`tr` und `timeout`; fehlt eines, blockieren sie mit Meldung (Rückgabewert 2),
+statt stillschweigend durchzulassen (Stand 2026-10-22, ADR 0003, Teil A, G10; ADR 0004, Teil A). Ein
+Hook, der die Zeitgrenze aus `settings.json` reisst, wird abgebrochen und lässt
+durch; das DoD-Gate und das Prototyp-Gate ziehen deshalb im Skript eine eigene,
+kürzere Grenze (ADR 0003, Teil B, 6.12.12; ADR 0004, Teil A), das main-Gate noch
+nicht (Teil von Posten 7, eigene Einheit vor der Freigabe des Grundgerüsts). Das
+DoD-Gate stützt sich auf die ganze Kette und damit auf den nicht abgenommenen
+Belegprüfer (D20, O-15); die harte Zusicherung trägt allein `TaskCompleted`, und
+das nur, wenn die Arbeitseinheit als Aufgabe geführt wird (O-23).
 
 **Noch nicht vorhanden:** die harte Durchsetzung der Rollen-Schreibgrenzen
 (R3-Q-005, stackunabhängig, Etappe 0). Das DoD-Gate misst über das
 `tools`-Feld das Recht einer Rolle, nicht ihre Fähigkeit: Eine Rolle mit `Bash`
-und ohne `Edit`/`Write` könnte schreiben und darf es nicht (ADR 0002,
+und ohne `Edit`/`Write` könnte schreiben und darf es nicht (ADR 0003, Teil B,
 6.12.14). Die Terminierung von R3-Q-005 ist auf Weisung vom 2026-08-20 in
 ADR 0001 fortgeschrieben und bleibt am Freigabe-Gate als Entscheid E-02
 überprüfbar (`docs/08_Freigabe_Schritt_4.md`).
@@ -187,20 +174,23 @@ ADR 0001 fortgeschrieben und bleibt am Freigabe-Gate als Entscheid E-02
 | Thema | Ort |
 |---|---|
 | Definition of Ready und Done | `docs/06_Definition_of_Ready_und_Done.md` |
-| Ziel-Stack, Modulschnitt, DoD-Befehle | `docs/adr/0002-architekturentscheid-ziel-stack.md` |
+| Ziel-Stack, Modulschnitt, DoD-Befehle; Entscheidlog (Abschnitt 10) und Tabelle "Fortschreibungen" | `docs/adr/0002-architekturentscheid-ziel-stack.md` |
+| Definition-of-Done-Gate (R3-Q-001): Stand (Teil A) und Entscheidlog (Teil B, vormals ADR 0002, 6.12) | `docs/adr/0003-definition-of-done-gate.md` |
+| PreToolUse-Gates und Prüfmittel (R3-Q-010): Stand (Teil A) und Entscheidlog (Teil B, vormals ADR 0002, 6.13) | `docs/adr/0004-pretooluse-gates.md` |
+| Fremde Inhalte im Harness (R3-Q-011): Stand (Teil A) und Entscheidlog (Teil B, vormals ADR 0002, 6.14) | `docs/adr/0005-fremde-inhalte-im-harness.md` |
 | Prototyp und synthetische Daten | `.claude/rules/prototyp.md` |
 | Verfahrensgarantien, Protokoll, Klassifizierung | `.claude/rules/produktionscode.md` |
 | ADR, Nachweise, Verfolgbarkeit, Glossar | `.claude/rules/dokumentation.md` |
 | Rechtsregime, Aufbewahrung, Belegpflicht | `.claude/rules/recht-und-datenschutz.md` |
 | Rollendateien, Hooks, Mechanismen | `.claude/rules/claude-konfiguration.md` |
-| Prüfmittel der beiden PreToolUse-Gates (Fallliste, Mutationsmodus `--mutationen`) | `scripts/pretooluse-gates-selbsttest.sh`; Festlegung in ADR 0002, 6.13 d, Bau in 6.13 (Nachtrag vom 2026-09-23); Abnahme in ADR 0002, Abschnitt 10; Prüfstand-Fälle in ADR 0002, 6.13 c (Nachtrag vom 2026-09-23); Posten 1 (main-Gate) gebaut und verifiziert am 2026-10-14, Posten 4 und 5 erfasst: ADR 0002, 6.13 Status-Block und 6.13 c, je Nachtrag vom 2026-10-14; Posten 4 und 5 gebaut und verifiziert am 2026-10-21, Posten 6 und 7 erfasst: ADR 0002, 6.13 Status-Block und 6.13 c, je Nachtrag vom 2026-10-21; Backlog-Sammelposten unter R3-Q-010 |
-| DoD-Gate, terminierte Lagen C, Selbsttest, Mutationsprobe | `.claude/hooks/dod-gate.sh`, `.claude/hooks/dod-gate-terminierte-lagen.txt`, `scripts/dod-gate-selbsttest.sh`, `scripts/dod-gate-mutationen.txt`; Entwurf und Nachträge in ADR 0002, 6.12 (Prädikatbindung, Schlüssel-, Gegenstands-, Grammatik- und Aussagendeckung, Abnahmekriterium und O-27 in 6.12.27); Abnahme in ADR 0002, Abschnitt 10; E4 (die beiden PreToolUse-Gates, R3-Q-010) in ADR 0002, 6.13 |
+| Prüfmittel der beiden PreToolUse-Gates (Fallliste, Mutationsmodus `--mutationen`) | `scripts/pretooluse-gates-selbsttest.sh`; Stand (Fallklassen, Grenzen, Preise, Posten 1 bis 10, Restpunkte, Abnahmen, Zahlen mit Datum): ADR 0004, Teil A; Festlegung 6.13 a bis g, Bau und Nachträge vom 2026-09-23 bis 2026-10-22: ADR 0004, Teil B (vormals ADR 0002, 6.13); Abnahmen: ADR 0002, Abschnitt 10; Backlog-Sammelposten unter R3-Q-010 |
+| DoD-Gate, terminierte Lagen C, Selbsttest, Mutationsprobe | `.claude/hooks/dod-gate.sh`, `.claude/hooks/dod-gate-terminierte-lagen.txt`, `scripts/dod-gate-selbsttest.sh`, `scripts/dod-gate-mutationen.txt`; Stand (Festlegungen, Entscheidpunkte E-A bis E-K, Abnahmekriterium, Restlücken, offene Punkte): ADR 0003, Teil A; Entwurf und Nachträge (Prädikatbindung, Schlüssel-, Gegenstands-, Grammatik- und Aussagendeckung, Abnahmekriterium und O-27 in 6.12.27, Deckung am Gegenstand in 6.12.28): ADR 0003, Teil B (vormals ADR 0002, 6.12); Abnahme: ADR 0002, Abschnitt 10 |
 | Bereitstellung von `gitleaks` und der Git-Historie beim Sitzungsstart | `.claude/hooks/session-start-gitleaks.sh`, `.claude/hooks/session-start-git-historie.sh`; Entscheide E-E und E-F mit Nachträgen vom 2026-09-22 in ADR 0002, Abschnitt 10; Hook-Regel in `.claude/rules/claude-konfiguration.md` |
 | Versionsschilder, Meilensteine, Nachweisfluss | `.claude/rules/versionierung-und-nachweisfluss.md` |
 | Rechte je Rolle | `docs/adr/0001-rollenmodell.md` |
 | Prozess-Schnitt (Weisungen vom 2026-10-22): Zerlegung PS-1 bis PS-4, Entscheide E-PS-1 bis E-PS-5, Anhänge der Rollen | `docs/vorlagen/2026-10-22_prozess-schnitt.md`, `docs/vorlagen/2026-10-22_prozess-schnitt/` |
-| Fremde Inhalte im Harness — E3 (R3-Q-011): Regel (gebaut mit E3.1), Skill zur Einschleusungsprüfung und Rollenliste (gebaut mit E3.2), Prüfsatz (angelegt und gefahren mit E3.3), Schnitt E3.1 bis E3.3 | `.claude/rules/fremde-inhalte-im-harness.md` (ohne `paths:`); `.claude/skills/einschleusung-pruefen/SKILL.md`; Prüfsatz `scripts/einschleusung-pruefsatz/` (Inhalte unter `scripts/einschleusung-pruefsatz/inhalte/`, getrennt davon die Sollliste); Zuordnung in ADR 0001, Abschnitt 5.1; ADR 0002, 6.14; Backlog-Eintrag R3-Q-011 in `docs/05_Product_Backlog.md`; Begriffe Einschleusung, Fremder Inhalt und Harness in `docs/03_Glossar.md` |
-| Schwachstellenregister (Projektauftrag 4.2): Kennung SR-nnn, CWE, CVSS 3.1, Status und Fälligkeit je Eintrag; Pflege nur durch den Vulnerability Manager; angelegt am 2026-10-21 mit SR-001 (Umgehung beider PreToolUse-Gates durch grosse Eingabe, Posten 5), SR-002 (quadratische Entfernung der Zeilenfortsetzungen seit Posten 1, in C2 gebaut und verifiziert, Status in Behebung bis zum Commit), SR-003 (keine eigene Zeitgrenze der Gates, Posten 7) und SR-004 (Posten 6, Bewertung mit dem Bau); Nachtrag vom 2026-10-21: SR-001 und SR-002 nach dem Merge des Pull Requests #27 behoben mit Nachweis (Merge-Commit `998f81d9fffe3970baf870d04e44576eda534fcc`), SR-003 und SR-004 unverändert offen (SR-004 fällig mit C3, SR-003 mit der nächsten Änderung am jeweiligen Gate, spätestens vor der Freigabe des Grundgerüsts); Nachtrag vom 2026-10-22: SR-004 bewertet (CVSS 3.1 Basiswert 4.7) und SR-003 (Prototyp-Teil) mit C3 in Behebung bis zum Commit, main-Gate-Teil von SR-003 offen; neu SR-005 (Posten 8) und SR-006 (Posten 9), offen, fällig mit C4 | `docs/11_Schwachstellenregister.md` |
+| Fremde Inhalte im Harness — E3 (R3-Q-011): Regel (gebaut mit E3.1), Skill zur Einschleusungsprüfung und Rollenliste (gebaut mit E3.2), Prüfsatz (angelegt und gefahren mit E3.3), Schnitt E3.1 bis E3.3 | `.claude/rules/fremde-inhalte-im-harness.md` (ohne `paths:`); `.claude/skills/einschleusung-pruefen/SKILL.md`; Prüfsatz `scripts/einschleusung-pruefsatz/` (Inhalte unter `scripts/einschleusung-pruefsatz/inhalte/`, getrennt davon die Sollliste); Zuordnung in ADR 0001, Abschnitt 5.1; ADR 0005 (Teil A Stand, Teil B Entscheidlog, vormals ADR 0002, 6.14); Backlog-Eintrag R3-Q-011 in `docs/05_Product_Backlog.md`; Begriffe Einschleusung, Fremder Inhalt und Harness in `docs/03_Glossar.md` |
+| Schwachstellenregister (Projektauftrag 4.2): Kennung SR-nnn, CWE, CVSS 3.1, Status und Fälligkeit je Eintrag; Pflege nur durch den Vulnerability Manager; angelegt am 2026-10-21 mit SR-001 (Umgehung beider PreToolUse-Gates durch grosse Eingabe, Posten 5), SR-002 (quadratische Entfernung der Zeilenfortsetzungen seit Posten 1, in C2 gebaut und verifiziert, Status in Behebung bis zum Commit), SR-003 (keine eigene Zeitgrenze der Gates, Posten 7) und SR-004 (Posten 6, Bewertung mit dem Bau); Nachtrag vom 2026-10-21: SR-001 und SR-002 nach dem Merge des Pull Requests #27 behoben mit Nachweis (Merge-Commit `998f81d9fffe3970baf870d04e44576eda534fcc`), SR-003 und SR-004 unverändert offen (SR-004 fällig mit C3, SR-003 mit der nächsten Änderung am jeweiligen Gate, spätestens vor der Freigabe des Grundgerüsts); Nachtrag vom 2026-10-22: SR-004 bewertet (CVSS 3.1 Basiswert 4.7) und SR-003 (Prototyp-Teil) mit C3 in Behebung bis zum Commit, main-Gate-Teil von SR-003 offen; neu SR-005 (Posten 8) und SR-006 (Posten 9), offen, fällig mit C4; Nachtrag vom 2026-10-22 (nach dem Merge des Pull Requests #28, Merge-Commit `95cafc9cc31773a6c29d977ec9c3b97af5a1f047`): SR-004 und der Prototyp-Teil von SR-003 behoben mit Nachweis, offen SR-003 (main-Gate-Teil), SR-005 und SR-006 | `docs/11_Schwachstellenregister.md` |
 
 ## Sprache
 
