@@ -30,6 +30,7 @@ docs/uebergaben/2026-08-20_r3-c-001-freigabe-und-nachfuehrung.md|docs/06	Kurzfor
 
 # --- Kennung, die es nie gab (Befund V-01, docs/08_Freigabe_Schritt_4.md) ---
 docs/05_Product_Backlog.md|R3-C-020	Kennung, die es im Backlog nie gab; der Verweis darauf ist die dokumentierte Beschreibung eines behobenen Fehlers, keine neue Fehlangabe.
+docs/archiv/05_Product_Backlog_bis_2026-10-22.md|R3-C-020	Kennung, die es im Backlog nie gab; der Verweis darauf ist die dokumentierte Beschreibung eines behobenen Fehlers, keine neue Fehlangabe; gilt ebenso fuer den eingefrorenen Stand unter docs/archiv/ (PS-3, 2026-10-26).
 docs/08_Freigabe_Schritt_4.md|R3-C-020	Kennung, die es im Backlog nie gab; der Verweis darauf ist die dokumentierte Beschreibung eines behobenen Fehlers, keine neue Fehlangabe.
 docs/uebergaben/2026-08-19_schritt-4-freigabe-gate.md|R3-C-020	Kennung, die es im Backlog nie gab; der Verweis darauf ist die dokumentierte Beschreibung eines behobenen Fehlers, keine neue Fehlangabe.
 docs/uebergaben/2026-08-20_befunde-vorpruefung.md|R3-C-020	Kennung, die es im Backlog nie gab; der Verweis darauf ist die dokumentierte Beschreibung eines behobenen Fehlers, keine neue Fehlangabe.
@@ -37,7 +38,9 @@ docs/uebergaben/2026-08-20_befunde-vorpruefung.md|R3-C-020	Kennung, die es im Ba
 # --- Absichtlich noch nicht vorhandene Artefakte --------------------------
 docs/00_Projektauftrag.md|nachweise/abzug/	Wird erst bei der Abgabe erzeugt, auf ein besonderes Versionsschild hin (6.6). Vorher darf das Verzeichnis nicht bestehen.
 docs/05_Product_Backlog.md|docs/datenschutz/	Entsteht mit R3-C-012 (Bearbeitungsverzeichnis und Loeschnachweis).
+docs/archiv/05_Product_Backlog_bis_2026-10-22.md|docs/datenschutz/	Entsteht mit R3-C-012 (Bearbeitungsverzeichnis und Loeschnachweis); gilt ebenso fuer den eingefrorenen Stand unter docs/archiv/ (PS-3, 2026-10-26).
 docs/05_Product_Backlog.md|docs/konformitaet/	Entsteht mit R3-C-013 (dokumentierte Konformitaetsanalyse).
+docs/archiv/05_Product_Backlog_bis_2026-10-22.md|docs/konformitaet/	Entsteht mit R3-C-013 (dokumentierte Konformitaetsanalyse); gilt ebenso fuer den eingefrorenen Stand unter docs/archiv/ (PS-3, 2026-10-26).
 docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/abnahme-abgleich.sh	Folgt mit dem Grundgeruest (D7). Bis dahin meldet D7 der Kette Lage C -- der belegte und gewollte Zustand.
 docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/rueckkanal-pruefen.sh	Folgt mit R3-C-004. Bis dahin meldet D9 Lage C.
 docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/prototyp-trennung-pruefen.sh	Folgt mit dem Grundgeruest; Betriebsart und Form sind als O-8 offen. Bis dahin meldet D10 Lage C.
@@ -57,6 +60,7 @@ docs/uebergaben/2026-09-02_r3-q-001-gate-gebaut.md|scripts/nachweise-vollstaendi
 # --- Gegenstaende ausserhalb dieses Repositories --------------------------
 docs/vorlagen/2026-08-29_werkzeugvorschlag-cas-blockwoche.md|spiderfoot/correlation.py	Pfad innerhalb eines fremden Programms, genannt im Werkzeugvorschlag. Kein Gegenstand dieses Repositories.
 docs/05_Product_Backlog.md|882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf	Commit des angebundenen fremden Repositories valITino/claude-skills-fullstack. Dieses Skript kennt nur Objekte der beiden eigenen Arbeitsbaeume.
+docs/archiv/05_Product_Backlog_bis_2026-10-22.md|882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf	Commit des angebundenen fremden Repositories valITino/claude-skills-fullstack. Dieses Skript kennt nur Objekte der beiden eigenen Arbeitsbaeume; gilt ebenso fuer den eingefrorenen Stand unter docs/archiv/ (PS-3, 2026-10-26).
 docs/uebergaben/2026-08-31_skill-repository-ausgewertet.md|882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf	Commit des angebundenen fremden Repositories valITino/claude-skills-fullstack. Dieses Skript kennt nur Objekte der beiden eigenen Arbeitsbaeume.
 docs/uebergaben/2026-08-25_automatik-gehaertet.md|11d5960a326750d5838078e36cf38b85af677262	Gepinnter Commit der fremden GitHub-Action actions/checkout. Genau so verlangt es 6.6 -- ein Zweigname waere hier der Fehler.
 docs/uebergaben/2026-08-25_eingangskanal-abgesichert.md|11d5960a326750d5838078e36cf38b85af677262	Gepinnter Commit der fremden GitHub-Action actions/checkout. Genau so verlangt es 6.6 -- ein Zweigname waere hier der Fehler.
