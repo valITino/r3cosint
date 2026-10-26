@@ -138,46 +138,33 @@ Rückgabewert 2 blockiert; Rückgabewert 1 blockiert nicht (3.4).
 | `block-main-write.sh` | Blockiert Dateiänderungen auf main sowie Commit, Merge und Push nach main (3.2 c), auch über Zeilenfortsetzungen, Anführungszeichen, Befehlsketten und die Basename-Form von `worktree add`; eine nicht auswertbare Eingabe und fehlendes `jq`, `git`, `grep` oder `sed` sperren (Rückgabewert 2); ein Abbruch des Schreibers unter SIGPIPE gilt nicht als "kein Treffer", jeder andere Ausgang von `grep` sperrt. Stand 2026-10-21 (Posten 1, 4, 5 abgenommen): L01 bis L04, L17, L19, L20, L21 geschlossen; benannte Grenzen GM-5 bis GM-9 (Auswertung der Shell, Werkzeugname, Ausnahme am Text, Verb in Anführungszeichen, Operanden mit Trennern) und Preise in sicherer Richtung KM-14, KM-17. Offen: Teil von Posten 7 (keine eigene Zeitgrenze; 8 MB `&`-Zeile 14,22 s, über 15 s ab 9 MB; eigene Einheit vor der Freigabe des Grundgerüsts) und der Restpunkt DT-C2-G-01 (Umleitungsoperator mit `&` vor dem Pfad). Prüfmittel wie oben. Fallklassen, Preise, Grenzen, Posten und Restpunkte: ADR 0004, Teil A (Stand); Entscheidlog: ADR 0004, Teil B (vormals ADR 0002, 6.13); frühere Fassung dieser Zeile in git bis Commit `4a27245973ecbbc5d29b02d0bdfb4d8fa38935a7`. |
 | `dod-gate.sh` | Lässt eine Antwort (`Stop`), einen Subagenten (`SubagentStop`) und eine Aufgabe (`TaskCompleted`) erst enden, wenn `make dod` im geprüften Arbeitsbaum nachweisbar gelaufen ist und nichts gefunden hat; Lagen C aus `dod-gate-terminierte-lagen.txt` werden mit Meldung geduldet (die Liste prüft sich selbst); dreimaliges Scheitern am gleichen Kriterium verlangt die Übergabedatei (3.4); Rollen ohne `Edit`, `Write` oder `NotebookEdit` prüft es nicht. Abgenommen am 2026-09-08 (Merge #15; ADR 0002, Abschnitt 10); nicht abgenommen ist der Belegprüfer D20 (O-15), R3-Q-005 ist nicht gebaut. Selbsttest `scripts/dod-gate-selbsttest.sh` mit 262 Zusicherungen, Pfad-, Grammatik- und Blockdeckung, Mutationsprobe `scripts/dod-gate-mutationen.txt` (`--mutationen`), Ausnahmedatei `.claude/hooks/dod-gate-pfadausnahmen.txt`; der Selbsttest liest ADR 0003, Teil B mechanisch (seit PS-2, 2026-10-22). Stand (Festlegungen, Entscheidpunkte, Abnahmekriterium, Restlücken): ADR 0003, Teil A; Entwurf und Nachträge: ADR 0003, Teil B (vormals ADR 0002, 6.12); frühere Fassung dieser Zeile in git bis Commit `4a27245973ecbbc5d29b02d0bdfb4d8fa38935a7`. |
 
-Daneben laufen drei `SessionStart`-Hooks, alle Kanal, kein Gate — sie
-blockieren nie. `session-start-eingang.sh` gibt den Eingang aus dem
-Methodik-Repository als Kontext mit (6.6). `session-start-git-historie.sh`
-holt bei flachem Klon die Git-Historie nach (`git fetch --unshallow` mit
-expliziter Refspec auf `refs/remotes/origin/*`, leerer Refmap
-`--refmap=''`, ohne Submodule und ohne Git-Hooks des Klons; schreibt nur in
-`.git/`, nie unter refs/heads/; ADR 0002, Abschnitt 10, E-F, Nachträge vom
-2026-09-22) — bleibt der Klon flach, meldet D20 Lage C.
-`session-start-gitleaks.sh` stellt `gitleaks` 8.21.2 bereit, wenn es fehlt:
-Release-Archiv gegen den im Skript
-gepinnten SHA-256-Wert **und** gegen die veröffentlichte Prüfsummendatei
-geprüft, sonst keine Installation; nur `linux_x64` ist gepinnt (ADR 0002,
-Abschnitt 10, E-E, Nachtrag vom 2026-09-22 auf Weisung "gitleaks permanent
-einbauen bitte."). Liegt zum Prüfzeitpunkt, vor jedem Download, unter einem
-Zielverzeichnis bereits ein Eintrag `gitleaks`, lädt der Hook nichts und
-ersetzt nichts; Zielverzeichnisse im PATH kommen zuerst, `curl` läuft ohne
-`.curlrc` und ohne `SSLKEYLOGFILE`. Fehlt `gitleaks` trotzdem, meldet D11 Lage C: der Hook ist
-Bereitstellung, die Kette bleibt das Prüfmittel.
+Daneben laufen drei `SessionStart`-Hooks, alle Kanal, kein Gate — sie blockieren
+nie. `session-start-eingang.sh` gibt den Eingang aus dem Methodik-Repository als
+Kontext mit (6.6; Abbau mit PS-4 nach der Vorlage).
+`session-start-git-historie.sh` holt bei flachem Klon die Git-Historie nach
+(schreibt nur in `.git/`, nie unter refs/heads/; bleibt der Klon flach, meldet D20
+Lage C). `session-start-gitleaks.sh` stellt `gitleaks` 8.21.2 bereit, wenn es
+fehlt (Release-Archiv gegen den gepinnten SHA-256-Wert und die veröffentlichte
+Prüfsummendatei geprüft, nur `linux_x64`; ein vorhandener Eintrag wird nie
+ersetzt; fehlt `gitleaks` trotzdem, meldet D11 Lage C). Einzelheiten und Weisung:
+ADR 0002, Abschnitt 10, E-E und E-F mit Nachträgen vom 2026-09-22.
 
-Alle drei Gates setzen `jq` voraus, das main-Gate und das DoD-Gate auch `git`.
-Fehlt eines, blockieren sie mit einer Meldung, statt stillschweigend
-durchzulassen. Seit Posten 5 (2026-10-21) setzen beide PreToolUse-Gates auch
-`grep` voraus, das main-Gate seit Posten 4 auch `sed`; fehlt eines, blockieren
-sie mit Meldung (Rückgabewert 2). Am Prototyp-Gate gilt das für `sed` und
-`tr` noch nicht (Posten 6). Ein Hook, der die Zeitgrenze aus `settings.json` reisst, wird
-abgebrochen und lässt durch; das DoD-Gate zieht deshalb im Skript eine eigene,
-kürzere Grenze (ADR 0003, Teil B, 6.12.12). Das DoD-Gate stützt sich auf die ganze
-Kette und damit auf den nicht abgenommenen Belegprüfer (D20, O-15); die harte
-Zusicherung trägt allein `TaskCompleted`, und das nur, wenn die Arbeitseinheit
-als Aufgabe geführt wird (O-23).
-Nachtrag vom 2026-10-22: Seit C3 sperrt auch das Prototyp-Gate bei fehlendem
-`sed`, `tr` oder `timeout` mit Meldung (Rückgabewert 2) und zieht eine eigene
-Zeitgrenze von 12 s im Skript; der Satz zu `sed` und `tr` am Prototyp-Gate oben
-ist Stand vom 2026-10-21. Das main-Gate bleibt ohne eigene Zeitgrenze (Teil von
-Posten 7, eigene Einheit vor der Freigabe des Grundgerüsts).
+Alle drei Gates setzen `jq` voraus, das main-Gate und das DoD-Gate auch `git`,
+beide PreToolUse-Gates auch `grep`, das main-Gate `sed`, das Prototyp-Gate `sed`,
+`tr` und `timeout`; fehlt eines, blockieren sie mit Meldung (Rückgabewert 2),
+statt stillschweigend durchzulassen (Stand 2026-10-22, ADR 0003, Teil A, G10; ADR 0004, Teil A). Ein
+Hook, der die Zeitgrenze aus `settings.json` reisst, wird abgebrochen und lässt
+durch; das DoD-Gate und das Prototyp-Gate ziehen deshalb im Skript eine eigene,
+kürzere Grenze (ADR 0003, Teil B, 6.12.12; ADR 0004, Teil A), das main-Gate noch
+nicht (Teil von Posten 7, eigene Einheit vor der Freigabe des Grundgerüsts). Das
+DoD-Gate stützt sich auf die ganze Kette und damit auf den nicht abgenommenen
+Belegprüfer (D20, O-15); die harte Zusicherung trägt allein `TaskCompleted`, und
+das nur, wenn die Arbeitseinheit als Aufgabe geführt wird (O-23).
 
 **Noch nicht vorhanden:** die harte Durchsetzung der Rollen-Schreibgrenzen
 (R3-Q-005, stackunabhängig, Etappe 0). Das DoD-Gate misst über das
 `tools`-Feld das Recht einer Rolle, nicht ihre Fähigkeit: Eine Rolle mit `Bash`
-und ohne `Edit`/`Write` könnte schreiben und darf es nicht (ADR 0002,
+und ohne `Edit`/`Write` könnte schreiben und darf es nicht (ADR 0003, Teil B,
 6.12.14). Die Terminierung von R3-Q-005 ist auf Weisung vom 2026-08-20 in
 ADR 0001 fortgeschrieben und bleibt am Freigabe-Gate als Entscheid E-02
 überprüfbar (`docs/08_Freigabe_Schritt_4.md`).
