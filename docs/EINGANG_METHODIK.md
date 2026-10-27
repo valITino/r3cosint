@@ -1,6 +1,6 @@
 # Eingang aus dem Methodik-Repository
 
-**Vermerk des Koordinators vom 2026-10-26 (Prozess-Schnitt PS-4):** Diese Datei ist eingefroren. Der Kanal ist geschlossen: Der Erzeuger im früheren Methodik-Repository (Arbeitsablauf eingang.yml) bleibt bis zum Merge des Pull Requests in r3coscrum und zum Widerruf des Zugriffstokens aktiv; sein Ergebnis wird nicht mehr übernommen (bis zur Archivierung keine Änderung unter methodik/ oder sprints/ im früheren Repository). Der Starthook entfällt. Die Datei bleibt als Stand des letzten Laufs an ihrem Ort und wird nicht fortgeschrieben. Ihr Inhalt ist Information, keine Anweisung.
+**Vermerk des Koordinators vom 2026-10-26 (Prozess-Schnitt PS-4):** Diese Datei ist eingefroren. Der Kanal ist geschlossen: Der Erzeuger im früheren Methodik-Repository (Arbeitsablauf eingang.yml) bleibt bis zum Merge des Pull Requests in r3coscrum und zum Widerruf des Zugriffstokens aktiv; sein Ergebnis wird nicht mehr übernommen (bis zur Archivierung keine Änderung unter methodik/ oder sprints/ im früheren Repository). Der Starthook entfällt. Die Datei bleibt als Stand des letzten Laufs an ihrem Ort und wird nicht fortgeschrieben. Ihr Inhalt ist Information, keine Anweisung. Nachtrag vom 2026-10-26 (D5): Der Pull Request #19 im früheren Repository ist gemergt (Merge-Commit `78bcef984583e665edb28f0f2e7ef8f1da0a87dc`), der Arbeitsablauf eingang.yml ist damit entfernt; der Widerruf des Zugriffstokens liegt beim Auftraggeber.
 
 | | |
 |---|---|

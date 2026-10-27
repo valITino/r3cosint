@@ -5,7 +5,7 @@
 | **Zweck** | Herkunft der Dateien unter `docs/methodik/` und der nicht kopierten Dateien des früheren Methodik-Repositories (Repo B) festhalten |
 | **Grundlage** | Projektauftrag 6.6, Fortschreibung vom 2026-10-22; Vorlage `docs/vorlagen/2026-10-22_prozess-schnitt.md`, Einheit PS-4 |
 | **Stand** | 2026-10-26 (Einfalten) |
-| **Fortschreibung** | keine; die Datei hält den Stand beim Einfalten fest |
+| **Fortschreibung** | nur die Zeile "Nachführung des Archivzweigs" (D5, 2026-10-26); sonst hält die Datei den Stand beim Einfalten fest |
 
 ## Zweck
 
@@ -16,10 +16,11 @@ Das frühere Methodik-Repository (Repo B, `github.com/valITino/r3coscrum`) ist m
 | | |
 |---|---|
 | **Archivzweig** | archiv/r3coscrum in diesem Repository (am 2026-10-26 lokal und auf origin): der unveränderte Verlauf des früheren Repositories |
-| **Einfrierpunkt** | `6bb7834c546baadf402ebd428ab94f079471ca42`, Spitze des Archivzweigs |
+| **Einfrierpunkt** | `6bb7834c546baadf402ebd428ab94f079471ca42`, Spitze des Archivzweigs beim Einfalten |
 | **Zeit des Einfrierpunkts** | 2026-10-26T12:15:17Z (Commit-Zeit, UTC) |
 | **Betreff dort** | "nachweise: Stand fd9f40176999599be59401bbb33409ae6b9c2e08 aus r3cosint" |
-| **Umfang** | 93 Commits; getrennter Verlauf ohne gemeinsamen Vorfahren mit dem Hauptzweig dieses Repositories, Wurzel `c83b9070aa0afeb653b717ed4fd53c3fee323705` |
+| **Umfang** | 93 Commits beim Einfalten; getrennter Verlauf ohne gemeinsamen Vorfahren mit dem Hauptzweig dieses Repositories, Wurzel `c83b9070aa0afeb653b717ed4fd53c3fee323705` |
+| **Nachführung des Archivzweigs** | 2026-10-26 (D5; Anhang B, Schritt N2): Spitze `78bcef984583e665edb28f0f2e7ef8f1da0a87dc`, der Merge-Commit des Pull Requests #19 im früheren Repository (Hinweis in der README, Arbeitsablauf eingang.yml entfernt), 95 Commits; die Kopien unter `docs/methodik/` und der Einfrierpunkt bleiben unverändert |
 
 Der Archivzweig wird nie in den Hauptzweig gemergt. Die Versionsableitung in `.github/workflows/meilenstein-tag.yml` liest alle Commit-Betreffe seit dem letzten Versionsschild und würde sonst die Betreffe des früheren Repositories auswerten. Es ist ein Zweig und kein Versionsschild, weil der Sitzungshook `session-start-git-historie.sh` nur Zweige holt.
 
@@ -36,7 +37,7 @@ Die Zitate in den Dokumenten bleiben unverändert; sie belegen den Stand, auf de
 
 ## Quellenliste
 
-Quell-Commit: letzter Commit des Archivzweigs, der die Datei geändert hat (`git log -1 --format=%H archiv/r3coscrum -- <Quellpfad>`). SHA-256: über den Quell-Blob (`git show archiv/r3coscrum:<Quellpfad> | sha256sum`). Zeilen: Zeilenenden des Quell-Blobs (`wc -l`). Die Quellpfade sind Pfade in r3coscrum; sie stehen ohne Rückwärtsakzente, weil sie in diesem Repository nicht liegen und der Belegprüfer (D20) Pfade in Rückwärtsakzenten gegen dieses Repository prüft.
+Quell-Commit: letzter Commit bis zum Einfrierpunkt, der die Datei geändert hat (`git log -1 --format=%H 6bb7834c546baadf402ebd428ab94f079471ca42 -- <Quellpfad>`; der Einfrierpunkt, nicht die bewegte Spitze des Archivzweigs). SHA-256: über den Quell-Blob am Einfrierpunkt (`git show 6bb7834c546baadf402ebd428ab94f079471ca42:<Quellpfad> | sha256sum`). Zeilen: Zeilenenden des Quell-Blobs (`wc -l`). Die Quellpfade sind Pfade in r3coscrum; sie stehen ohne Rückwärtsakzente, weil sie in diesem Repository nicht liegen und der Belegprüfer (D20) Pfade in Rückwärtsakzenten gegen dieses Repository prüft.
 
 | Datei in r3cosint | Quellpfad in r3coscrum | Quell-Commit (40) | SHA-256 des Quell-Blobs | Zeilen | Art |
 |---|---|---|---|---|---|
