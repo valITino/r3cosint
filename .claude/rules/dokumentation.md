@@ -39,6 +39,8 @@ den Erzeuger auf), weiterhin nie von Hand gepflegt.
   Fallklassen, Grenzen, Restpunkte als Tabellen) und führt ein datiertes
   **Entscheidlog** (Teil B: je Änderung "Vorher galt / Jetzt gilt / Weshalb").
   Frühere Fassungen liegen in git; der Verweis trägt die Commit-Prüfsumme.
+  Ein Nachtrag in Teil B hat höchstens etwa 30 Zeilen; was mehr braucht, steht
+  in der Übergabe, der Nachtrag verweist darauf (Weisung vom 2026-10-27).
   Ausschliesslich anfügbar bleiben ADR 0002, Abschnitt 10 (Freigabevermerk:
   Freigaben und Abnahmen) und Teil B jedes ADR (Entscheidlog, datierte
   Einträge), das Schwachstellenregister und Abnahmeeinträge (Projektauftrag 6.6,
@@ -66,7 +68,10 @@ Je Sitzung eine Übergabedatei unter `docs/uebergaben/` (Abschnitt je Einheit:
 fertig, offen, Entscheide, Nachweise) und ein Pull Request mit Merge-Text
 (Abnahme, Bestätigung, nicht umfasst). Die Prüfung von Dokumenten erfolgt einmal
 statisch je Einheit (Static Software Tester, anderes Modellfeld, ganzer Diff);
-Gegenprüfung nur für Gates, Prüfmittel und Code. Blockierend sind falsche Zahlen,
+Gegenprüfung nur für Gates, Prüfmittel und Code; der Mutationslauf eines Prüfmittels
+läuft einmal je Einheit auf dem Endstand durch den Dynamic Software Tester, der
+Umsetzer fährt den Normalmodus und nur die geänderten Mutationen (Weisung vom
+2026-10-27). Blockierend sind falsche Zahlen,
 Prüfsummen, Daten, Zitate und Zuordnungen sowie Änderungen am Entscheidlog;
 alles andere ist Restpunkt der Übergabe.
 
