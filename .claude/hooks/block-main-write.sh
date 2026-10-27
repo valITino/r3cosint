@@ -66,7 +66,8 @@
 # Adresse des sed, das die Ausnahme-Abschnitte abzieht; ST-C2-D-04), die Aufloesung der
 # Kontextpfade (grep -o im Prozess-Ersatz, ohne Rueckgabewert-Pruefung) und die
 # Schritte mit sed, tr und jq; die Schritte von Posten 4 pruefen ihren Rueckgabewert
-# einzeln (pruefung_unmoeglich), die uebrigen nicht.
+# einzeln (pruefung_unmoeglich), seit C6 (2026-10-27, Punkt 6) auch die drei jq-Schritte (Werkzeugname, Befehl, Dateipfad; schritt_geprueft, Meldung mit
+# jq und der Stelle; vorher Durchlass an allen drei Stellen; eine leere Antwort sperrt ebenso, DT-C6-01, Absatz (k)), die uebrigen nicht.
 # GRUND: Unter 'set -uo pipefail' liefert die Pipeline aus printf und 'grep -q'
 # den Wert 141 (SIGPIPE), wenn grep nach einem fruehen Treffer endet, waehrend
 # printf noch schreibt; die Bedingung galt dann als nicht erfuellt, und der Befehl
@@ -92,27 +93,70 @@
 # bevor der Schreiber fertig ist --, entscheidet aber nicht mehr: Die Schwelle von
 # etwa 64 KiB bis 128 KiB faellt aus der Entscheidung. Es bleibt die Zeitgrenze des
 # Hooks in .claude/settings.json (15 s); ein Hook, der sie reisst, wird abgebrochen
-# und laesst durch. Die Zeitgrenze (15 s) zieht der Harness; bis Posten 7 ohne
-# Fallklasse (6.13 d, ausgenommen laut ADR 0002, 6.13 c, Nachtrag vom 2026-10-21).
-# Posten 7 unter R3-Q-010 (2026-10-21, erfasst, nicht gebaut): keines der beiden Gates
-# zieht eine eigene Zeitgrenze (ADR 0002, 6.12.12); eine Ueberschreitung ist ein
-# Durchlass. Berichtigung Delta 2 und 3 (ST-C2-D-05, ST-C2-E-07): Eine Eingabe, die ein Lauf
-# ueber 15 s braucht, ist gefunden. Eine Zeile aus 10000000 Zeichen '&' hinter 'git worktree
-# add /tmp/wt feature' braucht 19,6 bis 20,8 s (drei Messreihen), weil die Abschnittsbildung
-# aus jedem Trenner eine Zeile macht; ';' und '|' brauchen bei 5000000 Zeichen dieselbe
-# Zeit. Sie ist Gegenstand von Posten 7 und kein Fall, denn ein Lauf braeuchte mehr als die
-# Grenze von 14 s des Pruefmittels (und kostete 14 s je Lauf und je Mutation). Gemessen am
-# 2026-10-21 (CPU frei, ganzes Gate, Zeile hinter 'git worktree add /tmp/wt feature'): '&'
-# 150000 Zeichen 0,3 s, 1000000 Zeichen 1,5 bis 1,7 s, 5000000 Zeichen 7,8 bis 8,9 s, 7000000 Zeichen
-# 11,8 s, 8000000 Zeichen 14,2 s, 9000000 Zeichen 17,2 s, 10000000 Zeichen 19,6 bis 20,8 s
-# (mehr als linear; ueber 14 s ab 8 MB, ueber 15 s zwischen 8 und 9 MB); Kommentarzeile aus
-# Rauten 1000000 Zeichen 0,7 s, 5000000 Zeichen 3,5 bis 3,6 s; 1700000 Zeilen 'x>' (5,1 MB) 7,0 bis 7,1 s;
-# 400000 Zeilenfortsetzungen (2400072 Bytes: 400000 Zeilen 'x \' hinter 'git push origin main') 0,56 bis 0,62 s; bei 124
-# Laeufen aus 31 Formen aus 150000 gleichen Zeichen (3 parallel) hoechstens 0,59 s (H-1,
-# A116, A117; vor Delta 2: 0,47 s bei 96 Laeufen). Das Pruefmittel zieht je Gate-Aufruf eine
-# eigene Grenze von 14 s und wertet eine Ueberschreitung als Durchlass (A105, MM22). Nicht
-# gemessen ist die Wirkung im laufenden Harness, und nicht gemessen ist, ob der Harness
-# einen Befehl dieser Groesse uebergibt.
+# und laesst durch. Die Zeitgrenze (15 s) zieht der Harness; seit C6 zieht das Gate vorher
+# eine eigene Grenze von 12 s (Absatz "Posten 7" unten; Fallklassen KM-20, KM-21 und GM-10).
+# Posten 7, Teil am main-Gate (C6, 2026-10-27; Festlegung fuer C6, Punkt 1; Schwachstellenregister SR-003,
+# dessen Status fuer diesen Teil der Vulnerability Manager setzt): EIGENE ZEITGRENZE des Gates von 12 s mit
+# einem Nachlauf von 1 s (timeout -k 1 12), zusammen hoechstens 13 s, unter der Grenze des Pruefmittels (14 s)
+# und der des Harness (15 s, .claude/settings.json). Der Abstand zur Grenze des Harness ist eine ANNAHME DER
+# BAUFORM; die Wirkung im laufenden Harness ist nicht gemessen. Vorher war die Ueberschreitung der Hook-Grenze
+# ein Durchlass (ein Hook, der sie reisst, wird abgebrochen und laesst durch). MECHANIK in der Bauform des
+# Prototyp-Gates seit C4 (dort Kopfkommentar, Absatz "Posten 7" fuer den Selbstaufruf, Absatz DT-C4-01 fuer
+# Ablage, wait, KILL und Weitergabe): Unmittelbar nach set -uo pipefail ruft sich das Skript selbst unter
+# timeout im Hintergrund auf, mit dem laufenden bash ($BASH, weil die PATH-Varianten des Pruefmittels kein
+# bash fuehren), ueber $0 (die Mutationsprobe faehrt eine Kopie des Gates, der innere Lauf muss dieselbe Kopie
+# sein) und mit dem festen Argument --innerer-lauf-zeitgrenze; das feste Argument oeffnet keinen Weg an der
+# Grenze vorbei, denn .claude/settings.json ruft das Gate ohne Argument auf und die Werkzeugeingabe kommt
+# allein ueber die Standardeingabe. Die Standardeingabe wird dem Hintergrundlauf ausdruecklich uebergeben,
+# stdout und stderr des inneren Laufs gehen in Dateien einer Ablage aus mktemp -d; der aeussere Teil wartet
+# mit wait; endet der innere Lauf mit einem anderen Ausgang als 0, schickt er kill -KILL an die Prozessgruppe
+# (Annahme der Bauform: GNU timeout macht sich ohne --foreground zum Fuehrer einer eigenen Prozessgruppe),
+# gibt die Ausgaben der Ablage mit Builtins (read, printf) weiter und raeumt die Ablage mit rm ab. ABBILDUNG:
+# 0 nur, wenn der innere Lauf mit 0 endet; eine 2 bleibt 2; jeder andere Ausgang -- Ueberschreitung (124),
+# Abbruch nach dem Nachlauf (137), Fehler von timeout (125 bis 127) -- endet mit 2 und einer Meldung, die die
+# Grenze und den naechsten Schritt nennt. Fehlt timeout oder mktemp, sperrt das Gate mit einer Meldung, die
+# das Werkzeug nennt. PREIS in sicherer Richtung: Eine Eingabe, deren Pruefung laenger als 12 s braucht,
+# sperrt. Die Abschnittsbildung macht aus jedem Trenner eine Zeile; Zeilen aus mehreren MB '&' hinter 'git
+# worktree add' brauchen deshalb lange. Gemessen (SecDevOps Engineer, 2026-10-27, je dreimal, Last 1 Minute zu
+# Beginn 0,09 bis 1,36) am Zwischenstand mit der Pruefsumme
+# 7be68b1c157223ec73f2e954e98d7c99d82d51f3497c740d6ba68aeda3affe33, dessen Code ohne Kommentarzeilen dem Stand
+# 763f87cd29454619e5add1aa5f7920c9ab6ce2d6cbdd2b387a009812af853b11 vor der Behebungsrunde vom 2026-10-27
+# gleicht (die in der Behebungsrunde danach geaenderten vier Codezeilen liegen ausserhalb der Abschnittsbildung:
+# drei Pruefzeilen fuer leere Werte und der Text der Meldung zum naechsten Schritt in pruefung_unmoeglich):
+# hinter 'git worktree add /tmp/wt feature' 5 MB Rueckgabewert 0 in 9,41 s bis 9,99 s; 7, 8, 9 und 10 MB
+# Rueckgabewert 2 an der Grenze (je 12,02 s bis 12,03 s, Meldung zur Zeitgrenze); 6 MB nicht gemessen; hinter
+# 'git worktree add ../main' 5 MB Rueckgabewert 2 in 8,50 s bis 8,79 s (Sperre des Arbeitsbaums auf main), 7
+# bis 10 MB Rueckgabewert 2 an der Grenze (je 12,02 s bis 12,03 s). In der Umgebung des Dynamic Software
+# Testers (2026-10-27) endete schon 5 MB mit Rueckgabewert 2 nach 12,02 s bis 12,03 s. Die Schwelle haengt von
+# Umgebung und Last ab. BENANNTE GRENZE (GM-10, wie GP-7 am Prototyp-Gate): Ein Werkzeug, das sich mit setsid
+# oder setpgid aus der Gruppe loest, und ein Prozess im Zustand D ueberleben das KILL; nach dem Ausgang 0
+# raeumt das Gate nicht ab; solche Prozesse halten die Kanaele des Harness nicht (die Ausgabe des inneren
+# Laufs geht in Dateien), ueberdauern aber das Gate; der Zustand D ist ohne Fall. Fallklassen im Pruefmittel:
+# KM-20 (Zeitgrenze), KM-21 (Ablage und Waisenprozess), GM-10 (die Grenze); Faelle S43 bis S50 und G119,
+# Mutationen MM38 bis MM48. A105 und MM22: Das durch MM22 mutierte Gate endet an der eigenen Grenze mit 2 und
+# der Meldung zur Zeitgrenze (gemessen, SecDevOps Engineer, 2026-10-27: Rueckgabewert 2 nach 12,0 s); A105 hat
+# die Art JSON-PUSH und verlangt zusaetzlich zur Meldung der Sperre (Projektauftrag 3.2 c), dass sie vom
+# Push-Schritt stammt (Push nach main/master) und nicht von der Zeitgrenze oder einem anderen Schritt; MM22
+# wird unter beiden Arten erkannt, weil die Meldung zur Zeitgrenze den Abschnitt 3.2 c nicht traegt. LAUFZEIT
+# vor dem Bau, am Gate ohne eigene Grenze (Laufzeit, nicht Sperre): 5 MB 7,8 s bis 8,9 s (2026-10-21, CPU
+# frei, Messung beim Bau von Posten 4 und 5, im Kopfkommentar seit Commit
+# dd654f0a8d22254926e52bce6a3be98f9ad7c98a ohne Nennung der Rolle) und 18,45 s bis 20,34 s (Dynamic Software
+# Tester, 2026-10-27, Lauf A); hoechster belegter Wert vor dem Bau: 37,70 s (Dynamic Software Tester,
+# 2026-10-27, Lauf A, 10 MB hinter 'git worktree add /tmp/wt feature', Rueckgabewert 0; 7 MB 26,46 s bis 28,65
+# s, 8 MB 28,59 s bis 30,77 s, 9 MB 32,48 s bis 32,95 s). Am gemessenen Stand endet jede gemessene Eingabe
+# nach hoechstens 12,03 s (SecDevOps Engineer) beziehungsweise 12,04 s (Dynamic Software Tester); eine Quote
+# nennt dieser Kommentar nicht. Nicht gemessen ist die Wirkung im laufenden Harness, und nicht gemessen ist,
+# ob der Harness einen Befehl dieser Groesse uebergibt. Frueherer Stand (Delta 2 und 3, ST-C2-D-05,
+# ST-C2-E-07; Gate ohne eigene Grenze): Eine Zeile aus 10000000 Zeichen '&' hinter 'git worktree add /tmp/wt
+# feature' braucht 19,6 bis 20,8 s (drei Messreihen), weil die Abschnittsbildung aus jedem Trenner eine Zeile
+# macht; ';' und '|' brauchen bei 5000000 Zeichen dieselbe Zeit. Gemessen am 2026-10-21 (CPU frei, ganzes
+# Gate, Zeile hinter 'git worktree add /tmp/wt feature'): '&' 150000 Zeichen 0,3 s, 1000000 Zeichen 1,5 bis
+# 1,7 s, 5000000 Zeichen 7,8 bis 8,9 s, 7000000 Zeichen 11,8 s, 8000000 Zeichen 14,2 s, 9000000 Zeichen 17,2
+# s, 10000000 Zeichen 19,6 bis 20,8 s (mehr als linear); Kommentarzeile aus Rauten 1000000 Zeichen 0,7 s,
+# 5000000 Zeichen 3,5 bis 3,6 s; 1700000 Zeilen 'x>' (5,1 MB) 7,0 bis 7,1 s; 400000 Zeilenfortsetzungen
+# (2400072 Bytes: 400000 Zeilen 'x \' hinter 'git push origin main') 0,56 bis 0,62 s; bei 124 Laeufen aus 31
+# Formen aus 150000 gleichen Zeichen (3 parallel) hoechstens 0,59 s (H-1, A116, A117; vor Delta 2: 0,47 s bei
+# 96 Laeufen).
 # Fehlt grep oder sed, blockiert das Gate mit Rueckgabewert 2 und einer Meldung (S10,
 # S16: fehlendes grep bzw. sed; vorher Durchlass). tr kommt nur noch im Fehlerpfad der
 # Wache fuer eine nicht auswertbare Eingabe vor (Kuerzung der Eingabe in der Meldung;
@@ -233,7 +277,8 @@
 #     in doppelten Anfuehrungszeichen nur als Paar mit dem folgenden Zeichen oder unmittelbar
 #     vor dem Zeilenende zugelassen; ein maskiertes Anfuehrungszeichen kann nicht mehr als
 #     Rueckstrich plus schliessendes Anfuehrungszeichen gelesen werden (Mischlesung, die in
-#     Delta 3 einen Pfad hinter dem Operanden verschluckte: A143 bis A145, G109; Mutation MM34).
+#     Delta 3 das commit-ish hinter dem Operanden verschluckte, ST-C2-G-01: A143 bis A145, G109; Mutation MM34). Ausserhalb von Anfuehrungszeichen ist der
+#     Rueckstrich im Operanden ebenfalls als Paar mit dem folgenden Zeichen zugelassen (ST-C2-G-02).
 # (i) PREIS in sicherer Richtung (ST-C2-E-01, Klasse KM-17): Schliesst ein Operand in
 #     Anfuehrungszeichen erst hinter einem Zeilenumbruch oder hinter ';', '&' oder '|'
 #     ('git worktree add ../main <<< "a c' + Zeilenumbruch + 'b" feature', '> "a c;b" feature'),
@@ -245,6 +290,27 @@
 #     '>' als letztes Zeichen eines solchen Worts unmittelbar vor --detach oder -d
 #     ('--reason="a>" --detach ../main', A149; vor Delta 2: 2, mit Delta 2: 0): die zweite
 #     Fassung liest --detach als Operanden.
+# (j) C6 (2026-10-27; Festlegung fuer C6, Punkte 2, 3 und 5). ST-C2-G-03, Preis in sicherer Richtung (Klasse KM-17): ein leeres oder nur aus Leerraum bestehendes
+#     Umleitungsziel in Anfuehrungszeichen vor dem commit-ish ('git worktree add ../main > "" feature', '> " " feature', ">'' feature'; A150 bis A152) laesst die zweite
+#     Fassung das commit-ish als Operanden lesen; die Basename-Pruefung sieht es nicht und sperrt. Ausweg: ein Umleitungsziel mit Inhalt (Gegenprobe '> "x" feature', G125).
+#     DT-C2-G-01, Grenze unter GM-9 (keine Haertung): ein Umleitungsoperator mit '&' vor dem Pfad ('>&2', '&>/dev/null', '2>&1', '2>&-', '>& /tmp/log' vor '../main';
+#     G120 bis G124) trennt den Pfad vom worktree-add-Abschnitt, die Basename-Form greift nicht (Durchlass); eine Schliessung aenderte die Abschnittsbildung, auf der
+#     Posten 4 a und die Zaehlprobe ruhen; die Zweig-Form ('/tmp/wt 2>&1 main') sperrt weiter (A154, gemessen vom Dynamic Software Tester, 2026-10-27, Lauf A). 'git worktree add -- ../main' sperrt (A153, KM-17). 'git worktree add ../main/'
+#     bleibt ein Durchlass (G126, Grenze GM-9), hat aber keine Wirkung, solange git den Zweignamen main/ ablehnt (git version 2.43.0: fatal: 'main/' is not a valid
+#     branch name; kein Arbeitsbaum entsteht).
+# (k) C6, DT-C6-01 (2026-10-27; Festlegung des Software Architects, ADR 0004, Teil B, Nachtrag "DT-C6-01: Festlegung"): Endet jq mit Rueckgabewert 0 und leerer Ausgabe,
+#     ist das nach 6.13 b nicht auswertbar. Nach schritt_geprueft sperrt das Gate dann mit Rueckgabewert 2 und einer Meldung ueber pruefung_unmoeglich, die die Stelle und
+#     die leere Antwort nennt (Pruefung nicht moeglich (jq, Antwort leer, <Stelle>)): ein leerer Werkzeugname immer; ein leerer Befehl am Bash-Weg; ein leerer Dateipfad
+#     nur bei den Werkzeugnamen Write, Edit, MultiEdit und NotebookEdit (Matcher in .claude/settings.json), jeder andere Name ohne Pfad endet weiter mit 0 (Grenze GM-6,
+#     Werkzeugname; G128: Read ohne Pfad auf main). Die Sperre des leeren Pfads wirkt nur auf main, weil das Gate auf dem Arbeitszweig vorher mit 0 endet (is_protected).
+#     PREIS in sicherer Richtung: ein leerer Bash-Befehl sperrt (vorher Rueckgabewert 0; gemessen 2 am gebauten Gate, SecDevOps Engineer, 2026-10-27, Messung D9:
+#     Rueckgabewert 2 nach 0,04 s); Gegenprobe ist ein harmloser Befehl auf dem Arbeitszweig (G129). Faelle: S51, S52, S53 (jq-Attrappen, die leer mit Rueckgabewert 0
+#     antworten); S54, S55, S56 (jq-Attrappen, die einen falschen, nicht leeren Wert mit Rueckgabewert 5 liefern; ohne die Pruefung des Rueckgabewerts, MM35 bis MM37,
+#     enden diese Eingaben mit 0); S57 (leerer Bash-Befehl ohne Attrappe); S58 (Eingabe ganz ohne tool_name ohne Attrappe; auf diesem Fall ruht der Vorbehalt des
+#     Schwachstellenregisters zu SR-008); S59, S60, S61 (Edit, MultiEdit und NotebookEdit mit leerem Pfad auf main). Mutationen MM49 bis MM53 (MM52: Beschraenkung auf die
+#     vier Namen; MM53 streicht NotebookEdit aus der Liste), Fallklasse KM-19. Eine Eingabe ganz ohne tool_name endet mit 2 (jq gibt mit // empty nichts aus; S58):
+#     gemessen am gebauten Gate (SecDevOps Engineer, 2026-10-27) Rueckgabewert 2 nach 0,04 s mit der Meldung zur leeren Antwort fuer den Werkzeugnamen, vorher 0. Ein
+#     Objekt als file_path wird auf main zum relativen Pfad und gesperrt (A155); auf dem Arbeitszweig endet das Gate vorher mit 0 (G118).
 # GRENZE DER UMLEITUNGS-ERKENNUNG (Delta 3 und 4; DT-C2-E-01, DT-C2-E-02, ST-C2-F-02,
 #     DT-C2-F-01, DT-C2-F-02): Das Gate erkennt
 #     Umleitungen mit Einzelmustern, nicht durch Zerlegung des Befehls in Woerter wie die
@@ -283,6 +349,12 @@
 # Befehl geprueft (ZF10a, ZF10b des Pruefmittels, Fallklasse GM-6). Den
 # Werkzeugnamen setzt der Harness, nicht das Modell. Ein weiteres
 # Befehlswerkzeug im Matcher ist Gegenstand von ADR 0002, O-28.
+#
+# GRENZE DER ANTWORT VON jq, ehrlich benannt (C6, DT-C6-01 b; Klasse GM-11):
+# Antwortet jq mit Rueckgabewert 0 und einem falschen, aber nicht leeren Wert (etwa MUELL als Werkzeugname), erkennt das Gate das nicht: Erfolg mit
+# falscher Antwort ist von einer richtigen Antwort nicht zu unterscheiden. Gemessen (SecDevOps Engineer, 2026-10-27, Messung D4 aus direkt-nachher.txt im Scratchpad
+# der Sitzung, 0,04 s): ein Push nach main vom Arbeitszweig mit dem Werkzeugnamen MUELL endet mit 0 (G127; der Name schickt den Push in den Zweig der Dateiwerkzeuge,
+# der auf dem Arbeitszweig mit 0 endet); keine Mutation. Am Prototyp-Gate ist dieselbe Frage ungemessen (Restpunkt, Messung mit der naechsten Aenderung dort; Posten 8).
 #
 # GRENZE DER AUSNAHME FUER -b/-B, ehrlich benannt:
 # benannt seit Posten 1 (2026-10-14, ADR 0002, 6.13 c, Fortschreibung vom
@@ -348,6 +420,47 @@
 unset POSIXLY_CORRECT
 set -uo pipefail
 
+# Posten 7, Teil am main-Gate (C6, 2026-10-27; Kopfkommentar, Absatz "Posten 7"): eigene Zeitgrenze, in der Bauform des Prototyp-Gates seit C4.
+# Aeusserer Teil: liest die Standardeingabe nicht; Werkzeuge aus dem PATH: timeout, mktemp und rm; command -v, kill, wait, read und printf sind
+# Builtins. Innerer Lauf: das Gate wie bisher, aufgerufen mit dem festen Argument.
+if [ "${1:-}" != "--innerer-lauf-zeitgrenze" ]; then
+  if ! command -v timeout >/dev/null 2>&1; then
+    echo "Gate main-schutz: timeout ist nicht installiert; das Gate kann seine Zeitgrenze nicht ziehen und blockiert (ADR 0002, 6.13 b)." >&2
+    echo "Naechster Schritt: timeout (Paket coreutils) installieren und den Befehl wiederholen." >&2
+    exit 2
+  fi
+  if ! command -v mktemp >/dev/null 2>&1; then
+    echo "Gate main-schutz: mktemp ist nicht installiert; das Gate kann die Ausgabe seines inneren Laufs nicht ablegen und blockiert (ADR 0002, 6.13 b)." >&2
+    echo "Naechster Schritt: mktemp (Paket coreutils) installieren und den Befehl wiederholen." >&2
+    exit 2
+  fi
+  zg_ablage=$(mktemp -d)
+  zg_mk=$?
+  if [ "$zg_mk" != 0 ] || [ ! -d "$zg_ablage" ]; then
+    echo "Gate main-schutz: mktemp -d scheitert (Rueckgabewert $zg_mk); das Gate kann die Ausgabe seines inneren Laufs nicht ablegen und blockiert (ADR 0002, 6.13 b)." >&2
+    echo "Naechster Schritt: das temporaere Verzeichnis (TMPDIR) auf Platz und Rechte pruefen und den Befehl wiederholen." >&2
+    exit 2
+  fi
+  # Der innere Lauf laeuft im Hintergrund, mit der Standardeingabe des Aufrufers (0<&0: sonst /dev/null) und mit stdout und stderr in Dateien der Ablage,
+  # nicht in den Kanaelen des Aufrufers; die Prozessnummer von timeout ist zugleich die Nummer seiner Prozessgruppe (Annahme der Bauform, Kopfkommentar).
+  timeout -k 1 12 "$BASH" "$0" --innerer-lauf-zeitgrenze 0<&0 >"$zg_ablage/aus" 2>"$zg_ablage/fehler" &
+  zg_pid=$!
+  wait "$zg_pid"
+  zg_status=$?
+  [ "$zg_status" = 0 ] || kill -KILL -- "-$zg_pid" 2>/dev/null
+  while IFS= read -r zg_zeile || [ -n "$zg_zeile" ]; do printf '%s\n' "$zg_zeile"; done < "$zg_ablage/aus"
+  while IFS= read -r zg_zeile || [ -n "$zg_zeile" ]; do printf '%s\n' "$zg_zeile" >&2; done < "$zg_ablage/fehler"
+  rm -rf "$zg_ablage" 2>/dev/null
+  case "$zg_status" in
+    0) exit 0 ;;
+    2) exit 2 ;;
+    124|137) echo "Gate main-schutz: Zeitgrenze von 12 s (Nachlauf 1 s) ueberschritten (Rueckgabewert $zg_status); das Gate kann nicht fertig pruefen und blockiert (ADR 0002, 6.13 b)." >&2 ;;
+    *) echo "Gate main-schutz: Pruefung abgebrochen (Rueckgabewert $zg_status, Zeitgrenze 12 s mit Nachlauf 1 s); das Gate kann nicht pruefen und blockiert (ADR 0002, 6.13 b)." >&2 ;;
+  esac
+  echo "Naechster Schritt: die Eingabe verkleinern oder den Befehl in kleinere, getrennte Aufrufe zerlegen und wiederholen." >&2
+  exit 2
+fi
+
 if ! command -v jq >/dev/null 2>&1; then
   echo "Gate main-schutz: jq ist nicht installiert; das Gate kann nicht pruefen." >&2
   echo "Installieren (z.B. 'apt-get install -y jq') oder das Gate bewusst entfernen." >&2
@@ -388,7 +501,7 @@ fi
 # Absatz "Seit Posten 5".
 pruefung_unmoeglich() {
   echo "Gate main-schutz: Pruefung nicht moeglich ($1); das Gate kann nicht pruefen und blockiert (ADR 0002, 6.13 b)." >&2
-  echo "Naechster Schritt: grep und sed im PATH pruefen (command -v grep sed) und den Befehl wiederholen; bleibt die Meldung, den Befehl in getrennte Aufrufe zerlegen." >&2
+  echo "Naechster Schritt: die genannte Stelle pruefen; nennt die Meldung ein Werkzeug (grep, sed oder jq), dieses zuerst im PATH pruefen (command -v) und den Befehl wiederholen; bleibt die Meldung, den Befehl in getrennte Aufrufe zerlegen." >&2
   exit 2
 }
 trifft() {
@@ -410,6 +523,13 @@ anzahl() {
   [ "$st" -le 1 ] || pruefung_unmoeglich "Zaehlung, grep $st"
 }
 
+# Punkt 6 (C6, 2026-10-27; Festlegung fuer C6): schritt_geprueft <Rueckgabewert> <Werkzeug> <Stelle> wertet den Rueckgabewert eines jq-Schritts, dessen Ergebnis
+# in die Entscheidung eingeht (wie am Prototyp-Gate seit Posten 8). Aufruf unmittelbar nach der Zuweisung, mit $? als erstem Argument; jeder andere Ausgang als 0
+# beendet das Gate ueber pruefung_unmoeglich mit Rueckgabewert 2. Laeuft in der Hauptshell, nie in einer Subshell (dort beendete exit nur die Subshell).
+schritt_geprueft() {
+  [ "$1" = 0 ] || pruefung_unmoeglich "$2, Rueckgabewert $1, $3"
+}
+
 proj="${CLAUDE_PROJECT_DIR:-$PWD}"
 
 git -C "$proj" rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
@@ -419,10 +539,13 @@ branch=$(git -C "$proj" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 is_protected() { [ "$1" = "main" ] || [ "$1" = "master" ]; }
 
 tool=$(printf '%s' "$input" | jq -r '.tool_name // empty')
+schritt_geprueft $? jq "Werkzeugname"
+[ -n "$tool" ] || pruefung_unmoeglich "jq, Antwort leer, Werkzeugname"
 
 if [ "$tool" = "Bash" ]; then
   cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty')
-  [ -n "$cmd" ] || exit 0
+  schritt_geprueft $? jq "Befehl am Bash-Weg"
+  [ -n "$cmd" ] || pruefung_unmoeglich "jq, Antwort leer, Befehl am Bash-Weg"
 
   # Posten 1 unter R3-Q-010 (2026-10-14, ADR 0002, 6.13 c, Nachtrag vom
   # 2026-09-23): Die Ziele von push und worktree werden nach dem Entfernen von
@@ -739,7 +862,8 @@ fi
 is_protected "$branch" || exit 0
 
 fp=$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.notebook_path // .tool_input.path // empty')
-[ -n "$fp" ] || exit 0
+schritt_geprueft $? jq "Dateipfad am Weg der Dateiwerkzeuge"
+[ -n "$fp" ] || case "$tool" in Write|Edit|MultiEdit|NotebookEdit) pruefung_unmoeglich "jq, Antwort leer, Dateipfad bei $tool" ;; *) exit 0 ;; esac
 case "$fp" in
   "$proj"/*) rel="${fp#"$proj"/}" ;;
   /*)        exit 0 ;;

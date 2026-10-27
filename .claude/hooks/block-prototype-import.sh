@@ -146,8 +146,10 @@
 # ohne belegte Luecke; die Sperre ist die sichere Richtung. Die Wache fuer jq (Vorhandensein) und die
 # Pruefung der Eingabe zu ST-13 bleiben, wie sie sind. PREIS in sicherer Richtung: Eine Werkzeugeingabe,
 # an der ein jq-Schritt scheitert, sperrt auch ohne Bezug ueber die Trennung, etwa ein MultiEdit mit einem
-# Objekt statt einer Zeichenkette in new_string. Nicht Gegenstand ist das main-Gate (Restpunkt jq am
-# main-Gate). Fallklasse KP-10 im Pruefmittel.
+# Objekt statt einer Zeichenkette in new_string. Das main-Gate prueft seine drei jq-Schritte seit C6 (2026-10-27) ebenso
+# (Fallklasse KM-19 im Pruefmittel). Restpunkt an diesem Gate: eine leere oder falsche Antwort von jq mit Rueckgabewert 0 (DT-C6-01; am main-Gate ist
+# die leere Antwort seit C6 gesperrt, die falsche eine benannte Grenze, GM-11) ist hier ungemessen; die Messung folgt mit der naechsten Aenderung
+# am Prototyp-Gate. Fallklasse KP-10 im Pruefmittel.
 #
 # Posten 9 (C4, 2026-10-27; SR-006, DT-C3-01 und die Beobachtung am Bash-Weg): Bezugsformen, die das Gate nicht erkannte, weil jedes
 # Muster ein Anfuehrungszeichen verlangte und die Attributnamen nur klein geschrieben traf; gemessen am 2026-10-27 vor dem Bau: alle
@@ -280,8 +282,8 @@
 # Fall und keine Mutation und ist nur durch die Probe vom 2026-10-22 belegt (inneres Skript ignoriert SIGTERM:
 # Rueckgabewert 137 nach 13,0 s); eine Mutation, die ihn entfernt, erkennt S25 nicht, weil das verzoegerte cat schon
 # auf TERM endet." Die Ausnahme von 6.13 d (ADR 0002, 6.13 c, Nachtrag vom 2026-10-21)
-# entfaellt fuer dieses Gate. Das main-Gate hat noch keine eigene Grenze (Posten 7, Teil am
-# main-Gate, offen; dort ist eine Eingabe ueber 15 s beschrieben).
+# entfaellt fuer dieses Gate. Das main-Gate hat seit C6 (2026-10-27) ebenfalls eine eigene Grenze von 12 s mit
+# Nachlauf von 1 s in derselben Bauform (Posten 7, Teil am main-Gate; Fallklassen KM-20, KM-21 und GM-10 im Pruefmittel).
 # Fehlt grep, blockiert das Gate mit Rueckgabewert 2 und einer Meldung (S11; vorher
 # Durchlass).
 # Fehlt sed oder tr, blockiert das Gate seit Posten 6 ebenso (L23, L24, S20 bis S24, S29, S30; vorher
