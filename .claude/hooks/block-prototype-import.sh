@@ -50,9 +50,10 @@
 # Konstrukts, die bis dahin als fuer beide Richtungen SYMMETRISCHE Luecken offen waren, sind an den
 # Dateiwerkzeugen in BEIDEN Richtungen geschlossen: Leerraum vor der Klammer bei require, die Form
 # "@import url(", Leerraum um das Gleichheitszeichen bei src UND href (gleicher Musterteil) und
-# __import__ mit einem Modulnamen ohne Punkt oder Schraegstrich; import_module ist mitgezogen, ohne
-# eigenen Fall und ohne eigene Mutation (Fall und Mutation folgen mit der naechsten Aenderung am
-# Prototyp-Gate, Posten 3). Die Importwoerter
+# __import__ mit einem Modulnamen ohne Punkt oder Schraegstrich; import_module ist mitgezogen und hat seit
+# Posten 10 (C4, 2026-10-27) je Richtung eigene Faelle (B101 bis B104, Gegenproben P96 bis P99) und
+# Mutationen (MP60 bis MP63). Vormals (hier als Beleg stehen gelassen): "ohne eigenen Fall und ohne eigene
+# Mutation (Fall und Mutation folgen mit der naechsten Aenderung am Prototyp-Gate, Posten 3)". Die Importwoerter
 # stehen einmal in IMPORTWORT, die Attributform einmal in ATTR (beide im Rumpf bei WURZELN); beide
 # Richtungen lesen dieselbe Definition, und die Mutationen des Pruefmittels finden je geaenderter
 # Stelle genau einen Suchtext. Vormals (Stand bis 2026-10-21, hier als Beleg stehen gelassen):
@@ -74,13 +75,21 @@
 # Prototyp waere ein Fehlalarm. Richtung 1 ist davon nicht betroffen: "prototype" ist ein bestimmter
 # Name, und das dynamische import( ist dort schon ueber das Importwort-Muster erfasst (die
 # Asymmetrie der Namenslogik, siehe oben). Entschieden vom Software Architect am 2026-10-22: gewollt,
-# nicht gesperrt; die statische Form ist ebenso frei; den Weg ueber Aufloesungskonfiguration (Alias,
+# nicht gesperrt; die statische Form ist ebenso frei (seit Posten 10 mit Fall P100 und Mutation MP64);
+# den Weg ueber Aufloesungskonfiguration (Alias,
 # baseUrl, Workspace) schloesse eine Sperre nicht, er faellt unter GP-1 (P-10).
 #
 # Fallklassen im Pruefmittel (scripts/pretooluse-gates-selbsttest.sh): KP-7 fasst die vier
 # Schreibweisen in beiden Richtungen als gedeckte Klasse (vormals GP-3 (grenze), seit 2026-10-22
 # gedeckt), GP-4 die Grenze an der Schnittstelle (unten), KP-8 die Rueckgabewerte der sed- und
-# tr-Schritte, KP-9 die Zeitgrenze des Gates.
+# tr-Schritte, KP-9 die Zeitgrenze des Gates (seit C4 mit dem Nachlauf -k 1, S38). Seit C4 (2026-10-27): KP-10 die jq-Schritte
+# (Posten 8), KP-11 und KP-12 die Bezugsformen ohne Anfuehrungszeichen und in Grossschreibung an den Dateiwerkzeugen und am
+# Bash-Weg (Posten 9), KP-13 die Bereinigung des Dateipfads und GP-5 die Verknuepfungen (Posten 3), KP-14 den Waisenprozess und
+# GP-7 seine Grenze (DT-C4-01), GP-6 die Python-Formen in Richtung 2 (Posten 10); KP-7 umfasst dazu import_module je Richtung und
+# die statische JS-Form (P100). GP-6 (Einordnung nach 6.13 d): Die Python-Formen in Richtung 2 kennen bewusst nur die Bauwurzeln
+# backend, frontend und deploy, nicht die generischen Namen der Variable WURZELN; eine Python-Form mit einem generischen Namen
+# (from lib import helper) in einer Prototyp-Datei bleibt frei (P101), weil ein import app in einem Python-Prototyp ein plausibles
+# Fremdmodul waere und der Fehlalarm teurer als die engere Deckung.
 #
 # Seit E4.3 (Backlog R3-Q-010, ADR 0002 6.13 g) erkennt dieses Gate bei Bash
 # dieselbe Befehlsklasse mit Schreibwirkung wie das main-Gate
@@ -109,10 +118,15 @@
 # gilt zusaetzlich: Jede Pruefung eines Textes mit 'grep -q' -- bei Bash die
 # Schreibwirkung und das Importmuster, an den Dateiwerkzeugen die Richtung 2 und
 # die Richtung 1 -- laeuft ueber die Hilfsfunktion trifft (im Rumpf), nicht mehr
-# ueber 'printf | grep -Eq'. Nicht ueber trifft laufen die jq-Schritte (tool, cmd, fp, payload):
-# jq ist vorher auf Vorhandensein geprueft und die Eingabe als auswertbar bestaetigt (ST-13); ein
-# Fehler danach ist durch keine ausgefuehrte Probe belegt -- Annahme der Bauform (ADR 0002, 6.13 c,
-# Festlegung fuer C3, Posten 6). Die sed- und tr-Schritte pruefen seit Posten 6 (C3, 2026-10-22;
+# ueber 'printf | grep -Eq'. Nicht ueber trifft laufen die jq-Schritte (tool, cmd, fp, payload); sie
+# pruefen seit Posten 8 (C4, 2026-10-27; SR-005) ihren Rueckgabewert ueber schritt_geprueft wie die sed-
+# und tr-Schritte (siehe unten). Vormals (Stand bis 2026-10-26, hier als Beleg stehen gelassen): "jq ist
+# vorher auf Vorhandensein geprueft und die Eingabe als auswertbar bestaetigt (ST-13); ein Fehler danach
+# ist durch keine ausgefuehrte Probe belegt -- Annahme der Bauform (ADR 0002, 6.13 c, Festlegung fuer
+# C3, Posten 6)." Die Probe liegt seit DT-C3-02 vor: Ein MultiEdit mit einer Zeichenkette mit Import
+# ueber die Trennung in edits[0].new_string und einem Objekt in edits[1].new_string laesst den
+# Ausdruck fuer payload beim Zusammenfuegen abbrechen; payload blieb leer, das Gate endete mit 0.
+# Die sed- und tr-Schritte pruefen seit Posten 6 (C3, 2026-10-22;
 # vormals belegte Luecke L23, L24: ohne sed oder tr lief ein sonst gesperrter Befehl mit
 # Rueckgabewert 0 durch) ihren Rueckgabewert ueber die Hilfsfunktion schritt_geprueft (im Rumpf):
 # je Schritt, dessen Ergebnis in die Entscheidung eingeht -- am Bash-Weg cmd_flach (sed fuer die
@@ -122,6 +136,67 @@
 # Rueckgabewert nennt (ADR 0002, 6.13 b). Die Auswertung steht in der Hauptshell, nie in einer
 # Subshell. Nicht Gegenstand sind die Schritte der Meldung zu ST-13 (wc, tr, cut): sie entscheiden
 # nichts. Fehlendes sed oder tr sperrt damit.
+# Posten 8 (C4, 2026-10-27; SR-005, DT-C3-02): Dasselbe gilt fuer die vier jq-Schritte, deren Ergebnis
+# in die Entscheidung eingeht -- tool (Werkzeugname), cmd (Befehl am Bash-Weg), fp (Dateipfad) und
+# payload (Inhalt am Weg der Dateiwerkzeuge): je unmittelbar nach der Zuweisung ueber schritt_geprueft,
+# mit dem Rueckgabewert der Pipeline unter pipefail; jeder andere Ausgang als 0 endet ueber
+# pruefung_unmoeglich mit Rueckgabewert 2 und einer Meldung, die jq, den Rueckgabewert und die Stelle
+# nennt (ADR 0002, 6.13 b). Aus dem Durchlass ist so eine Sperre geworden. Die jq-Ausdruecke selbst sind
+# unveraendert: Ein Ausdruck, der andere Typen uebersprange oder umwandelte, waere eine neue Auswertung
+# ohne belegte Luecke; die Sperre ist die sichere Richtung. Die Wache fuer jq (Vorhandensein) und die
+# Pruefung der Eingabe zu ST-13 bleiben, wie sie sind. PREIS in sicherer Richtung: Eine Werkzeugeingabe,
+# an der ein jq-Schritt scheitert, sperrt auch ohne Bezug ueber die Trennung, etwa ein MultiEdit mit einem
+# Objekt statt einer Zeichenkette in new_string. Nicht Gegenstand ist das main-Gate (Restpunkt jq am
+# main-Gate). Fallklasse KP-10 im Pruefmittel.
+#
+# Posten 9 (C4, 2026-10-27; SR-006, DT-C3-01 und die Beobachtung am Bash-Weg): Bezugsformen, die das Gate nicht erkannte, weil jedes
+# Muster ein Anfuehrungszeichen verlangte und die Attributnamen nur klein geschrieben traf; gemessen am 2026-10-27 vor dem Bau: alle
+# folgenden Formen Rueckgabewert 0. (a) An den Dateiwerkzeugen, in beiden Richtungen: der Attributwert ohne Anfuehrungszeichen
+# (src=../prototype/x.js, href=..., je Richtung ein eigenes Muster neben dem mit Anfuehrungszeichen; der Wert besteht aus Zeichen
+# ausser Anfuehrungszeichen, Leerraum und ">" und endet an Leerraum, ">" oder Zeilenende -- er reicht nicht ueber Leerraum hinweg,
+# sonst traefe ein spaeteres Wort derselben Zeile, etwa ein alt-Text mit docs/prototype/), die CSS-Form ohne Anfuehrungszeichen
+# (@import url(../prototype/x.css); der Wert besteht aus Zeichen ausser Anfuehrungszeichen, Leerraum und ")" und endet an ")" oder
+# Leerraum) und die Grossschreibung von src, href, @import und url (SRC=, Href=, @IMPORT URL(); die uebrigen Importwoerter bleiben,
+# wie sie sind. Beide Richtungen lesen dieselben Definitionen ATTR, ATIMPORT und URLKLAMMER (Kriterium
+# R3-Q-010_prototyp_gate_richtungsgleichheit). (b) Am Bash-Weg erweitert die Wortgruppe des groben Netzes um ATTR -- das Attribut mit
+# Gleichheitszeichen, nicht das blosse Wort src, das mit jedem Kopieren aus einem Verzeichnis src/ eine neue Fehlalarmklasse oeffnete --
+# und erkennt @import ohne Ruecksicht auf die Schreibweise; Richtung 1 erfasst das Netz ueber den Bezugspfad, Richtung 2 ueber das Ziel
+# der Schreibwirkung (das Wort prototype hinter dem Importwort); ohne Anfuehrungszeichen wirkte das Netz schon vorher, weil es keins
+# verlangt. Nicht Gegenstand von (a): JS- und Python-Formen ohne Anfuehrungszeichen oder in Grossschreibung (Anfuehrungszeichen sind dort
+# Syntax, Grossschreibung ist dort kein Import); die Grossschreibung im Pfad ("../PROTOTYPE/"), weil nicht belegt ist, dass ein Werkzeug
+# der Kette Pfade ohne Ruecksicht auf die Schreibweise aufloest; url( ausserhalb von @import (etwa in background) und JSX-Ausdruecke wie
+# src={...}, beide nicht erkannt und nicht gemessen.
+# PREIS in sicherer Richtung (neue Fehlalarmklasse, a): Zuweisungen an Namen, die auf src oder href enden, in Gross- oder Mischschreibung
+# oder ohne Anfuehrungszeichen, die einen Pfad ueber die Trennung nennen, ohne ein Import zu sein, etwa IMG_SRC=../prototype/x.png in
+# einem Shell-Skript oder einer Umgebungsdatei unter deploy/ (klein geschrieben und mit Anfuehrungszeichen sperrt dieselbe Zuweisung
+# schon seit 2026-10-22, weil ATTR keine linke Wortgrenze hat); dazu Werte ohne Anfuehrungszeichen in Kommentaren des Codes, wie beim
+# bewussten Preis der unbereinigten Fassung. Ausweg wie dort: den Pfad im Kommentar nicht ausschreiben oder den Namen aendern.
+# PREIS (b): Ein Befehl mit Schreibwirkung, der src= oder href= als Text traegt und dahinter prototype nennt, sperrt auch ohne Bezug
+# ueber die Trennung, etwa eine Notiz mit src= in eine Datei unter prototype/ oder eine Shell-Variable SRC=prototype/screens vor einem
+# cp -- derselbe Preis, den das Netz fuer die Importwoerter schon traegt; Ausweg: die Datei mit dem Write-Werkzeug schreiben, wo das Gate
+# pfadgenau prueft. Fallklassen im Pruefmittel: KP-11 (a), KP-12 (b).
+#
+# Posten 3 (C4, 2026-10-27; L09, belegt seit 2026-09-23): Das Gate ordnete den Dateipfad ohne Bereinigung zu. Ein Pfad mit einem Segment
+# "." oder ".." oder mit doppeltem Schraegstrich landete im falschen Zweig: {AB}/./prototype/x.js mit einem Import aus dem Produktionscode
+# galt als Produktionscode, die Pruefung der Richtung 2 lief nicht (Rueckgabewert 0); dieselbe Ursache fuehrte an der Prosa-Ausnahme vorbei
+# (ein Pfad ueber docs/ mit .. zurueck in den Produktionscode wurde nicht geprueft) und wirkte beim doppelten Schraegstrich hinter dem
+# Projektverzeichnis. Seit Posten 3 laeuft vor jeder Zuordnung (Projektpraefix, Prosa-Ausnahme, Richtung) die Hilfsfunktion pfad_bereinigen,
+# lexikalisch und in der Shell selbst, ohne externes Werkzeug: (1) mehrere Schraegstriche werden zu einem; (2) Segmente "." entfallen;
+# (3) ein Segment ".." hebt das vorangehende Segment auf, wenn es eines gibt, das nicht ".." ist; am Anfang eines absoluten Pfads entfaellt es,
+# am Anfang eines relativen Pfads bleibt es stehen; (4) ein Schraegstrich am Ende entfaellt. Dieselbe Bereinigung gilt fuer das
+# Projektverzeichnis, damit der Vergleich beide Seiten gleich behandelt (CLAUDE_PROJECT_DIR mit Schraegstrich am Ende: am 2026-10-27 vor
+# dem Bau gemessen Durchlass, B99). Ein relativer Pfad, der danach mit ".." beginnt, wird wie bisher als Pfad im Projekt zugeordnet und nicht
+# als ausserhalb freigegeben (B100, P94). FOLGEN, keine neue Luecke (die Datei liegt dort, wohin der bereinigte Pfad zeigt, vorbehaltlich der
+# Grenze): Ein absoluter Pfad mit dem Projektpraefix, der erst ueber ".." aus dem Projekt hinausfuehrt, liegt nach der Bereinigung ausserhalb und
+# ist, wie jeder solche Pfad, nicht Gegenstand des Gates (Rueckgabewert 0; vorher wurde er wie Produktionscode geprueft, P91); ein Pfad, der
+# ueber ".." in docs/ oder .claude/ endet, faellt unter die Prosa-Ausnahme (vorher geprueft, P90).
+# BENANNTE GRENZE (GP-5): keine Aufloesung symbolischer Verknuepfungen und kein Zugriff auf das Dateisystem. Eine Verknuepfung im
+# Produktionscode, die auf prototype/ zeigt (oder umgekehrt), und ein Projektverzeichnis, das ueber eine Verknuepfung erreicht wird, werden nach
+# dem Pfadtext zugeordnet, nicht nach dem Ziel (P92, Soll 0). GRUENDE: Die Zieldatei muss beim Write nicht bestehen; das Ergebnis haengte sonst
+# vom Zustand des Arbeitsbaums ab; ein weiteres Werkzeug waere eine weitere Abhaengigkeit mit eigener Pruefung. Das Anlegen einer Verknuepfung
+# mit ln ist am Bash-Weg eine Schreibwirkung ohne Importmuster und bleibt frei. Vormals (Stand bis 2026-10-26, hier als Beleg stehen gelassen):
+# L09 war eine belegte Luecke (Soll 0, Fallklasse belegte-luecke, Pruefstand seit 2026-09-23). Fallklassen im Pruefmittel: KP-13 (die
+# Bereinigung), GP-5 (die Verknuepfungen).
 # GRUND: Unter 'set -uo pipefail' liefert die Pipeline aus printf und 'grep -q'
 # den Wert 141 (SIGPIPE), wenn grep nach einem fruehen Treffer endet, waehrend
 # printf noch schreibt; die Bedingung galt dann als nicht erfuellt, und der Befehl
@@ -160,7 +235,8 @@
 # Pruefmittels kein bash fuehren), ueber $0 (die Mutationsprobe faehrt eine Kopie des Gates, der
 # innere Lauf muss dieselbe Kopie sein) und mit dem festen Argument --innerer-lauf-zeitgrenze. Der
 # innere Lauf ist das Gate wie vorher und liest die Standardeingabe; der aeussere Teil liest sie nicht
-# und ruft ausser timeout kein Werkzeug auf. Das feste Argument oeffnet keinen Weg an der Grenze
+# und ruft ausser timeout, mktemp und rm (aus dem PATH; kill, wait, read und printf sind Builtins) kein Werkzeug auf (seit DT-C4-01,
+# siehe den Absatz unten). Das feste Argument oeffnet keinen Weg an der Grenze
 # vorbei: den Aufruf setzt .claude/settings.json, die Werkzeugeingabe kommt allein ueber die
 # Standardeingabe. ABBILDUNG: 0 nur, wenn der innere Lauf mit 0 endet; eine 2 bleibt 2; jeder andere
 # Ausgang -- Ueberschreitung (124), Abbruch nach dem Nachlauf (137), Fehler von timeout (125 bis
@@ -173,22 +249,71 @@
 # Zeichen 1,2 s bis 2,0 s; bei 93 Laeufen aus 31 Formen aus 150000 gleichen Zeichen hoechstens
 # 0,13 s. Nachmessung am 2026-10-22 nach dem Bau (andere Last, Original-Gate daneben): acht Eingaben
 # aus je 10000000 Zeichen (Bash: '&', Leerzeichen, '#', 'a'; Write: Kommentarzeile, 'a', Leerzeichen im
-# Prototyp, '&') gebautes Gate 2,5 s bis 4,5 s, Original-Gate 2,3 s bis 4,4 s, also kein messbarer
-# Mehraufwand und unter 40 % der Grenze; eine Eingabe ueber 12 s ist fuer dieses Gate nicht gefunden
-# (Berichtigung Delta 2, ST-C2-D-05). Das Pruefmittel zieht je Gate-Aufruf zusaetzlich eine
+# Prototyp, '&') gebautes Gate 2,5 s bis 4,5 s, Original-Gate 2,3 s bis 4,4 s (Messung des SecDevOps
+# Engineers); nach der Messung des Dynamic Software Testers 2,86 s bis 5,06 s, Maximum 5,06 s (Write mit 'a',
+# einmal; drei Wiederholungen 4,16 s bis 4,79 s); beide Messungen am Gate vor C4. Hoechster belegter Wert nach
+# dem Bau von C4 (neue Muster, Bereinigung des Pfads, Ablage des aeusseren Teils; DT-C3-04): 7,18 s (Dynamic
+# Software Tester, 2026-10-27, 07:58 bis 08:01 UTC, Last 0,06, Write mit Leerzeichen im Prototyp, am gestagten
+# Gate; Maximum von 7,184 s bei drei Laeufen je Eingabe). Seine Gegenmessung unter gleichen Bedingungen: Gate
+# vor C4 6,099 s bis 6,758 s, gebautes Gate 6,266 s bis 7,051 s, die Mittelwerte liegen 0,09 s bis 0,12 s
+# auseinander; das ist Streuung der Umgebung und keine Folge von C4 (das Gate vor C4 brauchte unter denselben
+# Bedingungen bis zu 6,76 s); alle Rueckgabewerte 0, unter der Grenze von 12 s. Eigene Messung daneben
+# (SecDevOps Engineer, 2026-10-27, Last 1 Minute zu Beginn 0,00, am Zwischenstand mit der sha256 decf859d...,
+# der sich vom Endstand nur in Kommentarzeilen unterscheidet; die acht Formen je dreimal nacheinander,
+# Eingaben aus je 10000000 Zeichen selbst erzeugt, Pfad backend/x.py, bei Leerzeichen im Prototyp
+# prototype/x.js): gebautes Gate 2,18 s bis 4,43 s (Maximum 4,43 s, Write mit '&'), Gate vor C4 daneben 2,24 s
+# bis 4,70 s (Maximum 4,70 s); eine harmlose Eingabe braucht (zehn Laeufe) 0,042 s bis 0,052 s, im
+# Ausgangsstand 0,035 s bis 0,041 s. Die Zeiten schwanken mit der Umgebung um etwa das 1,6- bis 1,8-Fache bei
+# gleicher Eingabe (2,2 s bis 4,7 s in dieser Messung, 3,79 s bis 7,18 s in der des Dynamic Software Testers);
+# massgeblich ist der hoechste
+# belegte Wert mit seinem Datum, eine Quote nennt dieser Kommentar nicht. Eine Eingabe ueber 12 s ist fuer
+# dieses Gate nicht gefunden (Berichtigung Delta 2, ST-C2-D-05). Das Pruefmittel zieht je Gate-Aufruf
+# zusaetzlich eine
 # eigene Grenze von 14 s und wertet eine Ueberschreitung als Durchlass; seine Faelle messen die
 # Grenze: S25 (cat um 20 s verzoegert, Soll 2; gemessen am 2026-10-22: Rueckgabewert 2 nach 12,0 s),
 # S26 (um 4 s, Soll 0; Rueckgabewert 0 nach 4,0 s), S27 (PATH ohne timeout, Soll 2), S28 (timeout
-# endet mit 125, Soll 2). UNGEMESSEN ist der Nachlauf -k 1: Er hat keinen Fall und keine Mutation
-# und ist nur durch die Probe vom 2026-10-22 belegt (inneres Skript ignoriert SIGTERM: Rueckgabewert
-# 137 nach 13,0 s); eine Mutation, die ihn entfernt, erkennt S25 nicht, weil das verzoegerte cat
-# schon auf TERM endet. Die Ausnahme von 6.13 d (ADR 0002, 6.13 c, Nachtrag vom 2026-10-21)
+# endet mit 125, Soll 2). Der Nachlauf -k 1 hat seit Posten 10 (C4, 2026-10-27) einen Fall und eine Mutation: S38
+# laesst den inneren Lauf TERM ueberstehen (BASH_ENV mit trap "" TERM und eine Attrappe von cat, die TERM ignoriert und
+# 20 s schlaeft; ohne Aenderung am Gate), Ende nach 13,0 s mit Rueckgabewert 2 und der Meldung zur Zeitgrenze
+# (Rueckgabewert 137); MP65 entfernt -k 1, dann liefe der innere Lauf bis zum Ende der Attrappe, ueber der Grenze des
+# Pruefmittels von 14 s. Vormals (hier als Beleg stehen gelassen): "UNGEMESSEN ist der Nachlauf -k 1: Er hat keinen
+# Fall und keine Mutation und ist nur durch die Probe vom 2026-10-22 belegt (inneres Skript ignoriert SIGTERM:
+# Rueckgabewert 137 nach 13,0 s); eine Mutation, die ihn entfernt, erkennt S25 nicht, weil das verzoegerte cat schon
+# auf TERM endet." Die Ausnahme von 6.13 d (ADR 0002, 6.13 c, Nachtrag vom 2026-10-21)
 # entfaellt fuer dieses Gate. Das main-Gate hat noch keine eigene Grenze (Posten 7, Teil am
 # main-Gate, offen; dort ist eine Eingabe ueber 15 s beschrieben).
 # Fehlt grep, blockiert das Gate mit Rueckgabewert 2 und einer Meldung (S11; vorher
 # Durchlass).
 # Fehlt sed oder tr, blockiert das Gate seit Posten 6 ebenso (L23, L24, S20 bis S24, S29, S30; vorher
 # Durchlass).
+#
+# DT-C4-01 (C4, 2026-10-27; Befund des Dynamic Software Testers, Bezug SR-003 Prototyp-Teil; Festlegung: ADR 0004, Teil B, Nachtrag vom
+# 2026-10-27 -- DT-C4-01: Waisenprozess, Festlegung der Behebung): Waisenprozess und Kanaele des Aufrufers. Vormals (Stand bis 2026-10-26,
+# hier als Beleg stehen gelassen; DT-C3-05 hatte es als Grenze unter Bedingung eingeordnet) belegte Luecke: Ignorierte ein vom inneren Lauf
+# aufgerufenes Werkzeug TERM (Attrappe von cat mit trap "" TERM und sleep 22), endete das Gate nach 12,006 s bis 12,012 s mit Rueckgabewert 2;
+# stdout schloss mit dem Gate, stderr erst nach 22,017 s bis 22,022 s, mit dem Ende des Waisenprozesses (fuenf Laeufe mit Aufrufern in Python
+# und Node; dieselbe Attrappe ohne das Ignorieren von TERM: beide Kanaele nach 12,007 s). Ursache: Der aeussere Teil rief timeout und den inneren
+# Lauf ohne Umleitung auf; der innere Lauf erbte stdin, stdout und stderr des Aufrufers, und das cat, das die Eingabe liest, hielt fd 2; das KILL
+# aus -k 1 ging nicht hinaus, weil timeout nur auf sein direktes Kind wartet. Ein Aufrufer, der bis zum Schliessen der Kanaele wartet, haette
+# 22 s und damit ueber die Grenze des Harness von 15 s hinaus gewartet; ein Hook, der seine Grenze reisst, wird abgebrochen und laesst durch.
+# Ob der Harness auf das Ende des Prozesses oder auf das Schliessen der Kanaele wartet, ist nicht gemessen; das Gate darf darauf nicht bauen
+# (ADR 0002, 6.13 b).
+# BEHEBUNG, allein am aeusseren Teil: Er legt mit mktemp -d eine Ablage an (fehlt mktemp oder scheitert es: Rueckgabewert 2, Meldung mit mktemp),
+# ruft timeout -k 1 12 mit dem inneren Lauf im Hintergrund auf (&) und wartet mit wait auf dessen Prozessnummer. ANNAHME DER BAUFORM: GNU timeout
+# macht sich ohne --foreground zum Fuehrer einer eigenen Prozessgruppe; die Prozessnummer von timeout ist damit zugleich die Nummer der
+# Gruppe (gemessen mit S35). Die Standardeingabe wird dem Hintergrundlauf ausdruecklich uebergeben (ein Hintergrundaufruf ohne Jobsteuerung liest
+# sonst aus /dev/null, und jede Eingabe waere nicht auswertbar); stdout und stderr des inneren Laufs gehen je in eine Datei der Ablage, nicht in
+# die Kanaele des Aufrufers. Endet wait mit einem anderen Ausgang als 0, schickt der aeussere Teil kill -KILL an die Prozessgruppe (Builtin; ein
+# Fehler, weil die Gruppe schon leer ist, wird nicht ausgewertet). Danach gibt er den Inhalt beider Dateien mit Builtins der Shell (read, printf)
+# auf seinen eigenen stdout und stderr weiter, nicht mit cat oder einem anderen Werkzeug aus dem PATH -- die Attrappen des Pruefmittels ersetzen
+# gerade solche Werkzeuge --, dann folgt seine eigene Meldung wie bisher; zuletzt entfernt rm die Ablage (scheitert das, aendert es die Entscheidung
+# nicht). Die Abbildung der Ausgaenge (0; 2; 124 und 137; jeder andere) bleibt. Damit haelt kein Waisenprozess die Kanaele des Harness: Sie erbt nur
+# das aeussere Gate, und sie schliessen mit seinem Ende; die Mitglieder der Gruppe raeumt das KILL ab. PREIS in sicherer Richtung: Der aeussere
+# Teil haengt zusaetzlich von mktemp ab; fehlt es, sperrt das Gate.
+# BENANNTE GRENZE (GP-7): Ein Werkzeug, das sich mit setsid oder setpgid aus der Gruppe loest, und ein Prozess im Zustand D ueberleben das KILL;
+# nach dem Ausgang 0 raeumt das Gate nicht ab, ein im Hintergrund zurueckgelassener Prozess ueberdauert es dann ebenfalls. Solche Prozesse halten
+# die Kanaele des Harness nicht, weil die Entkopplung auch ohne das Abraeumen traegt (P95), aber sie ueberdauern das Gate; der Zustand D ist ohne
+# Fall. Fallklassen im Pruefmittel: KP-14 (die Behebung), GP-7 (die Grenze).
 #
 # BENANNTE GRENZE (P-10, ADR 0002, 6.13 c: benannte Grenze, keine neue
 # Faehigkeit): 5.6 nennt drei Trennungen: eigenes Verzeichnis, keine
@@ -240,16 +365,37 @@ unset POSIXLY_CORRECT
 set -uo pipefail
 
 # Posten 7, Teil am Prototyp-Gate (C3, 2026-10-22; Kopfkommentar, Absatz "Posten 7"): eigene Zeitgrenze.
-# Aeusserer Teil: liest die Standardeingabe nicht und ruft ausser timeout kein Werkzeug auf (command -v ist
-# ein Builtin). Innerer Lauf: das Gate wie bisher, aufgerufen mit dem festen Argument.
+# Aeusserer Teil: liest die Standardeingabe nicht; Werkzeuge aus dem PATH: timeout, mktemp und rm (seit DT-C4-01, C4,
+# 2026-10-27, Kopfkommentar, Absatz "DT-C4-01"); command -v, kill, wait, read und printf sind Builtins. Innerer Lauf:
+# das Gate wie bisher, aufgerufen mit dem festen Argument.
 if [ "${1:-}" != "--innerer-lauf-zeitgrenze" ]; then
   if ! command -v timeout >/dev/null 2>&1; then
     echo "Gate prototyp-trennung: timeout ist nicht installiert; das Gate kann seine Zeitgrenze nicht ziehen und blockiert (ADR 0002, 6.13 b)." >&2
     echo "Naechster Schritt: timeout (Paket coreutils) installieren und den Befehl wiederholen." >&2
     exit 2
   fi
-  timeout -k 1 12 "$BASH" "$0" --innerer-lauf-zeitgrenze
+  if ! command -v mktemp >/dev/null 2>&1; then
+    echo "Gate prototyp-trennung: mktemp ist nicht installiert; das Gate kann die Ausgabe seines inneren Laufs nicht ablegen und blockiert (ADR 0002, 6.13 b)." >&2
+    echo "Naechster Schritt: mktemp (Paket coreutils) installieren und den Befehl wiederholen." >&2
+    exit 2
+  fi
+  zg_ablage=$(mktemp -d)
+  zg_mk=$?
+  if [ "$zg_mk" != 0 ] || [ ! -d "$zg_ablage" ]; then
+    echo "Gate prototyp-trennung: mktemp -d scheitert (Rueckgabewert $zg_mk); das Gate kann die Ausgabe seines inneren Laufs nicht ablegen und blockiert (ADR 0002, 6.13 b)." >&2
+    echo "Naechster Schritt: das temporaere Verzeichnis (TMPDIR) auf Platz und Rechte pruefen und den Befehl wiederholen." >&2
+    exit 2
+  fi
+  # DT-C4-01: der innere Lauf laeuft im Hintergrund, mit der Standardeingabe des Aufrufers (0<&0: sonst /dev/null) und mit stdout und stderr in Dateien der Ablage,
+  # nicht in den Kanaelen des Aufrufers; die Prozessnummer von timeout ist zugleich die Nummer seiner Prozessgruppe (Annahme der Bauform, Kopfkommentar).
+  timeout -k 1 12 "$BASH" "$0" --innerer-lauf-zeitgrenze 0<&0 >"$zg_ablage/aus" 2>"$zg_ablage/fehler" &
+  zg_pid=$!
+  wait "$zg_pid"
   zg_status=$?
+  [ "$zg_status" = 0 ] || kill -KILL -- "-$zg_pid" 2>/dev/null
+  while IFS= read -r zg_zeile || [ -n "$zg_zeile" ]; do printf '%s\n' "$zg_zeile"; done < "$zg_ablage/aus"
+  while IFS= read -r zg_zeile || [ -n "$zg_zeile" ]; do printf '%s\n' "$zg_zeile" >&2; done < "$zg_ablage/fehler"
+  rm -rf "$zg_ablage" 2>/dev/null
   case "$zg_status" in
     0) exit 0 ;;
     2) exit 2 ;;
@@ -293,7 +439,7 @@ fi
 # Absatz "Seit Posten 5".
 pruefung_unmoeglich() {
   echo "Gate prototyp-trennung: Pruefung nicht moeglich ($1); das Gate kann nicht pruefen und blockiert (ADR 0002, 6.13 b)." >&2
-  echo "Naechster Schritt: das genannte Werkzeug (grep, sed oder tr) im PATH pruefen (command -v) und den Befehl wiederholen; bleibt die Meldung, den Befehl in getrennte Aufrufe zerlegen." >&2
+  echo "Naechster Schritt: das genannte Werkzeug (grep, sed, tr oder jq) im PATH pruefen (command -v) und den Befehl wiederholen; bei jq kann auch eine Werkzeugeingabe die Ursache sein, in der ein Feld keine Zeichenkette ist (etwa ein Objekt in new_string): dann jedes Feld als Zeichenkette fassen; bleibt die Meldung, den Befehl in getrennte Aufrufe zerlegen." >&2
   exit 2
 }
 trifft() {
@@ -308,7 +454,7 @@ trifft() {
 }
 
 # Posten 6 (C3, 2026-10-22; ADR 0002, 6.13 c, Festlegung fuer C3): schritt_geprueft <Rueckgabewert>
-# <Werkzeug> <Stelle> wertet den Rueckgabewert eines sed- oder tr-Schritts, dessen Ergebnis in die
+# <Werkzeug> <Stelle> wertet den Rueckgabewert eines sed-, tr- oder (seit Posten 8, C4, 2026-10-27) jq-Schritts, dessen Ergebnis in die
 # Entscheidung eingeht. Aufruf unmittelbar nach der Zuweisung, mit $? als erstem Argument; jeder andere
 # Ausgang als 0 beendet das Gate ueber pruefung_unmoeglich mit Rueckgabewert 2. Laeuft in der
 # Hauptshell, nie in einer Subshell (dort beendete exit nur die Subshell).
@@ -316,7 +462,46 @@ schritt_geprueft() {
   [ "$1" = 0 ] || pruefung_unmoeglich "$2, Rueckgabewert $1, $3"
 }
 
+# Posten 3 (C4, 2026-10-27; L09): pfad_bereinigen <Pfad> setzt BEREINIGT auf den lexikalisch bereinigten Pfad; Aufruf vor jeder Zuordnung
+# (Projektpraefix, Prosa-Ausnahme, Richtung), fuer den Dateipfad und das Projektverzeichnis. Reine Shell, ohne externes Werkzeug (kein
+# realpath, kein readlink, kein sed) und ohne Subshell, damit keine neue Abhaengigkeit und keine neue ungepruefte Stelle entsteht.
+# (1) Mehrere Schraegstriche werden zu einem; (2) Segmente "." entfallen; (3) ein Segment ".." hebt das vorangehende Segment auf, wenn
+# es eines gibt, das nicht ".." ist; am Anfang eines absoluten Pfads entfaellt es, am Anfang eines relativen Pfads bleibt es stehen;
+# (4) ein Schraegstrich am Ende entfaellt. Keine Aufloesung symbolischer Verknuepfungen, kein Zugriff auf das Dateisystem (GP-5).
+pfad_bereinigen() {
+  local rest="$1" seg abs=0 n
+  local -a out=()
+  [ "${rest:0:1}" = "/" ] && abs=1
+  while [ -n "$rest" ]; do
+    case "$rest" in
+      */*) seg="${rest%%/*}"; rest="${rest#*/}" ;;
+      *) seg="$rest"; rest="" ;;
+    esac
+    case "$seg" in
+      "") : ;;
+      ".") : ;;
+      "..") n=${#out[@]}; if [ "$n" -gt 0 ] && [ "${out[$((n - 1))]}" != ".." ]; then unset "out[$((n - 1))]"; elif [ "$abs" = 0 ]; then out+=(".."); fi ;;
+      *) out+=("$seg") ;;
+    esac
+  done
+  BEREINIGT=""
+  for seg in ${out[@]+"${out[@]}"}; do BEREINIGT="${BEREINIGT}${seg}/"; done
+  BEREINIGT="${BEREINIGT%/}"
+  [ "$abs" = 1 ] && BEREINIGT="/${BEREINIGT}"
+  return 0
+}
+
 proj="${CLAUDE_PROJECT_DIR:-$PWD}"
+pfad_bereinigen "$proj"; proj="$BEREINIGT"
+
+# Posten 9 (C4, 2026-10-27; SR-006): ATTR, ATIMPORT und URLKLAMMER stehen hier, vor dem Bash-Weg, einmal und werden von beiden Wegen
+# (grobes Netz am Bash-Weg, Dateiwerkzeuge) und beiden Richtungen gelesen. Zeichenklassen im Muster, nicht grep -i fuer den ganzen
+# Aufruf: -i traefe auch den Verzeichnisnamen, die Bauwurzeln und die JS- und Python-Formen. ATTR: src oder href mit optionalem Leerraum
+# um das Gleichheitszeichen; ATIMPORT: das Wort @import; URLKLAMMER: url mit optionalem Leerraum vor der Klammer -- je ohne Ruecksicht
+# auf die Schreibweise (SRC=, Href=, @IMPORT URL(). Vormals nur in Kleinschreibung, und ATTR stand erst hinter dem Bash-Weg.
+ATTR='([sS][rR][cC]|[hH][rR][eE][fF])[[:space:]]*=[[:space:]]*'
+ATIMPORT='@[iI][mM][pP][oO][rR][tT]'
+URLKLAMMER='[uU][rR][lL][[:space:]]*\('
 
 # Bash-Befehle: grobes Netz. Ein Schreibbefehl, dessen Text einen Import mit
 # Bezug auf prototype/ traegt (Heredoc, echo mit Umleitung, sed), wuerde am
@@ -328,8 +513,10 @@ proj="${CLAUDE_PROJECT_DIR:-$PWD}"
 # das Gate pfadgenau (dieselbe Abwaegung wie beim main-Gate,
 # .claude/rules/claude-konfiguration.md).
 tool=$(printf '%s' "$input" | jq -r '.tool_name // empty')
+schritt_geprueft $? jq "Werkzeugname"
 if [ "$tool" = "Bash" ]; then
   cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty')
+  schritt_geprueft $? jq "Befehl am Bash-Weg"
   [ -n "$cmd" ] || exit 0
   # Fuer die Importpruefung den Befehl zu einer Zeile zusammenziehen und
   # Kommentare entfernen -- ein Heredoc mit ueber mehrere Zeilen verteiltem oder
@@ -365,7 +552,7 @@ if [ "$tool" = "Bash" ]; then
   schritt_geprueft $? sed "Bereinigung der Umleitungsziele am Bash-Weg"
   schreibwirkung='(>>?|\btee[[:space:]]|sed[[:space:]]+-[a-zA-Z]*i|<<)|(\b(mv|cp|rm|mkdir|touch|truncate|ln|install|patch|dd)[[:space:]]|\b(python[0-9.]*|perl|ruby|node|deno|php|Rscript)[[:space:]]+([^|;&]*[[:space:]]+)?-[a-zA-Z]*(c|e|i|p|r|n)([^a-zA-Z]|$)|\b(ed|ex)[[:space:]])'
   if trifft "$bereinigt" -e "$schreibwirkung" \
-      && trifft "$cmd_flach" -e "(from|require|import|@import|__import__|import_module)[^|&]*prototype([./\"'[:space:]]|\$)"; then
+      && trifft "$cmd_flach" -e "(from|require|import|${ATIMPORT}|__import__|import_module|${ATTR})[^|&]*prototype([./\"'[:space:]]|\$)"; then
     echo "BLOCKIERT (Projektauftrag 5.6): Shell-Befehl mit Schreibwirkung und einem Import, der 'prototype' beruehrt." >&2
     echo "Importe zwischen prototype/ und Produktionscode sind in beide Richtungen untersagt." >&2
     echo "Die Datei mit dem Write-Werkzeug schreiben -- dort prueft das Gate pfadgenau." >&2
@@ -375,7 +562,11 @@ if [ "$tool" = "Bash" ]; then
 fi
 
 fp=$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.notebook_path // .tool_input.path // empty')
+schritt_geprueft $? jq "Dateipfad am Weg der Dateiwerkzeuge"
 [ -n "$fp" ] || exit 0
+
+# Posten 3 (C4, 2026-10-27; L09): der Pfad wird vor jeder Zuordnung bereinigt (Kopfkommentar, Absatz "Posten 3").
+pfad_bereinigen "$fp"; fp="$BEREINIGT"
 
 case "$fp" in
   "$proj"/*) rel="${fp#"$proj"/}" ;;
@@ -408,6 +599,7 @@ payload=$(printf '%s' "$input" | jq -r '
     # schadet nichts, falls es nie auftritt.
     ( (.tool_input.edits // []) | .[]? | objects | .new_string // empty )
   ] | join("\n")')
+schritt_geprueft $? jq "Dateiinhalt am Weg der Dateiwerkzeuge"
 [ -n "$payload" ] || exit 0
 
 # Zusaetzlich eine normalisierte Fassung: Kommentare entfernt, Zeilenumbrueche
@@ -457,9 +649,12 @@ WURZELN='backend|frontend|deploy|src|app|lib|server|packages|apps'
 # Posten 2 (C3, 2026-10-22; Kopfkommentar, Nachtrag vom 2026-10-22): Importwort-Gruppe und Attributform
 # EINMAL definiert und von beiden Richtungen gelesen (wie WURZELN). IMPORTWORT: from, require mit
 # optionalem Leerraum vor der Klammer, import(, @import mit optionalem url( und import. ATTR: src oder
-# href mit optionalem Leerraum um das Gleichheitszeichen.
-IMPORTWORT='(from|require[[:space:]]*\(|import\(|@import([[:space:]]+url[[:space:]]*\()?|import)'
-ATTR='(src|href)[[:space:]]*=[[:space:]]*'
+# href mit optionalem Leerraum um das Gleichheitszeichen. Seit Posten 9 (C4, 2026-10-27) steht ATTR oben bei proj (vor dem Bash-Weg);
+# @import und url( in IMPORTWORT lesen ATIMPORT und URLKLAMMER (ohne Ruecksicht auf die Schreibweise); UQ und UQK sind die Zeichen
+# eines Werts ohne Anfuehrungszeichen: ausser Anfuehrungszeichen und Leerraum nicht ">" (src= und href=) bzw. nicht ")" (url( ).
+IMPORTWORT="(from|require[[:space:]]*\(|import\(|${ATIMPORT}([[:space:]]+${URLKLAMMER})?|import)"
+UQ="[^\"'\`[:space:]>]"
+UQK="[^\"'\`[:space:])]"
 
 if [ "${rel#prototype/}" != "$rel" ]; then
   # Richtung 2: Prototyp importiert aus dem Produktionscode. Die Bauwurzeln
@@ -485,6 +680,8 @@ if [ "${rel#prototype/}" != "$rel" ]; then
       -e "${IMPORTWORT}[[:space:]]*\(?[[:space:]]*${Q}((\.\./)*|\./(\.\./)+)(${WURZELN})/" \
       -e "${IMPORTWORT}[[:space:]]*\(?[[:space:]]*${Q}[@~#]/" \
       -e "${ATTR}${Q}(\./)?(\.\./)+(${WURZELN})/" \
+      -e "${ATTR}(\./)?(\.\./)+(${WURZELN})/" \
+      -e "${ATIMPORT}[[:space:]]+${URLKLAMMER}[[:space:]]*(\./)?(\.\./)+(${WURZELN})/" \
       -e "^[[:space:]]*(from|import)[[:space:]]+(backend|frontend|deploy)([.[:space:]]|\$)" \
       -e "(import_module|__import__|import)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)[./]" \
       -e "(import_module|__import__)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)${Q}" \
@@ -511,6 +708,8 @@ fi
 if trifft "$pruefstoff" \
     -e "${IMPORTWORT}[[:space:]]*\(?[[:space:]]*${Q}(${NQ}*[/\\\\])?prototype(/|\\\\|${Q})" \
     -e "${ATTR}${Q}(${NQ}*[/\\\\])?prototype(/|\\\\|${Q})" \
+    -e "${ATTR}(${UQ}*[/\\\\])?prototype(/|\\\\|[[:space:]>]|\$)" \
+    -e "${ATIMPORT}[[:space:]]+${URLKLAMMER}[[:space:]]*(${UQK}*[/\\\\])?prototype(/|\\\\|[[:space:])]|\$)" \
     -e "^[[:space:]]*(from|import)[[:space:]]+prototype([.[:space:]]|\$)" \
     -e "(import_module|__import__|import)[[:space:]]*\([[:space:]]*${Q}prototype[./]" \
     -e "(import_module|__import__)[[:space:]]*\([[:space:]]*${Q}prototype${Q}"; then

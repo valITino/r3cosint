@@ -156,12 +156,33 @@
 # 2026-10-22 gedeckt), neu GP-4 (Grenze an der Schnittstelle, ZF10d), KP-8 (Rueckgabewerte der sed- und tr-
 # Schritte), KP-9 (Zeitgrenze des Gates). Zahlen: vor C3 447 Faelle, 49 Mutationen, 36 Fallklassen; jetzt 479
 # Faelle, 66 Mutationen (MP16 bis MP32), 39 Fallklassen.
+# Nachtrag am 2026-10-27 (C4: Posten 8, 9, 3 und 10 sowie DT-C4-01 am Prototyp-Gate unter R3-Q-010; ADR 0004, Teil B, Nachtrag vom 2026-10-27 -- Festlegung
+# fuer C4 und Nachtrag DT-C4-01: Waisenprozess, Festlegung der Behebung): Zuerst die Faelle mit Soll (Lauf A gegen das jeweils unveraenderte Gate), dann das
+# Gate, zuletzt die Vermerke (6.13 g). Posten 8 (jq-Schritte, SR-005, DT-C3-02): S31 bis S33 mit je einer jq-Attrappe (PATH-Wahlen jq-ohne-tool, jq-ohne-befehl,
+# jq-ohne-pfad), B74 (MultiEdit mit Zeichenkette und Objekt, Art UNMOEGLICH), Gegenprobe P55; MP33 bis MP36; KP-10. Posten 9 (SR-006, DT-C3-01): (a) B75 bis
+# B86 mit Gegenproben P56 bis P68 sowie P102 und P103, KP-11; (b) B87 bis B94 mit Gegenproben P69 bis P84, KP-12; MP37 bis MP46, MP66 und MP67. Posten 3 (L09): L09 hat Soll 2 und ist
+# geschlossen; B95 bis B100, Gegenproben und Folgen P85 bis P94 (P92: Grenze GP-5), neuer Kontext ABS (CLAUDE_PROJECT_DIR mit Schraegstrich am Ende) und neue
+# Art JSON-R2 (die Meldung nennt Richtung 2, auch wenn der Pfad nicht mit prototype/ beginnt); MP47 bis MP53; KP-13, GP-5. DT-C4-01 (Waisenprozess, Bezug
+# SR-003): S35 und S36 mit Attrappen von cat (waise-term, waise-ohne-trap), S37 (PATH ohne mktemp), P95 (Grenze GP-7, Attrappe von grep mit einem
+# setsid-Prozess); neue Arten JSON-EOF und JSON-EOF-GRENZE: stdout und stderr des Gates sind benannte Rohre (FIFO) mit je einem Leser, der den Zeitpunkt des
+# Schliessens (EOF) festhaelt -- keine Prozesssubstitution, die Rohr-Deskriptoren an Waisenprozesse vererbt (am 2026-10-27 mit P95 gemessen) --, EOF
+# hoechstens 13,5 s nach dem Start, die Prozesse der Attrappe leben nach dem Ende des Gates nicht mehr (JSON-EOF) bzw. mindestens einer lebt
+# (JSON-EOF-GRENZE); alle PATH-Varianten fuehren mktemp und rm ausser ohne-mktemp; MP54 bis MP59; KP-14, GP-7; der Messwert steht in der Ausgabezeile
+# (messung=). Posten 10 (Pruefmittel-Reste): S38 (Nachlauf -k 1; PATH-Wahl term-ignoriert mit BASH_ENV und trap "" TERM), B101 bis B104 mit Gegenproben P96 bis
+# P99 (import_module je Richtung, mit Punkt und als blosser Modulname), P100 (statische JS-Form, Gegenprobe zu P52), P101 (Grenze GP-6, Python-Formen in
+# Richtung 2); MP60 bis MP65. GM-8: G114 bis G117 am unveraenderten main-Gate gemessen (alle Soll 0, Klasse grenze). Die langsamen Faelle (S25, S26, S35,
+# S36, S38, P95) laufen im Mutationsmodus nur gegen die Mutationen der Zeitgrenze (ZEITGRENZE_MUTATIONEN); der Normalmodus und die Grundlinie fahren sie
+# immer. Neue Werkzeuge des Laufs: date, setsid, sleep, mkfifo; die zusaetzliche Umgebung eines Falls heisst jetzt env_zusatz (vorher posix_zusatz). Zahlen: vor
+# C4 479 Faelle, 66 Mutationen, 39 Fallklassen; jetzt 570 Faelle, 101 Mutationen (MP33 bis MP67), 47 Fallklassen (neu KP-10 bis KP-14, GP-5 bis GP-7).
+# Behebung nach der statischen Pruefung vom 2026-10-27 (ST-C4-01 bis ST-C4-06): P102 (Ende des Werts einer url( ohne Anfuehrungszeichen an der Klammer, UQK) mit
+# MP66, P103 (Ende des Werts von src= und href= ohne Anfuehrungszeichen am Zeichen >, UQ) mit MP67, MP50 eng gefasst (nur Eingaben mit Schraegstrich am Ende,
+# Fall B99), Abraeumen der Prozesse der Attrappen nur mit Pruefung der Prozessidentitaet (prozess_gehoert_zum_fall).
 # "Jedes Hook-Skript wird vor dem Einbau gegen einen blockierenden und einen
 # durchzulassenden Fall geprueft. Ein ungetestetes Gate ist kein Gate."
 # (.claude/rules/claude-konfiguration.md, Abschnitt "Hooks")
 #
 # ZWEI MODI:
-#   1. Normalmodus (kein Parameter): 479 vorgemessene Faelle laufen gegen die
+#   1. Normalmodus (kein Parameter): 570 vorgemessene Faelle laufen gegen die
 #      Gate-Dateien DES ARBEITSBAUMS (oder, nur fuer Pruefrollen, gegen eine
 #      per Umgebungsvariable ueberschriebene Kopie, siehe Abschnitt 3a weiter
 #      unten). main-Faelle laufen gegen einen Wegwerf-Klon auf main, einen auf
@@ -172,7 +193,7 @@
 #      JSON von der Standardeingabe und urteilen.
 #   2. Modus --mutationen (Gegenprobe): zuerst eine GRUNDLINIE -- die
 #      vollstaendige Fallliste gegen die UNVERAENDERTEN Gates; ist sie nicht
-#      gruen, endet der Modus sofort mit Rueckgabewert 2. Danach 66 fest im
+#      gruen, endet der Modus sofort mit Rueckgabewert 2. Danach 99 fest im
 #      Skript hinterlegte Mutationen, die je GENAU EINE Sperre schwaechen oder
 #      eine Ausnahme entfernen (MP4, MP5, MP32), in einer Kopie eines Gates; die
 #      vollstaendige Fallliste des betroffenen Gates laeuft gegen die Kopie.
@@ -193,7 +214,7 @@
 # NIEDRIGERES MASS als scripts/dod-gate-selbsttest.sh (ADR 0002, 6.13 d
 # verlangt das ausdruecklich): keine Zusicherungstabelle, keine mechanischen
 # mehrstufigen Deckungen, keine separate Mutationsdatei -- die Fallliste, die
-# 66 Mutationen, die 39 Fallklassen der Kopfkommentare und die Zuordnung zu
+# 101 Mutationen, die 47 Fallklassen der Kopfkommentare und die Zuordnung zu
 # den sieben Abnahmekriterien stehen FEST im Skript (Datenteil weiter unten).
 #
 # Verifikation dieses Skripts UND der beiden Gates: Static und Dynamic
@@ -212,7 +233,7 @@
 # NEU-1 der statischen Nachpruefung vom 2026-09-23); heute ruft die Kette es
 # nicht auf.
 #
-# Rueckgabewert 0: Normalmodus -- alle 479 Faelle bestanden UND je Gate
+# Rueckgabewert 0: Normalmodus -- alle 570 Faelle bestanden UND je Gate
 # mindestens ein Fall mit Soll 2 und einer mit Soll 0 UND je Gate mindestens
 # ein Fall der Klasse blockierend und einer der Klasse durchlaufend UND die
 # gemessene Gesamtzahl entspricht der erwarteten Zahl UND der Arbeitsbaum
@@ -222,7 +243,7 @@
 # geprueft; eine fehlende Kennung erscheint dort als FEHLEND und wirkt seit
 # E4.2 auf den Rueckgabewert -- Restbefund N-2/T-4 der statischen
 # Nachpruefung vom 2026-09-23, behoben). Modus --mutationen -- die
-# Grundlinie ist gruen UND alle 66 Mutationen erkannt UND der Arbeitsbaum
+# Grundlinie ist gruen UND alle 101 Mutationen erkannt UND der Arbeitsbaum
 # blieb unveraendert. Sonst Rueckgabewert 2. Rueckgabewert 3: der Lauf kommt
 # nicht zustande (ein Werkzeug fehlt, ein Klon ist nicht anlegbar, unbekannter
 # Parameter) -- mit Meldung auf stderr.
@@ -255,7 +276,7 @@ fi
 # -----------------------------------------------------------------------------
 # 2. Werkzeuge, die dieser Lauf selbst braucht
 # -----------------------------------------------------------------------------
-for w in jq git mktemp sha256sum; do
+for w in jq git mktemp sha256sum date setsid sleep mkfifo; do
   if ! command -v "$w" >/dev/null 2>&1; then
     echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' fehlt; der Lauf kommt nicht zustande." >&2
     exit 3
@@ -555,6 +576,120 @@ esac
 exec "$SED_ECHT" "\$@"
 SEDEOF
 chmod +x "$BIN_SED_OHNE_KOMMENTAR/sed"
+# C4 (2026-10-27, Posten 8, ADR 0004, Teil B, Nachtrag vom 2026-10-27 -- Festlegung fuer C4): je ein jq, das nur den Aufruf fuer EINE Stelle
+# des Prototyp-Gates verweigert (Rueckgabewert 5, keine Ausgabe) und jeden anderen Aufruf an das echte jq weitergibt, sodass die Wache und
+# die Pruefung der Eingabe (ST-13) unveraendert durchlaufen -- nach dem Muster von sed-ohne-kommentar. Die Stellen: tool (Werkzeugname),
+# cmd (Befehl am Bash-Weg) und fp (Dateipfad). Fuer payload gibt es keine Attrappe: der Fall zu DT-C3-02 laesst den Ausdruck selbst scheitern.
+JQ_ECHT=$(command -v jq) || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug 'jq' nicht aufloesbar." >&2; exit 3; }
+BIN_JQ_OHNE_TOOL="$T/bin-jq-ohne-tool"
+BIN_JQ_OHNE_BEFEHL="$T/bin-jq-ohne-befehl"
+BIN_JQ_OHNE_PFAD="$T/bin-jq-ohne-pfad"
+mkdir -p "$BIN_JQ_OHNE_TOOL" "$BIN_JQ_OHNE_BEFEHL" "$BIN_JQ_OHNE_PFAD"
+for w in cat grep sed tr git timeout; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_JQ_OHNE_TOOL/$w"
+  ln -s "$p" "$BIN_JQ_OHNE_BEFEHL/$w"
+  ln -s "$p" "$BIN_JQ_OHNE_PFAD/$w"
+done
+cat > "$BIN_JQ_OHNE_TOOL/jq" <<JQEOF
+#!/bin/sh
+case "\$2" in
+  '.tool_name // empty') exit 5 ;;
+esac
+exec "$JQ_ECHT" "\$@"
+JQEOF
+cat > "$BIN_JQ_OHNE_BEFEHL/jq" <<JQEOF
+#!/bin/sh
+case "\$2" in
+  '.tool_input.command // empty') exit 5 ;;
+esac
+exec "$JQ_ECHT" "\$@"
+JQEOF
+cat > "$BIN_JQ_OHNE_PFAD/jq" <<JQEOF
+#!/bin/sh
+case "\$2" in
+  '.tool_input.file_path // .tool_input.notebook_path // .tool_input.path // empty') exit 5 ;;
+esac
+exec "$JQ_ECHT" "\$@"
+JQEOF
+chmod +x "$BIN_JQ_OHNE_TOOL/jq" "$BIN_JQ_OHNE_BEFEHL/jq" "$BIN_JQ_OHNE_PFAD/jq"
+# C4 (2026-10-27, DT-C4-01, ADR 0004, Teil B, Nachtrag vom 2026-10-27 -- DT-C4-01: Waisenprozess, Festlegung der Behebung): der aeussere Teil des
+# Prototyp-Gates ruft seit der Behebung auch mktemp und rm auf. Alle PATH-Varianten oben fuehren deshalb mktemp und rm; sonst sperrten L23, L24, S27 und die
+# Faelle der Wachen aus diesem Grund und nicht aus ihrem eigenen (wie bei timeout, Festlegung fuer C3, Posten 7). Ausnahme: die Variante ohne mktemp (unten).
+MKTEMP_ECHT=$(command -v mktemp) || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug 'mktemp' nicht aufloesbar." >&2; exit 3; }
+RM_ECHT=$(command -v rm) || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug 'rm' nicht aufloesbar." >&2; exit 3; }
+GREP_ECHT=$(command -v grep) || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug 'grep' nicht aufloesbar." >&2; exit 3; }
+SETSID_ECHT=$(command -v setsid) || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug 'setsid' nicht aufloesbar." >&2; exit 3; }
+for d in "$T"/bin-*; do
+  ln -s "$MKTEMP_ECHT" "$d/mktemp"
+  ln -s "$RM_ECHT" "$d/rm"
+done
+# DT-C4-01: PATH ohne mktemp (das Gate sperrt mit einer Meldung, die mktemp nennt); Attrappen von cat, die einen Waisenprozess hinterlassen -- waise-term ignoriert TERM
+# und schlaeft 22 s (Attrappe aus DT-C4-01), waise-ohne-trap ist dieselbe Attrappe ohne das Ignorieren von TERM (Gegenprobe); eine Attrappe von grep, die einmal je Fall
+# einen Prozess ausserhalb der Gruppe (setsid) startet, der die Kanaele erbt und TERM ignoriert (Grenze). Die Attrappen hinterlegen ihre Prozessnummern in C4_ATTRAPPE_LOG;
+# die Pfade der echten Werkzeuge kommen aus der Umgebung des Falls (C4_SLEEP, C4_SETSID, C4_GREP, C4_CAT).
+BIN_OHNE_MKTEMP="$T/bin-ohne-mktemp"
+BIN_WAISE_TERM="$T/bin-waise-term"
+BIN_WAISE_OHNE_TRAP="$T/bin-waise-ohne-trap"
+BIN_GRENZE_SETSID="$T/bin-grenze-setsid"
+mkdir -p "$BIN_OHNE_MKTEMP" "$BIN_WAISE_TERM" "$BIN_WAISE_OHNE_TRAP" "$BIN_GRENZE_SETSID"
+for w in cat grep sed tr jq git timeout rm; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_OHNE_MKTEMP/$w"
+done
+for w in grep sed tr jq git timeout mktemp rm; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_WAISE_TERM/$w"
+  ln -s "$p" "$BIN_WAISE_OHNE_TRAP/$w"
+done
+for w in cat sed tr jq git timeout mktemp rm; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_GRENZE_SETSID/$w"
+done
+cat > "$BIN_WAISE_TERM/cat" <<'WEOF'
+#!/bin/sh
+trap '' TERM
+"$C4_SLEEP" 22 &
+echo "$$ $!" >> "$C4_ATTRAPPE_LOG"
+wait
+exit 0
+WEOF
+cat > "$BIN_WAISE_OHNE_TRAP/cat" <<'WEOF'
+#!/bin/sh
+"$C4_SLEEP" 22 &
+echo "$$ $!" >> "$C4_ATTRAPPE_LOG"
+wait
+exit 0
+WEOF
+cat > "$BIN_GRENZE_SETSID/grep" <<'GEOF'
+#!/bin/sh
+MARKE="$C4_ATTRAPPE_LOG.marke"
+if [ ! -e "$MARKE" ]; then
+  : > "$MARKE"
+  "$C4_SETSID" /bin/sh -c 'trap "" TERM; "$0" 22 & echo "$$ $!" >> "$C4_ATTRAPPE_LOG"; wait' "$C4_SLEEP" &
+fi
+exec "$C4_GREP" "$@"
+GEOF
+chmod +x "$BIN_WAISE_TERM/cat" "$BIN_WAISE_OHNE_TRAP/cat" "$BIN_GRENZE_SETSID/grep"
+# C4 (2026-10-27, Posten 10, ADR 0004, Teil B, Nachtrag vom 2026-10-27 -- Festlegung fuer C4): Fall zu -k 1 (DT-C3-03, ST-C3-04). Der innere Lauf uebersteht TERM, ein
+# Werkzeug haelt ihn ueber die Grenze hinaus. Technik, ohne Aenderung am Gate (am 2026-10-27 gemessen; die Probe des Dynamic Software Testers zu DT-C3-03 liegt dem Bau nur
+# als Fremdbeleg vor): BASH_ENV zeigt auf eine Datei mit trap '' TERM -- jedes nicht interaktive bash, auch der innere Lauf, liest sie beim Start und ignoriert TERM --, und eine
+# Attrappe von cat ignoriert TERM ebenfalls und schlaeft 20 s, bevor sie wie cat liest. timeout schickt nach 12 s TERM an die Gruppe (alle ignorieren es) und nach dem Nachlauf
+# von 1 s KILL: Ende nach etwa 13 s mit Rueckgabewert 2 und der Meldung zur Zeitgrenze (Rueckgabewert 137). Ohne -k 1 liefe der innere Lauf bis zum Ende der Attrappe (20 s).
+BIN_TERM_IGNORIERT="$T/bin-term-ignoriert"
+mkdir -p "$BIN_TERM_IGNORIERT"
+for w in grep sed tr jq git timeout mktemp rm; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_TERM_IGNORIERT/$w"
+done
+cat > "$BIN_TERM_IGNORIERT/cat" <<'KEOF'
+#!/bin/sh
+trap '' TERM
+"$C4_SLEEP" 20
+exec "$C4_CAT" "$@"
+KEOF
+chmod +x "$BIN_TERM_IGNORIERT/cat"
+printf "trap '' TERM\n" > "$T/term-ignorieren.sh"
 
 # -----------------------------------------------------------------------------
 # 8. Hilfsfunktionen zum Bauen der JSON-Eingaben (bj/wj, Sonderformen und
@@ -566,6 +701,10 @@ ej() { jq -cn --arg t "${4:-Edit}" --arg f "$1" --arg o "$2" --arg n "$3" '{tool
 mej() { jq -cn --arg f "$1" --arg o "$2" --arg n "$3" '{tool_name:"MultiEdit", tool_input:{file_path:$f, edits:[{old_string:$o, new_string:$n}]}}'; }
 nej() { jq -cn --arg p "$1" --arg s "$2" '{tool_name:"NotebookEdit", tool_input:{notebook_path:$p, new_source:$s}}'; }
 rj() { jq -cn --arg f "$1" '{tool_name:"Read", tool_input:{file_path:$f}}'; }
+# C4 (Posten 8): MultiEdit mit zwei Aenderungen. mej_gemischt: die zweite traegt in new_string ein Objekt statt einer Zeichenkette (DT-C3-02);
+# mej_zwei: beide new_string sind Zeichenketten (Gegenprobe).
+mej_gemischt() { jq -cn --arg f "$1" --arg n "$2" '{tool_name:"MultiEdit", tool_input:{file_path:$f, edits:[{old_string:"x", new_string:$n}, {old_string:"y", new_string:{a:1}}]}}'; }
+mej_zwei() { jq -cn --arg f "$1" --arg n1 "$2" --arg n2 "$3" '{tool_name:"MultiEdit", tool_input:{file_path:$f, edits:[{old_string:"x", new_string:$n1}, {old_string:"y", new_string:$n2}]}}'; }
 wj_ohne_content() { jq -cn --arg f "$1" '{tool_name:"Write", tool_input:{file_path:$f}}'; }
 
 # Platzhalter {MK} {ZM} {MS} {AK} {KR} {AB} literal ersetzen (N-7: Muster- UND
@@ -604,7 +743,7 @@ bj_zeile() { printf '%s\n%s' "$(ph "$1")" "$2" | jq -Rsc '{tool_name:"Bash", too
 # -----------------------------------------------------------------------------
 # 9. Buchhaltung
 # -----------------------------------------------------------------------------
-ERWARTETE_FAELLE=479
+ERWARTETE_FAELLE=570
 VOLLSTAENDIGKEIT_OK=1
 declare -a ALLE_KENNUNGEN=()
 declare -a BESTANDENE_KENNUNGEN=()
@@ -624,6 +763,10 @@ declare -A KLASSEN_ANZAHL_PROTO=()
 AKTIV_GATE_MAIN="$GATE_MAIN_AKTIV"
 AKTIV_GATE_PROTOTYP="$GATE_PROTOTYP_AKTIV"
 AKTIVE_MUTATION_GATE=""
+# C4 (2026-10-27, Posten 10; Einordnung vom 2026-10-22): Die langsamen Faelle (S25, S26, S35, S36, S38, P95) laufen im Mutationsmodus nur gegen die Mutationen der Zeitgrenze;
+# der Normalmodus faehrt sie immer, und die Grundlinie des Mutationsmodus ebenfalls.
+MUTATION_ZEITGRENZE=0
+ZEITGRENZE_MUTATIONEN=" MP28 MP29 MP30 MP31 MP54 MP55 MP56 MP57 MP58 MP59 MP65 "
 declare -a MUTATION_GEFALLEN=()
 MUTATION_GEPRUEFT=0
 GRUNDLINIE_MODUS=0
@@ -647,14 +790,31 @@ declare -a GRUNDLINIE_GEFALLEN=()
 # hinter "vormals belegte Luecke: ") und hier entfernt; L05 bis L09 bleiben. Neu sind
 # L23 und L24 (Posten 6, Prototyp-Gate: sed/tr ohne Rueckgabewert-Pruefung).
 # Nachtrag 2026-10-22 (C3, Posten 2 und 6): L05 bis L08 sowie L23 und L24 sind geschlossen (Soll 2, Klasse blockierend;
-# ihr frueherer Wortlaut steht im Vermerk hinter "vormals belegte Luecke: ") und hier entfernt; es bleibt L09 (Posten 3, C4).
+# ihr frueherer Wortlaut steht im Vermerk hinter "vormals belegte Luecke: ") und hier entfernt; es blieb L09 (Posten 3, C4).
+# Nachtrag 2026-10-27 (C4, Posten 3): L09 ist geschlossen (Soll 2, Klasse blockierend, Vermerk wie bei L05); BEFUND_VON bleibt leer.
 declare -A BEFUND_VON=()
-BEFUND_VON[L09]="Posten 3 unter R3-Q-010 (ADR 0002, 6.13 c)"
 
 # -----------------------------------------------------------------------------
 # 10. Ein Fall (fall <kennung> <gate> <klasse> <soll> <kontext> <cwd> <pfad>
 #     <art> <werkzeug> <vermerk> <eingabe>)
 # -----------------------------------------------------------------------------
+# C4 (2026-10-27, DT-C4-01): prozess_lebt <pid> -- 0, wenn der Prozess existiert und kein Zombie ist (Builtins und /proc)
+prozess_lebt() {
+  local z
+  [ -r "/proc/$1/stat" ] || return 1
+  read -r z < "/proc/$1/stat" 2>/dev/null || return 1
+  z="${z##*) }"
+  [ "${z:0:1}" != "Z" ]
+}
+
+# C4 (2026-10-27, ST-C4-06): prozess_gehoert_zum_fall <pid> -- 0, wenn der Prozess die Umgebungsvariable C4_ATTRAPPE_LOG mit dem Protokoll dieses Falls traegt
+# ($T/attrappe-log, von env_basis gesetzt und an alle Kindprozesse der Attrappen vererbt); eine wiederverwendete Prozessnummer eines fremden Prozesses besteht die
+# Pruefung nicht und wird weder gezaehlt noch beendet
+prozess_gehoert_zum_fall() {
+  [ -r "/proc/$1/environ" ] || return 1
+  tr '\0' '\n' < "/proc/$1/environ" 2>/dev/null | grep -qxF "C4_ATTRAPPE_LOG=$T/attrappe-log"
+}
+
 fall() {
   if [ $# -ne 11 ]; then
     echo "pretooluse-gates-selbsttest: FEHLER -- fall() mit $# statt 11 Argumenten aufgerufen (erstes Argument: ${1:-?})." >&2
@@ -664,6 +824,9 @@ fall() {
 
   if [ -n "$AKTIVE_MUTATION_GATE" ] && [ "$gate" != "$AKTIVE_MUTATION_GATE" ]; then
     return 0
+  fi
+  if [ -n "$AKTIVE_MUTATION_GATE" ] && [ "$MUTATION_ZEITGRENZE" != 1 ]; then
+    case "$pfad_wahl" in langsames-cat|kurzes-cat|term-ignoriert|waise-term|waise-ohne-trap|grenze-setsid) return 0 ;; esac
   fi
 
   if [ -z "$AKTIVE_MUTATION_GATE" ] && [ -n "${URTEIL_VON[$kennung]+gesetzt}" ]; then
@@ -678,6 +841,7 @@ fall() {
     AK) kontext_pfad="$P_AK" ;;
     KR) kontext_pfad="$P_KR" ;;
     AB) kontext_pfad="$P_AB" ;;
+    ABS) kontext_pfad="$P_AB/" ;;   # C4 (2026-10-27, Posten 3): CLAUDE_PROJECT_DIR mit einem Schraegstrich am Ende
     *)
       echo "pretooluse-gates-selbsttest: FEHLER -- unbekannter Kontext-Code '$kontext_code' bei Fall $kennung." >&2
       exit 3
@@ -693,10 +857,10 @@ fall() {
   local pfadvar
   # Delta 2 (2026-10-21, ST-C2-D-01): die PATH-Wahl posix ist der volle PATH mit POSIXLY_CORRECT=1
   # in der Umgebung des Gates; der Prozess des Pruefmittels selbst bleibt unberuehrt.
-  local -a posix_zusatz=()
+  local -a env_zusatz=()   # zusaetzliche Umgebung des Gates (POSIXLY_CORRECT bei posix; seit C4 auch BASH_ENV)
   case "$pfad_wahl" in
     voll) pfadvar="$PATH_VOLL" ;;
-    posix) pfadvar="$PATH_VOLL"; posix_zusatz=(POSIXLY_CORRECT=1) ;;
+    posix) pfadvar="$PATH_VOLL"; env_zusatz=(POSIXLY_CORRECT=1) ;;
     ohne-git) pfadvar="$BIN_OHNE_GIT" ;;
     ohne-jq) pfadvar="$BIN_OHNE_JQ" ;;
     ohne-grep) pfadvar="$BIN_OHNE_GREP" ;;
@@ -712,6 +876,14 @@ fall() {
     sed-ohne-bereinigung) pfadvar="$BIN_SED_OHNE_BEREINIGUNG" ;;
     timeout-fehler) pfadvar="$BIN_TIMEOUT_FEHLER" ;;
     sed-ohne-kommentar) pfadvar="$BIN_SED_OHNE_KOMMENTAR" ;;
+    jq-ohne-tool) pfadvar="$BIN_JQ_OHNE_TOOL" ;;
+    jq-ohne-befehl) pfadvar="$BIN_JQ_OHNE_BEFEHL" ;;
+    jq-ohne-pfad) pfadvar="$BIN_JQ_OHNE_PFAD" ;;
+    ohne-mktemp) pfadvar="$BIN_OHNE_MKTEMP" ;;
+    waise-term) pfadvar="$BIN_WAISE_TERM" ;;
+    waise-ohne-trap) pfadvar="$BIN_WAISE_OHNE_TRAP" ;;
+    grenze-setsid) pfadvar="$BIN_GRENZE_SETSID" ;;
+    term-ignoriert) pfadvar="$BIN_TERM_IGNORIERT"; env_zusatz=(BASH_ENV="$T/term-ignorieren.sh") ;;
     *)
       echo "pretooluse-gates-selbsttest: FEHLER -- unbekannte PATH-Wahl '$pfad_wahl' bei Fall $kennung." >&2
       exit 3
@@ -720,8 +892,37 @@ fall() {
 
   : > "$T/lauf-aus"
   : > "$T/lauf-fehler"
-  ( cd "$zielpfad" 2>/dev/null && printf '%s' "$eingabe" | env PATH="$pfadvar" CLAUDE_PROJECT_DIR="$kontext_pfad" ${posix_zusatz[@]+"${posix_zusatz[@]}"} "$TIMEOUT_BIN" 14 "$BASH_BIN" "$gate_pfad" >"$T/lauf-aus" 2>"$T/lauf-fehler" )
-  local ist=$?
+  : > "$T/attrappe-log"
+  local ist start_ms="" eof_aus_ms="" eof_fehler_ms="" eofw=0 eofz lebende=0 vz vp
+  local -a env_basis=(PATH="$pfadvar" CLAUDE_PROJECT_DIR="$kontext_pfad" C4_ATTRAPPE_LOG="$T/attrappe-log" C4_SLEEP="$SLEEP_ECHT" C4_SETSID="$SETSID_ECHT" C4_GREP="$GREP_ECHT" C4_CAT="$CAT_ECHT")
+  case "$art" in
+    JSON-EOF|JSON-EOF-GRENZE)
+      # C4 (2026-10-27, DT-C4-01): stdout und stderr des Gates sind benannte Rohre (FIFO), je mit einem Leser, der den Zeitpunkt des Schliessens (EOF) festhaelt.
+      # Keine Prozesssubstitution: sie vererbt Rohr-Deskriptoren mit hohen Nummern an alle Kinder des Gates und liesse einen Waisenprozess einen Kanal des Pruefmittels
+      # halten, den ein Aufrufer des Harness nicht hat (der Aufrufer kennt nur die Kanaele 0, 1 und 2); gemessen am 2026-10-27 mit dem Fall P95.
+      rm -f "$T/attrappe-log.marke" "$T/eof-aus" "$T/eof-fehler" "$T/rohr-aus" "$T/rohr-fehler"
+      mkfifo "$T/rohr-aus" "$T/rohr-fehler"
+      ( cat < "$T/rohr-aus" > "$T/lauf-aus"; date +%s%N > "$T/eof-aus" ) &
+      ( cat < "$T/rohr-fehler" > "$T/lauf-fehler"; date +%s%N > "$T/eof-fehler" ) &
+      start_ms=$(( $(date +%s%N) / 1000000 ))
+      ( cd "$zielpfad" 2>/dev/null && printf '%s' "$eingabe" | env "${env_basis[@]}" ${env_zusatz[@]+"${env_zusatz[@]}"} "$TIMEOUT_BIN" 14 "$BASH_BIN" "$gate_pfad" >"$T/rohr-aus" 2>"$T/rohr-fehler" )
+      ist=$?
+      # Prozesse der Attrappe unmittelbar nach dem Ende des Gates pruefen (Spielraum 0,2 s fuer das Sterben nach SIGKILL), nicht erst nach dem Schliessen der Kanaele
+      sleep 0.2
+      while read -r vz; do
+        for vp in $vz; do
+          if prozess_lebt "$vp" && prozess_gehoert_zum_fall "$vp"; then lebende=$((lebende+1)); fi
+        done
+      done < "$T/attrappe-log"
+      while { [ ! -s "$T/eof-aus" ] || [ ! -s "$T/eof-fehler" ]; } && [ "$eofw" -lt 600 ]; do sleep 0.05; eofw=$((eofw+1)); done
+      if [ -s "$T/eof-aus" ]; then read -r eofz < "$T/eof-aus"; eof_aus_ms=$((eofz / 1000000)); fi
+      if [ -s "$T/eof-fehler" ]; then read -r eofz < "$T/eof-fehler"; eof_fehler_ms=$((eofz / 1000000)); fi
+      ;;
+    *)
+      ( cd "$zielpfad" 2>/dev/null && printf '%s' "$eingabe" | env "${env_basis[@]}" ${env_zusatz[@]+"${env_zusatz[@]}"} "$TIMEOUT_BIN" 14 "$BASH_BIN" "$gate_pfad" >"$T/lauf-aus" 2>"$T/lauf-fehler" )
+      ist=$?
+      ;;
+  esac
   # Delta DT-C2-01 (2026-10-21): Jeder Gate-Aufruf hat eine eigene Zeitgrenze von 14 s,
   # unter der Hook-Grenze von 15 s in .claude/settings.json. Reisst ein Hook diese
   # Grenze, bricht der Harness ihn ab und laesst durch (.claude/rules/
@@ -754,6 +955,13 @@ fall() {
         *"nicht auswertbar"*) : ;;
         *) gruende="${gruende}meldung-ohne-nicht-auswertbar," ;;
       esac
+    elif [ "$art" = "UNMOEGLICH" ]; then
+      # C4 (2026-10-27, Posten 8): ein jq-Schritt scheitert an der Werkzeugeingabe selbst (kein PATH-Fall); die Meldung ist die der
+      # Pruefung, die nicht moeglich ist, und nennt jq mit dem Rueckgabewert -- nicht die 5.6-Meldung einer Richtung.
+      case "$stderr_text" in
+        *"Pruefung nicht moeglich (jq, Rueckgabewert "*) : ;;
+        *) gruende="${gruende}meldung-ohne-jq," ;;
+      esac
     elif [ "$gate" = "prototyp" ]; then
       case "$stderr_text" in
         *"Projektauftrag 5.6"*) : ;;
@@ -766,6 +974,8 @@ fall() {
         case "$eingabe" in
           *'"file_path":"prototype/'*|*'"notebook_path":"prototype/'*) erwartete_richtung="Richtung 2" ;;
         esac
+        # C4 (2026-10-27, Posten 3): Art JSON-R2 = der Pfad liegt nach der Bereinigung im Prototyp, steht aber nicht als prototype/... in der Eingabe
+        [ "$art" = "JSON-R2" ] && erwartete_richtung="Richtung 2"
         case "$stderr_text" in
           *"$erwartete_richtung"*) : ;;
           *) gruende="${gruende}meldung-ohne-richtung," ;;
@@ -790,6 +1000,30 @@ fall() {
         case "$stderr_wahl" in
           *"(sed, Rueckgabewert "*) : ;;
           *) gruende="${gruende}meldung-ohne-sed," ;;
+        esac
+        ;;
+      term-ignoriert)
+        case "$stderr_wahl" in
+          *"Rueckgabewert 137"*) : ;;
+          *) gruende="${gruende}meldung-ohne-rueckgabewert-137," ;;
+        esac
+        ;;
+      ohne-mktemp)
+        case "$stderr_wahl" in
+          *"mktemp ist nicht installiert"*) : ;;
+          *) gruende="${gruende}meldung-ohne-mktemp," ;;
+        esac
+        ;;
+      waise-term|waise-ohne-trap)
+        case "$stderr_wahl" in
+          *"Zeitgrenze"*) : ;;
+          *) gruende="${gruende}meldung-ohne-zeitgrenze," ;;
+        esac
+        ;;
+      jq-ohne-tool|jq-ohne-befehl|jq-ohne-pfad)
+        case "$stderr_wahl" in
+          *"(jq, Rueckgabewert "*) : ;;
+          *) gruende="${gruende}meldung-ohne-jq," ;;
         esac
         ;;
       ohne-tr)
@@ -818,6 +1052,19 @@ fall() {
         ;;
     esac
   fi
+  # C4 (2026-10-27, DT-C4-01): Fallart JSON-EOF und JSON-EOF-GRENZE -- EOF auf stdout und stderr hoechstens 13,5 s nach dem Start (Grenze 12 s, Nachlauf 1 s,
+  # Spielraum 0,5 s, unter der Grenze des Pruefmittels von 14 s); bei JSON-EOF lebt nach dem Ende des Gates kein Prozess mehr, den die Attrappe hinterlegt hat,
+  # bei JSON-EOF-GRENZE lebt mindestens einer (Grenze: ausserhalb der Gruppe, das KILL erreicht ihn nicht). Das Pruefmittel raeumt die hinterlegten Prozesse nach dem Fall ab, nur solche, die die Umgebung dieses Falls tragen (ST-C4-06).
+  if [ -n "$start_ms" ]; then
+    [ -s "$T/attrappe-log" ] || gruende="${gruende}attrappe-nicht-gelaufen,"
+    if [ -z "$eof_aus_ms" ] || [ $((eof_aus_ms - start_ms)) -gt 13500 ]; then gruende="${gruende}eof-stdout-nach-mehr-als-13500ms,"; fi
+    if [ -z "$eof_fehler_ms" ] || [ $((eof_fehler_ms - start_ms)) -gt 13500 ]; then gruende="${gruende}eof-stderr-nach-mehr-als-13500ms,"; fi
+    if [ "$art" = "JSON-EOF" ] && [ "$lebende" -gt 0 ]; then gruende="${gruende}prozesse-der-gruppe-ueberleben,"; fi
+    if [ "$art" = "JSON-EOF-GRENZE" ] && [ "$lebende" -eq 0 ]; then gruende="${gruende}ueberlebender-prozess-fehlt,"; fi
+    while read -r vz; do
+      for vp in $vz; do if prozess_gehoert_zum_fall "$vp"; then kill -KILL "$vp" 2>/dev/null; fi; done
+    done < "$T/attrappe-log"
+  fi
   if [ -n "$gruende" ]; then
     urteil="GEFALLEN"
     grund="${gruende%,}"
@@ -841,8 +1088,12 @@ fall() {
     if [ "${#eingabe_anzeige}" -gt 1000 ]; then
       eingabe_anzeige="${eingabe_anzeige:0:200} ...[gekuerzt, ${#eingabe_anzeige} Zeichen]"
     fi
-    printf '%s gate=%s werkzeug=%s soll=%s ist=%s %s klasse=%s stdout=%s stderr=%s grund=%s vermerk="%s" eingabe=%s\n' \
-      "$kennung" "$gate" "$werkzeug" "$soll" "$ist" "$urteil" "$klasse" "$stdout_bytes" "$stderr_bytes" "$grund" "$vermerk" "$eingabe_anzeige"
+    local messung_text=""
+    if [ -n "$start_ms" ] && [ -n "$eof_aus_ms" ] && [ -n "$eof_fehler_ms" ]; then
+      messung_text=" messung=\"eof_stdout_ms=$((eof_aus_ms - start_ms)) eof_stderr_ms=$((eof_fehler_ms - start_ms))\""
+    fi
+    printf '%s gate=%s werkzeug=%s soll=%s ist=%s %s klasse=%s stdout=%s stderr=%s grund=%s vermerk="%s"%s eingabe=%s\n' \
+      "$kennung" "$gate" "$werkzeug" "$soll" "$ist" "$urteil" "$klasse" "$stdout_bytes" "$stderr_bytes" "$grund" "$vermerk" "$messung_text" "$eingabe_anzeige"
 
     ALLE_KENNUNGEN+=("$kennung")
     GATE_VON["$kennung"]="$gate"
@@ -894,7 +1145,7 @@ abnahmekriterium_definieren() {
   AK_ID+=("$1"); AK_DOMAIN+=("$2"); AK_KENNUNGEN+=("$3"); AK_ANMERKUNG+=("$4")
 }
 
-# --- 11a. Sechsundsechzig Mutationen (ADR 0002, 6.13 d; 49 bis C2, MP16 bis MP32 mit C3) ---------------
+# --- 11a. Hunderteine Mutationen (ADR 0002, 6.13 d; 49 bis C2, MP16 bis MP32 mit C3, MP33 bis MP67 mit C4) ---------------
 mutation_definieren MM1 main 'worktree[[:space:]]+add([[:space:]]|$)' 'worktree[[:space:]]+addNIE([[:space:]]|$)' 'Sperre Arbeitsbaum auf main anlegen entfernt' 'A07 A08 A09 A37'
 mutation_definieren MM2 main 'if ! command -v git >/dev/null 2>&1; then' 'if false; then' 'git-Wache entfernt (ST-03)' 'S03'
 mutation_definieren MM3 main '(commit|merge|revert|cherry-pick|rebase|reset|am|apply|stash[[:space:]]+(pop|apply))' '(NIE)' 'Sperre schreibender git-Verben entfernt' 'A10 A14 A20 A21 A22 A30 A31 ZF3a ZF3b ZF3c ZF3d ZF3e ZF3f ZF3g'
@@ -1022,8 +1273,8 @@ mutation_definieren MM34 main "$MM34_SUCH" "$MM34_ERS" 'ST-C2-F-01 zurueckgesetz
 # --- 11a (Fortsetzung). Siebzehn Mutationen der Einheit C3 (MP16 bis MP32; Posten 2, 6 und 7 am Prototyp-Gate) ---
 # Posten 2: je geaenderter Stelle des Gates eine Mutation; MP32 schuetzt die Gegenprobe P52 (gewollter Durchlass, Entscheid des Software Architects vom 2026-10-22).
 mutation_definieren MP16 prototyp 'require[[:space:]]*\(' 'require\(' 'Posten 2 zurueckgesetzt (C3): require mit Leerraum vor der Klammer wird in beiden Richtungen nicht mehr erkannt (IMPORTWORT wieder mit require\( ohne Leerraum)' 'L05 B66'
-mutation_definieren MP17 prototyp '([[:space:]]+url[[:space:]]*\()?' '' 'Posten 2 zurueckgesetzt (C3): @import url( wird in beiden Richtungen nicht mehr erkannt (der optionale Teil url( in IMPORTWORT entfaellt)' 'L06 B67'
-mutation_definieren MP18 prototyp "ATTR='(src|href)[[:space:]]*=[[:space:]]*'" "ATTR='(src|href)='" 'Posten 2 zurueckgesetzt (C3): Leerraum um das Gleichheitszeichen bei src und href wird in beiden Richtungen nicht mehr erkannt (ATTR wieder ohne Leerraum)' 'L07 B68 B69 B70 B72 B73'
+mutation_definieren MP17 prototyp '([[:space:]]+${URLKLAMMER})?' '' 'Posten 2 zurueckgesetzt (C3): @import url( wird in beiden Richtungen nicht mehr erkannt (der optionale Teil url( in IMPORTWORT entfaellt)' 'L06 B67'
+mutation_definieren MP18 prototyp "ATTR='([sS][rR][cC]|[hH][rR][eE][fF])[[:space:]]*=[[:space:]]*'" "ATTR='([sS][rR][cC]|[hH][rR][eE][fF])='" 'Posten 2 zurueckgesetzt (C3): Leerraum um das Gleichheitszeichen bei src und href wird in beiden Richtungen nicht mehr erkannt (ATTR wieder ohne Leerraum)' 'L07 B68 B69 B70 B72 B73'
 mutation_definieren MP19 prototyp '-e "(import_module|__import__)[[:space:]]*\([[:space:]]*${Q}prototype${Q}"' '-e "(import_module|__import__)[[:space:]]*\([[:space:]]*${Q}prototypeNIE${Q}"' 'Posten 2 zurueckgesetzt (C3), Richtung 1: __import__ mit dem blossen Modulnamen ohne Punkt wird nicht mehr erkannt (import_module mitgezogen, ohne eigenen Fall)' 'L08'
 mutation_definieren MP20 prototyp '-e "(import_module|__import__)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)${Q}"' '-e "(import_module|__import__)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)NIE${Q}"' 'Posten 2 zurueckgesetzt (C3), Richtung 2: __import__ mit dem blossen Modulnamen ohne Punkt wird nicht mehr erkannt (import_module mitgezogen, ohne eigenen Fall)' 'B71'
 # Posten 6: je geprueftem sed- oder tr-Schritt eine Mutation, die den Aufruf von schritt_geprueft entfernt.
@@ -1040,6 +1291,71 @@ mutation_definieren MP29 prototyp '124|137) echo "Gate prototyp-trennung: Zeitgr
 mutation_definieren MP30 prototyp 'if ! command -v timeout >/dev/null 2>&1; then' 'if false; then' 'Posten 7 zurueckgesetzt (C3): die Wache fuer fehlendes timeout entfaellt; der Aufruf scheitert mit 127 und endet ueber den Zweig fuer andere Ausgaenge ohne die Meldung, die timeout nennt' 'S27'
 mutation_definieren MP31 prototyp '*) echo "Gate prototyp-trennung: Pruefung abgebrochen (Rueckgabewert' '*) exit 0 ;; 98) echo "Gate prototyp-trennung: Pruefung abgebrochen (Rueckgabewert' 'Posten 7 zurueckgesetzt (C3): jeder andere Ausgang als 0, 2, 124 und 137 (hier timeout mit 125) wird als 0 abgebildet statt mit 2 und Meldung' 'S28'
 mutation_definieren MP32 prototyp '-e "(import_module|__import__)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)${Q}"' '-e "(import_module|__import__|import)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)${Q}"' 'Posten 2, gewollter Durchlass zurueckgesetzt (C3, Entscheid des Software Architects vom 2026-10-22): die Endung fuer den blossen Modulnamen gilt auch fuer das JS-import( ; import("backend") in einer Prototyp-Datei wird gesperrt (Fehlalarmklasse)' 'P52'
+# --- 11a (Fortsetzung). Mutationen der Einheit C4 (ab MP33; Posten 8, 9, 3 und 10 am Prototyp-Gate und am Pruefmittel) ---
+# Posten 8 (SR-005, DT-C3-02): je geprueftem jq-Schritt eine Mutation, die den Aufruf von schritt_geprueft entfernt.
+mutation_definieren MP33 prototyp 'schritt_geprueft $? jq "Werkzeugname"' ':' 'Posten 8 zurueckgesetzt (C4): die Pruefung des Rueckgabewerts des jq-Schritts fuer den Werkzeugnamen (tool) entfaellt; ein jq, das nur diesen Aufruf verweigert, laesst den Befehl durch' 'S31'
+mutation_definieren MP34 prototyp 'schritt_geprueft $? jq "Befehl am Bash-Weg"' ':' 'Posten 8 zurueckgesetzt (C4): die Pruefung des Rueckgabewerts des jq-Schritts fuer den Befehl (cmd) entfaellt; ein jq, das nur diesen Aufruf verweigert, laesst den Befehl durch' 'S32'
+mutation_definieren MP35 prototyp 'schritt_geprueft $? jq "Dateipfad am Weg der Dateiwerkzeuge"' ':' 'Posten 8 zurueckgesetzt (C4): die Pruefung des Rueckgabewerts des jq-Schritts fuer den Dateipfad (fp) entfaellt; ein jq, das nur diesen Aufruf verweigert, laesst die Datei durch' 'S33'
+mutation_definieren MP36 prototyp 'schritt_geprueft $? jq "Dateiinhalt am Weg der Dateiwerkzeuge"' ':' 'Posten 8 zurueckgesetzt (C4): die Pruefung des Rueckgabewerts des jq-Schritts fuer den Dateiinhalt (payload) entfaellt; ein MultiEdit mit Zeichenkette und Objekt in new_string laesst den Ausdruck abbrechen und die Datei durch (DT-C3-02)' 'B74'
+# Posten 9 (SR-006): je geaenderter Stelle des Gates eine Mutation (Grossschreibung je Definition, die vier neuen Muster, das erweiterte Netz am Bash-Weg, das Ende des Werts).
+mutation_definieren MP37 prototyp '([sS][rR][cC]|[hH][rR][eE][fF])' '(src|href)' 'Posten 9 zurueckgesetzt (C4): src und href werden nur noch in Kleinschreibung erkannt (ATTR wieder ohne Zeichenklassen); SRC= und HREF= laufen an den Dateiwerkzeugen und am Bash-Weg durch' 'B78 B79 B84 B85 B93'
+mutation_definieren MP38 prototyp '@[iI][mM][pP][oO][rR][tT]' '@import' 'Posten 9 zurueckgesetzt (C4): @import wird nur noch in Kleinschreibung erkannt (ATIMPORT); @IMPORT URL( laeuft an den Dateiwerkzeugen und am Bash-Weg durch' 'B80 B86 B94'
+mutation_definieren MP39 prototyp '[uU][rR][lL][[:space:]]*\(' 'url[[:space:]]*\(' 'Posten 9 zurueckgesetzt (C4): url( wird nur noch in Kleinschreibung erkannt (URLKLAMMER); @IMPORT URL( laeuft an den Dateiwerkzeugen durch' 'B80 B86'
+mutation_definieren MP40 prototyp '-e "${ATTR}(\./)?(\.\./)+(${WURZELN})/"' '-e "${ATTR}NIE(\./)?(\.\./)+(${WURZELN})/"' 'Posten 9 zurueckgesetzt (C4), Richtung 2: das Muster fuer src= und href= ohne Anfuehrungszeichen entfaellt' 'B75 B76'
+mutation_definieren MP41 prototyp '-e "${ATTR}(${UQ}*[/\\\\])?prototype(/|\\\\|[[:space:]>]|\$)"' '-e "${ATTR}(${UQ}*[/\\\\])?prototypeNIE(/|\\\\|[[:space:]>]|\$)"' 'Posten 9 zurueckgesetzt (C4), Richtung 1: das Muster fuer src= und href= ohne Anfuehrungszeichen entfaellt' 'B81 B82'
+mutation_definieren MP42 prototyp '-e "${ATIMPORT}[[:space:]]+${URLKLAMMER}[[:space:]]*(\./)?(\.\./)+(${WURZELN})/"' '-e "${ATIMPORT}[[:space:]]+${URLKLAMMER}[[:space:]]*NIE(\./)?(\.\./)+(${WURZELN})/"' 'Posten 9 zurueckgesetzt (C4), Richtung 2: das Muster fuer @import url( ohne Anfuehrungszeichen entfaellt' 'B77'
+mutation_definieren MP43 prototyp '-e "${ATIMPORT}[[:space:]]+${URLKLAMMER}[[:space:]]*(${UQK}*[/\\\\])?prototype(/|\\\\|[[:space:])]|\$)"' '-e "${ATIMPORT}[[:space:]]+${URLKLAMMER}[[:space:]]*(${UQK}*[/\\\\])?prototypeNIE(/|\\\\|[[:space:])]|\$)"' 'Posten 9 zurueckgesetzt (C4), Richtung 1: das Muster fuer @import url( ohne Anfuehrungszeichen entfaellt' 'B83'
+mutation_definieren MP44 prototyp '|import_module|${ATTR})[^|&]*prototype' '|import_module)[^|&]*prototype' 'Posten 9 (b) zurueckgesetzt (C4): das grobe Netz am Bash-Weg kennt src= und href= nicht mehr (ATTR aus der Wortgruppe entfernt)' 'B87 B88 B89 B90 B91 B92 B93'
+mutation_definieren MP45 prototyp 'import|${ATIMPORT}|__import__' 'import|@import|__import__' 'Posten 9 (b) zurueckgesetzt (C4): das grobe Netz am Bash-Weg erkennt @import nur noch in Kleinschreibung' 'B94'
+MP46_SUCH=$(cat <<'X'
+UQ="[^\"'\`[:space:]>]"
+X
+)
+MP46_ERS=$(cat <<'X'
+UQ="[^\"'\`>]"
+X
+)
+mutation_definieren MP46 prototyp "$MP46_SUCH" "$MP46_ERS" 'Posten 9 (a) zurueckgesetzt (C4): der Wert ohne Anfuehrungszeichen reicht ueber Leerraum hinweg; ein spaeteres Wort derselben Zeile (alt-Text mit docs/prototype/) gilt als Teil des Werts (Fehlalarm)' 'P68'
+MP66_SUCH=$(cat <<'X'
+UQK="[^\"'\`[:space:])]"
+X
+)
+MP66_ERS=$(cat <<'X'
+UQK="[^\"'\`]"
+X
+)
+mutation_definieren MP66 prototyp "$MP66_SUCH" "$MP66_ERS" 'Posten 9 (a) zurueckgesetzt (C4; Behebung nach ST-C4-01): der Wert einer url( ohne Anfuehrungszeichen endet nicht mehr an Leerraum und an der schliessenden Klammer; eine spaetere url( derselben Zeile (img/prototype/) gilt als Teil des Werts (Fehlalarm)' 'P102'
+MP67_SUCH=$(cat <<'X'
+UQ="[^\"'\`[:space:]>]"
+X
+)
+MP67_ERS=$(cat <<'X'
+UQ="[^\"'\`[:space:]]"
+X
+)
+mutation_definieren MP67 prototyp "$MP67_SUCH" "$MP67_ERS" 'Posten 9 (a) zurueckgesetzt (C4; Behebung nach ST-C4-03): der Wert von src= und href= ohne Anfuehrungszeichen endet nicht mehr am Zeichen ">"; der Text hinter dem Start-Tag (docs/prototype/x) gilt als Teil des Werts (Fehlalarm)' 'P103'
+# Posten 3 (L09): je Element der Bereinigung eine Mutation, dazu die Bereinigung vor der Zuordnung ganz entfernt (Dateipfad, Projektverzeichnis) und das Verhalten am Anfang eines relativen Pfads.
+mutation_definieren MP47 prototyp '"") : ;;' '"NIE") : ;;' 'Posten 3 zurueckgesetzt (C4), Element "mehrere Schraegstriche": leere Segmente entfallen nicht mehr; ein doppelter Schraegstrich hinter dem Projektverzeichnis laesst den Pfad im falschen Zweig landen' 'B96'
+mutation_definieren MP48 prototyp '".") : ;;' '"NIE") : ;;' 'Posten 3 zurueckgesetzt (C4), Element ".": Segmente . entfallen nicht mehr (L09)' 'L09 B98'
+mutation_definieren MP49 prototyp '"..") n=${#out[@]};' '"NIE") n=${#out[@]};' 'Posten 3 zurueckgesetzt (C4), Element "..": ein Segment .. hebt das vorangehende nicht mehr auf (Prototyp-Pfad ueber backend/.., Weg an der Prosa-Ausnahme vorbei)' 'B95 B97 P90 P91'
+mutation_definieren MP50 prototyp 'BEREINIGT="${BEREINIGT%/}"' 'BEREINIGT="${BEREINIGT%/}"; case "$1" in */) BEREINIGT="${BEREINIGT}/" ;; esac' 'Posten 3 zurueckgesetzt (C4), Element "Schraegstrich am Ende", eng gefasst nach ST-C4-02: ein Schraegstrich am Ende der Eingabe entfaellt nicht mehr; betroffen sind nur Pfade mit Schraegstrich am Ende (das Projektverzeichnis mit Schraegstrich am Ende), nicht jeder bereinigte Pfad' 'B99'
+mutation_definieren MP51 prototyp 'pfad_bereinigen "$fp"; fp="$BEREINIGT"' ':' 'Posten 3 zurueckgesetzt (C4): der Dateipfad wird vor der Zuordnung nicht mehr bereinigt (L09 und alle Elemente)' 'L09 B95 B96 B97 B98 P90 P91'
+mutation_definieren MP52 prototyp 'pfad_bereinigen "$proj"; proj="$BEREINIGT"' ':' 'Posten 3 zurueckgesetzt (C4): das Projektverzeichnis wird nicht mehr bereinigt (CLAUDE_PROJECT_DIR mit Schraegstrich am Ende)' 'B99'
+mutation_definieren MP53 prototyp 'elif [ "$abs" = 0 ]; then out+=("..")' 'elif false; then out+=("..")' 'Posten 3 zurueckgesetzt (C4): ein .. am Anfang eines relativen Pfads bleibt nicht mehr stehen (../prototype/x.js gilt als prototype/x.js)' 'P94'
+# DT-C4-01 (Waisenprozess): je geaenderter Stelle des aeusseren Teils eine Mutation (kill, beide Umleitungen, Uebergabe der Standardeingabe, Pruefung auf mktemp, Weitergabe der Fehlerausgabe).
+mutation_definieren MP54 prototyp 'kill -KILL -- "-$zg_pid"' ':' 'DT-C4-01 zurueckgesetzt (C4): das aeussere Gate schickt kein KILL mehr an die Prozessgruppe; die Waisen eines Werkzeugs, das TERM ignoriert, leben weiter und halten die Kanaele des Aufrufers (S35: EOF erst nach etwa 22 s, Prozesse der Gruppe ueberleben)' 'S35'
+mutation_definieren MP55 prototyp '2>"$zg_ablage/fehler"' '' 'DT-C4-01 zurueckgesetzt (C4): stderr des inneren Laufs geht nicht mehr in die Ablage, sondern an den Aufrufer; ein Prozess ausserhalb der Gruppe (setsid), den das KILL nicht erreicht, haelt stderr des Aufrufers bis zu seinem Ende (P95: EOF erst nach etwa 22 s)' 'P95'
+mutation_definieren MP56 prototyp '>"$zg_ablage/aus"' '' 'DT-C4-01 zurueckgesetzt (C4): stdout des inneren Laufs geht nicht mehr in die Ablage, sondern an den Aufrufer; ein Prozess ausserhalb der Gruppe (setsid) haelt stdout des Aufrufers bis zu seinem Ende (P95: EOF erst nach etwa 22 s)' 'P95'
+mutation_definieren MP57 prototyp ' 0<&0 >"$zg_ablage/aus"' ' >"$zg_ablage/aus"' 'DT-C4-01 zurueckgesetzt (C4): die Standardeingabe wird dem Hintergrundlauf nicht mehr ausdruecklich uebergeben; der innere Lauf liest /dev/null, und jede Eingabe ist nicht auswertbar (jeder Fall mit Soll 0 sperrt)' 'P01'
+mutation_definieren MP58 prototyp 'if ! command -v mktemp >/dev/null 2>&1; then' 'if false; then' 'DT-C4-01 zurueckgesetzt (C4): die Pruefung auf mktemp entfaellt; ohne mktemp scheitert mktemp -d mit Rueckgabewert 127, und die Meldung nennt nicht mehr, dass mktemp nicht installiert ist (S37)' 'S37'
+mutation_definieren MP59 prototyp 'done < "$zg_ablage/fehler"' 'done < /dev/null' 'DT-C4-01 zurueckgesetzt (C4): die Fehlerausgabe des inneren Laufs wird nicht mehr an den Aufrufer weitergegeben; die Meldung der Richtung fehlt (B01, B05)' 'B01 B05'
+# Posten 10 (Pruefmittel-Reste, ohne Aenderung am Gate): import_module je Richtung (ST-C3-03; mit Punkt und als blosser Modulname), die statische JS-Form als Gegenprobe zu P52, der Nachlauf -k 1 (DT-C3-03, ST-C3-04).
+mutation_definieren MP60 prototyp '-e "(import_module|__import__|import)[[:space:]]*\([[:space:]]*${Q}prototype[./]"' '-e "(__import__|import)[[:space:]]*\([[:space:]]*${Q}prototype[./]"' 'Posten 10 (C4): import_module wird in der Alternative der Richtung 1 (Modul mit Punkt) nicht mehr erkannt' 'B18 B101'
+mutation_definieren MP61 prototyp '-e "(import_module|__import__|import)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)[./]"' '-e "(__import__|import)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)[./]"' 'Posten 10 (C4): import_module wird in der Alternative der Richtung 2 (Modul mit Punkt) nicht mehr erkannt' 'B41 B102'
+mutation_definieren MP62 prototyp '-e "(import_module|__import__)[[:space:]]*\([[:space:]]*${Q}prototype${Q}"' '-e "(__import__)[[:space:]]*\([[:space:]]*${Q}prototype${Q}"' 'Posten 10 (C4): import_module mit blossem Modulnamen ohne Punkt wird in Richtung 1 nicht mehr erkannt (die Endung gilt nur noch fuer __import__)' 'B103'
+mutation_definieren MP63 prototyp '-e "(import_module|__import__)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)${Q}"' '-e "(__import__)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)${Q}"' 'Posten 10 (C4): import_module mit blossem Modulnamen ohne Punkt wird in Richtung 2 nicht mehr erkannt (die Endung gilt nur noch fuer __import__)' 'B104'
+mutation_definieren MP64 prototyp '-e "(import_module|__import__)[[:space:]]*\([[:space:]]*${Q}(backend|frontend|deploy)${Q}"' '-e "(import_module|__import__|from)[[:space:]]*\(?[[:space:]]*${Q}(backend|frontend|deploy)${Q}"' 'Posten 10 (C4), gewollter Durchlass zurueckgesetzt: die Endung fuer den blossen Modulnamen gilt auch fuer die statische JS-Form; import x from "backend" in einer Prototyp-Datei wird gesperrt (Fehlalarmklasse)' 'P100'
+mutation_definieren MP65 prototyp 'timeout -k 1 12 "$BASH" "$0" --innerer-lauf-zeitgrenze' 'timeout 12 "$BASH" "$0" --innerer-lauf-zeitgrenze' 'Posten 10 (C4): der Nachlauf -k 1 entfaellt; ein innerer Lauf, der TERM uebersteht, laeuft bis zum Ende der Attrappe (20 s), ueber der Grenze des Pruefmittels von 14 s, und gilt dort als Durchlass' 'S38'
 
 # --- 11b. Fallklassen der Kopfkommentare (ADR 0002, 6.13 d) -----------
 fallklasse_definieren KM-1 main gedeckt 'Fall 1: Dateiaenderung, waehrend HEAD auf main/master steht' 'A12 A13 A48'
@@ -1064,12 +1380,12 @@ fallklasse_definieren KP-3 prototyp gedeckt 'unlesbare Eingabe blockiert (ST-13,
 fallklasse_definieren KP-4 prototyp gedeckt 'Schreibwirkung derselben Befehlsklassen wie das main-Gate: Umleitung, tee, sed -i, Heredoc, Dateiwerkzeuge, Interpreter mit Inline-Code, ed/ex, fluechtige Ziele mit ".." und "/dev/null" ohne Wortgrenze sowie Trenner hinter fluechtigem Ziel (DT-E43-6, DT-E43-8)' 'B09 ZF7a ZF7c ZF7d B53 B54 B55 B56 B57 B58 B59 B60 B61 B62 B63'
 fallklasse_definieren GP-1 prototyp grenze 'gemeinsame Abhaengigkeiten und ihre Aufloesung (Alias, baseUrl, Workspace) werden nicht geprueft (P-10, E4.3; Aufloesung seit 2026-10-22 benannt, Entscheid SA 2026-10-22)' 'P35'
 fallklasse_definieren GP-2 prototyp grenze 'Asymmetrie der Pfadschreibweise in Richtung 2 (Wurzelpfad, Vorspann, src=/href= ohne Schraegstrich oder mit Rueckstrich, doppelter Rueckstrich, mehrfaches ./)' 'L10 L11 L12 L13 L14 L15 L16'
-fallklasse_definieren KP-7 prototyp gedeckt 'Posten 2 (C3, 2026-10-22), vormals GP-3 (grenze), seit 2026-10-22 gedeckt: die vier Schreibweisen des Konstrukts in beiden Richtungen an den Dateiwerkzeugen -- Leerraum vor der Klammer bei require, @import url(, Leerraum um das Gleichheitszeichen bei src und href, __import__ mit Modulnamen ohne Punkt (import_module mitgezogen, ohne eigenen Fall und ohne eigene Mutation); gewollter Durchlass (Entscheid des Software Architects vom 2026-10-22): der blosse JS-Modulname import("backend") bleibt frei (P52); JS-Zuweisungen an src/href mit Leerraum sind gesperrt (B72, B73, Gegenproben P53, P54)' 'L05 L06 L07 L08 B66 B67 B68 B69 B70 B71 B72 B73 P42 P43 P44 P45 P46 P47 P48 P49 P50 P51 P52 P53 P54'
+fallklasse_definieren KP-7 prototyp gedeckt 'Posten 2 (C3, 2026-10-22), vormals GP-3 (grenze), seit 2026-10-22 gedeckt: die vier Schreibweisen des Konstrukts in beiden Richtungen an den Dateiwerkzeugen -- Leerraum vor der Klammer bei require, @import url(, Leerraum um das Gleichheitszeichen bei src und href, __import__ mit Modulnamen ohne Punkt (import_module mitgezogen, ohne eigenen Fall und ohne eigene Mutation); gewollter Durchlass (Entscheid des Software Architects vom 2026-10-22): der blosse JS-Modulname import("backend") bleibt frei (P52); JS-Zuweisungen an src/href mit Leerraum sind gesperrt (B72, B73, Gegenproben P53, P54)' 'L05 L06 L07 L08 B66 B67 B68 B69 B70 B71 B72 B73 P42 P43 P44 P45 P46 P47 P48 P49 P50 P51 P52 P53 P54 B101 B102 B103 B104 P96 P97 P98 P99 P100'
 fallklasse_definieren KM-13 main gedeckt 'Ziele von push und worktree nach Entfernen von Anfuehrungszeichen, Rueckstrichen, Zeilenfortsetzungen und dem Dollar vor Anfuehrungszeichen verglichen; die Ausnahme fuer -b/-B greift nicht fuer main/master, getrennt, angehaengt oder gebuendelt (Posten 1, 2026-10-14)' 'L01 L02 L03 L04 L18 A54 A55 A56 A57 A58 A59 A60 A61 A62 A63 A64 A67 A68 A69 A70 A71 A72 A73 A74 A75 A76 A77'
 fallklasse_definieren GM-5 main grenze "Grenze der Auswertung: Ziele aus Variable, Befehlssubstitution, eval, Brace-Expansion und Escape-Folgen in \$'...'-Wort (hex und oktal) und die Uebersetzung von \$\"...\" ueber einen Meldungskatalog werden nicht erkannt (Posten 1, 2026-10-14); seit Posten 4 a (2026-10-21) auch ein worktree add in einer Befehlssubstitution oder in Rueckwaertsakzenten innerhalb eines Ausnahme-Abschnitts (G88, G89); seit Delta 3 (2026-10-21) auch eine Befehlssubstitution als Umleitungsoperand (G105)" 'G47 G48 G49 G61 G62 G63 G64 G68 G71 G88 G89 G105'
 fallklasse_definieren GM-6 main grenze 'Grenze an der Schnittstelle: Werkzeugname ungleich Bash (ZF10a, ZF10b; ADR 0002, 6.13 c, Nachtrag vom 2026-09-23; im Kopfkommentar seit Posten 1)' 'ZF10a ZF10b'
 fallklasse_definieren GM-7 main grenze 'Ausnahme fuer -b/-B am Text, nicht an der Syntax der Shell: -b/-B in Anfuehrungszeichen oder Kommentar (DT-B2-05 a/b); als benannter Preis in sperrender Richtung: -b/-B main nur als Inhalt (A78, A79; B2-PM-14); seit Posten 4 b (2026-10-21) auch -b/-B in Anfuehrungszeichen jeder Art oder im Kommentar, auch wenn es erst ueber eine Zeilenfortsetzung neben worktree add rueckt: das Gate entfernt den Rueckstrich vor dem Zeilenumbruch auch dort, wo die Shell ihn nicht entfernt (einfache Anfuehrungszeichen, Kommentar; G80, G93), und liest -b dort als Ausnahme, wo die Shell die Zeile tatsaechlich fortsetzt (doppelte Anfuehrungszeichen; G92)' 'G59 G60 G80 G92 G93 A78 A79'
-fallklasse_definieren GM-8 main grenze 'Grenze am Befehlstext: Verb oder Sammel-Push-Option in Anfuehrungszeichen oder hinter Rueckstrich wird nicht erkannt (DT-B2-08)' 'G69 G70'
+fallklasse_definieren GM-8 main grenze 'Grenze am Befehlstext: Verb oder Sammel-Push-Option in Anfuehrungszeichen oder hinter Rueckstrich wird nicht erkannt (DT-B2-08); seit C4 (2026-10-27) vier weitere Formen am unveraenderten main-Gate gemessen: das Verb hinter einem Rueckstrich (G114), die Sammel-Push-Form *:* in Anfuehrungszeichen (G115), --mirror in Anfuehrungszeichen (G116) und worktree "add" in Anfuehrungszeichen (G117)' 'G69 G70 G114 G115 G116 G117'
 fallklasse_definieren KM-14 main gedeckt 'Zielpruefung am Befehlstext, nicht am Abschnitt (Preis in sicherer Richtung, Posten 4 a, 2026-10-21): steht nach dem Abziehen der Ausnahme-Abschnitte noch ein worktree add ohne Ausnahme im Text, sperrt jedes main an anderer Stelle derselben Eingabe; Ausweg: getrennte Bash-Aufrufe' 'A89 A90'
 fallklasse_definieren KM-15 main gedeckt 'Posten 4 a (DT-B2-05 c, 2026-10-21): die Ausnahme fuer -b/-B gilt nur fuer den worktree-add-Abschnitt, in dem sie steht; Abschnitte trennen ; & | und der Zeilenumbruch' 'L17 A85 A86 A87 A88 A101 A106 A107 A108 A109 S12'
 fallklasse_definieren KM-16 main gedeckt 'Posten 4 b (DT-B2-09, 2026-10-21): Verb, Sammel-Push-Optionen und Ausnahme werden auf dem Befehlstext mit entfernten Zeilenfortsetzungen geprueft' 'L19 A91 A92 A104 A105 S15 S16 S17'
@@ -1080,16 +1396,24 @@ fallklasse_definieren KP-6 prototyp gedeckt 'Delta 2 (ST-C2-D-01, 2026-10-21) am
 fallklasse_definieren GM-9 main grenze 'Grenze der Basename-Form (Posten 4 c, 2026-10-21): eine Option mit getrenntem Wert (--reason) zaehlt als zweites Wort, ein Pfad in Anfuehrungszeichen zerfaellt in mehrere Woerter (Leerzeichen, Semikolon, Raute, Umleitungszeichen, Zeilenumbruch; G91, G97 bis G100); seit Delta 3 (2026-10-21) auch eine Option mit getrenntem Wert in Anfuehrungszeichen (G106); seit Delta 4 (2026-10-21) auch < oder > als letztes Zeichen eines Worts in Anfuehrungszeichen vor dem Pfad (G111), ; & | oder ein Zeilenumbruch in einem solchen Wort (G112) und die Verbindung beider Fehlformen aus Delta 3 (G110)' 'G90 G91 G97 G98 G99 G100 G106 G110 G111 G112'
 fallklasse_definieren GP-4 prototyp grenze 'Grenze an der Schnittstelle zum Harness: Werkzeugname ungleich Bash (ZF10d; ADR 0002, 6.13 c, Nachtrag vom 2026-09-23; im Kopfkommentar des Prototyp-Gates seit 2026-10-22; Gegenstueck zu GM-6 am main-Gate)' 'ZF10d'
 fallklasse_definieren KP-8 prototyp gedeckt 'Posten 6 (C3, 2026-10-22): die sed- und tr-Schritte des Prototyp-Gates pruefen ihren Rueckgabewert -- Bash-Weg cmd_flach (sed, sed der Schleife, tr) und bereinigt (sed), Weg der Dateiwerkzeuge payload_norm (sed, sed der Schleife, tr); jeder andere Ausgang als 0 endet mit Rueckgabewert 2 und einer Meldung mit Werkzeug und Rueckgabewert' 'L23 L24 S20 S21 S22 S23 S24 S29 S30'
-fallklasse_definieren KP-9 prototyp gedeckt 'Posten 7, Teil am Prototyp-Gate (C3, 2026-10-22): eigene Zeitgrenze des Gates von 12 s mit Nachlauf 1 s; Ueberschreitung, Fehler von timeout und fehlendes timeout enden mit Rueckgabewert 2 und einer Meldung; Gegenprobe S26' 'S25 S26 S27 S28'
+fallklasse_definieren KP-9 prototyp gedeckt 'Posten 7, Teil am Prototyp-Gate (C3, 2026-10-22): eigene Zeitgrenze des Gates von 12 s mit Nachlauf 1 s; Ueberschreitung, Fehler von timeout und fehlendes timeout enden mit Rueckgabewert 2 und einer Meldung; Gegenprobe S26; seit C4 (Posten 10) auch der Nachlauf -k 1 (S38, Mutation MP65)' 'S25 S26 S27 S28 S38'
+fallklasse_definieren KP-10 prototyp gedeckt 'Posten 8 (C4, 2026-10-27; SR-005, DT-C3-02): die vier jq-Schritte des Prototyp-Gates (tool, cmd, fp, payload) pruefen ihren Rueckgabewert; jeder andere Ausgang als 0 endet mit Rueckgabewert 2 und einer Meldung mit jq und Rueckgabewert; Preis in sicherer Richtung: eine Werkzeugeingabe, an der ein jq-Schritt scheitert, sperrt auch ohne Bezug ueber die Trennung (MultiEdit mit einem Objekt in new_string)' 'S31 S32 S33 B74 P55'
+fallklasse_definieren KP-11 prototyp gedeckt 'Posten 9 (a) (C4, 2026-10-27; SR-006, DT-C3-01): Bezugsformen an den Dateiwerkzeugen in beiden Richtungen -- src= und href= sowie @import url( ohne Anfuehrungszeichen, SRC=, HREF= und @IMPORT URL( in Grossschreibung; Gegenproben mit Pfad ohne Bezug ueber die Trennung, dazu das Ende des Werts ohne Anfuehrungszeichen (P68 am Leerraum, P102 an der Klammer einer url(, P103 am Zeichen >); Preis in sicherer Richtung: Zuweisungen an Namen, die auf src oder href enden, in Gross- oder Mischschreibung oder ohne Anfuehrungszeichen' 'B75 B76 B77 B78 B79 B80 B81 B82 B83 B84 B85 B86 P56 P57 P58 P59 P60 P61 P62 P63 P64 P65 P66 P67 P68 P102 P103'
+fallklasse_definieren KP-12 prototyp gedeckt 'Posten 9 (b) (C4, 2026-10-27; SR-006): src= und href= am Bash-Weg (grobes Netz) in beiden Richtungen -- echo, printf mit Leerraum um das Gleichheitszeichen, Heredoc, img-Element mit Umleitung nach prototype/, SRC= und @IMPORT; je Form zwei Gegenproben (derselbe Befehl ohne prototype, derselbe Text ohne Schreibwirkung); Preis: ein Befehl mit Schreibwirkung, der src= oder href= als Text traegt und dahinter prototype nennt, sperrt auch ohne Bezug ueber die Trennung' 'B87 B88 B89 B90 B91 B92 B93 B94 P69 P70 P71 P72 P73 P74 P75 P76 P77 P78 P79 P80 P81 P82 P83 P84'
+fallklasse_definieren KP-14 prototyp gedeckt 'DT-C4-01 (C4, 2026-10-27; Bezug SR-003): Waisenprozess und Kanaele des Aufrufers -- der aeussere Teil des Prototyp-Gates legt die Ausgabe des inneren Laufs in einer Ablage ab (mktemp), ruft timeout -k 1 12 mit dem inneren Lauf im Hintergrund auf, wartet mit wait, raeumt nach jedem anderen Ausgang als 0 die Prozessgruppe mit kill -KILL ab und gibt die Ausgabe mit Builtins weiter; EOF auf stdout und stderr hoechstens 13,5 s nach dem Start, kein Prozess der Gruppe ueberlebt; fehlt mktemp, sperrt das Gate' 'S35 S36 S37'
+fallklasse_definieren GP-6 prototyp grenze 'Posten 10 (C4, 2026-10-27; Einordnung nach 6.13 d): die Python-Formen in Richtung 2 kennen bewusst nur die Bauwurzeln backend, frontend und deploy (Kopfkommentar seit E4.2), nicht die generischen Namen der Variable WURZELN (src, app, lib, server, packages, apps); ein import app waere in einem Python-Prototyp ein plausibles Fremdmodul' 'P101'
+fallklasse_definieren GP-7 prototyp grenze 'DT-C4-01 (C4, 2026-10-27): ein Werkzeug, das sich mit setsid oder setpgid aus der Gruppe loest, und ein Prozess im Zustand D ueberleben das KILL; nach dem Ausgang 0 raeumt das Gate nicht ab; solche Prozesse halten die Kanaele des Harness nicht (die Ausgabe des inneren Laufs geht in Dateien), ueberdauern aber das Gate; der Zustand D ist ohne Fall' 'P95'
+fallklasse_definieren KP-13 prototyp gedeckt 'Posten 3 (C4, 2026-10-27; L09): lexikalische Bereinigung des Dateipfads und des Projektverzeichnisses vor jeder Zuordnung (mehrere Schraegstriche, Segmente ".", ".." und Schraegstrich am Ende), Zuordnung nach dem bereinigten Pfad auch an der Prosa-Ausnahme; Folgen: ein Pfad, der ueber ".." aus dem Projekt hinausfuehrt, ist nicht Gegenstand des Gates, ein Pfad, der ueber ".." in docs/ endet, faellt unter die Prosa-Ausnahme' 'L09 B95 B96 B97 B98 B99 B100 P85 P86 P87 P88 P89 P90 P91 P93 P94'
+fallklasse_definieren GP-5 prototyp grenze 'Posten 3 (C4, 2026-10-27): keine Aufloesung symbolischer Verknuepfungen und kein Zugriff auf das Dateisystem; eine Verknuepfung im Produktionscode, die auf prototype/ zeigt (oder umgekehrt), und ein Projektverzeichnis, das ueber eine Verknuepfung erreicht wird, werden nach dem Pfadtext zugeordnet, nicht nach dem Ziel' 'P92'
 
 # --- 11c. Abnahmekriterien (Backlog R3-Q-010; ADR 0002, 6.13 f) -------------------------
-abnahmekriterium_definieren R3-Q-010_prototyp_gate_pfadformen fallliste 'B02 B03 B06 ZF5a ZF5b ZF5c ZF6a ZF6b ZF5e B43 B45 B46 B50 B51 ZF6f P01 P05 P09 P27 P30 P31 P32' 'geschlossen mit E4.2 (vormals ST-04/ST-05); Gegenproben P01 P05 P09 P27 P30 P31 P32'
-abnahmekriterium_definieren R3-Q-010_prototyp_gate_richtungsgleichheit fallliste 'B07 B08 ZF6c ZF6d B35 B41 B42 B44 B47 B48 B49 P10 P02 B34 P28 P29 L05 L06 L07 L08 B66 B67 B68 B69 B70 B71 P42 P43 P44 P45 P46 P47 P48 P49 P50 P51 P52 B72 B73 P53 P54' 'geschlossen mit E4.2 (vormals P-01); Gegenprobe P10; Richtung 1 zum Vergleich P02 B34; Gegenproben P28 P29; Posten 2 (C3, 2026-10-22): L05 bis L08, B66 bis B73, Gegenproben P42 bis P54'
-abnahmekriterium_definieren R3-Q-010_prototyp_gate_schreibwirkung fallliste 'B09 ZF7a ZF7c ZF7d ZF7b P06 P14 P15 P33 B52 B53 B54 B55 B56 B57 B58 B59 P36 P37 P38 B60 B61 B62 P39 B63' 'geschlossen mit E4.3 (vormals ST-09); Gegenproben P06 P14 P15 P33 B52 P36 P37; P38 vorgemessen mit Abweichung vom Behebungsauftrag (rc=2 statt 0), gemeldet, nicht angepasst; DT-E43-6 (E4.3-Nachtrag, 2026-09-23) mit B60 B61 B62, Gegenprobe P39; DT-E43-8 (E4.3-Nachtrag, 2026-09-23) mit B63'
-abnahmekriterium_definieren R3-Q-010_gates_unlesbare_eingabe fallliste 'S01 S02 ZF8a ZF8b S04 S05 ZF8c ZF8d G01 P04 G40 P34' 'geschlossen mit E4.3 (vormals ST-13); Gegenproben G01 P04 G40 P34'
-abnahmekriterium_definieren R3-Q-010_pruefmittel_je_gate gemischt 'G01 G02 G03 G05 G06 P01 P03 P04 P05 MM1 MM2 MM3 MM4 MM5 MP1 MP2 MP3 MP4 MP5 MM7 MM8 MP10 MP11 MM9 MM10 MM11 MM12 MM13 MM14 MM15 MM16 MM17 MM18 MM19 MM20 MM21 MM22 MM23 MM24 MM25 MM26 MM27 MM28 MM29 MM30 MM31 MM32 MM33 MM34 MP12 MP13 MP14 MP15 MP16 MP17 MP18 MP19 MP20 MP21 MP22 MP23 MP24 MP25 MP26 MP27 MP28 MP29 MP30 MP31 MP32' 'Zaehlung je Gate, Mutationsmodus MM1-MM5/MP1-MP5 und MM7/MM8/MP10/MP11 (DT-E43-6, N-3) und MM9 bis MM15 (Posten 1, 2026-10-14) und MM16 bis MM34, MP12 bis MP15 (Posten 4 und 5 sowie Delta, Delta 2, Delta 3 und Delta 4, 2026-10-21), Regressionsschutz G01 G02 G03 G05 G06 P01 P03 P04 P05; MP16 bis MP32 mit C3'
+abnahmekriterium_definieren R3-Q-010_prototyp_gate_pfadformen fallliste 'B02 B03 B06 ZF5a ZF5b ZF5c ZF6a ZF6b ZF5e B43 B45 B46 B50 B51 ZF6f P01 P05 P09 P27 P30 P31 P32 L09 B95 B96 B97 B98 B99 B100 P85 P86 P87 P88 P89 P90 P91 P92 P93 P94' 'geschlossen mit E4.2 (vormals ST-04/ST-05); Gegenproben P01 P05 P09 P27 P30 P31 P32; Posten 3 (C4, 2026-10-27): L09, B95 bis B100, Gegenproben, Folgen und Grenze P85 bis P94'
+abnahmekriterium_definieren R3-Q-010_prototyp_gate_richtungsgleichheit fallliste 'B07 B08 ZF6c ZF6d B35 B41 B42 B44 B47 B48 B49 P10 P02 B34 P28 P29 L05 L06 L07 L08 B66 B67 B68 B69 B70 B71 P42 P43 P44 P45 P46 P47 P48 P49 P50 P51 P52 B72 B73 P53 P54 B75 B76 B77 B78 B79 B80 B81 B82 B83 B84 B85 B86 P56 P57 P58 P59 P60 P61 P62 P63 P64 P65 P66 P67 P68 P102 P103 B101 B102 B103 B104 P96 P97 P98 P99 P100 P101' 'geschlossen mit E4.2 (vormals P-01); Gegenprobe P10; Richtung 1 zum Vergleich P02 B34; Gegenproben P28 P29; Posten 2 (C3, 2026-10-22): L05 bis L08, B66 bis B73, Gegenproben P42 bis P54; Posten 9 (a) (C4, 2026-10-27): B75 bis B86, Gegenproben P56 bis P68, P102 und P103 (Behebung nach ST-C4-01 und ST-C4-03); Posten 10 (C4, 2026-10-27): import_module B101 bis B104 mit Gegenproben P96 bis P99, statische JS-Form P100, Grenze P101'
+abnahmekriterium_definieren R3-Q-010_prototyp_gate_schreibwirkung fallliste 'B09 ZF7a ZF7c ZF7d ZF7b P06 P14 P15 P33 B52 B53 B54 B55 B56 B57 B58 B59 P36 P37 P38 B60 B61 B62 P39 B63 B87 B88 B89 B90 B91 B92 B93 B94 P69 P70 P71 P72 P73 P74 P75 P76 P77 P78 P79 P80 P81 P82 P83 P84' 'geschlossen mit E4.3 (vormals ST-09); Gegenproben P06 P14 P15 P33 B52 P36 P37; P38 vorgemessen mit Abweichung vom Behebungsauftrag (rc=2 statt 0), gemeldet, nicht angepasst; DT-E43-6 (E4.3-Nachtrag, 2026-09-23) mit B60 B61 B62, Gegenprobe P39; DT-E43-8 (E4.3-Nachtrag, 2026-09-23) mit B63; Posten 9 (b) (C4, 2026-10-27): B87 bis B94 am Bash-Weg, Gegenproben P69 bis P84'
+abnahmekriterium_definieren R3-Q-010_gates_unlesbare_eingabe fallliste 'S01 S02 ZF8a ZF8b S04 S05 ZF8c ZF8d G01 P04 G40 P34 S31 S32 S33 B74 P55' 'geschlossen mit E4.3 (vormals ST-13); Gegenproben G01 P04 G40 P34; Posten 8 (C4, 2026-10-27, SR-005): S31 S32 S33 B74, Gegenprobe P55'
+abnahmekriterium_definieren R3-Q-010_pruefmittel_je_gate gemischt 'G01 G02 G03 G05 G06 P01 P03 P04 P05 MM1 MM2 MM3 MM4 MM5 MP1 MP2 MP3 MP4 MP5 MM7 MM8 MP10 MP11 MM9 MM10 MM11 MM12 MM13 MM14 MM15 MM16 MM17 MM18 MM19 MM20 MM21 MM22 MM23 MM24 MM25 MM26 MM27 MM28 MM29 MM30 MM31 MM32 MM33 MM34 MP12 MP13 MP14 MP15 MP16 MP17 MP18 MP19 MP20 MP21 MP22 MP23 MP24 MP25 MP26 MP27 MP28 MP29 MP30 MP31 MP32 MP33 MP34 MP35 MP36 MP37 MP38 MP39 MP40 MP41 MP42 MP43 MP44 MP45 MP46 MP47 MP48 MP49 MP50 MP51 MP52 MP53 MP54 MP55 MP56 MP57 MP58 MP59 MP60 MP61 MP62 MP63 MP64 MP65 MP66 MP67' 'Zaehlung je Gate, Mutationsmodus MM1-MM5/MP1-MP5 und MM7/MM8/MP10/MP11 (DT-E43-6, N-3) und MM9 bis MM15 (Posten 1, 2026-10-14) und MM16 bis MM34, MP12 bis MP15 (Posten 4 und 5 sowie Delta, Delta 2, Delta 3 und Delta 4, 2026-10-21), Regressionsschutz G01 G02 G03 G05 G06 P01 P03 P04 P05; MP16 bis MP32 mit C3; MP33 bis MP36 mit C4 (Posten 8); MP37 bis MP46 mit C4 (Posten 9); MP47 bis MP53 mit C4 (Posten 3); MP54 bis MP59 mit C4 (DT-C4-01); MP60 bis MP65 mit C4 (Posten 10); MP66 und MP67 mit C4 (Behebung nach ST-C4-01 und ST-C4-03)'
 abnahmekriterium_definieren R3-Q-010_main_gate_fremdbelegt fallliste 'A02 A03 A04 A05 A06 A38 A39 A40 A41 A42 A07 A08 A09 S03 G01 G02 G03' 'ST-01 trennscharf im Kontext AK; ST-02/ST-03 behoben; Gegenproben G01 G02 G03'
-abnahmekriterium_definieren R3-Q-010_benannte_grenzen fallklassen 'KM-1 KM-2 KM-3 KM-4 KM-5 KM-6 KM-7 KM-8 KM-9 GM-1 GM-2 GM-3 GM-4 KP-1 KP-2 KM-10 KM-11 KM-12 KP-3 KP-4 GP-1 GP-2 KP-7 KM-13 GM-5 GM-6 GM-7 GM-8 KM-14 KM-15 KM-16 KM-17 KM-18 KP-5 GM-9 KP-6 GP-4 KP-8 KP-9' 'Fallklassen der Kopfkommentare; P-10 benannt (GP-1), nicht geschlossen; Posten 1 (2026-10-14): KM-13, GM-5, GM-6, GM-7, GM-8; Posten 4 und 5 (2026-10-21): KM-14 bis KM-18, KP-5, GM-9; Delta 2 (2026-10-21): KP-6; C3: GP-3 ist KP-7 (gedeckt), neu GP-4, KP-8, KP-9'
+abnahmekriterium_definieren R3-Q-010_benannte_grenzen fallklassen 'KM-1 KM-2 KM-3 KM-4 KM-5 KM-6 KM-7 KM-8 KM-9 GM-1 GM-2 GM-3 GM-4 KP-1 KP-2 KM-10 KM-11 KM-12 KP-3 KP-4 GP-1 GP-2 KP-7 KM-13 GM-5 GM-6 GM-7 GM-8 KM-14 KM-15 KM-16 KM-17 KM-18 KP-5 GM-9 KP-6 GP-4 KP-8 KP-9 KP-10 KP-11 KP-12 KP-13 GP-5 KP-14 GP-6 GP-7' 'Fallklassen der Kopfkommentare; P-10 benannt (GP-1), nicht geschlossen; Posten 1 (2026-10-14): KM-13, GM-5, GM-6, GM-7, GM-8; Posten 4 und 5 (2026-10-21): KM-14 bis KM-18, KP-5, GM-9; Delta 2 (2026-10-21): KP-6; C3: GP-3 ist KP-7 (gedeckt), neu GP-4, KP-8, KP-9; C4: KP-10 (Posten 8), KP-11 und KP-12 (Posten 9), KP-13 und GP-5 (Posten 3), KP-14 und GP-7 (DT-C4-01), GP-6 (Posten 10)'
 
 # -----------------------------------------------------------------------------
 # 12. Fallliste -- Teil 4.1 der Fallliste: main-Gate, Soll 2
@@ -1396,6 +1720,11 @@ faelle_4_2_main_soll0() {
   fall G111 main grenze 0 AK - voll JSON Bash 'DT-C2-F-01 (Delta 4 2026-10-21), Grenze (benannt unter GM-9): < oder > als letztes Zeichen eines Worts in Anfuehrungszeichen vor dem Pfad; die Anfuehrung wird als offen gelesen und der Pfad verschluckt; gemessen 0 (vorbestehend, vor Delta 2: 0)' "$(bj_ph 'git worktree add --lock --reason="a>" ../main')"
   fall G112 main grenze 0 AK - voll JSON Bash 'DT-C2-F-02 (Delta 4 2026-10-21), Grenze GM-9: ein Semikolon in einem Wort in Anfuehrungszeichen vor dem Pfad trennt den Pfad vom Abschnitt; gemessen 0 (vorbestehend)' "$(bj_ph 'git worktree add --lock --reason="a;b" ../main')"
   fall G113 main durchlaufend 0 AK - voll JSON Bash 'DT-C2-F-03 (Delta 4 2026-10-21): -d (losgeloester Arbeitsbaum) mit einer Umleitung; ohne den Abzug von --detach und -d in der zweiten Fassung wuerde sie sperren (Mutation X3 des DST)' "$(bj_ph 'git worktree add -d ../main > /tmp/log')"
+  # --- C4 (2026-10-27), GM-8: Fallwahl (B2-GATE-R3-01, B2-PM-19); das main-Gate bleibt unveraendert, Soll ist der am unveraenderten main-Gate gemessene Wert (2026-10-27) ---
+  fall G114 main grenze 0 AK - voll JSON Bash 'GM-8 (Fallwahl der Festlegung fuer C4, 2026-10-27; B2-GATE-R3-01): das Verb hinter einem Rueckstrich (git pu\sh); am unveraenderten main-Gate gemessen Rueckgabewert 0, die Shell liest pu\sh als push, das Gate den Befehlstext' "$(bj_ph 'git pu\sh origin main')"
+  fall G115 main grenze 0 AK - voll JSON Bash 'GM-8 (Fallwahl der Festlegung fuer C4, 2026-10-27; B2-PM-19): die Sammel-Push-Form *:* in Anfuehrungszeichen; am unveraenderten main-Gate gemessen Rueckgabewert 0 (ohne Anfuehrungszeichen sperrt das Gate sie)' "$(bj_ph "git push origin '*:*'")"
+  fall G116 main grenze 0 AK - voll JSON Bash 'GM-8 (Fallwahl der Festlegung fuer C4, 2026-10-27): --mirror in Anfuehrungszeichen; am unveraenderten main-Gate gemessen Rueckgabewert 0 (ohne Anfuehrungszeichen sperrt das Gate sie)' "$(bj_ph 'git push "--mirror" origin')"
+  fall G117 main grenze 0 AK - voll JSON Bash 'GM-8 (Fallwahl der Festlegung fuer C4, 2026-10-27): worktree "add" in Anfuehrungszeichen; am unveraenderten main-Gate gemessen Rueckgabewert 0 (ohne Anfuehrungszeichen sperrt das Gate den Arbeitsbaum auf main)' "$(bj_ph 'git worktree "add" /tmp/wt main')"
 }
 
 # -----------------------------------------------------------------------------
@@ -1498,6 +1827,50 @@ faelle_4_4_proto_soll2() {
   fall S28 prototyp blockierend 2 AB - timeout-fehler JSON Write 'Posten 7, Teil am Prototyp-Gate (C3, 2026-10-22): ein timeout, das mit 125 endet (Fehler von timeout), harmlose Eingabe wie S25; jeder andere Ausgang als 0 oder 2 endet mit Rueckgabewert 2 und einer Meldung (Zweig der Abbildung); Mutation MP31' "$(wj_ph 'frontend/src/a.ts' 'const a = 1;')"
   fall S29 prototyp blockierend 2 AB - sed-ohne-kommentar JSON Bash 'Posten 6 unter R3-Q-010 (C3, 2026-10-22): Bash-Weg, erster sed-Schritt von cmd_flach (PATH mit einem sed, das nur den Aufruf fuer die Zeilenkommentare verweigert); die Pruefung dieses Schritts erreicht kein Fall mit fehlendem sed, weil der sed der Schleife den Ausfall aufgefangen haette; vor der Behebung Durchlass (rc 0); Mutation MP21' "$(bj_ph 'echo "import h from \"../prototype/helper\";" > frontend/src/a.ts')"
   fall S30 prototyp blockierend 2 AB - sed-ohne-kommentar JSON Write 'Posten 6 unter R3-Q-010 (C3, 2026-10-22): Weg der Dateiwerkzeuge, erster sed-Schritt von payload_norm (PATH mit einem sed, das nur den Aufruf fuer die Zeilenkommentare verweigert); Eingabe wie B15; vor der Behebung Durchlass (rc 0); Mutation MP25' "$(wj_ph 'frontend/src/a.ts' 'import h from /* c */ "../prototype/helper";')"
+  # --- C4 (2026-10-27), Posten 8 unter R3-Q-010 (SR-005, DT-C3-02): die jq-Schritte pruefen ihren Rueckgabewert ---
+  fall S31 prototyp blockierend 2 AB - jq-ohne-tool JSON Bash 'Posten 8 unter R3-Q-010 (C4, 2026-10-27; SR-005, DT-C3-02): Bash-Weg, jq-Schritt fuer den Werkzeugnamen (PATH mit einem jq, das nur diesen Aufruf verweigert: Rueckgabewert 5, keine Ausgabe); vor der Behebung Durchlass (rc 0); Mutation MP33' "$(bj_ph 'echo "import h from \"../prototype/helper\";" > frontend/src/a.ts')"
+  fall S32 prototyp blockierend 2 AB - jq-ohne-befehl JSON Bash 'Posten 8 unter R3-Q-010 (C4, 2026-10-27; SR-005, DT-C3-02): Bash-Weg, jq-Schritt fuer den Befehl (PATH mit einem jq, das nur diesen Aufruf verweigert); vor der Behebung Durchlass (rc 0); Mutation MP34' "$(bj_ph 'echo "import h from \"../prototype/helper\";" > frontend/src/a.ts')"
+  fall S33 prototyp blockierend 2 AB - jq-ohne-pfad JSON Write 'Posten 8 unter R3-Q-010 (C4, 2026-10-27; SR-005, DT-C3-02): Weg der Dateiwerkzeuge, jq-Schritt fuer den Dateipfad (PATH mit einem jq, das nur diesen Aufruf verweigert); vor der Behebung Durchlass (rc 0); Mutation MP35' "$(wj_ph 'frontend/src/a.ts' 'import h from "../prototype/helper";')"
+  fall B74 prototyp blockierend 2 AB - voll UNMOEGLICH MultiEdit 'Posten 8 unter R3-Q-010 (C4, 2026-10-27; SR-005, DT-C3-02): MultiEdit mit einer Zeichenkette mit Import ueber die Trennung in edits[0].new_string und einem Objekt in edits[1].new_string; der jq-Schritt fuer den Dateiinhalt (payload) bricht beim Zusammenfuegen ab, ohne Attrappe; vor der Behebung Durchlass (rc 0); Gegenprobe P55; Mutation MP36' "$(mej_gemischt 'frontend/src/a.ts' 'import h from "../prototype/helper";')"
+  # --- C4 (2026-10-27), Posten 9 (a) unter R3-Q-010 (SR-006, DT-C3-01): Bezugsformen an den Dateiwerkzeugen ohne Anfuehrungszeichen und in Grossschreibung ---
+  fall B75 prototyp blockierend 2 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27; SR-006, DT-C3-01), Richtung 2: src= ohne Anfuehrungszeichen; vor der Behebung Durchlass (rc 0); Gegenprobe P56; Mutation MP40' "$(wj_ph 'prototype/demo.html' '<img src=../backend/x.png>')"
+  fall B76 prototyp blockierend 2 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27; SR-006, DT-C3-01), Richtung 2: href= ohne Anfuehrungszeichen; vor der Behebung Durchlass (rc 0); Gegenprobe P57; Mutation MP40' "$(wj_ph 'prototype/demo.html' '<link href=../frontend/style.css>')"
+  fall B77 prototyp blockierend 2 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27; SR-006, DT-C3-01), Richtung 2: @import url( ohne Anfuehrungszeichen; vor der Behebung Durchlass (rc 0); Gegenprobe P58; Mutation MP42' "$(wj_ph 'prototype/x.css' '@import url(../frontend/style.css);')"
+  fall B78 prototyp blockierend 2 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27; SR-006, DT-C3-01), Richtung 2: SRC= in Grossschreibung; vor der Behebung Durchlass (rc 0); Gegenprobe P59; Mutation MP37' "$(wj_ph 'prototype/demo.html' '<img SRC="../backend/x.png">')"
+  fall B79 prototyp blockierend 2 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27; SR-006, DT-C3-01), Richtung 2: HREF= in Grossschreibung; vor der Behebung Durchlass (rc 0); Gegenprobe P60; Mutation MP37' "$(wj_ph 'prototype/demo.html' '<a HREF="../frontend/index.html">x</a>')"
+  fall B80 prototyp blockierend 2 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27; SR-006, DT-C3-01), Richtung 2: @IMPORT URL( in Grossschreibung; vor der Behebung Durchlass (rc 0); Gegenprobe P61; Mutationen MP38 und MP39' "$(wj_ph 'prototype/x.css' '@IMPORT URL("../frontend/style.css");')"
+  fall B81 prototyp blockierend 2 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27; SR-006, DT-C3-01), Richtung 1: src= ohne Anfuehrungszeichen; vor der Behebung Durchlass (rc 0); Gegenprobe P62; Mutation MP41' "$(wj_ph 'frontend/src/demo.html' '<script src=../prototype/x.js></script>')"
+  fall B82 prototyp blockierend 2 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27; SR-006, DT-C3-01), Richtung 1: href= ohne Anfuehrungszeichen; vor der Behebung Durchlass (rc 0); Gegenprobe P63; Mutation MP41' "$(wj_ph 'frontend/src/demo.html' '<link href=../prototype/style.css>')"
+  fall B83 prototyp blockierend 2 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27; SR-006, DT-C3-01), Richtung 1: @import url( ohne Anfuehrungszeichen; vor der Behebung Durchlass (rc 0); Gegenprobe P64; Mutation MP43' "$(wj_ph 'frontend/src/a.css' '@import url(../prototype/x.css);')"
+  fall B84 prototyp blockierend 2 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27; SR-006, DT-C3-01), Richtung 1: SRC= in Grossschreibung; vor der Behebung Durchlass (rc 0); Gegenprobe P65; Mutation MP37' "$(wj_ph 'frontend/src/demo.html' '<script SRC="../prototype/x.js"></script>')"
+  fall B85 prototyp blockierend 2 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27; SR-006, DT-C3-01), Richtung 1: HREF= in Grossschreibung; vor der Behebung Durchlass (rc 0); Gegenprobe P66; Mutation MP37' "$(wj_ph 'frontend/src/demo.html' '<LINK HREF="../prototype/style.css">')"
+  fall B86 prototyp blockierend 2 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27; SR-006, DT-C3-01), Richtung 1: @IMPORT URL( in Grossschreibung; vor der Behebung Durchlass (rc 0); Gegenprobe P67; Mutationen MP38 und MP39' "$(wj_ph 'frontend/src/a.css' '@IMPORT URL("../prototype/x.css");')"
+  # --- C4 (2026-10-27), Posten 9 (b) unter R3-Q-010 (SR-006): src= und href= am Bash-Weg (grobes Netz) ---
+  fall B87 prototyp blockierend 2 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27; SR-006, Beobachtung des Dynamic Software Testers vom 2026-10-22), Richtung 1: echo mit script-Element (src=) und Umleitung in den Produktionscode; vor der Behebung Durchlass (rc 0); Gegenproben P69 und P70; Mutation MP44' "$(bj_ph "echo '<script src=\"../prototype/x.js\"></script>' > frontend/index.html")"
+  fall B88 prototyp blockierend 2 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27; SR-006), Richtung 1: echo mit link-Element (href=) und Umleitung in den Produktionscode; vor der Behebung Durchlass (rc 0); Gegenproben P71 und P72; Mutation MP44' "$(bj_ph "echo '<link href=\"../prototype/style.css\">' > frontend/index.html")"
+  fall B89 prototyp blockierend 2 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27; SR-006), Richtung 1: printf mit Leerraum um das Gleichheitszeichen (href = ) und Umleitung in den Produktionscode; vor der Behebung Durchlass (rc 0); Gegenproben P73 und P74; Mutation MP44' "$(bj_ph "printf '<link href = \"../prototype/style.css\">' > frontend/index.html")"
+  fall B90 prototyp blockierend 2 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27; SR-006), Richtung 1: Heredoc mit src= in den Produktionscode; vor der Behebung Durchlass (rc 0); Gegenproben P75 und P76; Mutation MP44' "$(bj_ph "$(printf 'cat > frontend/index.html <<EOT\n<script src="../prototype/x.js"></script>\nEOT')")"
+  fall B91 prototyp blockierend 2 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27; SR-006), Richtung 2: img-Element mit src="../backend/x.png" und Umleitung nach prototype/ (das Ziel der Schreibwirkung nennt prototype); vor der Behebung Durchlass (rc 0); Gegenproben P77 und P78; Mutation MP44' "$(bj_ph "echo '<img src=\"../backend/x.png\">' > prototype/demo.html")"
+  fall B92 prototyp blockierend 2 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27; SR-006), Richtung 2: a-Element mit href= auf den Produktionscode und Umleitung nach prototype/; vor der Behebung Durchlass (rc 0); Gegenproben P79 und P80; Mutation MP44' "$(bj_ph "echo '<a href=\"../frontend/index.html\">x</a>' > prototype/demo.html")"
+  fall B93 prototyp blockierend 2 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27; SR-006), Richtung 1: SRC= in Grossschreibung am Bash-Weg; vor der Behebung Durchlass (rc 0); Gegenproben P81 und P82; Mutationen MP37 und MP44' "$(bj_ph "echo '<script SRC=\"../prototype/x.js\"></script>' > frontend/index.html")"
+  fall B94 prototyp blockierend 2 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27; SR-006), Richtung 1: @IMPORT in Grossschreibung am Bash-Weg; vor der Behebung Durchlass (rc 0); Gegenproben P83 und P84; Mutationen MP38 und MP45' "$(bj_ph "echo '@IMPORT URL(\"../prototype/x.css\");' > frontend/src/a.css")"
+  # --- C4 (2026-10-27), Posten 3 unter R3-Q-010 (L09): lexikalische Bereinigung des Dateipfads vor jeder Zuordnung ---
+  fall B95 prototyp blockierend 2 AB - voll JSON-R2 Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Element ".." der Bereinigung: {AB}/backend/../prototype/x.js liegt im Prototyp; vor der Behebung Durchlass (rc 0, der Pfad galt als Produktionscode); Gegenprobe P86; Mutationen MP49 und MP51' "$(wj_ph '{AB}/backend/../prototype/x.js' 'import a from "../backend/api";')"
+  fall B96 prototyp blockierend 2 AB - voll JSON-R2 Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Element "mehrere Schraegstriche" der Bereinigung: {AB}//prototype/x.js (doppelter Schraegstrich hinter dem Projektverzeichnis) liegt im Prototyp; vor der Behebung Durchlass (rc 0); Gegenprobe P87; Mutationen MP47 und MP51' "$(wj_ph '{AB}//prototype/x.js' 'import a from "../backend/api";')"
+  fall B97 prototyp blockierend 2 AB - voll JSON Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Weg an der Prosa-Ausnahme vorbei: {AB}/docs/../frontend/a.ts liegt im Produktionscode (ueber docs/ mit .. zurueck); vor der Behebung Durchlass (rc 0, die Prosa-Ausnahme griff am unbereinigten Pfad); Gegenprobe P88; Mutationen MP49 und MP51' "$(wj_ph '{AB}/docs/../frontend/a.ts' 'import h from "../prototype/helper";')"
+  fall B98 prototyp blockierend 2 AB - voll JSON-R2 Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Element "." der Bereinigung bei einem relativen Pfad: ./prototype/x.js liegt im Prototyp; vor der Behebung Durchlass (rc 0, der Pfad galt als Produktionscode); Gegenprobe P93; Mutationen MP48 und MP51' "$(wj_ph './prototype/x.js' 'import a from "../backend/api";')"
+  fall B99 prototyp blockierend 2 ABS - voll JSON-R2 Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Element "Schraegstrich am Ende" und dieselbe Bereinigung fuer das Projektverzeichnis: CLAUDE_PROJECT_DIR mit einem Schraegstrich am Ende, absoluter Pfad im Prototyp; vor der Behebung am 2026-10-27 gemessen Durchlass (rc 0); Gegenprobe P89; Mutationen MP50 und MP52' "$(wj_ph '{AB}/prototype/x.js' 'import a from "../backend/api";')"
+  fall B100 prototyp blockierend 2 AB - voll JSON Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Regressionsschutz: ein relativer Pfad, der nach der Bereinigung mit .. beginnt, wird wie bisher als Pfad im Projekt zugeordnet (hier Produktionscode) und nicht als ausserhalb freigegeben; Gegenprobe P94 (Mutation MP53)' "$(wj_ph '../frontend/a.ts' 'import h from "../prototype/helper";')"
+  # --- C4 (2026-10-27), DT-C4-01: Waisenprozess -- Kanaele des Aufrufers und Abraeumen der Prozessgruppe ---
+  fall S35 prototyp blockierend 2 AB - waise-term JSON-EOF Bash 'DT-C4-01 (C4, 2026-10-27; Befund des Dynamic Software Testers, Bezug SR-003): ein vom inneren Lauf aufgerufenes Werkzeug (Attrappe von cat) ignoriert TERM und schlaeft 22 s; Soll 2 mit EOF auf stdout und stderr hoechstens 13,5 s nach dem Start und ohne ueberlebenden Prozess der Gruppe; vor der Behebung am 2026-10-27 gemessen: stderr schloss erst nach etwa 22 s, die Attrappe und ihr sleep liefen als Waise weiter; Mutation MP54' "$(bj_ph 'echo hallo')"
+  fall S36 prototyp blockierend 2 AB - waise-ohne-trap JSON-EOF Bash 'DT-C4-01 (C4, 2026-10-27), Gegenprobe zu S35: dieselbe Attrappe ohne das Ignorieren von TERM, Soll 2 wie vor der Behebung, EOF auf beiden Kanaelen hoechstens 13,5 s nach dem Start (vor der Behebung gemessen 12,007 s)' "$(bj_ph 'echo hallo')"
+  fall S37 prototyp blockierend 2 AB - ohne-mktemp JSON Write 'DT-C4-01 (C4, 2026-10-27): PATH ohne mktemp, harmlose Eingabe; der aeussere Teil legt die Ausgabe des inneren Laufs in einer Ablage ab und sperrt ohne mktemp mit einer Meldung, die mktemp nennt, wie bei timeout; vor der Behebung Durchlass (rc 0); Mutation MP58' "$(wj_ph 'frontend/src/a.ts' 'const a = 1;')"
+  # --- C4 (2026-10-27), Posten 10: -k 1 (DT-C3-03, ST-C3-04) und import_module je Richtung (ST-C3-03) ---
+  fall S38 prototyp blockierend 2 AB - term-ignoriert JSON Write 'Posten 10 unter R3-Q-010 (C4, 2026-10-27; DT-C3-03, ST-C3-04), Nachlauf -k 1: der innere Lauf uebersteht TERM (BASH_ENV mit trap "" TERM, ohne Aenderung am Gate; Technik am 2026-10-27 gemessen) und eine Attrappe von cat, die TERM ignoriert, haelt ihn 20 s; Soll 2, Ende nach etwa 13 s mit der Meldung zur Zeitgrenze (Rueckgabewert 137); gemessen 13,01 s; Mutation MP65' "$(wj_ph 'frontend/src/a.ts' 'const a = 1;')"
+  fall B101 prototyp blockierend 2 AB - voll JSON Write 'Posten 10 unter R3-Q-010 (C4, 2026-10-27; ST-C3-03), Richtung 1: import_module mit Modulnamen mit Punkt (Alternative der Richtung 1); B18 zeigt die Form mit importlib.; Gegenprobe P96; Mutation MP60' "$(wj_ph 'backend/src/a.py' 'm = import_module("prototype.x")')"
+  fall B102 prototyp blockierend 2 AB - voll JSON Write 'Posten 10 unter R3-Q-010 (C4, 2026-10-27; ST-C3-03), Richtung 2: import_module mit Modulnamen mit Punkt (Alternative der Richtung 2); B41 zeigt die Form mit importlib.; Gegenprobe P97; Mutation MP61' "$(wj_ph 'prototype/x.py' 'm = import_module("backend.api")')"
+  fall B103 prototyp blockierend 2 AB - voll JSON Write 'Posten 10 unter R3-Q-010 (C4, 2026-10-27; ST-C3-03), Richtung 1: import_module mit blossem Modulnamen ohne Punkt (mit Posten 2 mitgezogen, bis C4 ohne eigenen Fall); Gegenprobe P98; Mutation MP62' "$(wj_ph 'backend/src/a.py' 'm = import_module("prototype")')"
+  fall B104 prototyp blockierend 2 AB - voll JSON Write 'Posten 10 unter R3-Q-010 (C4, 2026-10-27; ST-C3-03), Richtung 2: import_module mit blossem Modulnamen ohne Punkt (mit Posten 2 mitgezogen, bis C4 ohne eigenen Fall); Gegenprobe P99; Mutation MP63' "$(wj_ph 'prototype/x.py' 'm = import_module("backend")')"
 }
 
 # -----------------------------------------------------------------------------
@@ -1543,7 +1916,7 @@ faelle_4_5_proto_soll0() {
   fall L06 prototyp blockierend 2 AB - voll JSON Write 'geschlossen am 2026-10-22 (Posten 2; Festlegung ADR 0002, 6.13 c, Nachtrag vom 2026-10-21 zur Abnahme von Posten 4 und 5 -- Festlegung fuer C3), Mutation MP17; vormals belegte Luecke: Klasse belegte-luecke nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c), Soll 2 mit dem Bau von Posten 2; vormals Pruefstand: beobachtete Luecke A5-atimport-url (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'frontend/src/a.css' '@import url("../prototype/theme.css");')"
   fall L07 prototyp blockierend 2 AB - voll JSON Write 'geschlossen am 2026-10-22 (Posten 2; Festlegung ADR 0002, 6.13 c, Nachtrag vom 2026-10-21 zur Abnahme von Posten 4 und 5 -- Festlegung fuer C3), Mutation MP18; vormals belegte Luecke: Klasse belegte-luecke nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c), Soll 2 mit dem Bau von Posten 2; vormals Pruefstand: beobachtete Luecke A5-Leerraum-Gleichheit (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'frontend/src/demo.html' '<img src = "../prototype/x.png">')"
   fall L08 prototyp blockierend 2 AB - voll JSON Write 'geschlossen am 2026-10-22 (Posten 2; Festlegung ADR 0002, 6.13 c, Nachtrag vom 2026-10-21 zur Abnahme von Posten 4 und 5 -- Festlegung fuer C3), Mutation MP19; vormals belegte Luecke: Klasse belegte-luecke nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Posten 2 unter R3-Q-010 (ADR 0002, 6.13 c), Soll 2 mit dem Bau von Posten 2; vormals Pruefstand: beobachtete Luecke A5-import-ohne-Punkt (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'backend/src/a.py' "m = __import__('prototype')")"
-  fall L09 prototyp belegte-luecke 0 AB - voll JSON Write 'Klasse belegte-luecke nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Posten 3 unter R3-Q-010 (ADR 0002, 6.13 c), Soll 2 mit dem Bau von Posten 3; vormals Pruefstand: beobachtete Luecke B-1-dynamisch-unnormalisierter-Pfad (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph '{AB}/./prototype/x.js' 'import a from "./../backend/api";')"
+  fall L09 prototyp blockierend 2 AB - voll JSON-R2 Write 'geschlossen am 2026-10-27 (Posten 3; Festlegung ADR 0004, Teil B, Nachtrag vom 2026-10-27 -- Festlegung fuer C4), Mutationen MP48 und MP51 (Element "." der Bereinigung); vormals belegte Luecke: Klasse belegte-luecke nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); Posten 3 unter R3-Q-010 (ADR 0002, 6.13 c), Soll 2 mit dem Bau von Posten 3; vormals Pruefstand: beobachtete Luecke B-1-dynamisch-unnormalisierter-Pfad (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph '{AB}/./prototype/x.js' 'import a from "./../backend/api";')"
   fall L10 prototyp grenze 0 AB - voll JSON Write 'Klasse grenze nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); steht in GP-2; vormals Pruefstand: beobachtete Luecke A4-Wurzelpfad (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'prototype/demo.html' '<script src="/backend/app.js"></script>')"
   fall L11 prototyp grenze 0 AB - voll JSON Write 'Klasse grenze nach Spalte Folge seit 2026-10-14 (Posten 1, erste Aenderung am Pruefmittel nach dem Nachtrag vom 2026-09-23); steht in GP-2; vormals Pruefstand: beobachtete Luecke A4-beliebiger-Vorspann (2026-09-23), heute 0; Entscheid: Fortschreibung ADR 0002, 6.13 c' "$(wj_ph 'prototype/x.js' 'import a from "../x/../backend/api";')"
   fall B02 prototyp blockierend 2 AB - voll JSON Write 'geschlossen mit E4.2 (vormals ST-04)' "$(wj_ph 'frontend/src/a.ts' 'import h from "../prototype";')"
@@ -1595,6 +1968,59 @@ faelle_4_5_proto_soll0() {
   fall P52 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), gewollter Durchlass (Entscheid SA 2026-10-22): der blosse JS-Modulname import("backend") in einer Prototyp-Datei wird nicht gesperrt, die statische Form ebenso wenig; die Endung fuer den blossen Modulnamen gilt nur fuer import_module und __import__ (Python); Gegenprobe zu B71; Mutation MP32 faellt hier' "$(wj_ph 'prototype/x.js' 'const m = await import("backend");')"
   fall P53 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Gegenprobe zu B72: JS-Zuweisung an src mit Leerraum ohne Bezug ueber die Trennung (Prototyp)' "$(wj_ph 'prototype/x.js' 'el.src = "./y.png";')"
   fall P54 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 2 unter R3-Q-010 (C3, 2026-10-22), Gegenprobe zu B73: JS-Zuweisung an href mit Leerraum ohne Bezug ueber die Trennung (Produktionscode)' "$(wj_ph 'frontend/src/a.js' 'link.href = "./z.css";')"
+  fall P55 prototyp durchlaufend 0 AB - voll JSON MultiEdit 'Posten 8 unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B74: dasselbe MultiEdit mit zwei Zeichenketten ohne Bezug ueber die Trennung' "$(mej_zwei 'frontend/src/a.ts' 'const a = 1;' 'const b = 2;')"
+  # --- C4 (2026-10-27), Posten 9 (a): Gegenproben (dieselbe Form mit einem Pfad, der die Trennung nicht ueberquert) ---
+  fall P56 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B75: src= ohne Anfuehrungszeichen, Pfad ohne Bezug ueber die Trennung (Prototyp)' "$(wj_ph 'prototype/demo.html' '<img src=./x.png>')"
+  fall P57 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B76: href= ohne Anfuehrungszeichen, Pfad ohne Bezug ueber die Trennung (Prototyp)' "$(wj_ph 'prototype/demo.html' '<link href=./style.css>')"
+  fall P58 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B77: @import url( ohne Anfuehrungszeichen, Pfad ohne Bezug ueber die Trennung (Prototyp)' "$(wj_ph 'prototype/x.css' '@import url(./theme.css);')"
+  fall P59 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B78: SRC= in Grossschreibung, Pfad ohne Bezug ueber die Trennung (Prototyp)' "$(wj_ph 'prototype/demo.html' '<img SRC="./x.png">')"
+  fall P60 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B79: HREF= in Grossschreibung, Pfad ohne Bezug ueber die Trennung (Prototyp)' "$(wj_ph 'prototype/demo.html' '<a HREF="./index.html">x</a>')"
+  fall P61 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B80: @IMPORT URL( in Grossschreibung, Pfad ohne Bezug ueber die Trennung (Prototyp)' "$(wj_ph 'prototype/x.css' '@IMPORT URL("./theme.css");')"
+  fall P62 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B81: src= ohne Anfuehrungszeichen, Pfad ohne Bezug ueber die Trennung (Produktionscode)' "$(wj_ph 'frontend/src/demo.html' '<script src=./x.js></script>')"
+  fall P63 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B82: href= ohne Anfuehrungszeichen, Pfad ohne Bezug ueber die Trennung (Produktionscode)' "$(wj_ph 'frontend/src/demo.html' '<link href=./style.css>')"
+  fall P64 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B83: @import url( ohne Anfuehrungszeichen, Pfad ohne Bezug ueber die Trennung (Produktionscode)' "$(wj_ph 'frontend/src/a.css' '@import url(./theme.css);')"
+  fall P65 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B84: SRC= in Grossschreibung, Pfad ohne Bezug ueber die Trennung (Produktionscode)' "$(wj_ph 'frontend/src/demo.html' '<script SRC="./x.js"></script>')"
+  fall P66 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B85: HREF= in Grossschreibung, Pfad ohne Bezug ueber die Trennung (Produktionscode)' "$(wj_ph 'frontend/src/demo.html' '<LINK HREF="./style.css">')"
+  fall P67 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B86: @IMPORT URL( in Grossschreibung, Pfad ohne Bezug ueber die Trennung (Produktionscode)' "$(wj_ph 'frontend/src/a.css' '@IMPORT URL("./theme.css");')"
+  fall P68 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27), Ende des Werts ohne Anfuehrungszeichen: der Wert reicht nicht ueber Leerraum hinweg, ein spaeteres Wort derselben Zeile (alt-Text mit docs/prototype/) gehoert nicht dazu; Mutation MP46' "$(wj_ph 'frontend/src/demo.html' '<img src=a.png alt=docs/prototype/x>')"
+  fall P102 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27; Behebung nach ST-C4-01), Ende des Werts einer url( ohne Anfuehrungszeichen: der Wert endet an der schliessenden Klammer, eine spaetere url( derselben minifizierten Zeile mit dem Pfad img/prototype/ gehoert nicht dazu (Produktionscode, kein Bezug ueber die Trennung); Mutation MP66' "$(wj_ph 'frontend/src/a.css' '@import url(a.css);@media print{.x{background:url(img/prototype/p.png)}}')"
+  fall P103 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 9 (a) unter R3-Q-010 (C4, 2026-10-27; Behebung nach ST-C4-03), Ende des Werts ohne Anfuehrungszeichen am Zeichen ">": der Wert endet am Ende des Start-Tags, der Text hinter dem Tag (docs/prototype/x) gehoert nicht dazu (Produktionscode, kein Bezug ueber die Trennung); Mutation MP67' "$(wj_ph 'frontend/src/demo.html' '<a href=index.html>docs/prototype/x</a>')"
+  # --- C4 (2026-10-27), Posten 9 (b): je Form zwei Gegenproben (derselbe Befehl ohne prototype; derselbe Text ohne Schreibwirkung) ---
+  fall P69 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B87: derselbe Befehl ohne prototype' "$(bj_ph "echo '<script src=\"./x.js\"></script>' > frontend/index.html")"
+  fall P70 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B87: derselbe Text ohne Schreibwirkung (nur lesend)' "$(bj_ph "grep -rn 'src=\"../prototype/x.js\"' frontend/")"
+  fall P71 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B88: derselbe Befehl ohne prototype' "$(bj_ph "echo '<link href=\"./style.css\">' > frontend/index.html")"
+  fall P72 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B88: derselbe Text ohne Schreibwirkung (nur lesend)' "$(bj_ph "grep -rn 'href=\"../prototype/style.css\"' frontend/")"
+  fall P73 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B89: derselbe Befehl ohne prototype' "$(bj_ph "printf '<link href = \"./style.css\">' > frontend/index.html")"
+  fall P74 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B89: derselbe Text ohne Schreibwirkung (nur lesend)' "$(bj_ph "grep -rn 'href = \"../prototype/style.css\"' frontend/")"
+  fall P75 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B90: dasselbe Heredoc ohne prototype' "$(bj_ph "$(printf 'cat > frontend/index.html <<EOT\n<script src="./x.js"></script>\nEOT')")"
+  fall P76 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B90: derselbe Text ohne Schreibwirkung (nur lesend)' "$(bj_ph "grep -n 'src=\"../prototype/x.js\"' frontend/index.html")"
+  fall P77 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B91: derselbe Befehl ohne prototype (Ziel ausserhalb von prototype/)' "$(bj_ph "echo '<img src=\"../backend/x.png\">' > scratch.html")"
+  fall P78 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B91: derselbe Text ohne Schreibwirkung (nur lesend)' "$(bj_ph "grep -rn 'src=\"../backend/x.png\"' prototype/")"
+  fall P79 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B92: derselbe Befehl ohne prototype (Ziel ausserhalb von prototype/)' "$(bj_ph "echo '<a href=\"../frontend/index.html\">x</a>' > scratch.html")"
+  fall P80 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B92: derselbe Text ohne Schreibwirkung (nur lesend)' "$(bj_ph "grep -rn 'href=\"../frontend/index.html\"' prototype/")"
+  fall P81 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B93: derselbe Befehl ohne prototype' "$(bj_ph "echo '<script SRC=\"./x.js\"></script>' > frontend/index.html")"
+  fall P82 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B93: derselbe Text ohne Schreibwirkung (nur lesend)' "$(bj_ph "grep -rn 'SRC=\"../prototype/x.js\"' frontend/")"
+  fall P83 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B94: derselbe Befehl ohne prototype' "$(bj_ph "echo '@IMPORT URL(\"./theme.css\");' > frontend/src/a.css")"
+  fall P84 prototyp durchlaufend 0 AB - voll JSON Bash 'Posten 9 (b) unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B94: derselbe Text ohne Schreibwirkung (nur lesend)' "$(bj_ph "grep -rn '@IMPORT URL(\"../prototype/x.css\")' frontend/")"
+  # --- C4 (2026-10-27), Posten 3: Gegenproben, Folgen der Zuordnung nach dem bereinigten Pfad und Grenze (Verknuepfungen) ---
+  fall P85 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu L09: {AB}/./prototype/x.js, bereinigter Pfad im Prototyp, Inhalt ohne Bezug ueber die Trennung' "$(wj_ph '{AB}/./prototype/x.js' 'import a from "./local";')"
+  fall P86 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B95: {AB}/backend/../prototype/x.js, bereinigter Pfad im Prototyp, Inhalt ohne Bezug ueber die Trennung' "$(wj_ph '{AB}/backend/../prototype/x.js' 'import a from "./local";')"
+  fall P87 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B96: {AB}//prototype/x.js, bereinigter Pfad im Prototyp, Inhalt ohne Bezug ueber die Trennung' "$(wj_ph '{AB}//prototype/x.js' 'import a from "./local";')"
+  fall P88 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B97: {AB}/docs/../frontend/a.ts, bereinigter Pfad im Produktionscode, Inhalt ohne Bezug ueber die Trennung' "$(wj_ph '{AB}/docs/../frontend/a.ts' 'import x from "./local";')"
+  fall P89 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B99' "$(wj_ph '{AB}/prototype/x.js' 'import a from "./local";')"
+  fall P90 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Folge der Zuordnung nach dem bereinigten Pfad (Prosa-Ausnahme): {AB}/frontend/../docs/n.ts endet ueber .. in docs/ und faellt unter die Prosa-Ausnahme, auch mit einem Bezug im Text; vor der Behebung am 2026-10-27 gemessen Rueckgabewert 2 (der Pfad galt als Produktionscode); Mutationen MP49 und MP51' "$(wj_ph '{AB}/frontend/../docs/n.ts' 'import h from "../prototype/helper";')"
+  fall P91 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Folge der Zuordnung nach dem bereinigten Pfad (ausserhalb des Projekts): {AB}/frontend/../../outside/a.ts fuehrt ueber .. aus dem Projekt hinaus und ist wie jeder solche Pfad nicht Gegenstand des Gates; vor der Behebung am 2026-10-27 gemessen Rueckgabewert 2; Mutationen MP49 und MP51' "$(wj_ph '{AB}/frontend/../../outside/a.ts' 'import h from "../prototype/helper";')"
+  fall P92 prototyp grenze 0 AB - voll JSON Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Grenze GP-5: keine Aufloesung symbolischer Verknuepfungen und kein Zugriff auf das Dateisystem; ein Pfad unter backend/ mit einem Import aus dem Produktionscode, wie ihn eine ueber eine Verknuepfung erreichte Prototyp-Datei traegt (backend/linked zeigt auf prototype/), wird nach dem Pfadtext als Produktionscode zugeordnet; gemessen Rueckgabewert 0' "$(wj_ph '{AB}/backend/linked/x.js' 'import a from "../backend/api";')"
+  fall P93 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B98: ./prototype/x.js, bereinigter relativer Pfad im Prototyp, Inhalt ohne Bezug ueber die Trennung' "$(wj_ph './prototype/x.js' 'import a from "./local";')"
+  fall P94 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 3 unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B100: ein relativer Pfad, der mit .. beginnt, bleibt stehen und gilt als Produktionscode (../prototype/x.js ist nicht prototype/x.js); Inhalt ohne Bezug auf prototype; Mutation MP53' "$(wj_ph '../prototype/x.js' 'import a from "../backend/api";')"
+  fall P95 prototyp grenze 0 AB - grenze-setsid JSON-EOF-GRENZE Write 'DT-C4-01 (C4, 2026-10-27), Grenze GP-7: ein Werkzeug des inneren Laufs (grep in trifft) startet einen Prozess ausserhalb der Gruppe (setsid), der beide Kanaele erbt und TERM ignoriert, und antwortet sonst wie das echte grep; Soll 0 nach der harmlosen Eingabe; der Prozess ueberlebt das Gate (kein Abraeumen nach Ausgang 0, das KILL erreicht keine fremde Gruppe), haelt aber nach der Behebung nur Dateien der Ablage und nicht die Kanaele des Aufrufers: EOF hoechstens 13,5 s nach dem Start; vor der Behebung am 2026-10-27 gemessen: EOF erst nach etwa 22 s; das Pruefmittel raeumt den Prozess nach dem Fall ab; Mutationen MP55 und MP56' "$(wj_ph 'frontend/src/a.ts' 'const a = 1;')"
+  # --- C4 (2026-10-27), Posten 10: Gegenproben zu import_module, statische JS-Form (Gegenprobe zu P52), Grenze GP-6 (Python-Formen in Richtung 2) ---
+  fall P96 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 10 unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B101: import_module mit Modulnamen mit Punkt, der die Trennung nicht ueberquert (Produktionscode)' "$(wj_ph 'backend/src/a.py' 'm = import_module("os.path")')"
+  fall P97 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 10 unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B102: import_module mit Modulnamen mit Punkt, der die Trennung nicht ueberquert (Prototyp)' "$(wj_ph 'prototype/x.py' 'm = import_module("os.path")')"
+  fall P98 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 10 unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B103: import_module mit blossem Modulnamen, der die Trennung nicht ueberquert (Produktionscode)' "$(wj_ph 'backend/src/a.py' 'm = import_module("os")')"
+  fall P99 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 10 unter R3-Q-010 (C4, 2026-10-27), Gegenprobe zu B104: import_module mit blossem Modulnamen, der die Trennung nicht ueberquert (Prototyp)' "$(wj_ph 'prototype/x.py' 'm = import_module("os")')"
+  fall P100 prototyp durchlaufend 0 AB - voll JSON Write 'Posten 10 unter R3-Q-010 (C4, 2026-10-27), gewollter Durchlass, Gegenprobe zu P52 (Entscheid des Software Architects vom 2026-10-22): die statische Form import x from "backend" in einer Prototyp-Datei bleibt frei, weil Richtung 2 fuer den Verzeichnisnamen ohne Schraegstrich ein ../ verlangt; Mutation MP64' "$(wj_ph 'prototype/x.js' 'import x from "backend";')"
+  fall P101 prototyp grenze 0 AB - voll JSON Write 'Posten 10 unter R3-Q-010 (C4, 2026-10-27), Grenze GP-6 (Einordnung nach 6.13 d): die Python-Formen in Richtung 2 kennen bewusst nur die Bauwurzeln backend, frontend und deploy (Kopfkommentar seit E4.2), nicht die generischen Namen der Variable WURZELN; eine Python-Form mit einem generischen Namen (lib) in einer Prototyp-Datei bleibt frei; gemessen Rueckgabewert 0; keine Mutation' "$(wj_ph 'prototype/x.py' 'from lib import helper')"
 }
 
 # -----------------------------------------------------------------------------
@@ -1830,6 +2256,7 @@ mutationsmodus_ausfuehren() {
     AKTIV_GATE_PROTOTYP="$GATE_PROTOTYP_AKTIV"
     if [ "$gate" = "main" ]; then AKTIV_GATE_MAIN="$kopie"; else AKTIV_GATE_PROTOTYP="$kopie"; fi
     AKTIVE_MUTATION_GATE="$gate"
+    case "$ZEITGRENZE_MUTATIONEN" in *" $kennung "*) MUTATION_ZEITGRENZE=1 ;; *) MUTATION_ZEITGRENZE=0 ;; esac
     MUTATION_GEFALLEN=()
     MUTATION_GEPRUEFT=0
 
