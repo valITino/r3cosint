@@ -177,12 +177,26 @@
 # Behebung nach der statischen Pruefung vom 2026-10-27 (ST-C4-01 bis ST-C4-06): P102 (Ende des Werts einer url( ohne Anfuehrungszeichen an der Klammer, UQK) mit
 # MP66, P103 (Ende des Werts von src= und href= ohne Anfuehrungszeichen am Zeichen >, UQ) mit MP67, MP50 eng gefasst (nur Eingaben mit Schraegstrich am Ende,
 # Fall B99), Abraeumen der Prozesse der Attrappen nur mit Pruefung der Prozessidentitaet (prozess_gehoert_zum_fall).
+# Nachtrag am 2026-10-27 (C6: main-Gate unter R3-Q-010; ADR 0004, Teil B, Nachtrag vom 2026-10-27 -- Festlegung fuer C6 (main-Gate)): Zuerst die Faelle mit Soll
+# (Lauf A gegen das unveraenderte main-Gate), dann das Gate, zuletzt die Vermerke. Punkt 6 (jq am main-Gate): S39 bis S41 mit je einer jq-Attrappe (PATH-Wahlen
+# jq-ohne-tool, jq-ohne-befehl, jq-ohne-pfad), S42 (neue PATH-Wahl jq-ohne-pruefung: Beleg zur Pruefung der Eingabe, ST-13), Gegenprobe G118; MM35 bis MM37; KM-19.
+# Punkt 1 (Posten 7 am main-Gate, SR-003): Fassungen von S25 bis S28, S35 bis S38 und P95 als S43 bis S50 und G119; MM38 bis MM48; KM-20, KM-21, GM-10; die langsamen
+# Faelle laufen im Mutationsmodus nur gegen MM38 bis MM48; A105 prueft mit der Art JSON-PUSH, dass die Sperre vom Push-Schritt stammt und nicht von der Zeitgrenze (MM22 wird unter
+# beiden Arten erkannt). Punkt 2 (DT-C2-G-01): G120 bis G124 (Grenze unter GM-9). Punkt 3 (ST-C2-G-03): A150 bis A152, Gegenprobe G125 (Preis unter KM-17). Punkt 5: A153, G126.
+# DT-C4-04: die Umleitung 2>/dev/null steht vor der Eingabeumleitung in prozess_gehoert_zum_fall. Zahlen: vor C6 570 Faelle, 101 Mutationen, 47 Fallklassen; nach dem Bau von C6
+# 595 Faelle, 115 Mutationen (MM35 bis MM48), 51 Fallklassen (neu KM-19 bis KM-21, GM-10).
+# Behebungsrunde vom 2026-10-27 (DT-C6-01 und ST-C6-01 bis ST-C6-09, ST-C6-11): leere Antwort von jq mit Rueckgabewert 0 (neue PATH-Wahlen jq-leer-tool, jq-leer-befehl, jq-leer-pfad: S51 bis S53,
+# MM49 bis MM51; Gegenprobe G128 mit MM52, G129), falsche Antwort mit Rueckgabewert 0 als Grenze (jq-muell-tool, G127, GM-11, ohne Mutation), A155 (Objekt als Pfad auf main), A154 (Zweig-Form);
+# A105 verlangt zusaetzlich Projektauftrag 3.2 c; Kommentare berichtigt. Zahlen nach der Runde 2: 603 Faelle, 119 Mutationen (MM35 bis MM52), 52 Fallklassen (neu GM-11).
+# Runde 3 (2026-10-27; ST-C6-NP-01 bis NP-08): S54 bis S56 (falscher, nicht leerer Wert mit Rueckgabewert 5 je Stelle, PATH-Wahlen jq-falsch-*), S57 und S58 (leerer Befehl, ohne tool_name; Art UNMOEGLICH-LEER),
+# S59 bis S61 (Edit, MultiEdit, NotebookEdit mit leerem Pfad), MM53; die Erkennung von MM35 bis MM37 laeuft am Rueckgabewert ueber S54 bis S56; S39 bis S41 erkennen sie weiter ueber die Meldungspruefung
+# und bleiben in den Erwartungslisten. Zahlen jetzt: 611 Faelle, 120 Mutationen (MM35 bis MM53), 52 Fallklassen.
 # "Jedes Hook-Skript wird vor dem Einbau gegen einen blockierenden und einen
 # durchzulassenden Fall geprueft. Ein ungetestetes Gate ist kein Gate."
 # (.claude/rules/claude-konfiguration.md, Abschnitt "Hooks")
 #
 # ZWEI MODI:
-#   1. Normalmodus (kein Parameter): 570 vorgemessene Faelle laufen gegen die
+#   1. Normalmodus (kein Parameter): 611 vorgemessene Faelle laufen gegen die
 #      Gate-Dateien DES ARBEITSBAUMS (oder, nur fuer Pruefrollen, gegen eine
 #      per Umgebungsvariable ueberschriebene Kopie, siehe Abschnitt 3a weiter
 #      unten). main-Faelle laufen gegen einen Wegwerf-Klon auf main, einen auf
@@ -214,7 +228,7 @@
 # NIEDRIGERES MASS als scripts/dod-gate-selbsttest.sh (ADR 0002, 6.13 d
 # verlangt das ausdruecklich): keine Zusicherungstabelle, keine mechanischen
 # mehrstufigen Deckungen, keine separate Mutationsdatei -- die Fallliste, die
-# 101 Mutationen, die 47 Fallklassen der Kopfkommentare und die Zuordnung zu
+# 120 Mutationen, die 52 Fallklassen der Kopfkommentare und die Zuordnung zu
 # den sieben Abnahmekriterien stehen FEST im Skript (Datenteil weiter unten).
 #
 # Verifikation dieses Skripts UND der beiden Gates: Static und Dynamic
@@ -233,7 +247,7 @@
 # NEU-1 der statischen Nachpruefung vom 2026-09-23); heute ruft die Kette es
 # nicht auf.
 #
-# Rueckgabewert 0: Normalmodus -- alle 570 Faelle bestanden UND je Gate
+# Rueckgabewert 0: Normalmodus -- alle 611 Faelle bestanden UND je Gate
 # mindestens ein Fall mit Soll 2 und einer mit Soll 0 UND je Gate mindestens
 # ein Fall der Klasse blockierend und einer der Klasse durchlaufend UND die
 # gemessene Gesamtzahl entspricht der erwarteten Zahl UND der Arbeitsbaum
@@ -243,7 +257,7 @@
 # geprueft; eine fehlende Kennung erscheint dort als FEHLEND und wirkt seit
 # E4.2 auf den Rueckgabewert -- Restbefund N-2/T-4 der statischen
 # Nachpruefung vom 2026-09-23, behoben). Modus --mutationen -- die
-# Grundlinie ist gruen UND alle 101 Mutationen erkannt UND der Arbeitsbaum
+# Grundlinie ist gruen UND alle 120 Mutationen erkannt UND der Arbeitsbaum
 # blieb unveraendert. Sonst Rueckgabewert 2. Rueckgabewert 3: der Lauf kommt
 # nicht zustande (ein Werkzeug fehlt, ein Klon ist nicht anlegbar, unbekannter
 # Parameter) -- mit Meldung auf stderr.
@@ -577,7 +591,7 @@ exec "$SED_ECHT" "\$@"
 SEDEOF
 chmod +x "$BIN_SED_OHNE_KOMMENTAR/sed"
 # C4 (2026-10-27, Posten 8, ADR 0004, Teil B, Nachtrag vom 2026-10-27 -- Festlegung fuer C4): je ein jq, das nur den Aufruf fuer EINE Stelle
-# des Prototyp-Gates verweigert (Rueckgabewert 5, keine Ausgabe) und jeden anderen Aufruf an das echte jq weitergibt, sodass die Wache und
+# des Prototyp-Gates verweigert (Rueckgabewert 5, keine Ausgabe; seit C6 dienen dieselben Attrappen S39 bis S41 am main-Gate, dessen Filter gleich lauten) und jeden anderen Aufruf an das echte jq weitergibt, sodass die Wache und
 # die Pruefung der Eingabe (ST-13) unveraendert durchlaufen -- nach dem Muster von sed-ohne-kommentar. Die Stellen: tool (Werkzeugname),
 # cmd (Befehl am Bash-Weg) und fp (Dateipfad). Fuer payload gibt es keine Attrappe: der Fall zu DT-C3-02 laesst den Ausdruck selbst scheitern.
 JQ_ECHT=$(command -v jq) || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug 'jq' nicht aufloesbar." >&2; exit 3; }
@@ -613,6 +627,98 @@ esac
 exec "$JQ_ECHT" "\$@"
 JQEOF
 chmod +x "$BIN_JQ_OHNE_TOOL/jq" "$BIN_JQ_OHNE_BEFEHL/jq" "$BIN_JQ_OHNE_PFAD/jq"
+# C6 (2026-10-27, Punkt 6, Festlegung fuer C6): ein jq, das nur den Aufruf der Pruefung der Eingabe (jq -es, ST-13) verweigert; Beleg, dass diese Pruefung sperrt (S42)
+BIN_JQ_OHNE_PRUEFUNG="$T/bin-jq-ohne-pruefung"
+mkdir -p "$BIN_JQ_OHNE_PRUEFUNG"
+for w in cat grep sed tr git timeout; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_JQ_OHNE_PRUEFUNG/$w"
+done
+cat > "$BIN_JQ_OHNE_PRUEFUNG/jq" <<JQEOF
+#!/bin/sh
+case "\$1" in
+  -es) exit 5 ;;
+esac
+exec "$JQ_ECHT" "\$@"
+JQEOF
+chmod +x "$BIN_JQ_OHNE_PRUEFUNG/jq"
+# C6 (2026-10-27, DT-C6-01, ADR 0004, Teil B, Nachtrag "DT-C6-01: Festlegung"): je ein jq, das fuer EINE Stelle leer mit Rueckgabewert 0 antwortet (leer-tool, leer-befehl, leer-pfad), und eines,
+# das fuer den Werkzeugnamen den falschen Wert MUELL mit Rueckgabewert 0 liefert (muell-tool, Grenze GM-11); jeder andere Aufruf geht an das echte jq, nach dem Muster der Attrappen mit Rueckgabewert 5
+BIN_JQ_LEER_TOOL="$T/bin-jq-leer-tool"
+BIN_JQ_LEER_BEFEHL="$T/bin-jq-leer-befehl"
+BIN_JQ_LEER_PFAD="$T/bin-jq-leer-pfad"
+BIN_JQ_MUELL_TOOL="$T/bin-jq-muell-tool"
+mkdir -p "$BIN_JQ_LEER_TOOL" "$BIN_JQ_LEER_BEFEHL" "$BIN_JQ_LEER_PFAD" "$BIN_JQ_MUELL_TOOL"
+for w in cat grep sed tr git timeout; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_JQ_LEER_TOOL/$w"
+  ln -s "$p" "$BIN_JQ_LEER_BEFEHL/$w"
+  ln -s "$p" "$BIN_JQ_LEER_PFAD/$w"
+  ln -s "$p" "$BIN_JQ_MUELL_TOOL/$w"
+done
+cat > "$BIN_JQ_LEER_TOOL/jq" <<JQEOF
+#!/bin/sh
+case "\$2" in
+  '.tool_name // empty') exit 0 ;;
+esac
+exec "$JQ_ECHT" "\$@"
+JQEOF
+cat > "$BIN_JQ_LEER_BEFEHL/jq" <<JQEOF
+#!/bin/sh
+case "\$2" in
+  '.tool_input.command // empty') exit 0 ;;
+esac
+exec "$JQ_ECHT" "\$@"
+JQEOF
+cat > "$BIN_JQ_LEER_PFAD/jq" <<JQEOF
+#!/bin/sh
+case "\$2" in
+  '.tool_input.file_path // .tool_input.notebook_path // .tool_input.path // empty') exit 0 ;;
+esac
+exec "$JQ_ECHT" "\$@"
+JQEOF
+cat > "$BIN_JQ_MUELL_TOOL/jq" <<JQEOF
+#!/bin/sh
+case "\$2" in
+  '.tool_name // empty') echo MUELL; exit 0 ;;
+esac
+exec "$JQ_ECHT" "\$@"
+JQEOF
+chmod +x "$BIN_JQ_LEER_TOOL/jq" "$BIN_JQ_LEER_BEFEHL/jq" "$BIN_JQ_LEER_PFAD/jq" "$BIN_JQ_MUELL_TOOL/jq"
+# C6 (2026-10-27, Runde 3, ST-C6-NP-05): je ein jq, das fuer EINE Stelle einen falschen, aber nicht leeren Wert mit Rueckgabewert 5 liefert (falsch-tool: Write, falsch-befehl: echo harmlos,
+# falsch-pfad: /MUELL); ohne die Pruefung des Rueckgabewerts (MM35 bis MM37) nimmt das Gate den Wert an und endet mit 0, mit ihr sperrt es; jeder andere Aufruf geht an das echte jq
+BIN_JQ_FALSCH_TOOL="$T/bin-jq-falsch-tool"
+BIN_JQ_FALSCH_BEFEHL="$T/bin-jq-falsch-befehl"
+BIN_JQ_FALSCH_PFAD="$T/bin-jq-falsch-pfad"
+mkdir -p "$BIN_JQ_FALSCH_TOOL" "$BIN_JQ_FALSCH_BEFEHL" "$BIN_JQ_FALSCH_PFAD"
+for w in cat grep sed tr git timeout; do
+  p=$(command -v "$w") || { echo "pretooluse-gates-selbsttest: FEHLER -- Werkzeug '$w' nicht aufloesbar." >&2; exit 3; }
+  ln -s "$p" "$BIN_JQ_FALSCH_TOOL/$w"
+  ln -s "$p" "$BIN_JQ_FALSCH_BEFEHL/$w"
+  ln -s "$p" "$BIN_JQ_FALSCH_PFAD/$w"
+done
+cat > "$BIN_JQ_FALSCH_TOOL/jq" <<JQEOF
+#!/bin/sh
+case "\$2" in
+  '.tool_name // empty') echo Write; exit 5 ;;
+esac
+exec "$JQ_ECHT" "\$@"
+JQEOF
+cat > "$BIN_JQ_FALSCH_BEFEHL/jq" <<JQEOF
+#!/bin/sh
+case "\$2" in
+  '.tool_input.command // empty') echo 'echo harmlos'; exit 5 ;;
+esac
+exec "$JQ_ECHT" "\$@"
+JQEOF
+cat > "$BIN_JQ_FALSCH_PFAD/jq" <<JQEOF
+#!/bin/sh
+case "\$2" in
+  '.tool_input.file_path // .tool_input.notebook_path // .tool_input.path // empty') echo /MUELL; exit 5 ;;
+esac
+exec "$JQ_ECHT" "\$@"
+JQEOF
+chmod +x "$BIN_JQ_FALSCH_TOOL/jq" "$BIN_JQ_FALSCH_BEFEHL/jq" "$BIN_JQ_FALSCH_PFAD/jq"
 # C4 (2026-10-27, DT-C4-01, ADR 0004, Teil B, Nachtrag vom 2026-10-27 -- DT-C4-01: Waisenprozess, Festlegung der Behebung): der aeussere Teil des
 # Prototyp-Gates ruft seit der Behebung auch mktemp und rm auf. Alle PATH-Varianten oben fuehren deshalb mktemp und rm; sonst sperrten L23, L24, S27 und die
 # Faelle der Wachen aus diesem Grund und nicht aus ihrem eigenen (wie bei timeout, Festlegung fuer C3, Posten 7). Ausnahme: die Variante ohne mktemp (unten).
@@ -743,7 +849,7 @@ bj_zeile() { printf '%s\n%s' "$(ph "$1")" "$2" | jq -Rsc '{tool_name:"Bash", too
 # -----------------------------------------------------------------------------
 # 9. Buchhaltung
 # -----------------------------------------------------------------------------
-ERWARTETE_FAELLE=570
+ERWARTETE_FAELLE=611
 VOLLSTAENDIGKEIT_OK=1
 declare -a ALLE_KENNUNGEN=()
 declare -a BESTANDENE_KENNUNGEN=()
@@ -763,10 +869,10 @@ declare -A KLASSEN_ANZAHL_PROTO=()
 AKTIV_GATE_MAIN="$GATE_MAIN_AKTIV"
 AKTIV_GATE_PROTOTYP="$GATE_PROTOTYP_AKTIV"
 AKTIVE_MUTATION_GATE=""
-# C4 (2026-10-27, Posten 10; Einordnung vom 2026-10-22): Die langsamen Faelle (S25, S26, S35, S36, S38, P95) laufen im Mutationsmodus nur gegen die Mutationen der Zeitgrenze;
+# C4 (2026-10-27, Posten 10; Einordnung vom 2026-10-22): Die langsamen Faelle (am Prototyp-Gate S25, S26, S35, S36, S38, P95; seit C6 am main-Gate S43, S44, S47, S48, S50, G119; ausgewaehlt in fall() nach der PATH-Wahl langsames-cat, kurzes-cat, term-ignoriert, waise-term, waise-ohne-trap, grenze-setsid) laufen im Mutationsmodus nur gegen die Mutationen der Zeitgrenze;
 # der Normalmodus faehrt sie immer, und die Grundlinie des Mutationsmodus ebenfalls.
 MUTATION_ZEITGRENZE=0
-ZEITGRENZE_MUTATIONEN=" MP28 MP29 MP30 MP31 MP54 MP55 MP56 MP57 MP58 MP59 MP65 "
+ZEITGRENZE_MUTATIONEN=" MP28 MP29 MP30 MP31 MP54 MP55 MP56 MP57 MP58 MP59 MP65 MM38 MM39 MM40 MM41 MM42 MM43 MM44 MM45 MM46 MM47 MM48 "
 declare -a MUTATION_GEFALLEN=()
 MUTATION_GEPRUEFT=0
 GRUNDLINIE_MODUS=0
@@ -802,7 +908,7 @@ declare -A BEFUND_VON=()
 prozess_lebt() {
   local z
   [ -r "/proc/$1/stat" ] || return 1
-  read -r z < "/proc/$1/stat" 2>/dev/null || return 1
+  read -r z 2>/dev/null < "/proc/$1/stat" || return 1
   z="${z##*) }"
   [ "${z:0:1}" != "Z" ]
 }
@@ -812,7 +918,7 @@ prozess_lebt() {
 # Pruefung nicht und wird weder gezaehlt noch beendet
 prozess_gehoert_zum_fall() {
   [ -r "/proc/$1/environ" ] || return 1
-  tr '\0' '\n' < "/proc/$1/environ" 2>/dev/null | grep -qxF "C4_ATTRAPPE_LOG=$T/attrappe-log"
+  tr '\0' '\n' 2>/dev/null < "/proc/$1/environ" | grep -qxF "C4_ATTRAPPE_LOG=$T/attrappe-log"
 }
 
 fall() {
@@ -879,6 +985,14 @@ fall() {
     jq-ohne-tool) pfadvar="$BIN_JQ_OHNE_TOOL" ;;
     jq-ohne-befehl) pfadvar="$BIN_JQ_OHNE_BEFEHL" ;;
     jq-ohne-pfad) pfadvar="$BIN_JQ_OHNE_PFAD" ;;
+    jq-ohne-pruefung) pfadvar="$BIN_JQ_OHNE_PRUEFUNG" ;;
+    jq-leer-tool) pfadvar="$BIN_JQ_LEER_TOOL" ;;
+    jq-leer-befehl) pfadvar="$BIN_JQ_LEER_BEFEHL" ;;
+    jq-leer-pfad) pfadvar="$BIN_JQ_LEER_PFAD" ;;
+    jq-muell-tool) pfadvar="$BIN_JQ_MUELL_TOOL" ;;
+    jq-falsch-tool) pfadvar="$BIN_JQ_FALSCH_TOOL" ;;
+    jq-falsch-befehl) pfadvar="$BIN_JQ_FALSCH_BEFEHL" ;;
+    jq-falsch-pfad) pfadvar="$BIN_JQ_FALSCH_PFAD" ;;
     ohne-mktemp) pfadvar="$BIN_OHNE_MKTEMP" ;;
     waise-term) pfadvar="$BIN_WAISE_TERM" ;;
     waise-ohne-trap) pfadvar="$BIN_WAISE_OHNE_TRAP" ;;
@@ -962,6 +1076,28 @@ fall() {
         *"Pruefung nicht moeglich (jq, Rueckgabewert "*) : ;;
         *) gruende="${gruende}meldung-ohne-jq," ;;
       esac
+    elif [ "$art" = "UNMOEGLICH-LEER" ]; then
+      # C6 (2026-10-27, Runde 3, ST-C6-NP-06): eine Eingabe ohne Attrappe, deren Wert fuer das echte jq leer ist (leerer Befehl, kein tool_name, leerer Pfad); die Meldung ist die der Pruefung, die nicht
+      # moeglich ist, und nennt die leere Antwort mit der Stelle -- nicht die 3.2-c-Meldung einer Sperre
+      case "$stderr_text" in
+        *"Pruefung nicht moeglich (jq, Antwort leer, "*) : ;;
+        *) gruende="${gruende}meldung-ohne-jq-leer," ;;
+      esac
+    elif [ "$art" = "JSON-PUSH" ]; then
+      # C6 (2026-10-27, A105 und MM22; berichtigt nach ST-C6-01): wie die allgemeine Pruefung verlangt die Art "Projektauftrag 3.2 c" und zusaetzlich, dass die Sperre vom Push-Schritt stammt
+      # ("Push nach main/master") und nicht von der Zeitgrenze oder einem anderen Schritt; die Push-Meldung traegt beides. MM22 wird unter beiden Arten erkannt, weil die Meldung zur Zeitgrenze
+      # den Abschnitt 3.2 c nicht traegt.
+      case "$stderr_text" in
+        *"Projektauftrag 3.2 c"*) : ;;
+        *) gruende="${gruende}meldung-ohne-3.2c," ;;
+      esac
+      case "$stderr_text" in
+        *"Push nach main/master"*) : ;;
+        *) gruende="${gruende}meldung-ohne-push-sperre," ;;
+      esac
+      case "$stderr_text" in
+        *"Zeitgrenze"*) gruende="${gruende}meldung-nennt-zeitgrenze," ;;
+      esac
     elif [ "$gate" = "prototyp" ]; then
       case "$stderr_text" in
         *"Projektauftrag 5.6"*) : ;;
@@ -989,18 +1125,21 @@ fall() {
     fi
   fi
 
-  # C3 (2026-10-22, Posten 6 und Posten 7 am Prototyp-Gate): bei Soll 2 an diesen PATH-Wahlen nennt die Meldung des Prototyp-Gates
-  # das Werkzeug mit seinem Rueckgabewert (sed, tr), die Zeitgrenze (langsames-cat) oder timeout (ohne-timeout); Wortlaut nach
-  # ADR 0002, 6.13 b. Nur Prototyp-Gate: der Fall S16 fuehrt dieselbe PATH-Wahl ohne-sed am main-Gate, dessen Meldung unveraendert bleibt.
-  if [ "$soll" = "2" ] && [ "$gate" = "prototyp" ]; then
+  # C3 (2026-10-22, Posten 6 und Posten 7 am Prototyp-Gate), seit C6 (2026-10-27) fuer beide Gates: bei Soll 2 an diesen PATH-Wahlen nennt die Meldung das Werkzeug mit seinem Rueckgabewert (jq, auch bei
+  # den Attrappen mit falschem Wert, jq-falsch-*), die leere Antwort mit der Stelle (jq-leer-*: Antwort leer), die nicht auswertbare Eingabe (jq-ohne-pruefung: nicht auswertbar), die Zeitgrenze, timeout, mktemp oder den Rueckgabewert 125 und 137; Wortlaut nach ADR 0002, 6.13 b. Nur fuer das Prototyp-Gate gelten die Zweige sed und tr: der Fall S16 fuehrt dieselbe
+  # PATH-Wahl ohne-sed am main-Gate, dessen Meldung unveraendert bleibt.
+  if [ "$soll" = "2" ]; then
     local stderr_wahl
     stderr_wahl=$(cat "$T/lauf-fehler")
     case "$pfad_wahl" in
       ohne-sed|sed-ohne-schleife|sed-ohne-bereinigung|sed-ohne-kommentar)
-        case "$stderr_wahl" in
-          *"(sed, Rueckgabewert "*) : ;;
-          *) gruende="${gruende}meldung-ohne-sed," ;;
-        esac
+        # nur Prototyp-Gate: der Fall S16 fuehrt dieselbe PATH-Wahl ohne-sed am main-Gate, dessen Meldung unveraendert bleibt
+        if [ "$gate" = "prototyp" ]; then
+          case "$stderr_wahl" in
+            *"(sed, Rueckgabewert "*) : ;;
+            *) gruende="${gruende}meldung-ohne-sed," ;;
+          esac
+        fi
         ;;
       term-ignoriert)
         case "$stderr_wahl" in
@@ -1027,9 +1166,53 @@ fall() {
         esac
         ;;
       ohne-tr)
+        if [ "$gate" = "prototyp" ]; then
+          case "$stderr_wahl" in
+            *"(tr, Rueckgabewert "*) : ;;
+            *) gruende="${gruende}meldung-ohne-tr," ;;
+          esac
+        fi
+        ;;
+      jq-ohne-pruefung)
         case "$stderr_wahl" in
-          *"(tr, Rueckgabewert "*) : ;;
-          *) gruende="${gruende}meldung-ohne-tr," ;;
+          *"nicht auswertbar"*) : ;;
+          *) gruende="${gruende}meldung-ohne-nicht-auswertbar," ;;
+        esac
+        ;;
+      jq-leer-tool)
+        case "$stderr_wahl" in
+          *"(jq, Antwort leer, Werkzeugname)"*) : ;;
+          *) gruende="${gruende}meldung-ohne-jq-leer," ;;
+        esac
+        ;;
+      jq-leer-befehl)
+        case "$stderr_wahl" in
+          *"(jq, Antwort leer, Befehl am Bash-Weg)"*) : ;;
+          *) gruende="${gruende}meldung-ohne-jq-leer," ;;
+        esac
+        ;;
+      jq-leer-pfad)
+        case "$stderr_wahl" in
+          *"(jq, Antwort leer, Dateipfad bei "*) : ;;
+          *) gruende="${gruende}meldung-ohne-jq-leer," ;;
+        esac
+        ;;
+      jq-falsch-tool)
+        case "$stderr_wahl" in
+          *"(jq, Rueckgabewert 5, Werkzeugname)"*) : ;;
+          *) gruende="${gruende}meldung-ohne-jq-falsch," ;;
+        esac
+        ;;
+      jq-falsch-befehl)
+        case "$stderr_wahl" in
+          *"(jq, Rueckgabewert 5, Befehl am Bash-Weg)"*) : ;;
+          *) gruende="${gruende}meldung-ohne-jq-falsch," ;;
+        esac
+        ;;
+      jq-falsch-pfad)
+        case "$stderr_wahl" in
+          *"(jq, Rueckgabewert 5, Dateipfad am Weg der Dateiwerkzeuge)"*) : ;;
+          *) gruende="${gruende}meldung-ohne-jq-falsch," ;;
         esac
         ;;
       langsames-cat)
@@ -1145,7 +1328,7 @@ abnahmekriterium_definieren() {
   AK_ID+=("$1"); AK_DOMAIN+=("$2"); AK_KENNUNGEN+=("$3"); AK_ANMERKUNG+=("$4")
 }
 
-# --- 11a. Hunderteine Mutationen (ADR 0002, 6.13 d; 49 bis C2, MP16 bis MP32 mit C3, MP33 bis MP67 mit C4) ---------------
+# --- 11a. Hundertzwanzig Mutationen (ADR 0002, 6.13 d; 49 bis C2, MP16 bis MP32 mit C3, MP33 bis MP67 mit C4, MM35 bis MM53 mit C6) ---------------
 mutation_definieren MM1 main 'worktree[[:space:]]+add([[:space:]]|$)' 'worktree[[:space:]]+addNIE([[:space:]]|$)' 'Sperre Arbeitsbaum auf main anlegen entfernt' 'A07 A08 A09 A37'
 mutation_definieren MM2 main 'if ! command -v git >/dev/null 2>&1; then' 'if false; then' 'git-Wache entfernt (ST-03)' 'S03'
 mutation_definieren MM3 main '(commit|merge|revert|cherry-pick|rebase|reset|am|apply|stash[[:space:]]+(pop|apply))' '(NIE)' 'Sperre schreibender git-Verben entfernt' 'A10 A14 A20 A21 A22 A30 A31 ZF3a ZF3b ZF3c ZF3d ZF3e ZF3f ZF3g'
@@ -1334,6 +1517,25 @@ UQ="[^\"'\`[:space:]]"
 X
 )
 mutation_definieren MP67 prototyp "$MP67_SUCH" "$MP67_ERS" 'Posten 9 (a) zurueckgesetzt (C4; Behebung nach ST-C4-03): der Wert von src= und href= ohne Anfuehrungszeichen endet nicht mehr am Zeichen ">"; der Text hinter dem Start-Tag (docs/prototype/x) gilt als Teil des Werts (Fehlalarm)' 'P103'
+mutation_definieren MM35 main 'schritt_geprueft $? jq "Werkzeugname"' ':' 'Punkt 6 zurueckgesetzt (C6): die Pruefung des Rueckgabewerts des jq-Schritts fuer den Werkzeugnamen entfaellt. Erkennung am Rueckgabewert: S54 (die Attrappe liefert den falschen Namen Write mit Rueckgabewert 5; ohne die Pruefung laeuft der Push nach main ueber den Zweig der Dateiwerkzeuge mit 0 durch). S39 (die Attrappe antwortet leer mit 5) faellt seit der Leer-Pruefung (DT-C6-01) nur noch an der Meldungspruefung (jq, Rueckgabewert ), weil dann die Leer-Pruefung mit 2 sperrt' 'S39 S54'
+mutation_definieren MM36 main 'schritt_geprueft $? jq "Befehl am Bash-Weg"' ':' 'Punkt 6 zurueckgesetzt (C6): die Pruefung des Rueckgabewerts des jq-Schritts fuer den Befehl entfaellt. Erkennung am Rueckgabewert: S55 (die Attrappe liefert den falschen Befehl echo harmlos mit Rueckgabewert 5; ohne die Pruefung prueft das Gate ihn und endet mit 0). S40 (die Attrappe antwortet leer mit 5) faellt seit der Leer-Pruefung (DT-C6-01) nur noch an der Meldungspruefung (jq, Rueckgabewert ), weil dann die Leer-Pruefung mit 2 sperrt' 'S40 S55'
+mutation_definieren MM37 main 'schritt_geprueft $? jq "Dateipfad am Weg der Dateiwerkzeuge"' ':' 'Punkt 6 zurueckgesetzt (C6): die Pruefung des Rueckgabewerts des jq-Schritts fuer den Dateipfad entfaellt. Erkennung am Rueckgabewert: S56 (die Attrappe liefert den falschen Pfad /MUELL mit Rueckgabewert 5; er liegt ausserhalb des Projekts, das Gate endet mit 0). S41 (die Attrappe antwortet leer mit 5) faellt seit der Leer-Pruefung (DT-C6-01) nur noch an der Meldungspruefung (jq, Rueckgabewert ), weil dann die Leer-Pruefung mit 2 sperrt' 'S41 S56'
+mutation_definieren MM38 main 'timeout -k 1 12 "$BASH" "$0" --innerer-lauf-zeitgrenze' '"$BASH" "$0" --innerer-lauf-zeitgrenze' 'Posten 7 am main-Gate zurueckgesetzt (C6): die eigene Zeitgrenze des Gates entfaellt (der innere Lauf wird ohne timeout aufgerufen); ein verlangsamtes cat laeuft bis zur Grenze des Pruefmittels von 14 s und gilt dort als Durchlass' 'S43'
+mutation_definieren MM39 main '124|137) echo "Gate main-schutz: Zeitgrenze' '124|137) exit 0 ;; 99) echo "Gate main-schutz: Zeitgrenze' 'Posten 7 am main-Gate zurueckgesetzt (C6): die Ueberschreitung der Zeitgrenze (124, 137) wird als 0 abgebildet statt mit 2 und Meldung' 'S43'
+mutation_definieren MM40 main 'if ! command -v timeout >/dev/null 2>&1; then' 'if false; then' 'Posten 7 am main-Gate zurueckgesetzt (C6): die Wache fuer fehlendes timeout entfaellt; der Aufruf scheitert mit 127 und endet ueber den Zweig fuer andere Ausgaenge ohne die Meldung, die timeout nennt' 'S45'
+mutation_definieren MM41 main '*) echo "Gate main-schutz: Pruefung abgebrochen (Rueckgabewert' '*) exit 0 ;; 98) echo "Gate main-schutz: Pruefung abgebrochen (Rueckgabewert' 'Posten 7 am main-Gate zurueckgesetzt (C6): jeder andere Ausgang als 0, 2, 124 und 137 (hier timeout mit 125) wird als 0 abgebildet statt mit 2 und Meldung' 'S46'
+mutation_definieren MM42 main 'kill -KILL -- "-$zg_pid"' ':' 'DT-C4-01 am main-Gate zurueckgesetzt (C6): das aeussere Gate schickt kein KILL mehr an die Prozessgruppe; die Waisen eines Werkzeugs, das TERM ignoriert, leben weiter (S47: Prozesse der Gruppe ueberleben)' 'S47'
+mutation_definieren MM43 main '2>"$zg_ablage/fehler"' '' 'DT-C4-01 am main-Gate zurueckgesetzt (C6): stderr des inneren Laufs geht nicht mehr in die Ablage, sondern an den Aufrufer; ein Prozess ausserhalb der Gruppe (setsid) haelt stderr des Aufrufers bis zu seinem Ende (G119: EOF erst nach etwa 22 s)' 'G119'
+mutation_definieren MM44 main '>"$zg_ablage/aus"' '' 'DT-C4-01 am main-Gate zurueckgesetzt (C6): stdout des inneren Laufs geht nicht mehr in die Ablage, sondern an den Aufrufer; ein Prozess ausserhalb der Gruppe (setsid) haelt stdout des Aufrufers bis zu seinem Ende (G119: EOF erst nach etwa 22 s)' 'G119'
+mutation_definieren MM45 main ' 0<&0 >"$zg_ablage/aus"' ' >"$zg_ablage/aus"' 'DT-C4-01 am main-Gate zurueckgesetzt (C6): die Standardeingabe wird dem Hintergrundlauf nicht mehr ausdruecklich uebergeben; der innere Lauf liest /dev/null, und jede Eingabe ist nicht auswertbar (jeder Fall mit Soll 0 sperrt)' 'G01'
+mutation_definieren MM46 main 'if ! command -v mktemp >/dev/null 2>&1; then' 'if false; then' 'DT-C4-01 am main-Gate zurueckgesetzt (C6): die Pruefung auf mktemp entfaellt; ohne mktemp scheitert mktemp -d mit Rueckgabewert 127, und die Meldung nennt nicht mehr, dass mktemp nicht installiert ist (S49)' 'S49'
+mutation_definieren MM47 main 'done < "$zg_ablage/fehler"' 'done < /dev/null' 'DT-C4-01 am main-Gate zurueckgesetzt (C6): die Fehlerausgabe des inneren Laufs wird nicht mehr an den Aufrufer weitergegeben; die Meldung der Sperre fehlt (A01)' 'A01'
+mutation_definieren MM48 main 'timeout -k 1 12 "$BASH" "$0" --innerer-lauf-zeitgrenze' 'timeout 12 "$BASH" "$0" --innerer-lauf-zeitgrenze' 'Posten 7 am main-Gate zurueckgesetzt (C6): der Nachlauf -k 1 entfaellt; ein innerer Lauf, der TERM uebersteht, laeuft bis zum Ende der Attrappe (20 s), ueber der Grenze des Pruefmittels von 14 s, und gilt dort als Durchlass' 'S50'
+mutation_definieren MM49 main 'pruefung_unmoeglich "jq, Antwort leer, Werkzeugname"' ':' 'DT-C6-01 zurueckgesetzt (C6): die Sperre eines leeren Werkzeugnamens entfaellt; antwortet jq leer mit Rueckgabewert 0, schickt der leere Name einen Push nach main in den Zweig der Dateiwerkzeuge, der auf dem Arbeitszweig mit 0 endet (Erkennung: S51 mit Attrappe, S58 ohne Attrappe)' 'S51 S58'
+mutation_definieren MM50 main 'pruefung_unmoeglich "jq, Antwort leer, Befehl am Bash-Weg"' 'exit 0' 'DT-C6-01 zurueckgesetzt (C6): die Sperre eines leeren Befehls am Bash-Weg entfaellt (vorher exit 0); antwortet jq leer mit Rueckgabewert 0, endet das Gate mit 0 (Erkennung: S52 mit Attrappe, S57 ohne Attrappe)' 'S52 S57'
+mutation_definieren MM51 main 'Write|Edit|MultiEdit|NotebookEdit) pruefung_unmoeglich "jq, Antwort leer, Dateipfad bei $tool" ;;' 'Write|Edit|MultiEdit|NotebookEdit) exit 0 ;;' 'DT-C6-01 zurueckgesetzt (C6): die Sperre eines leeren Dateipfads bei Write, Edit, MultiEdit und NotebookEdit entfaellt; antwortet jq leer mit Rueckgabewert 0, endet das Gate auf main mit 0 (Erkennung: S53 mit Attrappe, S59 bis S61 ohne Attrappe)' 'S53 S59 S60 S61'
+mutation_definieren MM52 main '*) exit 0 ;; esac' '*) pruefung_unmoeglich "jq, Antwort leer, Dateipfad bei $tool" ;; esac' 'DT-C6-01 zurueckgesetzt (C6): die Beschraenkung der Sperre auf die Werkzeugnamen Write, Edit, MultiEdit und NotebookEdit entfaellt; jeder andere Name ohne Pfad (Read mit leerem tool_input) sperrt auf main, statt mit 0 zu enden (Grenze GM-6)' 'G128'
+mutation_definieren MM53 main 'Write|Edit|MultiEdit|NotebookEdit)' 'Write|Edit|MultiEdit)' 'DT-C6-01 zurueckgesetzt (C6, Runde 3): NotebookEdit fehlt in der Liste der Werkzeugnamen, bei denen ein leerer Dateipfad sperrt; ein NotebookEdit mit leerem notebook_path auf main endet mit 0 (S61), Edit und MultiEdit sperren weiter (S59, S60)' 'S61'
 # Posten 3 (L09): je Element der Bereinigung eine Mutation, dazu die Bereinigung vor der Zuordnung ganz entfernt (Dateipfad, Projektverzeichnis) und das Verhalten am Anfang eines relativen Pfads.
 mutation_definieren MP47 prototyp '"") : ;;' '"NIE") : ;;' 'Posten 3 zurueckgesetzt (C4), Element "mehrere Schraegstriche": leere Segmente entfallen nicht mehr; ein doppelter Schraegstrich hinter dem Projektverzeichnis laesst den Pfad im falschen Zweig landen' 'B96'
 mutation_definieren MP48 prototyp '".") : ;;' '"NIE") : ;;' 'Posten 3 zurueckgesetzt (C4), Element ".": Segmente . entfallen nicht mehr (L09)' 'L09 B98'
@@ -1363,7 +1565,7 @@ fallklasse_definieren KM-2 main gedeckt 'Fall 2: Bash-Befehl, der auf main/maste
 fallklasse_definieren KM-3 main gedeckt 'Fall 2: ... merged' 'A14'
 fallklasse_definieren KM-4 main gedeckt 'Fall 2: ... pusht' 'A01 A02 A03 A04 A05 A06 A18 A19 A34 A36 G04 ZF1a ZF1b A38 A39 A40 A41 A42'
 fallklasse_definieren KM-5 main gedeckt 'die gaengigen Interpreter mit Inline-Code' 'A15 A27 A28 A29'
-fallklasse_definieren KM-6 main gedeckt 'das Anlegen eines Arbeitsbaums auf main' 'A07 A08 A09 A37'
+fallklasse_definieren KM-6 main gedeckt 'das Anlegen eines Arbeitsbaums auf main (seit C6 auch die Zweig-Form mit Umleitung vor dem commit-ish, A154)' 'A07 A08 A09 A37 A154'
 fallklasse_definieren KM-7 main gedeckt 'Mirror-/Wildcard-Pushes' 'A16 A17 A35'
 fallklasse_definieren KM-8 main gedeckt 'VORAUSSETZUNG git: fehlt git, blockiert das Gate (Rueckgabewert 2)' 'S03'
 fallklasse_definieren KM-9 main gedeckt 'analog zur jq-Wache' 'S06'
@@ -1383,17 +1585,17 @@ fallklasse_definieren GP-2 prototyp grenze 'Asymmetrie der Pfadschreibweise in R
 fallklasse_definieren KP-7 prototyp gedeckt 'Posten 2 (C3, 2026-10-22), vormals GP-3 (grenze), seit 2026-10-22 gedeckt: die vier Schreibweisen des Konstrukts in beiden Richtungen an den Dateiwerkzeugen -- Leerraum vor der Klammer bei require, @import url(, Leerraum um das Gleichheitszeichen bei src und href, __import__ mit Modulnamen ohne Punkt (import_module mitgezogen, ohne eigenen Fall und ohne eigene Mutation); gewollter Durchlass (Entscheid des Software Architects vom 2026-10-22): der blosse JS-Modulname import("backend") bleibt frei (P52); JS-Zuweisungen an src/href mit Leerraum sind gesperrt (B72, B73, Gegenproben P53, P54)' 'L05 L06 L07 L08 B66 B67 B68 B69 B70 B71 B72 B73 P42 P43 P44 P45 P46 P47 P48 P49 P50 P51 P52 P53 P54 B101 B102 B103 B104 P96 P97 P98 P99 P100'
 fallklasse_definieren KM-13 main gedeckt 'Ziele von push und worktree nach Entfernen von Anfuehrungszeichen, Rueckstrichen, Zeilenfortsetzungen und dem Dollar vor Anfuehrungszeichen verglichen; die Ausnahme fuer -b/-B greift nicht fuer main/master, getrennt, angehaengt oder gebuendelt (Posten 1, 2026-10-14)' 'L01 L02 L03 L04 L18 A54 A55 A56 A57 A58 A59 A60 A61 A62 A63 A64 A67 A68 A69 A70 A71 A72 A73 A74 A75 A76 A77'
 fallklasse_definieren GM-5 main grenze "Grenze der Auswertung: Ziele aus Variable, Befehlssubstitution, eval, Brace-Expansion und Escape-Folgen in \$'...'-Wort (hex und oktal) und die Uebersetzung von \$\"...\" ueber einen Meldungskatalog werden nicht erkannt (Posten 1, 2026-10-14); seit Posten 4 a (2026-10-21) auch ein worktree add in einer Befehlssubstitution oder in Rueckwaertsakzenten innerhalb eines Ausnahme-Abschnitts (G88, G89); seit Delta 3 (2026-10-21) auch eine Befehlssubstitution als Umleitungsoperand (G105)" 'G47 G48 G49 G61 G62 G63 G64 G68 G71 G88 G89 G105'
-fallklasse_definieren GM-6 main grenze 'Grenze an der Schnittstelle: Werkzeugname ungleich Bash (ZF10a, ZF10b; ADR 0002, 6.13 c, Nachtrag vom 2026-09-23; im Kopfkommentar seit Posten 1)' 'ZF10a ZF10b'
+fallklasse_definieren GM-6 main grenze 'Grenze an der Schnittstelle: Werkzeugname ungleich Bash (ZF10a, ZF10b; ADR 0002, 6.13 c, Nachtrag vom 2026-09-23; im Kopfkommentar seit Posten 1; seit C6 ein anderer Name ohne Pfad auf main, G128, DT-C6-01)' 'ZF10a ZF10b G128'
 fallklasse_definieren GM-7 main grenze 'Ausnahme fuer -b/-B am Text, nicht an der Syntax der Shell: -b/-B in Anfuehrungszeichen oder Kommentar (DT-B2-05 a/b); als benannter Preis in sperrender Richtung: -b/-B main nur als Inhalt (A78, A79; B2-PM-14); seit Posten 4 b (2026-10-21) auch -b/-B in Anfuehrungszeichen jeder Art oder im Kommentar, auch wenn es erst ueber eine Zeilenfortsetzung neben worktree add rueckt: das Gate entfernt den Rueckstrich vor dem Zeilenumbruch auch dort, wo die Shell ihn nicht entfernt (einfache Anfuehrungszeichen, Kommentar; G80, G93), und liest -b dort als Ausnahme, wo die Shell die Zeile tatsaechlich fortsetzt (doppelte Anfuehrungszeichen; G92)' 'G59 G60 G80 G92 G93 A78 A79'
 fallklasse_definieren GM-8 main grenze 'Grenze am Befehlstext: Verb oder Sammel-Push-Option in Anfuehrungszeichen oder hinter Rueckstrich wird nicht erkannt (DT-B2-08); seit C4 (2026-10-27) vier weitere Formen am unveraenderten main-Gate gemessen: das Verb hinter einem Rueckstrich (G114), die Sammel-Push-Form *:* in Anfuehrungszeichen (G115), --mirror in Anfuehrungszeichen (G116) und worktree "add" in Anfuehrungszeichen (G117)' 'G69 G70 G114 G115 G116 G117'
 fallklasse_definieren KM-14 main gedeckt 'Zielpruefung am Befehlstext, nicht am Abschnitt (Preis in sicherer Richtung, Posten 4 a, 2026-10-21): steht nach dem Abziehen der Ausnahme-Abschnitte noch ein worktree add ohne Ausnahme im Text, sperrt jedes main an anderer Stelle derselben Eingabe; Ausweg: getrennte Bash-Aufrufe' 'A89 A90'
 fallklasse_definieren KM-15 main gedeckt 'Posten 4 a (DT-B2-05 c, 2026-10-21): die Ausnahme fuer -b/-B gilt nur fuer den worktree-add-Abschnitt, in dem sie steht; Abschnitte trennen ; & | und der Zeilenumbruch' 'L17 A85 A86 A87 A88 A101 A106 A107 A108 A109 S12'
 fallklasse_definieren KM-16 main gedeckt 'Posten 4 b (DT-B2-09, 2026-10-21): Verb, Sammel-Push-Optionen und Ausnahme werden auf dem Befehlstext mit entfernten Zeilenfortsetzungen geprueft' 'L19 A91 A92 A104 A105 S15 S16 S17'
-fallklasse_definieren KM-17 main gedeckt 'Posten 4 c (Basename-Form, 2026-10-21): ein worktree add ohne Ausnahme mit genau einem Wort, das auf /main oder /master endet, ohne --detach oder -d; Preis (bestehende Klasse Woerter nur als Inhalt): die Phrase als Inhalt sperrt wie schon die bisherige Sperrform (A102, A103); seit Delta 3 (2026-10-21) Preis in sicherer Richtung: schliesst ein Operand in Anfuehrungszeichen erst hinter einem Zeilenumbruch oder ; & |, sieht die Basename-Pruefung das commit-ish nicht (A139, A140); ebenso bei einem Wort in Anfuehrungszeichen mit < oder > hinter dem Pfad (A141, A142) und bei < oder > am Ende eines solchen Worts unmittelbar vor --detach oder -d (A149)' 'L21 A93 A94 A95 A96 A97 A98 A99 A100 A102 A103 A110 A111 A112 A113 A114 A115 A118 A119 A120 A121 A122 A123 A124 A125 A126 A127 A128 A129 A130 A131 A132 A133 A134 A135 A136 A137 A138 A139 A140 A141 A142 A143 A144 A145 A146 A147 A148 A149'
+fallklasse_definieren KM-17 main gedeckt 'Posten 4 c (Basename-Form, 2026-10-21): ein worktree add ohne Ausnahme mit genau einem Wort, das auf /main oder /master endet, ohne --detach oder -d; Preis (bestehende Klasse Woerter nur als Inhalt): die Phrase als Inhalt sperrt wie schon die bisherige Sperrform (A102, A103); seit Delta 3 (2026-10-21) Preis in sicherer Richtung: schliesst ein Operand in Anfuehrungszeichen erst hinter einem Zeilenumbruch oder ; & |, sieht die Basename-Pruefung das commit-ish nicht (A139, A140); ebenso bei einem Wort in Anfuehrungszeichen mit < oder > hinter dem Pfad (A141, A142) und bei < oder > am Ende eines solchen Worts unmittelbar vor --detach oder -d (A149); seit C6 (2026-10-27) Preis in sicherer Richtung (ST-C2-G-03): ein leeres oder nur aus Leerraum bestehendes Umleitungsziel in Anfuehrungszeichen laesst die zweite Fassung das folgende Wort als Operanden lesen (A150, A151, A152; Gegenprobe G125); gedeckt ohne Behebung: git worktree add -- ../main (A153)' 'L21 A93 A94 A95 A96 A97 A98 A99 A100 A102 A103 A110 A111 A112 A113 A114 A115 A118 A119 A120 A121 A122 A123 A124 A125 A126 A127 A128 A129 A130 A131 A132 A133 A134 A135 A136 A137 A138 A139 A140 A141 A142 A143 A144 A145 A146 A147 A148 A149 A150 A151 A152 A153 G125'
 fallklasse_definieren KM-18 main gedeckt 'Posten 5 (SR-001, B2-GATE-D05, 2026-10-21): grosse Eingabe -- der Abbruch des Schreibers gilt nie als kein Treffer; kann eine Pruefung nicht laufen, blockiert das Gate' 'L20 A80 A81 A82 A83 A84 A116 A117 S10 S13'
 fallklasse_definieren KP-5 prototyp gedeckt 'Posten 5 (SR-001, B2-GATE-D05, 2026-10-21) am Prototyp-Gate: grosse Eingabe bei Bash und am Dateiinhalt (Richtung 1 und Richtung 2); kann eine Pruefung nicht laufen, blockiert das Gate' 'L22 B64 B65 S11 S14'
 fallklasse_definieren KP-6 prototyp gedeckt 'Delta 2 (ST-C2-D-01, 2026-10-21) am Prototyp-Gate: POSIXLY_CORRECT in der Umgebung aendert, wie GNU sed [^\n] liest (Kommentarentfernung); das Gate entfernt die Variable zu Beginn' 'S18 S19'
-fallklasse_definieren GM-9 main grenze 'Grenze der Basename-Form (Posten 4 c, 2026-10-21): eine Option mit getrenntem Wert (--reason) zaehlt als zweites Wort, ein Pfad in Anfuehrungszeichen zerfaellt in mehrere Woerter (Leerzeichen, Semikolon, Raute, Umleitungszeichen, Zeilenumbruch; G91, G97 bis G100); seit Delta 3 (2026-10-21) auch eine Option mit getrenntem Wert in Anfuehrungszeichen (G106); seit Delta 4 (2026-10-21) auch < oder > als letztes Zeichen eines Worts in Anfuehrungszeichen vor dem Pfad (G111), ; & | oder ein Zeilenumbruch in einem solchen Wort (G112) und die Verbindung beider Fehlformen aus Delta 3 (G110)' 'G90 G91 G97 G98 G99 G100 G106 G110 G111 G112'
+fallklasse_definieren GM-9 main grenze 'Grenze der Basename-Form (Posten 4 c, 2026-10-21): eine Option mit getrenntem Wert (--reason) zaehlt als zweites Wort, ein Pfad in Anfuehrungszeichen zerfaellt in mehrere Woerter (Leerzeichen, Semikolon, Raute, Umleitungszeichen, Zeilenumbruch; G91, G97 bis G100); seit Delta 3 (2026-10-21) auch eine Option mit getrenntem Wert in Anfuehrungszeichen (G106); seit Delta 4 (2026-10-21) auch < oder > als letztes Zeichen eines Worts in Anfuehrungszeichen vor dem Pfad (G111), ; & | oder ein Zeilenumbruch in einem solchen Wort (G112) und die Verbindung beider Fehlformen aus Delta 3 (G110); seit C6 (2026-10-27) Grenze unter GM-9, keine Haertung (eine Schliessung aenderte die Abschnittsbildung, auf der Posten 4 a und die Zaehlprobe ruhen): ein Umleitungsoperator mit & vor dem Pfad trennt den Pfad vom worktree-add-Abschnitt, die Basename-Form greift nicht (DT-C2-G-01: G120 bis G124), und der Pfad mit Schraegstrich am Ende (G126, ohne Wirkung, solange git main/ als Zweignamen ablehnt)' 'G90 G91 G97 G98 G99 G100 G106 G110 G111 G112 G120 G121 G122 G123 G124 G126'
 fallklasse_definieren GP-4 prototyp grenze 'Grenze an der Schnittstelle zum Harness: Werkzeugname ungleich Bash (ZF10d; ADR 0002, 6.13 c, Nachtrag vom 2026-09-23; im Kopfkommentar des Prototyp-Gates seit 2026-10-22; Gegenstueck zu GM-6 am main-Gate)' 'ZF10d'
 fallklasse_definieren KP-8 prototyp gedeckt 'Posten 6 (C3, 2026-10-22): die sed- und tr-Schritte des Prototyp-Gates pruefen ihren Rueckgabewert -- Bash-Weg cmd_flach (sed, sed der Schleife, tr) und bereinigt (sed), Weg der Dateiwerkzeuge payload_norm (sed, sed der Schleife, tr); jeder andere Ausgang als 0 endet mit Rueckgabewert 2 und einer Meldung mit Werkzeug und Rueckgabewert' 'L23 L24 S20 S21 S22 S23 S24 S29 S30'
 fallklasse_definieren KP-9 prototyp gedeckt 'Posten 7, Teil am Prototyp-Gate (C3, 2026-10-22): eigene Zeitgrenze des Gates von 12 s mit Nachlauf 1 s; Ueberschreitung, Fehler von timeout und fehlendes timeout enden mit Rueckgabewert 2 und einer Meldung; Gegenprobe S26; seit C4 (Posten 10) auch der Nachlauf -k 1 (S38, Mutation MP65)' 'S25 S26 S27 S28 S38'
@@ -1405,15 +1607,20 @@ fallklasse_definieren GP-6 prototyp grenze 'Posten 10 (C4, 2026-10-27; Einordnun
 fallklasse_definieren GP-7 prototyp grenze 'DT-C4-01 (C4, 2026-10-27): ein Werkzeug, das sich mit setsid oder setpgid aus der Gruppe loest, und ein Prozess im Zustand D ueberleben das KILL; nach dem Ausgang 0 raeumt das Gate nicht ab; solche Prozesse halten die Kanaele des Harness nicht (die Ausgabe des inneren Laufs geht in Dateien), ueberdauern aber das Gate; der Zustand D ist ohne Fall' 'P95'
 fallklasse_definieren KP-13 prototyp gedeckt 'Posten 3 (C4, 2026-10-27; L09): lexikalische Bereinigung des Dateipfads und des Projektverzeichnisses vor jeder Zuordnung (mehrere Schraegstriche, Segmente ".", ".." und Schraegstrich am Ende), Zuordnung nach dem bereinigten Pfad auch an der Prosa-Ausnahme; Folgen: ein Pfad, der ueber ".." aus dem Projekt hinausfuehrt, ist nicht Gegenstand des Gates, ein Pfad, der ueber ".." in docs/ endet, faellt unter die Prosa-Ausnahme' 'L09 B95 B96 B97 B98 B99 B100 P85 P86 P87 P88 P89 P90 P91 P93 P94'
 fallklasse_definieren GP-5 prototyp grenze 'Posten 3 (C4, 2026-10-27): keine Aufloesung symbolischer Verknuepfungen und kein Zugriff auf das Dateisystem; eine Verknuepfung im Produktionscode, die auf prototype/ zeigt (oder umgekehrt), und ein Projektverzeichnis, das ueber eine Verknuepfung erreicht wird, werden nach dem Pfadtext zugeordnet, nicht nach dem Ziel' 'P92'
+fallklasse_definieren KM-19 main gedeckt 'Punkt 6 (C6, 2026-10-27; jq am main-Gate, jq scheitert oder antwortet leer): die drei jq-Schritte des main-Gates (Werkzeugname, Befehl, Dateipfad) pruefen ihren Rueckgabewert; jeder andere Ausgang als 0 und eine leere Antwort (DT-C6-01; S51, S52, S53 mit Attrappen, S57 leerer Bash-Befehl, S58 ohne tool_name, S59 bis S61 Edit, MultiEdit und NotebookEdit mit leerem Pfad; Preis: ein leerer Bash-Befehl sperrt, Gegenprobe G129) und ein falscher, nicht leerer Wert mit Rueckgabewert 5 (S54, S55, S56) enden mit Rueckgabewert 2 und einer Meldung, die jq nennt (vorher Durchlass an allen drei Stellen); die Pruefung der Eingabe (jq -es, ST-13) sperrte schon (S42); ein Feld, das keine Zeichenkette ist, laesst nie durch (G118: Arbeitszweig 0; A155: main 2); ein Fall wie B74 am Prototyp-Gate entfaellt' 'S39 S40 S41 S42 S51 S52 S53 S54 S55 S56 S57 S58 S59 S60 S61 A155 G118 G129'
+fallklasse_definieren KM-20 main gedeckt 'Posten 7, Teil am main-Gate (C6, 2026-10-27; SR-003): eigene Zeitgrenze des Gates von 12 s mit Nachlauf 1 s (timeout -k 1 12, Selbstaufruf); Ueberschreitung, Fehler von timeout und fehlendes timeout enden mit Rueckgabewert 2 und einer Meldung; Preis in sicherer Richtung: eine Pruefung ueber 12 s sperrt; die Ausnahme aus Teil A (Zeitgrenze) entfaellt' 'S43 S44 S45 S46 S50'
+fallklasse_definieren KM-21 main gedeckt 'DT-C4-01 am main-Gate (C6, 2026-10-27): der aeussere Teil legt die Ausgabe des inneren Laufs in einer Ablage ab (mktemp), ruft timeout im Hintergrund auf und raeumt die Prozessgruppe mit KILL ab; ein Werkzeug, das TERM ignoriert, haelt die Kanaele des Aufrufers nicht ueber das Ende des Gates hinaus; fehlt mktemp, sperrt das Gate mit einer Meldung' 'S47 S48 S49'
+fallklasse_definieren GM-10 main grenze 'DT-C4-01 am main-Gate (C6, 2026-10-27): ein Werkzeug, das sich mit setsid oder setpgid aus der Gruppe loest, und ein Prozess im Zustand D ueberleben das KILL; nach dem Ausgang 0 raeumt das Gate nicht ab; solche Prozesse halten die Kanaele des Harness nicht (die Ausgabe des inneren Laufs geht in Dateien), ueberdauern aber das Gate; der Zustand D ist ohne Fall' 'G119'
+fallklasse_definieren GM-11 main grenze 'DT-C6-01 (b) am main-Gate (C6, 2026-10-27): antwortet jq mit Rueckgabewert 0 und einem falschen, nicht leeren Wert (MUELL als Werkzeugname), erkennt das Gate das nicht: Erfolg mit falscher Antwort ist von einer richtigen nicht zu unterscheiden; gemessen: ein Push nach main vom Arbeitszweig endet mit 0 (G127); keine Mutation; am Prototyp-Gate ungemessen (Restpunkt)' 'G127'
 
 # --- 11c. Abnahmekriterien (Backlog R3-Q-010; ADR 0002, 6.13 f) -------------------------
 abnahmekriterium_definieren R3-Q-010_prototyp_gate_pfadformen fallliste 'B02 B03 B06 ZF5a ZF5b ZF5c ZF6a ZF6b ZF5e B43 B45 B46 B50 B51 ZF6f P01 P05 P09 P27 P30 P31 P32 L09 B95 B96 B97 B98 B99 B100 P85 P86 P87 P88 P89 P90 P91 P92 P93 P94' 'geschlossen mit E4.2 (vormals ST-04/ST-05); Gegenproben P01 P05 P09 P27 P30 P31 P32; Posten 3 (C4, 2026-10-27): L09, B95 bis B100, Gegenproben, Folgen und Grenze P85 bis P94'
 abnahmekriterium_definieren R3-Q-010_prototyp_gate_richtungsgleichheit fallliste 'B07 B08 ZF6c ZF6d B35 B41 B42 B44 B47 B48 B49 P10 P02 B34 P28 P29 L05 L06 L07 L08 B66 B67 B68 B69 B70 B71 P42 P43 P44 P45 P46 P47 P48 P49 P50 P51 P52 B72 B73 P53 P54 B75 B76 B77 B78 B79 B80 B81 B82 B83 B84 B85 B86 P56 P57 P58 P59 P60 P61 P62 P63 P64 P65 P66 P67 P68 P102 P103 B101 B102 B103 B104 P96 P97 P98 P99 P100 P101' 'geschlossen mit E4.2 (vormals P-01); Gegenprobe P10; Richtung 1 zum Vergleich P02 B34; Gegenproben P28 P29; Posten 2 (C3, 2026-10-22): L05 bis L08, B66 bis B73, Gegenproben P42 bis P54; Posten 9 (a) (C4, 2026-10-27): B75 bis B86, Gegenproben P56 bis P68, P102 und P103 (Behebung nach ST-C4-01 und ST-C4-03); Posten 10 (C4, 2026-10-27): import_module B101 bis B104 mit Gegenproben P96 bis P99, statische JS-Form P100, Grenze P101'
 abnahmekriterium_definieren R3-Q-010_prototyp_gate_schreibwirkung fallliste 'B09 ZF7a ZF7c ZF7d ZF7b P06 P14 P15 P33 B52 B53 B54 B55 B56 B57 B58 B59 P36 P37 P38 B60 B61 B62 P39 B63 B87 B88 B89 B90 B91 B92 B93 B94 P69 P70 P71 P72 P73 P74 P75 P76 P77 P78 P79 P80 P81 P82 P83 P84' 'geschlossen mit E4.3 (vormals ST-09); Gegenproben P06 P14 P15 P33 B52 P36 P37; P38 vorgemessen mit Abweichung vom Behebungsauftrag (rc=2 statt 0), gemeldet, nicht angepasst; DT-E43-6 (E4.3-Nachtrag, 2026-09-23) mit B60 B61 B62, Gegenprobe P39; DT-E43-8 (E4.3-Nachtrag, 2026-09-23) mit B63; Posten 9 (b) (C4, 2026-10-27): B87 bis B94 am Bash-Weg, Gegenproben P69 bis P84'
-abnahmekriterium_definieren R3-Q-010_gates_unlesbare_eingabe fallliste 'S01 S02 ZF8a ZF8b S04 S05 ZF8c ZF8d G01 P04 G40 P34 S31 S32 S33 B74 P55' 'geschlossen mit E4.3 (vormals ST-13); Gegenproben G01 P04 G40 P34; Posten 8 (C4, 2026-10-27, SR-005): S31 S32 S33 B74, Gegenprobe P55'
-abnahmekriterium_definieren R3-Q-010_pruefmittel_je_gate gemischt 'G01 G02 G03 G05 G06 P01 P03 P04 P05 MM1 MM2 MM3 MM4 MM5 MP1 MP2 MP3 MP4 MP5 MM7 MM8 MP10 MP11 MM9 MM10 MM11 MM12 MM13 MM14 MM15 MM16 MM17 MM18 MM19 MM20 MM21 MM22 MM23 MM24 MM25 MM26 MM27 MM28 MM29 MM30 MM31 MM32 MM33 MM34 MP12 MP13 MP14 MP15 MP16 MP17 MP18 MP19 MP20 MP21 MP22 MP23 MP24 MP25 MP26 MP27 MP28 MP29 MP30 MP31 MP32 MP33 MP34 MP35 MP36 MP37 MP38 MP39 MP40 MP41 MP42 MP43 MP44 MP45 MP46 MP47 MP48 MP49 MP50 MP51 MP52 MP53 MP54 MP55 MP56 MP57 MP58 MP59 MP60 MP61 MP62 MP63 MP64 MP65 MP66 MP67' 'Zaehlung je Gate, Mutationsmodus MM1-MM5/MP1-MP5 und MM7/MM8/MP10/MP11 (DT-E43-6, N-3) und MM9 bis MM15 (Posten 1, 2026-10-14) und MM16 bis MM34, MP12 bis MP15 (Posten 4 und 5 sowie Delta, Delta 2, Delta 3 und Delta 4, 2026-10-21), Regressionsschutz G01 G02 G03 G05 G06 P01 P03 P04 P05; MP16 bis MP32 mit C3; MP33 bis MP36 mit C4 (Posten 8); MP37 bis MP46 mit C4 (Posten 9); MP47 bis MP53 mit C4 (Posten 3); MP54 bis MP59 mit C4 (DT-C4-01); MP60 bis MP65 mit C4 (Posten 10); MP66 und MP67 mit C4 (Behebung nach ST-C4-01 und ST-C4-03)'
+abnahmekriterium_definieren R3-Q-010_gates_unlesbare_eingabe fallliste 'S01 S02 ZF8a ZF8b S04 S05 ZF8c ZF8d G01 P04 G40 P34 S31 S32 S33 B74 P55 S39 S40 S41 S42 G118 S51 S52 S53 A155 G127 G129 S54 S55 S56 S57 S58 S59 S60 S61' 'geschlossen mit E4.3 (vormals ST-13); Gegenproben G01 P04 G40 P34; Posten 8 (C4, 2026-10-27, SR-005): S31 S32 S33 B74, Gegenprobe P55; Punkt 6 (C6, 2026-10-27, jq am main-Gate): S39 S40 S41, Beleg S42, Gegenprobe G118; DT-C6-01 (C6): S51 S52 S53 (leere Antwort), A155 (Objekt als Pfad auf main), Grenze G127, Gegenprobe G129; Runde 3: S54 S55 S56 (falscher Wert mit Rueckgabewert 5), S57 S58 (ohne Attrappe), S59 S60 S61 (Edit, MultiEdit, NotebookEdit mit leerem Pfad)'
+abnahmekriterium_definieren R3-Q-010_pruefmittel_je_gate gemischt 'G01 G02 G03 G05 G06 P01 P03 P04 P05 MM1 MM2 MM3 MM4 MM5 MP1 MP2 MP3 MP4 MP5 MM7 MM8 MP10 MP11 MM9 MM10 MM11 MM12 MM13 MM14 MM15 MM16 MM17 MM18 MM19 MM20 MM21 MM22 MM23 MM24 MM25 MM26 MM27 MM28 MM29 MM30 MM31 MM32 MM33 MM34 MP12 MP13 MP14 MP15 MP16 MP17 MP18 MP19 MP20 MP21 MP22 MP23 MP24 MP25 MP26 MP27 MP28 MP29 MP30 MP31 MP32 MP33 MP34 MP35 MP36 MP37 MP38 MP39 MP40 MP41 MP42 MP43 MP44 MP45 MP46 MP47 MP48 MP49 MP50 MP51 MP52 MP53 MP54 MP55 MP56 MP57 MP58 MP59 MP60 MP61 MP62 MP63 MP64 MP65 MP66 MP67 MM35 MM36 MM37 MM38 MM39 MM40 MM41 MM42 MM43 MM44 MM45 MM46 MM47 MM48 MM49 MM50 MM51 MM52 MM53' 'Zaehlung je Gate, Mutationsmodus MM1-MM5/MP1-MP5 und MM7/MM8/MP10/MP11 (DT-E43-6, N-3) und MM9 bis MM15 (Posten 1, 2026-10-14) und MM16 bis MM34, MP12 bis MP15 (Posten 4 und 5 sowie Delta, Delta 2, Delta 3 und Delta 4, 2026-10-21), Regressionsschutz G01 G02 G03 G05 G06 P01 P03 P04 P05; MP16 bis MP32 mit C3; MP33 bis MP36 mit C4 (Posten 8); MP37 bis MP46 mit C4 (Posten 9); MP47 bis MP53 mit C4 (Posten 3); MP54 bis MP59 mit C4 (DT-C4-01); MP60 bis MP65 mit C4 (Posten 10); MP66 und MP67 mit C4 (Behebung nach ST-C4-01 und ST-C4-03); MM35 bis MM37 mit C6 (jq am main-Gate), MM38 bis MM48 mit C6 (Posten 7 und DT-C4-01 am main-Gate); MM49 bis MM53 mit C6 (DT-C6-01)'
 abnahmekriterium_definieren R3-Q-010_main_gate_fremdbelegt fallliste 'A02 A03 A04 A05 A06 A38 A39 A40 A41 A42 A07 A08 A09 S03 G01 G02 G03' 'ST-01 trennscharf im Kontext AK; ST-02/ST-03 behoben; Gegenproben G01 G02 G03'
-abnahmekriterium_definieren R3-Q-010_benannte_grenzen fallklassen 'KM-1 KM-2 KM-3 KM-4 KM-5 KM-6 KM-7 KM-8 KM-9 GM-1 GM-2 GM-3 GM-4 KP-1 KP-2 KM-10 KM-11 KM-12 KP-3 KP-4 GP-1 GP-2 KP-7 KM-13 GM-5 GM-6 GM-7 GM-8 KM-14 KM-15 KM-16 KM-17 KM-18 KP-5 GM-9 KP-6 GP-4 KP-8 KP-9 KP-10 KP-11 KP-12 KP-13 GP-5 KP-14 GP-6 GP-7' 'Fallklassen der Kopfkommentare; P-10 benannt (GP-1), nicht geschlossen; Posten 1 (2026-10-14): KM-13, GM-5, GM-6, GM-7, GM-8; Posten 4 und 5 (2026-10-21): KM-14 bis KM-18, KP-5, GM-9; Delta 2 (2026-10-21): KP-6; C3: GP-3 ist KP-7 (gedeckt), neu GP-4, KP-8, KP-9; C4: KP-10 (Posten 8), KP-11 und KP-12 (Posten 9), KP-13 und GP-5 (Posten 3), KP-14 und GP-7 (DT-C4-01), GP-6 (Posten 10)'
+abnahmekriterium_definieren R3-Q-010_benannte_grenzen fallklassen 'KM-1 KM-2 KM-3 KM-4 KM-5 KM-6 KM-7 KM-8 KM-9 GM-1 GM-2 GM-3 GM-4 KP-1 KP-2 KM-10 KM-11 KM-12 KP-3 KP-4 GP-1 GP-2 KP-7 KM-13 GM-5 GM-6 GM-7 GM-8 KM-14 KM-15 KM-16 KM-17 KM-18 KP-5 GM-9 KP-6 GP-4 KP-8 KP-9 KP-10 KP-11 KP-12 KP-13 GP-5 KP-14 GP-6 GP-7 KM-19 KM-20 KM-21 GM-10 GM-11' 'Fallklassen der Kopfkommentare; P-10 benannt (GP-1), nicht geschlossen; Posten 1 (2026-10-14): KM-13, GM-5, GM-6, GM-7, GM-8; Posten 4 und 5 (2026-10-21): KM-14 bis KM-18, KP-5, GM-9; Delta 2 (2026-10-21): KP-6; C3: GP-3 ist KP-7 (gedeckt), neu GP-4, KP-8, KP-9; C4: KP-10 (Posten 8), KP-11 und KP-12 (Posten 9), KP-13 und GP-5 (Posten 3), KP-14 und GP-7 (DT-C4-01), GP-6 (Posten 10); C6: KM-19 (jq am main-Gate), KM-20 und KM-21 (Zeitgrenze, Waisenprozess am main-Gate), GM-10 (Prozess ausserhalb der Gruppe), GM-11 (jq antwortet falsch mit Rueckgabewert 0)'
 
 # -----------------------------------------------------------------------------
 # 12. Fallliste -- Teil 4.1 der Fallliste: main-Gate, Soll 2
@@ -1542,7 +1749,7 @@ faelle_4_1_main_soll2() {
   fall A102 main blockierend 2 AK - voll JSON Bash 'Preis, Woerter nur als Inhalt (bestehende Klasse, Fallklasse KM-17 von Posten 4 c, nicht GM-7): die Phrase git worktree add ../main steht nur als Inhalt (echo in Anfuehrungszeichen); gemessen vorher 0; Ausweg: den Text mit dem Write-Werkzeug in eine Datei schreiben' "$(bj_ph 'echo "git worktree add ../main" > /tmp/x.txt')"
   fall A103 main blockierend 2 AK - voll JSON Bash 'Vergleichsfall zu A102, Woerter nur als Inhalt: die bisherige Sperrform als Inhalt (git worktree add mit main als Ziel in einer Commit-Meldung) sperrt vorher wie nachher; Ausweg: git commit -F <datei>' "$(bj_ph 'git commit -m "Doku: git worktree add /tmp/wt main"')"
   fall A104 main blockierend 2 AK - voll JSON Bash 'Posten 4 b, Delta DT-C2-01 (2026-10-21): zwei Zeilenfortsetzungen hintereinander (Gleichheit mit der alten Schleife); eine Form, die das Kontextzeichen verbraucht, liesse hier die zweite stehen' "$(bj_ph $'git \\\n\\\npush origin main')"
-  fall A105 main blockierend 2 AK - voll JSON Bash 'DT-C2-01 (Delta 2026-10-21): 50000 Zeilenfortsetzungen (300 KB); die Schleife :a;N;ba brauchte dafuer ueber 60 s und riss die Hook-Grenze von 15 s (der Harness laesst dann durch); das Pruefmittel zieht je Gate-Aufruf eine Zeitgrenze von 14 s und wertet Rueckgabewert 124 als Durchlass; Mutation MM22 (alte Schleife)' "$(bj_fort 'git push origin main')"
+  fall A105 main blockierend 2 AK - voll JSON-PUSH Bash 'DT-C2-01 (Delta 2026-10-21): 50000 Zeilenfortsetzungen (300 KB); die Schleife :a;N;ba brauchte dafuer ueber 60 s und riss die Hook-Grenze von 15 s (der Harness laesst dann durch); das Pruefmittel zieht je Gate-Aufruf eine Zeitgrenze von 14 s und wertet Rueckgabewert 124 als Durchlass; Mutation MM22 (alte Schleife); seit C6 endet das mutierte Gate an der eigenen Grenze von 12 s mit 2 und der Meldung zur Zeitgrenze, deshalb prueft A105 mit der Art JSON-PUSH, dass die Sperre vom Push-Schritt stammt; MM22 wird unter beiden Arten erkannt' "$(bj_fort 'git push origin main')"
   fall A106 main blockierend 2 AK - voll JSON Bash 'ST-C2-02 (Delta 2026-10-21): ein Trenner (&&) vor worktree add; der Trenner bleibt am Anfang des Abschnitts, die Basename-Form (Posten 4 c) muss ihn zulassen' "$(bj_ph 'true && git worktree add ../main')"
   fall A107 main blockierend 2 AK - voll JSON Bash 'ST-C2-02 (Delta 2026-10-21): ein Trenner (;) vor worktree add; die Basename-Form muss ihn zulassen' "$(bj_ph 'x; git worktree add ../main')"
   fall A108 main blockierend 2 AK - voll JSON Bash 'ST-C2-02 (Delta 2026-10-21): ein Trenner (|) vor worktree add; die Basename-Form muss ihn zulassen' "$(bj_ph 'x | git worktree add ../main')"
@@ -1587,6 +1794,34 @@ faelle_4_1_main_soll2() {
   fall A147 main blockierend 2 AK - voll JSON Bash 'DT-C2-F-03 (Delta 4 2026-10-21): ein Deskriptor {name} mit Ziffer im Namen; eine auf Kleinbuchstaben beschraenkte Klasse (Mutation X5 des DST) liesse {fd2} als zweites Wort stehen' "$(bj_ph 'git worktree add ../main {fd2}>/dev/null')"
   fall A148 main blockierend 2 AK - voll JSON Bash 'DT-C2-F-03 (Delta 4 2026-10-21): ein Deskriptor {NAME} in Grossbuchstaben' "$(bj_ph 'git worktree add ../main {FD}>/dev/null')"
   fall A149 main blockierend 2 AK - voll JSON Bash 'DT-C2-F-04 (Delta 4 2026-10-21), Preis in sicherer Richtung (KM-17), Preis, Operand ueber Wortgrenze: ein < oder > am Ende eines Worts in Anfuehrungszeichen unmittelbar vor --detach laesst die zweite Fassung --detach als Operanden lesen und sperren; vor Delta 2: 2, mit Delta 2: 0' "$(bj_ph 'git worktree add --lock --reason="a>" --detach ../main')"
+  fall S39 main blockierend 2 AK - jq-ohne-tool JSON Bash 'Punkt 6 unter R3-Q-010 (C6, 2026-10-27; Lauf A des Dynamic Software Testers): Bash-Weg, jq-Schritt fuer den Werkzeugnamen (PATH mit einem jq, das nur diesen Aufruf verweigert, Rueckgabewert 5), ein Push nach main auf dem Arbeitszweig; vor der Behebung Durchlass (rc 0: der leere Werkzeugname schickt den Push in den Zweig der Dateiwerkzeuge, der auf dem Arbeitszweig mit 0 endet); Soll 2 mit einer Meldung, die jq nennt; Mutation MM35' "$(bj_ph 'git push origin main')"
+  fall S40 main blockierend 2 AK - jq-ohne-befehl JSON Bash 'Punkt 6 unter R3-Q-010 (C6, 2026-10-27; Lauf A des Dynamic Software Testers): Bash-Weg, jq-Schritt fuer den Befehl (PATH mit einem jq, das nur diesen Aufruf verweigert, Rueckgabewert 5), ein Push nach main auf dem Arbeitszweig; vor der Behebung Durchlass (rc 0: der leere Befehl beendet das Gate mit 0); Soll 2 mit einer Meldung, die jq nennt; Mutation MM36' "$(bj_ph 'git push origin main')"
+  fall S41 main blockierend 2 MK - jq-ohne-pfad JSON Write 'Punkt 6 unter R3-Q-010 (C6, 2026-10-27; Lauf A des Dynamic Software Testers): Weg der Dateiwerkzeuge, jq-Schritt fuer den Dateipfad (PATH mit einem jq, das nur diesen Aufruf verweigert, Rueckgabewert 5), ein Write auf main; vor der Behebung Durchlass (rc 0: der leere Pfad beendet das Gate mit 0); Soll 2 mit einer Meldung, die jq nennt; Mutation MM37' "$(wj_ph '{MK}/frontend/x.ts' 'const a = 1;')"
+  fall S42 main blockierend 2 AK - jq-ohne-pruefung JSON Bash 'Punkt 6 (C6, 2026-10-27), Beleg zur Pruefung der Eingabe (ST-13): ein jq, das nur den Aufruf der Pruefung (jq -es) verweigert, laesst das Gate sperren (Eingabe nicht auswertbar); am unveraenderten Gate gemessen Rueckgabewert 2, gedeckt ohne Mutation; Gegenstueck zu S39 bis S41' "$(bj_ph 'git status')"
+  fall S43 main blockierend 2 AK - langsames-cat JSON Bash 'Posten 7, Teil am main-Gate (C6, 2026-10-27; SR-003; Lauf A des Dynamic Software Testers: Zeilen aus 5 bis 10 MB Zeichen & brauchten 18,45 s bis 37,70 s bei Rueckgabewert 0): ein cat, das 20 s braucht (jeder innere Lauf liest die Eingabe mit cat), mit einer Eingabe, die ohne Verzoegerung mit 0 durchlaeuft; die eigene Zeitgrenze des Gates von 12 s sperrt mit Rueckgabewert 2 und der Meldung zur Zeitgrenze; ohne die Grenze laeuft der Fall bis zur Grenze des Pruefmittels von 14 s und gilt als Durchlass; Gegenprobe S44; Mutationen MM38 und MM39' "$(bj_ph 'git status')"
+  fall S45 main blockierend 2 AK - ohne-timeout JSON Bash 'Posten 7, Teil am main-Gate (C6, 2026-10-27): PATH ohne timeout, harmlose Eingabe wie S43; das Gate sperrt mit einer Meldung, die timeout nennt, wie bei jq; Mutation MM40' "$(bj_ph 'git status')"
+  fall S46 main blockierend 2 AK - timeout-fehler JSON Bash 'Posten 7, Teil am main-Gate (C6, 2026-10-27): ein timeout, das mit 125 endet (Fehler von timeout), harmlose Eingabe wie S43; jeder andere Ausgang als 0 oder 2 endet mit Rueckgabewert 2 und einer Meldung (Zweig der Abbildung); Mutation MM41' "$(bj_ph 'git status')"
+  fall S47 main blockierend 2 AK - waise-term JSON-EOF Bash 'DT-C4-01 am main-Gate (C6, 2026-10-27; Bezug SR-003): ein vom inneren Lauf aufgerufenes Werkzeug (Attrappe von cat) ignoriert TERM und schlaeft 22 s; Soll 2 mit EOF auf stdout und stderr hoechstens 13,5 s nach dem Start und ohne ueberlebenden Prozess der Gruppe; Mutation MM42' "$(bj_ph 'echo hallo')"
+  fall S48 main blockierend 2 AK - waise-ohne-trap JSON-EOF Bash 'DT-C4-01 am main-Gate (C6, 2026-10-27), Gegenprobe zu S47: dieselbe Attrappe ohne das Ignorieren von TERM, Soll 2, EOF auf beiden Kanaelen hoechstens 13,5 s nach dem Start' "$(bj_ph 'echo hallo')"
+  fall S49 main blockierend 2 AK - ohne-mktemp JSON Bash 'DT-C4-01 am main-Gate (C6, 2026-10-27): PATH ohne mktemp, harmlose Eingabe; der aeussere Teil legt die Ausgabe des inneren Laufs in einer Ablage ab und sperrt ohne mktemp mit einer Meldung, die mktemp nennt, wie bei timeout; Mutation MM46' "$(bj_ph 'git status')"
+  fall S50 main blockierend 2 AK - term-ignoriert JSON Bash 'Posten 7, Teil am main-Gate (C6, 2026-10-27), Nachlauf -k 1: der innere Lauf uebersteht TERM (BASH_ENV mit trap, wie S38) und eine Attrappe von cat, die TERM ignoriert, haelt ihn 20 s; Soll 2, Ende nach etwa 13 s mit der Meldung zur Zeitgrenze (Rueckgabewert 137); Mutation MM48' "$(bj_ph 'git status')"
+  fall A150 main blockierend 2 AK - voll JSON Bash 'ST-C2-G-03 (Lauf A des Dynamic Software Testers, 2026-10-27), Preis in sicherer Richtung unter KM-17 (Kopfkommentar (j)): ein leeres Umleitungsziel in Anfuehrungszeichen laesst die zweite Fassung das folgende Wort (das commit-ish) als Operanden lesen; die Basename-Pruefung sieht es nicht und sperrt; gemessen 2 (ohne Behebung); Gegenprobe G125' "$(bj_ph 'git worktree add ../main > "" feature')"
+  fall A151 main blockierend 2 AK - voll JSON Bash 'ST-C2-G-03 (C6, 2026-10-27), Preis in sicherer Richtung unter KM-17: ein nur aus Leerraum bestehendes Umleitungsziel in Anfuehrungszeichen, sonst wie A150; gemessen 2; Gegenprobe G125' "$(bj_ph 'git worktree add ../main > " " feature')"
+  fall A152 main blockierend 2 AK - voll JSON Bash 'ST-C2-G-03 (C6, 2026-10-27), Preis in sicherer Richtung unter KM-17: ein leeres Umleitungsziel in einfachen Anfuehrungszeichen ohne Leerraum nach dem Zeichen >, sonst wie A150; gemessen 2; Gegenprobe G125' "$(bj_ph "git worktree add ../main >'' feature")"
+  fall A153 main blockierend 2 AK - voll JSON Bash 'Punkt 5 der Festlegung fuer C6 (Deckung unter KM-17): git worktree add -- ../main; das Ende der Optionen vor dem Pfad aendert nichts an der Basename-Form; am unveraenderten Gate gemessen Rueckgabewert 2 (vorher ohne Fall)' "$(bj_ph 'git worktree add -- ../main')"
+  fall S51 main blockierend 2 AK - jq-leer-tool JSON Bash 'DT-C6-01 (a) unter R3-Q-010 (C6, 2026-10-27; Fremdbeleg des Dynamic Software Testers): Bash-Weg, jq-Schritt fuer den Werkzeugnamen mit einer jq-Attrappe, die leer mit Rueckgabewert 0 antwortet (nicht mit 5 wie S39), ein Push nach main auf dem Arbeitszweig; vor der Behebung Durchlass (direkt gemessen rc 0: der leere Name schickt den Push in den Zweig der Dateiwerkzeuge, der auf dem Arbeitszweig mit 0 endet); Soll 2 mit einer Meldung, die Stelle und leere Antwort nennt; Mutation MM49' "$(bj_ph 'git push origin main')"
+  fall S52 main blockierend 2 AK - jq-leer-befehl JSON Bash 'DT-C6-01 (a) (C6, 2026-10-27): Bash-Weg, jq-Schritt fuer den Befehl mit einer jq-Attrappe, die leer mit Rueckgabewert 0 antwortet, ein Push nach main auf dem Arbeitszweig; vor der Behebung Durchlass (direkt gemessen rc 0: der leere Befehl beendete das Gate mit 0); Preis in sicherer Richtung: ein leerer Bash-Befehl sperrt (ein leerer Befehl ohne Attrappe nimmt denselben Weg, direkt gemessen 2); Gegenprobe G129; Mutation MM50' "$(bj_ph 'git push origin main')"
+  fall S53 main blockierend 2 MK - jq-leer-pfad JSON Write 'DT-C6-01 (a) (C6, 2026-10-27): Weg der Dateiwerkzeuge, jq-Schritt fuer den Dateipfad mit einer jq-Attrappe, die leer mit Rueckgabewert 0 antwortet, ein Write auf main; vor der Behebung Durchlass (direkt gemessen rc 0: der leere Pfad beendete das Gate mit 0); die Sperre gilt bei Write, Edit, MultiEdit und NotebookEdit und wirkt nur auf main; Gegenprobe G128; Mutation MM51' "$(wj_ph '{MK}/frontend/x.ts' 'const a = 1;')"
+  fall A154 main blockierend 2 AK - voll JSON Bash 'ST-C6-08 (C6, 2026-10-27), Gegenprobe zur Grenze GM-9 (DT-C2-G-01): die Zweig-Form mit Umleitung vor dem commit-ish sperrt weiter, auch wo die Basename-Form bei einer Umleitung mit & vor dem Pfad nicht greift (G120 bis G124); im Lauf A des Dynamic Software Testers gemessen 2' "$(bj_ph 'git worktree add /tmp/wt 2>&1 main')"
+  fall A155 main blockierend 2 MK - voll JSON Write 'ST-C6-02 (C6, 2026-10-27), Klasse KM-19: ein Feld, das keine Zeichenkette ist (file_path als Objekt), laesst auf main nicht durch: der Text des Objekts wird zum relativen Pfad, und die Sperre der Dateiwerkzeuge greift; direkt gemessen 2; Gegenstueck auf dem Arbeitszweig G118' '{"tool_name":"Write","tool_input":{"file_path":{"a":1},"content":"x"}}'
+  fall S54 main blockierend 2 AK - jq-falsch-tool JSON Bash 'ST-C6-NP-05 (Runde 3, C6, 2026-10-27): Bash-Weg, jq-Schritt fuer den Werkzeugnamen mit einer jq-Attrappe, die den falschen, nicht leeren Wert Write mit Rueckgabewert 5 liefert, ein Push nach main auf dem Arbeitszweig; Soll 2 mit der Meldung (jq, Rueckgabewert 5, Werkzeugname); ohne die Pruefung des Rueckgabewerts (MM35) nimmt das Gate Write an, schickt den Push in den Zweig der Dateiwerkzeuge und endet auf dem Arbeitszweig mit 0 (direkt gemessen); Mutation MM35' "$(bj_ph 'git push origin main')"
+  fall S55 main blockierend 2 AK - jq-falsch-befehl JSON Bash 'ST-C6-NP-05 (Runde 3, C6, 2026-10-27): Bash-Weg, jq-Schritt fuer den Befehl mit einer jq-Attrappe, die den falschen, nicht leeren Wert echo harmlos mit Rueckgabewert 5 liefert, ein Push nach main auf dem Arbeitszweig; Soll 2 mit der Meldung (jq, Rueckgabewert 5, Befehl am Bash-Weg); ohne die Pruefung des Rueckgabewerts (MM36) prueft das Gate den harmlosen Befehl und endet mit 0 (direkt gemessen); Mutation MM36' "$(bj_ph 'git push origin main')"
+  fall S56 main blockierend 2 MK - jq-falsch-pfad JSON Write 'ST-C6-NP-05 (Runde 3, C6, 2026-10-27): Weg der Dateiwerkzeuge, jq-Schritt fuer den Dateipfad mit einer jq-Attrappe, die den falschen, nicht leeren Wert /MUELL mit Rueckgabewert 5 liefert, ein Write auf main; Soll 2 mit der Meldung (jq, Rueckgabewert 5, Dateipfad am Weg der Dateiwerkzeuge); ohne die Pruefung des Rueckgabewerts (MM37) liegt /MUELL ausserhalb des Projekts, und das Gate endet mit 0 (direkt gemessen); Mutation MM37' "$(wj_ph '{MK}/frontend/x.ts' 'const a = 1;')"
+  fall S57 main blockierend 2 AK - voll UNMOEGLICH-LEER Bash 'ST-C6-NP-06 a (Runde 3, C6, 2026-10-27), Preis in sicherer Richtung (KM-19): ein leerer Bash-Befehl (command leer) auf dem Arbeitszweig sperrt, ohne Attrappe, mit dem echten jq; vor der Behebung 0 (direkt gemessen); Soll 2 mit der Meldung zur leeren Antwort fuer den Befehl; Gegenprobe G129; Mutation MM50' '{"tool_name":"Bash","tool_input":{"command":""}}'
+  fall S58 main blockierend 2 AK - voll UNMOEGLICH-LEER ohne 'ST-C6-NP-06 a (Runde 3, C6, 2026-10-27): eine Eingabe ganz ohne tool_name auf dem Arbeitszweig sperrt (jq gibt mit // empty nichts aus), ohne Attrappe; auf diesem Fall ruht der Vorbehalt des Schwachstellenregisters zu SR-008; vor der Behebung 0 (direkt gemessen); Soll 2 mit der Meldung zur leeren Antwort fuer den Werkzeugnamen; Mutation MM49' '{"tool_input":{"command":"git push origin main"}}'
+  fall S59 main blockierend 2 MK - voll UNMOEGLICH-LEER Edit 'ST-C6-NP-06 b (Runde 3, C6, 2026-10-27): Edit mit leerem file_path auf main sperrt, ohne Attrappe, mit dem echten jq; direkt gemessen 2; Mutation MM51 (alle vier Namen)' '{"tool_name":"Edit","tool_input":{"file_path":"","old_string":"x","new_string":"y"}}'
+  fall S60 main blockierend 2 MK - voll UNMOEGLICH-LEER MultiEdit 'ST-C6-NP-06 b (Runde 3, C6, 2026-10-27): MultiEdit mit leerem file_path auf main sperrt, ohne Attrappe; direkt gemessen 2; Mutation MM51 (alle vier Namen)' '{"tool_name":"MultiEdit","tool_input":{"file_path":"","edits":[{"old_string":"x","new_string":"y"}]}}'
+  fall S61 main blockierend 2 MK - voll UNMOEGLICH-LEER NotebookEdit 'ST-C6-NP-06 b (Runde 3, C6, 2026-10-27): NotebookEdit mit leerem notebook_path auf main sperrt, ohne Attrappe; direkt gemessen 2; Mutationen MM51 (alle vier Namen) und MM53 (streicht NotebookEdit aus der Liste: dann endet der Fall mit 0, Edit und MultiEdit sperren weiter)' '{"tool_name":"NotebookEdit","tool_input":{"notebook_path":"","new_source":"x"}}'
 }
 
 # -----------------------------------------------------------------------------
@@ -1725,6 +1960,19 @@ faelle_4_2_main_soll0() {
   fall G115 main grenze 0 AK - voll JSON Bash 'GM-8 (Fallwahl der Festlegung fuer C4, 2026-10-27; B2-PM-19): die Sammel-Push-Form *:* in Anfuehrungszeichen; am unveraenderten main-Gate gemessen Rueckgabewert 0 (ohne Anfuehrungszeichen sperrt das Gate sie)' "$(bj_ph "git push origin '*:*'")"
   fall G116 main grenze 0 AK - voll JSON Bash 'GM-8 (Fallwahl der Festlegung fuer C4, 2026-10-27): --mirror in Anfuehrungszeichen; am unveraenderten main-Gate gemessen Rueckgabewert 0 (ohne Anfuehrungszeichen sperrt das Gate sie)' "$(bj_ph 'git push "--mirror" origin')"
   fall G117 main grenze 0 AK - voll JSON Bash 'GM-8 (Fallwahl der Festlegung fuer C4, 2026-10-27): worktree "add" in Anfuehrungszeichen; am unveraenderten main-Gate gemessen Rueckgabewert 0 (ohne Anfuehrungszeichen sperrt das Gate den Arbeitsbaum auf main)' "$(bj_ph 'git worktree "add" /tmp/wt main')"
+  fall S44 main durchlaufend 0 AK - kurzes-cat JSON Bash 'Posten 7, Teil am main-Gate (C6, 2026-10-27), Gegenprobe zu S43: dieselbe Eingabe, cat um 4 s verzoegert (deutlich unter der Grenze von 12 s), Rueckgabewert 0' "$(bj_ph 'git status')"
+  fall G118 main durchlaufend 0 AK - voll JSON Write 'Punkt 6 (C6, 2026-10-27), Gegenprobe zu S39 bis S41: ein Feld, das keine Zeichenkette ist (file_path als Objekt), laesst nie durch; auf dem Arbeitszweig endet das Gate mit 0 (die Dateiwerkzeuge werden dort nicht geprueft), auf main mit 2 (Fall A155); gemessen 0' '{"tool_name":"Write","tool_input":{"file_path":{"a":1},"content":"x"}}'
+  fall G119 main grenze 0 AK - grenze-setsid JSON-EOF-GRENZE Bash 'DT-C4-01 am main-Gate (C6, 2026-10-27), Grenze GM-10: ein Werkzeug des inneren Laufs (grep) startet einen Prozess ausserhalb der Gruppe (setsid), der beide Kanaele erbt und TERM ignoriert, und antwortet sonst wie das echte grep; Soll 0; der Prozess ueberlebt das Gate (kein Abraeumen nach Ausgang 0, das KILL erreicht keine fremde Gruppe), haelt aber nur Dateien der Ablage und nicht die Kanaele des Aufrufers: EOF hoechstens 13,5 s nach dem Start; das Pruefmittel raeumt den Prozess nach dem Fall ab; Mutationen MM43 und MM44' "$(bj_ph 'git status')"
+  fall G120 main grenze 0 AK - voll JSON Bash 'DT-C2-G-01 (Lauf A des Dynamic Software Testers, 2026-10-27), Grenze unter GM-9: ein Umleitungsoperator mit & vor dem Pfad (>&2) trennt den Pfad vom worktree-add-Abschnitt, die Basename-Form greift nicht; gemessen 0; keine Haertung, eine Schliessung aenderte die Abschnittsbildung, auf der Posten 4 a und die Zaehlprobe ruhen' "$(bj_ph 'git worktree add >&2 ../main')"
+  fall G121 main grenze 0 AK - voll JSON Bash 'DT-C2-G-01 (C6, 2026-10-27), Grenze unter GM-9: &> vor dem Pfad (&>/dev/null); gemessen 0' "$(bj_ph 'git worktree add &>/dev/null ../main')"
+  fall G122 main grenze 0 AK - voll JSON Bash 'DT-C2-G-01 (C6, 2026-10-27), Grenze unter GM-9: 2>&1 vor dem Pfad; gemessen 0' "$(bj_ph 'git worktree add 2>&1 ../main')"
+  fall G123 main grenze 0 AK - voll JSON Bash 'DT-C2-G-01 (C6, 2026-10-27), Grenze unter GM-9: 2>&- vor dem Pfad; gemessen 0' "$(bj_ph 'git worktree add 2>&- ../main')"
+  fall G124 main grenze 0 AK - voll JSON Bash 'DT-C2-G-01 (C6, 2026-10-27), Grenze unter GM-9: >& Datei vor dem Pfad (>& /tmp/log); gemessen 0' "$(bj_ph 'git worktree add >& /tmp/log ../main')"
+  fall G125 main durchlaufend 0 AK - voll JSON Bash 'ST-C2-G-03 (C6, 2026-10-27), Gegenprobe zu A150 bis A152: ein Umleitungsziel mit Inhalt in Anfuehrungszeichen, dahinter das commit-ish; gemessen 0' "$(bj_ph 'git worktree add ../main > "x" feature')"
+  fall G126 main grenze 0 AK - voll JSON Bash 'Punkt 5 der Festlegung fuer C6, Grenze unter GM-9: ein Pfad mit Schraegstrich am Ende (../main/) liegt ausserhalb der Basename-Form; ohne Wirkung, solange git den Zweignamen main/ ablehnt (git version 2.43.0: fatal: '\''main/'\'' is not a valid branch name; kein Arbeitsbaum entsteht); gemessen 0' "$(bj_ph 'git worktree add ../main/')"
+  fall G127 main grenze 0 AK - jq-muell-tool JSON Bash 'DT-C6-01 (b) (C6, 2026-10-27), Grenze GM-11: jq antwortet fuer den Werkzeugnamen falsch mit Rueckgabewert 0 (MUELL statt Bash); das Gate erkennt Erfolg mit falscher Antwort nicht und schickt den Push nach main in den Zweig der Dateiwerkzeuge, der auf dem Arbeitszweig mit 0 endet; direkt gemessen 0; keine Mutation' "$(bj_ph 'git push origin main')"
+  fall G128 main grenze 0 MK - voll JSON Read 'DT-C6-01 (a) (C6, 2026-10-27), Gegenprobe zu S53, Grenze GM-6 (Werkzeugname): ein anderer Name als Write, Edit, MultiEdit und NotebookEdit (hier Read, synthetisch, Read steht nicht im Matcher) ohne Pfad auf main endet mit 0; direkt gemessen 0; Mutation MM52' '{"tool_name":"Read","tool_input":{}}'
+  fall G129 main durchlaufend 0 AK - voll JSON Bash 'DT-C6-01 (a) (C6, 2026-10-27), Gegenprobe zum Preis ein leerer Bash-Befehl sperrt (S52): ein harmloser Befehl auf dem Arbeitszweig endet mit 0; direkt gemessen 0' "$(bj_ph 'git status')"
 }
 
 # -----------------------------------------------------------------------------
