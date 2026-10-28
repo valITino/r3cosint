@@ -1,0 +1,208 @@
+# scripts/belege-pruefen-mutationen.txt -- Mutationen fuer den Modus --mutationen des Pruefmittels
+# scripts/belege-pruefen-selbsttest.sh (Belegpruefer D20, scripts/belege-pruefen.sh)
+#
+# Anforderung R3-Q-001, offener Punkt O-15. Grundlage: ADR 0002, 6.8, Nachtrag vom 2026-10-28, und
+# docs/uebergaben/2026-10-28_d8-freigabe-grundgeruest-g0-belegpruefer.md, Abschnitt "Einheit G0", Punkt 2b.
+#
+# FORM: je Zeile fuenf Felder, getrennt durch genau vier Tabulatoren; nur ASCII (keine Umlaute):
+#   Kennung BM-nnn <TAB> Klasse (KB-, KC- oder EB-Kennung) <TAB> sed-Ausdruck <TAB> Mindestsatz <TAB> Grund
+#   - Kennung: dauerhaft, nie wiederverwendet. Klasse: die Fehlerklasse oder Eigenschaft, die die Mutation treffen soll.
+#   - sed-Ausdruck: wird mit sed -E --sandbox (e, r und w verboten) auf eine Wegwerfkopie des Pruefers angewandt (nicht auf das Pruefmittel); er darf keinen
+#     Tabulator enthalten und soll an einem Anker im Code des Pruefers haften, nicht an Kommentarzeilen.
+#   - Mindestsatz: Fallkennungen B-nnn durch Komma, mindestens eine; nur diese Faelle laufen gegen die Mutante. Knapp halten (ein
+#     bis drei Faelle), damit der Modus schnell bleibt. Ein Fall mit Soll arbeitsbaum (B-190) steht in keinem Mindestsatz.
+#   Zeilen mit # am Anfang und Leerzeilen werden uebergangen.
+# AUSGANG JE MUTATION: ERKANNT, wenn jeder Fall des Mindestsatzes gegen die Mutante faellt. WIRKUNGSLOS, wenn die Kopie
+#   byte-gleich mit dem Pruefer ist, bash -n sie verwirft oder sed mit einem Fehler endet. NICHT_ERKANNT sonst (auch wenn ein Fall
+#   des Mindestsatzes nicht herstellbar ist). Der Modus endet mit 0 nur ohne nicht erkannte und ohne wirkungslose Mutation.
+# DECKUNG (mechanisch, Abweichung ergibt 2): jede Klasse KB, KC und EB im Kopfkommentar des Pruefers hat mindestens eine Mutation,
+#   deren Mindestsatz einen Fall dieser Klasse enthaelt; die Klasse jeder Zeile gehoert zu einem Fall ihres Mindestsatzes. Die
+#   Grenzen GB tragen keine Pflichtmutation.
+# PFLEGE: Aendert sich der Pruefer so, dass ein Anker nicht mehr trifft, meldet der Modus die Mutation als wirkungslos; die Zeile
+#   wird angepasst, nicht gestrichen. Eine neue Klasse im Kopfkommentar braucht Faelle und mindestens eine Mutation. Neue Zeilen
+#   erhalten die naechste freie Kennung am Ende der Datei. GRENZE des Modus: Eine Mutation, die das Urteil nicht aendert, ist
+#   nicht erkennbar. Das Entfernen der Regel "mehr als 9 Stellen" in zeilen_ok ist so eine aequivalente Mutante, weil der
+#   fail-closed Vergleich dasselbe Urteil traegt; die Regel hat darum nur die Umkehr als Mutation.
+#
+# --- KB-01 / KB-02 / KB-03: Pruefung 1 -------------------------------------------------------------------------------
+BM-001	KB-01	s#\[ "\$n" -le "\$anz" \]#[ "$n" -le 999999 ]#	B-002,B-003	Eine Einzelzeile hinter dem Dateiende wird nicht mehr gemeldet.
+BM-002	KB-01	s#\[ "\$n" -ge 1 \]#[ "$n" -ge 0 ]#	B-004	Zeile 0 wird nicht mehr gemeldet.
+BM-003	KB-01	/-gt 9 \]/s#then return 1; fi#then return 0; fi#	B-215,B-219	Zahlen mit mehr als 9 Stellen gelten als in Ordnung statt als zu gross (P-6).
+BM-004	KB-02	s#\[ "\$m" -le "\$anz" \]#[ "$m" -le 999999 ]#	B-007	Ein Bereich mit M hinter dem Dateiende wird nicht mehr gemeldet.
+BM-005	KB-02	s#\[ "\$n" -le "\$m" \]#[ "$n" -le 999999 ]#	B-008,B-009	Ein Bereich mit N groesser M wird nicht mehr gemeldet.
+BM-006	KB-03	s#(verzeichnis\) if \[ -n "\$n" \]; then )melden#\1:#	B-012	Ein Zeilenanhang an einem Verzeichnis wird nicht mehr gemeldet.
+BM-007	KB-03	s#^( +)anz="\$\(git cat-file blob .*$#\1anz=999999#	B-013,B-018	Die Zeilenzahl eines Blobs im Archivstand wird nicht mehr gemessen.
+BM-008	KB-03	s#"\$REST_PFAD" "" "\$PFADTEIL" "\$KANDIDAT" "\$ANHANG_N" "\$ANHANG_M"#"$REST_PFAD" "" "$PFADTEIL" "$KANDIDAT" "" ""#	B-016	Beim Praefix r3cosint/ entfaellt der Zeilenanhang.
+# --- KB-04 / KB-05: Pruefung 2 ---------------------------------------------------------------------------------------
+BM-009	KB-04	s#"\$\{1\}\^\{commit\}"#"${1}"#	B-021	Die Pruefsumme eines Baums gilt als Commit.
+BM-010	KB-04	s#if ! git_hat_commit "\$WERT"; then#if git_hat_commit "$WERT"; then#	B-020,B-022	Das Urteil ueber Commit-Pruefsummen ist vertauscht.
+BM-011	KB-04	s#^ARCHIVSTAND="[0-9a-f]{40}"$#ARCHIVSTAND="0000000000000000000000000000000000000001"#	B-023,B-001	Die Konstante des Archivstands ist veraendert: der Lauf endet in Lage C statt zu urteilen (Stufe 2).
+BM-012	KB-05	s#\(blob\|tree\)/main'#blob/main'#	B-027	Die Form tree/main wird nicht mehr gemeldet.
+BM-013	KB-05	s#\(blob\|tree\)/main'#(blob|tree)/'#	B-028	Jede Adresse hinter blob/ wird gemeldet, auch mit Commit-Pruefsumme.
+# --- KB-06: Pruefung 3 -----------------------------------------------------------------------------------------------
+BM-014	KB-06	s#^    if ! ist_backlog_id "\$WERT"; then#    if ist_backlog_id "$WERT"; then#	B-029,B-031	Das Urteil ueber Anforderungskennungen ist vertauscht.
+BM-015	KB-06	s@\[\[:space:\]\]\+R3-\[A-Z\]-\[0-9\]\{3\}'@[[:space:]]*R3-[A-Z]-[0-9]{3}'@	B-030	Eine Ueberschrift ohne Leerzeichen hinter dem Rautezeichen zaehlt zur Referenzmenge.
+# --- KB-07 / KB-08 / KB-09: Pruefung 4 -------------------------------------------------------------------------------
+BM-016	KB-07	s#(fehlt\) )melden#\1:#	B-032,B-033	Ein fehlender Pfad wird nicht mehr gemeldet.
+BM-017	KB-07	s#elif \[ -d "\$REPO_ROOT/\$p" \]#elif false#	B-034	Ein vorhandenes Verzeichnis gilt als fehlend.
+BM-018	KB-08	s#kand\+=\("\$bezug/\$p"\)#:#	B-037,B-038	Das Verzeichnis der nennenden Datei wird nicht mehr als Bezug probiert.
+BM-019	KB-09	s#\?\*\.\*\) return 1 ;;#*.*) return 1 ;;#	B-039	Ein Punkt an erster Stelle des ersten Segments gilt als Rechnername.
+BM-020	KB-09	s#\|build\|#|build*|#	B-039	Ein Segment, das mit build beginnt, gilt als Erzeugnisverzeichnis.
+BM-021	KB-09	s#ist_erzeugnisverzeichnis "\$WZ_PFAD"#ist_erzeugnisverzeichnis "$PFADTEIL"#	B-224	Regel a entscheidet am Pfad wie geschrieben statt am bereinigten Pfad (P-12).
+# --- KB-10 / KB-11: Regeln b bis d ----------------------------------------------------------------------------------
+BM-022	KB-10	s#\[ ! -d "\$REPO_ROOT/\$ERSTES_SEGMENT" \] && continue#continue#	B-041,B-042	Die Scharfschaltung entfaellt: die vier Baeume werden nie geprueft.
+BM-023	KB-10	s#\[ ! -d "\$REPO_ROOT/\$ERSTES_SEGMENT" \] && continue#:#	B-043,B-221	Regel b schaltet nie ab: fehlende Baeume werden geprueft.
+BM-024	KB-10	s#ERSTES_SEGMENT="\$\{WZ_PFAD%%/\*\}"#ERSTES_SEGMENT="${PFADTEIL%%/*}"#	B-221,B-225	Die Regeln b bis d entscheiden am ersten Segment vor der Bereinigung (P-12).
+BM-025	KB-11	s#^    \*\) melden "\$datei" "\$zl" "pfad" "\$pfadwert" ;;#    *) : ;;#	B-044	Ein Pfad, der im Archivstand fehlt, wird nicht mehr gemeldet.
+BM-026	KB-11	s#art="\$\(git cat-file -t .*\)" \|\| art=""#art=""#	B-045	Kein Pfad des Archivstands wird gefunden.
+BM-027	KB-11	s#if \[ "\$ERSTES_SEGMENT" = r3cosint \]; then#if [ "$ERSTES_SEGMENT" = r3coscrum ]; then#	B-046	Die Praefixe r3cosint/ und r3coscrum/ sind vertauscht.
+# --- KB-12: Pfad ausserhalb und Verknuepfung -------------------------------------------------------------------------
+BM-028	KB-12	s#bereinigen "\$k" \|\| continue#bereinigen "$k"; BEREINIGT="$k"#	B-047,B-048	Pfade werden nicht bereinigt: ein Pfad aus der Wurzel hinaus gilt als vorhanden.
+BM-029	KB-12	s#if \[ -L "\$REPO_ROOT/\$acc" \]; then PF_ART=verknuepfung; return 0; fi#:#	B-049,B-050	Symbolische Verknuepfungen auf dem Pfad werden nicht erkannt.
+BM-030	KB-12	s#verknuepfung\) verkn=1 ;;#verknuepfung) AUF_ART=verknuepfung; return 0 ;;#	B-228	Ein Weg ueber eine Verknuepfung geht dem Weg ohne Verknuepfung vor (P-5).
+BM-031	KB-12	s#^  if weg_verknuepft "\$DATEI"; then#  if false; then#	B-051,B-247	Eine Verknuepfung auf dem Weg zu einer Datei der Pruefflaeche (die Datei selbst oder ein Verzeichnis davor) wird gelesen statt gemeldet.
+# --- KB-13: Pruefung 5 -----------------------------------------------------------------------------------------------
+BM-032	KB-13	s#^        if ! ist_pa_abschnitt "\$N"; then#        if ist_pa_abschnitt "$N"; then#	B-054,B-056	Das Urteil ueber die Form Projektauftrag N.M ist vertauscht.
+BM-033	KB-13	s# != "1" \] && ! ist_eigener_abschnitt# = "1" ] \&\& ! ist_eigener_abschnitt#	B-053,B-055	Die Absatzregel (Wort ADR im Absatz) ist vertauscht.
+# --- KB-14 / KB-15: Pruefung 6 ---------------------------------------------------------------------------------------
+BM-034	KB-14	s#\*\) melden "\$DATEI" "\$ZL" "skill" "\$WERT" ;;#*) : ;;#	B-057,B-058	Eine fehlende SKILL.md wird nicht mehr gemeldet.
+BM-035	KB-14	s#ROLLEN_ERE='\^\\\.claude/agents/\[\^/\]\+\\\.md\$'#ROLLEN_ERE='^\\.claude/agents/.+\\.md$'#	B-061	Auch Dateien in tieferer Ebene sind Quelle der Pruefung 6.
+BM-036	KB-14	s#verknuepfung\) melden "\$DATEI" "\$ZL" "pfad-verknuepfung" "\.claude/skills/\$WERT/SKILL\.md" ;;#verknuepfung) : ;;#	B-231	Ein Skill-Verzeichnis als Verknuepfung wird nicht gemeldet.
+BM-037	KB-14	/^function rolle\(/,/^\}/{\%#/\) continue%d}	B-233,B-234	Kommentarzeilen beenden die Liste skills: wieder.
+BM-038	KB-15	s#if \(name ~ /\^\[a-z0-9\]\+\(-\[a-z0-9\]\+\)\*\$/\) print#if (name ~ /./) print#	B-065	Jeder Name gilt als gueltiger Name.
+BM-039	KB-15	s#if \(rest != ""\) \{ print kz "\\tskill-form\\t" rest; return \}#if (rest != "") { return }#	B-062,B-063	Flussliste und Skalar hinter skills: werden nicht gemeldet.
+BM-040	KB-15	s#if \(anz == 0\) print kz "\\tskill-form\\tleer"#if (anz == 0) anz = 0#	B-064	Eine leere Liste skills: wird nicht gemeldet.
+BM-041	KB-15	s#if \(n >= 2\) \{ print k2 "\\tskill-form\\tskills doppelt"; return \}#if (n >= 2) { return }#	B-066	skills: zweimal wird nicht gemeldet.
+BM-042	KB-15	s# && substr\(s, n, 1\) == a\)#)#	B-192	Ungleiche Anfuehrungszeichen gelten als paarig.
+BM-043	KB-15	s#\|\| a == "\\047"##	B-191	Einfache Anfuehrungszeichen werden nicht entfernt.
+BM-044	KB-15	s#lead ~ /\^ \*\$/ && rest#lead ~ /^[ \\t]*$/ \&\& rest#	B-210	Ein Tabulator im Einzug wird akzeptiert.
+BM-045	KB-15	s#rest ~ /\^\[ \\t\]/\) \{#rest ~ /^[ \\t]*/) {#	B-209	Ein Bindestrich ohne folgenden Leerraum gilt als Eintrag.
+BM-046	KB-15	s#return \(s == "" \? "leer" : s\)#return s#	B-230	Ein Eintrag ohne Namen hat einen leeren Wert statt "leer".
+# --- KB-16 / KB-17: Pruefung 7 und Frontmatter ----------------------------------------------------------------------
+BM-047	KB-16	s#if \(nm == 0\) \{ print 1 "\\tskill-anforderung\\tfehlt"; return \}#if (nm == 0) { return }#	B-071	Ein Frontmatter ohne metadata: wird nicht gemeldet.
+BM-048	KB-16	s#if \(na >= 2\) \{ print a2 "\\tskill-anforderung\\tanforderung doppelt"; return \}#if (na >= 2) { return }#	B-075	anforderung: zweimal wird nicht gemeldet.
+BM-049	KB-16	s#^          if ! ist_backlog_id "\$WERT"; then#          if ist_backlog_id "$WERT"; then#	B-077,B-078	Das Urteil ueber die Kennung im Skill ist vertauscht.
+BM-050	KB-16	s#skill-anforderung\\tleer"#skill-anforderung\\tfehlt"#	B-232	Eine leere anforderung hat den Wert "fehlt" statt "leer".
+BM-051	KB-16	/^function skill\(/,/^\}/{\%#/\) continue%d}	B-235,B-236	Kommentarzeilen beenden den Block metadata: wieder.
+BM-052	KB-17	s#if \(ende == 0\) \{ print 1 "\\tfrontmatter\\tnicht geschlossen"; exit \}#if (ende == 0) { exit }#	B-080,B-081	Ein nicht geschlossenes Frontmatter wird nicht gemeldet.
+BM-053	KB-17	s#if \(L\[i\] == "---"\) \{ ende = i; break \}#if (L[i] ~ /^---/) { ende = i; break }#	B-082	Eine Zeile aus vier Bindestrichen schliesst das Frontmatter.
+BM-054	KB-17	s#\{ sub\(/\\r\$/, ""\); L\[NR\] = \$0 \}#{ L[NR] = $0 }#	B-083	Ein Wagenruecklauf am Zeilenende wird nicht uebergangen.
+# --- KB-18: Ausblendung ----------------------------------------------------------------------------------------------
+BM-055	KB-18	s# && zlen >= fl##	B-091	Ein kuerzerer Zaun schliesst einen laengeren Block.
+BM-056	KB-18	s# && rest ~ /\^\[\[:space:\]\]\*\$/##	B-093	Text hinter dem Zaun hindert das Schliessen nicht.
+BM-057	KB-18	s#zaun == fz && ##	B-092	Ein Zaun anderer Art schliesst den Block.
+BM-058	KB-18	s#if \(modus == "offen" && infence\)#if (modus == "offen" \&\& 0)#	B-087	Ein bis zum Dateiende offener Zaun wird nicht gemeldet.
+BM-059	KB-18	s#if \(k >= 3\) \{#if (k >= 4) {#	B-088,B-089	Zaeune aus drei Zeichen werden nicht erkannt.
+BM-060	KB-18	/if \(infence\) \{/,/^  \}/{\%print ""%d}	B-084	Die Zeilen eines Blocks werden entfernt statt geleert: die Zeilennummern verschieben sich.
+# --- KB-19: Pruefflaeche ---------------------------------------------------------------------------------------------
+BM-061	KB-19	s#\|\\\.claude/\.\*\\\.md##	B-097	Markdown unter .claude/ gehoert nicht zur Pruefflaeche.
+BM-062	KB-19	s#PRUEFFLAECHE_ERE='[^']*'#PRUEFFLAECHE_ERE='^(.*\\.md)$'#	B-101	Jede Markdown-Datei gehoert zur Pruefflaeche, auch unter scripts/ und prototype/.
+BM-063	KB-19	s#git ls-files -z -- '\*\.md'#git ls-files -z -c -o -- '*.md'#	B-100	Unversionierte Dateien gehoeren zur Pruefflaeche.
+BM-064	KB-19	s#git ls-files -z -- #git ls-files -- #;s#while IFS= read -r -d '' f; do#while IFS= read -r f; do#	B-098	Die Pruefflaeche wird nicht NUL-getrennt gelesen: Namen mit Nicht-ASCII-Zeichen gehen verloren.
+BM-065	KB-19	s%\[ "\$\{#DATEIEN\[@\]\}" -eq 0 \]%[ "${#DATEIEN[@]}" -eq 99 ]%	B-099,B-198	Eine leere Pruefflaeche ist kein Befund.
+# --- KB-20 bis KB-23: Ausnahmeliste -------------------------------------------------------------------------------------
+BM-066	KB-20	s#k1="\$datei:\$zeile"#k1="$datei:0"#	B-102	Ein Schluessel datei:zeile deckt seinen Fundort nicht.
+BM-067	KB-20	s#k2="\$datei\|\$wert"#k2="docs/fall.md|$wert"#	B-104	Der Schluessel datei|wert gilt fuer jede Datei.
+BM-068	KB-21	s#elif ! \[\[ "\$\{AE_GRUND#elif [[ "${AE_GRUND#	B-107,B-109	Das Urteil ueber den Grund einer Ausnahme ist vertauscht.
+BM-069	KB-21	s#=~ \[\^\[:space:\]\] \]\]#=~ . ]]#	B-109	Ein Grund aus Leerraum gilt als Grund (P-7).
+BM-070	KB-22	s#:\[0-9\]\+\$ \]\]#:[0-9]{1,5}$ ]]#	B-115	Die Zeilennummer im Schluessel hat eine Obergrenze.
+BM-071	KB-22	s#== \*'\|'\*#== *#	B-112	Jeder Schluessel gilt als formgerecht.
+BM-072	KB-23	s#melden_roh "\$AUSNAHMEDATEI" "\$\{AE_ZN\[\$i_ae\]\}" "ausnahme-veraltet" "\$w_ae"#:#	B-116,B-123	Eine veraltete Ausnahme wird nicht gemeldet.
+BM-073	KB-23	s#AUSNAHME_BENUTZT\["\$k2"\]=1#:#	B-103,B-124	Der Schluessel datei|wert gilt nicht als benutzt.
+BM-074	KB-22	s#^  elif \[ -z "\$\{AUSNAHME_BENUTZT#  fi; if [ -z "${AUSNAHME_BENUTZT#	B-111,B-113	Je Eintrag mehr als ein Befund: die Rangfolge Form, Grund, Veraltung entfaellt.
+# --- KB-24: Rueckgabewert, Zaehlung, Schlussausgabe ----------------------------------------------------------------------
+BM-075	KB-24	s#^echo "Befunde: \$BEFUNDE_ANZAHL"$#echo "Befunde: 0"#	B-125	Die Zeile "Befunde: n" zaehlt die Funde nicht.
+BM-076	KB-24	s#^if \[ "\$BEFUNDE_ANZAHL" -gt 0 \]; then$#if [ "$BEFUNDE_ANZAHL" -gt 99 ]; then#	B-125	Ein Fund ergibt nicht den Rueckgabewert 2.
+BM-077	KB-24	s#:-0\} \+ 1 \)\)#:-0} + 2 ))#	B-125	Die Zaehlung der Arten stimmt nicht mit den Funden ueberein.
+BM-078	KB-24	/^echo "Repo B \(r3coscrum\): aufgel/d	B-126	Die Zeile zum Archivstand fehlt in der Schlussausgabe.
+BM-079	KB-24	s#^echo "Repo B \(r3coscrum\)#echo "Nicht pruefbar: 0"; echo "Repo B (r3coscrum) mitgelesen: ja"; echo "NICHT eingebaut: Pruefung 6"; &#	B-127,B-128,B-129	Die gestrichenen Zeilen "Nicht pruefbar", "mitgelesen" und "NICHT eingebaut" stehen wieder in der Schlussausgabe.
+BM-080	KB-24	/^echo '  - GB-17 /d	B-241	Die Schlussausgabe nennt eine Grenze des Kopfkommentars nicht.
+# --- KC-01 bis KC-11: Lage C -------------------------------------------------------------------------------------------
+BM-081	KC-01	s#lage_c "werkzeug:\$w"#: "werkzeug:$w"#	B-130,B-131	Ein fehlendes Werkzeug wird nicht als Lage C gemeldet.
+BM-082	KC-01	s#^WERKZEUGE="git grep awk sort dirname"$#WERKZEUGE="git grep sort dirname"#	B-132	awk fehlt in der geschlossenen Werkzeugliste.
+BM-083	KC-02	s#lage_c "git-arbeitsbaum"#: "git-arbeitsbaum"#	B-135	Ein fehlender Git-Arbeitsbaum wird nicht als Lage C gemeldet.
+BM-084	KC-03	s#^  true\) lage_c "git-historie" .*;;$#  true) ;;#	B-136,B-204	Ein flacher Klon wird nicht als Lage C gemeldet.
+BM-085	KC-04	s#^  0\) lage_c "git-teilklon" .*;;$#  0) ;;#	B-137,B-214	Ein Teilklon wird nicht als Lage C gemeldet.
+BM-086	KC-05	s#^git cat-file -e "\$\{ARCHIVSTAND\}\^\{commit\}" 2>/dev/null \\$#true \\#	B-138	Ein fehlender Archivstand wird nicht als Lage C gemeldet.
+BM-087	KC-06	s#for pruefmittel in "\$BACKLOG" #for pruefmittel in #	B-139	Ein fehlendes Backlog wird nicht als Lage C gemeldet.
+BM-088	KC-07	s# "\$PROJEKTAUFTRAG" "\$AUSNAHMEDATEI"; do# "$AUSNAHMEDATEI"; do#	B-141	Ein fehlender Projektauftrag wird nicht als Lage C gemeldet.
+BM-089	KC-08	s#"\$PROJEKTAUFTRAG" "\$AUSNAHMEDATEI"; do#"$PROJEKTAUFTRAG"; do#	B-143	Eine fehlende Ausnahmeliste wird nicht als Lage C gemeldet.
+BM-090	KC-09	s#lage_c "referenzmenge-backlog"#: "referenzmenge-backlog"#	B-146	Eine leere Referenzmenge des Backlogs wird nicht als Lage C gemeldet.
+BM-091	KC-10	s#lage_c "referenzmenge-projektauftrag"#: "referenzmenge-projektauftrag"#	B-147	Eine leere Referenzmenge des Projektauftrags wird nicht als Lage C gemeldet.
+BM-092	KC-11	s#lage_c "prueflaeche" "die Pruefflaeche#: "prueflaeche" "die Pruefflaeche#	B-148	Eine nicht ermittelbare Pruefflaeche wird nicht als Lage C gemeldet.
+BM-093	KC-11	s#lage_c "prueflaeche" "versionierte Markdown-Datei fehlt#: "prueflaeche" "versionierte Markdown-Datei fehlt#	B-217	Eine fehlende versionierte Markdown-Datei wird nicht als Lage C gemeldet.
+# --- EB-1 bis EB-4: Eigenschaften ---------------------------------------------------------------------------------------
+BM-094	EB-1	s#^set -uo pipefail$#set -uo pipefail\n: > zwischendatei.tmp#	B-184,B-185	Der Lauf schreibt eine Zwischendatei in den Baum.
+BM-095	EB-2	s#^BACKLOG="docs/05_Product_Backlog.md"$#&\nR3COSCRUM_ROOT=/home/user/r3coscrum#	B-186	Der Pruefer enthaelt wieder einen festen Ort ausserhalb des Repositories.
+BM-096	EB-3	s#^export LC_ALL=C$#:#	B-189	Der Pruefer setzt die Spracheinstellung nicht fuer sich selbst (P-10).
+BM-097	EB-3	s#^echo "Befunde: \$BEFUNDE_ANZAHL"$#&\necho "Lauf $$"#	B-188	Die Ausgabe haengt vom einzelnen Lauf ab.
+BM-098	EB-4	s,^      if \(\$0 ~ /.*/\) adr\[para\] = 1$,      paratext[para] = paratext[para] " " $0,;s,print \(\(p in adr\) \? 1 : 0\),print (paratext[p] ~ /(^|[^A-Za-z])ADR([^A-Za-z]|$)/) ? 1 : 0,	B-206	Die Absaetze werden wieder zeilenweise verkettet und je Zeile durchsucht (quadratische Laufzeit, P-11).
+# --- M5: Behebungen nach der Pruefung B9/M2 (ST-G0-01 bis ST-G0-08) -------------------------------------------------
+BM-099	KC-06	s#^  if weg_verknuepft "\$pruefmittel"; then#  if [ -L "$pruefmittel" ]; then#	B-243,B-246	Ein Verzeichnis auf dem Weg zu Backlog, Projektauftrag oder Ausnahmeliste darf eine Verknuepfung sein; nur die Datei selbst wird geprueft (ST-G0-01 a, b).
+BM-100	KC-06	s#^  if weg_verknuepft "\$pruefmittel"; then#  if false; then#	B-242,B-244,B-245	Die Verknuepfungspruefung der Bezugsdateien und der Ausnahmeliste entfaellt: das Ziel wird gelesen (ST-G0-01 a, b).
+BM-101	KB-12	s#^  weg_verknuepft "\$f" \&\& continue#  [ -L "$f" ] \&\& continue#	B-247	Die Pruefung der Pruefflaeche auf Lage C beachtet nur die Datei selbst: eine haengende Verknuepfung auf dem Weg ergibt Lage C statt Befund (ST-G0-01 c).
+BM-102	KB-12	s#^  if weg_verknuepft "\$DATEI"; then#  if [ -L "$DATEI" ]; then#	B-247	Eine Datei unter einem verknuepften Verzeichnis wird gelesen statt gemeldet (ST-G0-01 c).
+BM-103	KB-19	s#awk -v modus=text "\$BLENDEN_AWK" "\./\$1"#awk -v modus=text "$BLENDEN_AWK" "$1"#	B-248	Die Datei geht ohne ./ an awk: a=b.md gilt als Zuweisung und wird nicht gelesen (Ausblendung, ST-G0-02); -x.md bleibt lesbar (ST-G0-29).
+BM-104	KB-19	s#awk -v modus=offen "\$BLENDEN_AWK" "\./\$1"#awk -v modus=offen "$BLENDEN_AWK" "$1"#	B-248	Die Datei geht ohne ./ an awk beim Suchen des offenen Zauns (ST-G0-02).
+BM-105	KC-11	s#^(  INHALT="\$\(blenden "\$DATEI"\)") \|\| lesefehler awk "\$DATEI" "\$\?"#\1#	B-249	Ein Fehlschlag von awk beim Ausblenden gilt als leerer Text und damit als kein Fund (ST-G0-03).
+BM-106	KC-11	s#^(  OFFEN="\$\(zaun_offen "\$DATEI"\)") \|\| lesefehler awk "\$DATEI" "\$\?"#\1#	B-250	Ein Fehlschlag von awk beim Suchen des offenen Zauns gilt als kein Fund (ST-G0-03).
+BM-107	KC-11	s#^(    FM_AUS="\$\(frontmatter_lesen "\$ART67" "\$DATEI"\)") \|\| lesefehler awk "\$DATEI" "\$\?"#\1#	B-251	Ein Fehlschlag von awk beim Lesen des Frontmatters gilt als kein Fund (ST-G0-03).
+BM-108	KC-11	s#if \[ "\$rc" -gt 1 \]; then lesefehler grep#if [ "$rc" -gt 2 ]; then lesefehler grep#	B-252,B-253,B-254,B-255,B-256	Ein grep-Auszug, der mit 2 endet, gilt als in Ordnung (Pruefungen 2 bis 5, ST-G0-03).
+BM-109	KC-11	s#if \[ "\$rc" -gt 1 \]; then lesefehler grep#if [ "$rc" -gt 0 ]; then lesefehler grep#	B-257	Auch ein grep ohne Treffer (Rueckgabewert 1) gilt als Lesefehler: falsch rot.
+BM-110	KB-18	s#index\(rest, "`"\) > 0#index(rest, "`") < 0#	B-258	Ein Zaun aus Rueckwaertsakzenten mit Rueckwaertsakzent in der Sprachangabe oeffnet wieder einen Block (ST-G0-05).
+BM-111	KB-18	s#if \(zaun == "`" && index\(rest, "`"\) > 0\)#if (index(rest, c) > 0)#	B-259	Die Regel der Sprachangabe gilt auch fuer Zaeune aus Tilden: ein Tildenzaun mit Tilde in der Sprachangabe oeffnet keinen Block mehr (ST-G0-05).
+BM-112	KC-04	s#^PROMISOR_AUS=.*$#PROMISOR_AUS=""#	B-260,B-261	Eine Fernquelle mit promisor wahr wird nicht erkannt (ST-G0-07).
+BM-113	KC-04	s#git config --bool --get-regexp#git config --local --bool --get-regexp#	B-261	Die Fernquelle mit promisor wird nur in der lokalen Konfigurationsebene gesucht (ST-G0-07).
+BM-114	KC-04	s#^        true\) lage_c "git-teilklon"#        *) lage_c "git-teilklon"#	B-262	Eine Fernquelle mit promisor falsch gilt als Teilklon (falsch rot, ST-G0-07).
+BM-115	EB-3	s#^(unset GIT_DIR .*) GIT_ALTERNATE_OBJECT_DIRECTORIES#\1#	B-263	GIT_ALTERNATE_OBJECT_DIRECTORIES des Aufrufers wirkt: eine fremde Pruefsumme loest auf (ST-G0-08).
+BM-116	EB-3	s#^unset GIT_DIR #unset #	B-264	GIT_DIR des Aufrufers wirkt: der Lauf urteilt ueber ein anderes Repository (ST-G0-08).
+BM-117	KC-12	s#^if \[ -s "\$ALT_PFAD" \]; then#if false; then#	B-265,B-266	Ein objects/info/alternates mit Inhalt wird nicht als Lage C gemeldet (ST-G0-08).
+BM-118	KC-12	s#^if \[ -s "\$ALT_PFAD" \]; then#if [ -e "$ALT_PFAD" ]; then#	B-267	Auch eine vorhandene leere alternates-Datei ergibt Lage C (falsch rot, ST-G0-08).
+BM-119	KC-12	s#git rev-parse --git-path objects/info/alternates#echo .git/objects/info/alternates#	B-266	Der Pfad der alternates-Datei ist fest .git/objects/info/alternates: bei einem .git als Datei bleibt sie unentdeckt (ST-G0-08).
+# --- M5b: Behebung der Befunde der Fremdmutationsrunde M4 (Punkt 13, Plan Nr. 1 bis 15) -------------------------------------------
+BM-120	KB-09	s#\.claude\|\.github\|docs\|scripts\|prototype\|backend\|frontend\|deploy\)#.github|docs|scripts|prototype|backend|frontend|deploy)#	B-277	.claude faellt aus der Liste des eigenen Baums in ist_pfadartig (GB-09, Plan Nr. 1).
+BM-121	KB-09	s#\.claude\|\.github\|docs\|scripts\|prototype\|backend\|frontend\|deploy\)#.claude|docs|scripts|prototype|backend|frontend|deploy)#	B-278	.github faellt aus der Liste des eigenen Baums in ist_pfadartig (GB-09, Plan Nr. 1).
+BM-122	KB-09	s#\.claude\|\.github\|docs\|scripts\|prototype\|backend\|frontend\|deploy\)#.claude|.github|scripts|prototype|backend|frontend|deploy)#	B-039	docs faellt aus der Liste des eigenen Baums in ist_pfadartig (GB-09, Plan Nr. 1).
+BM-123	KB-09	s#\.claude\|\.github\|docs\|scripts\|prototype\|backend\|frontend\|deploy\)#.claude|.github|docs|prototype|backend|frontend|deploy)#	B-279	scripts faellt aus der Liste des eigenen Baums in ist_pfadartig (GB-09, Plan Nr. 1).
+BM-124	KB-09	s#\.claude\|\.github\|docs\|scripts\|prototype\|backend\|frontend\|deploy\)#.claude|.github|docs|scripts|backend|frontend|deploy)#	B-280	prototype faellt aus der Liste des eigenen Baums in ist_pfadartig (GB-09, Plan Nr. 1).
+BM-125	KB-09	s#\.claude\|\.github\|docs\|scripts\|prototype\|backend\|frontend\|deploy\)#.claude|.github|docs|scripts|prototype|frontend|deploy)#	B-281	backend faellt aus der Liste des eigenen Baums in ist_pfadartig (GB-09, Plan Nr. 1).
+BM-126	KB-09	s#\.claude\|\.github\|docs\|scripts\|prototype\|backend\|frontend\|deploy\)#.claude|.github|docs|scripts|prototype|backend|deploy)#	B-282	frontend faellt aus der Liste des eigenen Baums in ist_pfadartig (GB-09, Plan Nr. 1).
+BM-127	KB-09	s#\.claude\|\.github\|docs\|scripts\|prototype\|backend\|frontend\|deploy\)#.claude|.github|docs|scripts|prototype|backend|frontend)#	B-283	deploy faellt aus der Liste des eigenen Baums in ist_pfadartig (GB-09, Plan Nr. 1).
+BM-128	KB-04	/auszug_holen "\$DATEI" '\\b\[0-9a-f\]/s#$#; IFS= read -r AUSZUG <<< "$AUSZUG"#	B-284	Pruefung 2 (Commit) wertet nur den ersten Treffer je Datei aus (Vorlage FM-03, Plan Nr. 2).
+BM-129	KB-06	/auszug_holen "\$DATEI" 'R3-/s#$#; IFS= read -r AUSZUG <<< "$AUSZUG"#	B-285	Pruefung 3 wertet nur den ersten Treffer je Datei aus (Plan Nr. 2).
+BM-130	KB-07	/auszug_holen "\$DATEI" '`/s#$#; IFS= read -r AUSZUG <<< "$AUSZUG"#	B-286	Pruefung 4 (und der Zeilenanhang der Pruefung 1) wertet nur den ersten Treffer je Datei aus (Plan Nr. 2).
+BM-131	KB-13	/auszug_holen "\$DATEI" '\\\(\[0-9\]/s#$#; IFS= read -r AUSZUG <<< "$AUSZUG"#	B-287	Pruefung 5 wertet nur den ersten Treffer je Datei aus (Plan Nr. 2).
+BM-132	KB-05	/auszug_holen "\$DATEI" '\(blob/s#$#; IFS= read -r AUSZUG <<< "$AUSZUG"#	B-288	Die Zweigform wertet nur den ersten Treffer je Datei aus (Plan Nr. 2).
+BM-133	KB-04	s#grep -noE "\$2"#grep -m1 -noE "$2"#	B-284,B-285,B-286,B-287,B-288	Alle fuenf Auszuege beschraenken sich auf die erste Zeile mit Treffer je Datei (FM-03 auf alle Auszuege uebertragen, Plan Nr. 2).
+BM-134	KB-13	/^mapfile -t PA_ABSCHNITTE/s@\^#\{1,6\}\[\[:space:\]\]\+@@	B-289	Die Referenzmenge des Projektauftrags nimmt jede Zahl N.M auf (Vorlage FM-04, Plan Nr. 3).
+BM-135	KB-13	/^mapfile -t PA_ABSCHNITTE/s@\[\[:space:\]\]\+@[[:space:]]*@	B-289	Die Referenzmenge des Projektauftrags nimmt auch eine Zeile aus Rautezeichen und Nummer ohne Leerzeichen auf (Plan Nr. 3).
+BM-136	KB-09	s#\.mypy_cache\) return 0#.mypy_cache|src) return 0#	B-290	Regel a um das Segment src erweitert (Vorlage FM-05, Plan Nr. 4).
+BM-137	KB-09	s#\|\*'='\*\) return 1#|*'='*|*'_'*) return 1#	B-290	Der Unterstrich gehoert zu den Ausschlusszeichen von GB-04 (Plan Nr. 4).
+BM-138	KB-06	/auszug_holen "\$DATEI" 'R3-/s#'R3-\[A-Z\]-\[0-9\]\{3\}'#'\\bR3-[A-Z]-[0-9]{3}\\b'#	B-291	Eine Kennung wird nur zwischen Wortgrenzen erkannt (Vorlage FM-08, Plan Nr. 5).
+BM-139	KB-23	s@case "\$zeile" in \\#\*\) continue ;; esac@case "$zeile" in *\\#*) continue ;; esac@	B-292,B-293	Eine Zeile mit # an beliebiger Stelle gilt in der Ausnahmeliste als Kommentar (Vorlage FM-12, Plan Nr. 6).
+BM-140	KB-23	s#^while IFS= read -r zeile \|\| \[ -n "\$zeile" \]; do#while IFS= read -r zeile; do#	B-294,B-295	Die letzte Zeile der Ausnahmeliste ohne Schlussumbruch bleibt ungelesen (Vorlage FM-15, Plan Nr. 7).
+BM-141	KC-01	s#^(  INHALT="\$\(blenden "\$DATEI")\)"#\1 | tr -d '\\r')"#	B-296	Ein Werkzeug ausserhalb der geschlossenen Liste im Lesepfad der Hauptschleife (Vorlage FM-23, Plan Nr. 8).
+BM-142	KC-01	s#^  k1="\$datei:\$zeile"$#  k1="$(printf '%s' "$datei:$zeile" | tr -d '\\r')"#	B-296	Ein Werkzeug ausserhalb der geschlossenen Liste im Weg der Ausnahmeliste (Plan Nr. 8).
+BM-143	KC-01	s#(art="\$\(git cat-file -t "\$\{ARCHIVSTAND\}:\$\{pfad\}" 2>/dev/null)\)#\1 | tr -d '\\r')#	B-296	Ein Werkzeug ausserhalb der geschlossenen Liste im Weg des Archivstands (Plan Nr. 8).
+BM-144	KC-01	s#(melden_roh "-" 0 "bestand-leer" )"prueflaeche-leer"#\1"$(echo prueflaeche-leer | tr -d '\\r')"#	B-297	Ein Werkzeug ausserhalb der geschlossenen Liste im Zweig der leeren Pruefflaeche (Plan Nr. 8b).
+BM-145	KB-19	s#\\\.claude/\.\*\\\.md\)\$'#\\.claude/.+/.*\\.md)$'#	B-298	Dateien direkt unter .claude/ gehoeren nicht zur Pruefflaeche (Vorlage FM-25, Plan Nr. 9).
+BM-146	KB-19	s#\\\.claude/\.\*\\\.md\)\$'#\\.claude/.+/.+/.*\\.md)$'#	B-299	Die Pruefflaeche unter .claude/ verlangt zwei Verzeichnisebenen (Plan Nr. 9).
+BM-147	EB-2	s#^AUSNAHMEDATEI="scripts/belege-ausnahmen.txt"$#AUSNAHMEDATEI="${BELEGE_AUSNAHMEN:-scripts/belege-ausnahmen.txt}"#	B-300,B-301	Die Ausnahmeliste ist ueber die Umgebungsvariable BELEGE_AUSNAHMEN umlenkbar (Vorlage FM-30, Plan Nr. 10).
+BM-148	EB-2	s#^AUSNAHMEDATEI="scripts/belege-ausnahmen.txt"$#: "${AUSNAHMEDATEI:=scripts/belege-ausnahmen.txt}"#	B-300	Die Ausnahmeliste wird nur zugewiesen, wenn AUSNAHMEDATEI in der Umgebung leer ist (Plan Nr. 10).
+BM-149	KC-03	s#^FLACH=.*$#if [ -f .git/shallow ]; then FLACH=true; else FLACH=false; fi#	B-302,B-303	Der flache Klon wird am Dateinamen .git/shallow statt ueber git erkannt (Vorlage FM-18, Plan Nr. 11).
+BM-150	EB-1	s#^export LC_ALL=C$#&\n: > .git/belege-zwischen-start#	B-184,B-185	Der Lauf legt gleich zu Beginn eine Zwischendatei unter .git/ an (Plan Nr. 12).
+BM-151	EB-1	s#^  INHALT="\$\(blenden "\$DATEI"\)" \|\| lesefehler awk "\$DATEI" "\$\?"$#  blenden "$DATEI" > "$REPO_ROOT/.git/belege-zwischen.txt"; INHALT="$(< "$REPO_ROOT/.git/belege-zwischen.txt")"#	B-184	Der Lauf legt in der Hauptschleife eine Zwischendatei unter .git/ an (Vorlage FM-29, Plan Nr. 12).
+BM-152	KB-12	s#^(        if \[ -z "\$BEREINIGT" \]; then )return 1; fi#\1continue; fi#	B-304	".." an der Wurzel wird geklemmt statt die Wurzel zu verlassen (Vorlage FM-02, Plan Nr. 13).
+BM-153	KB-11	s#^export GIT_NO_REPLACE_OBJECTS=1$#:#	B-306	Ersatzobjekte unter refs/replace/ gelten: eine Ersatzreferenz fuer den Archivstand loest einen Pfad auf, den der Archivstand nicht hat (SA-M4-02, Plan Nr. 15).
+# --- M5c: Pfadangabe-Variablen des Aufrufers (ST-G0-25) ------------------------------------------------------------------------
+BM-154	EB-3	s#^(unset GIT_DIR .*) GIT_GLOB_PATHSPECS GIT_NOGLOB_PATHSPECS GIT_LITERAL_PATHSPECS GIT_ICASE_PATHSPECS#\1#	B-307,B-308,B-309	Die vier Pfadangabe-Variablen des Aufrufers werden nicht geloescht: die Pruefflaeche schrumpft auf die Wurzeldateien oder wird leer (ST-G0-25).
+BM-155	EB-3	s#^(unset GIT_DIR .*) GIT_GLOB_PATHSPECS#\1#	B-307	GIT_GLOB_PATHSPECS des Aufrufers wirkt: nur die Wurzeldateien werden geprueft, ein Fund unter docs/ geht verloren (ST-G0-25).
+BM-156	EB-3	s#^(unset GIT_DIR .*) GIT_NOGLOB_PATHSPECS#\1#	B-308	GIT_NOGLOB_PATHSPECS des Aufrufers wirkt: die Pruefflaeche wird leer (bestand-leer; ST-G0-25).
+BM-157	EB-3	s#^(unset GIT_DIR .*) GIT_LITERAL_PATHSPECS#\1#	B-309	GIT_LITERAL_PATHSPECS des Aufrufers wirkt: die Pruefflaeche wird leer (bestand-leer; ST-G0-25).
+# --- M5d: Liste der Wurzelnamen ohne Schraegstrich in ist_pfadartig (W-14, GB-10) ----------------------------------
+#   Ein Name je Mutation: Makefile, CLAUDE.md, README.md, CONTRIBUTING.md, .gitignore (BM-158 bis BM-162).
+BM-158	KB-07	s#^( +)Makefile\|(CLAUDE\.md\|)#\1\2#	B-310	Makefile faellt aus der Liste der Wurzelnamen (GB-10, W-14).
+BM-159	KB-07	s#^( +Makefile\|)CLAUDE\.md\|#\1#	B-311	CLAUDE.md faellt aus der Liste der Wurzelnamen (GB-10, W-14).
+BM-160	KB-07	s#^( +[^)]*)README\.md\|#\1#	B-033	README.md faellt aus der Liste der Wurzelnamen (GB-10, W-14).
+BM-161	KB-07	s#^( +[^)]*)CONTRIBUTING\.md\|#\1#	B-033	CONTRIBUTING.md faellt aus der Liste der Wurzelnamen (GB-10, W-14).
+BM-162	KB-07	s#^( +[^)]*)\|\.gitignore\)#\1)#	B-033	.gitignore faellt aus der Liste der Wurzelnamen (GB-10, W-14).
