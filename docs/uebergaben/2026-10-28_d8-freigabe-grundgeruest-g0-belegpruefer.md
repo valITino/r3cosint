@@ -19,3 +19,269 @@ Sitzung vom 2026-10-28 (Fortsetzung der Sitzung vom 2026-10-27 nach dem Merge de
 **Offen.** Restpunkte dieser Einheit: die Berichtigung des Verweises "(ADR 0002, 6.1.2)" in ADR 0005 war "bis nach der Freigabe des Grundgerüsts zurückgestellt" und ist damit fällig (Software Architect, mit G0 oder der nächsten Fortschreibung von ADR 0005); ADR 0002, Abschnitt 6, Zeile D6 sagt weiterhin "Werte offen, Entscheid E-07", obwohl E-G-04 a die Werte bestätigt (Fortschreibung mit G1); die Zelle "Auftraggeber (S-01)" in Abschnitt 6 der Vorlage liegt wegen des wörtlichen Zitats bei 648 Zeichen (gemessen durch den Static Software Tester am 2026-10-28; die Zelle O-10 (neu gefasst) in ADR 0002, Abschnitt 8 mit 593 Zeichen und die Kopfzelle "Weisung" der Vorlage mit 587 Zeichen bleiben unter 600), die neue Zelle "Formweg" im Unterabschnitt zur Freigabe in ADR 0002, Abschnitt 10 trägt Titel und Absatz "Merge = Freigabe des Grundgerüsts" wörtlich aus dem Pull Request, 3000 Zeichen (Abschnitt 10 hatte vor D8 schon 28 Zellen über 600 Zeichen, die kürzeste davon 635; vom Koordinator am 2026-10-28 nachgezählt); `docs/06_Definition_of_Ready_und_Done.md`, Offene Punkte, Punkt 5 nennt für O-15 keinen Termin (unverändert); der Fundort von Backlog-Punkt 26 nennt nur den Vorlage-Unterabschnitt. Die Restpunkte aus FG (Glossar-Eintrag "Grundgerüst", Prüfstapel für Integrationstests als offener Punkt, Pflege der Ausnahmeliste für D7, Bauform des Laufs auf der Gegenseite, Laufzeit der Betriebsart für D10, Zugang zur Paketquelle; Hinweise ST-FG-SA-13, -15, -16, -19, -20) bleiben unverändert (Übergabe der Vorsitzung, Abschnitt FG). Offen beim Auftraggeber: E-PS-3, E-PS-4 und die Löschung von r3coscrum nach dem Ende der Frist; die Arbeitsumgebung mit Docker-Daemon vor G2 (E-G-06 a).
 
 **Nächste Einheit.** G0 (Abnahme des Belegprüfers D20) nach der Vorlage, Abschnitt 4, in dieser Sitzung auf derselben Weisung; Schnitt vor dem Bau durch den Software Architect.
+
+## Einheit G0 — Abnahme des Belegprüfers D20 (O-15)
+
+**Festlegung des Software Architects (2026-10-28), Schnitt vor dem Bau.** Auftragsgrundlage für G0.1 und G0.2; der Nachtrag in ADR 0002, 6.8 ist die Festlegung, dieser Abschnitt ihre Einzelheiten.
+
+Gegenstand: `scripts/belege-pruefen.sh` und `scripts/belege-ausnahmen.txt`, künftig scripts/belege-pruefen-selbsttest.sh und scripts/belege-pruefen-mutationen.txt. Anforderungskennung in Commit-Betreff und Kopfzeile des Prüfmittels: R3-Q-001 (das DoD-Gate stützt sich auf D20); dazu O-15. Werkzeuge des Prüfers sind höchstens bash, git, grep, sed, awk, sort und dirname; heute aufgerufen werden git, grep, awk, sort und dirname, sed nennt heute nur der Kopfkommentar, und die geschlossene Liste gleich dem Code legt P-2 fest. Das Prüfmittel darf zusätzlich mktemp, flock, sha256sum und cmp nutzen; jq braucht es nicht. Kein Docker, kein uv, kein Netz. Grundlage der Vorbefunde ist das Lesen des Codes, kein Lauf; jede Aussage über Verhalten ist im Bau zu belegen.
+
+### Punkt 1 — Inventar der Fehlerklassen und Grenzen
+
+#### 1a Vorbefunde am gelesenen Code (Präzisierungen P-1 bis P-10)
+
+Jeder Vorbefund ist eine Stelle, an der Kopfkommentar, ADR 0002 6.8.3 oder Kriterium (d) mehr behaupten, als der Code trägt. Fundstellen als Funktions- oder Abschnittsnamen des Skripts.
+
+| Kennung | Befund (Fundstelle) | Entscheid |
+|---|---|---|
+| P-1 | Kein Git-Repository am Arbeitsverzeichnis endet mit Rückgabewert 2 (Anfang des Skripts, vor lage_c); Kopfkommentar "RÜCKGABEWERT" und 6.8.3 nennen das Lage C | beheben: Lage C, Rückgabewert 3, Kennung git-arbeitsbaum |
+| P-2 | Kein Werkzeug wird geprüft. Fehlt awk, liefert blenden nichts, und der Lauf endet ohne geprüften Verweis mit 0 (falsches Grün). Aufgerufen werden git, grep, awk, sort, dirname; der Kopfkommentar nennt git, grep, sed, awk (sed wird nicht aufgerufen, sort und dirname fehlen) | beheben: geschlossene Werkzeugliste gleich den tatsächlich aufgerufenen Befehlen, je Werkzeug Lage C (werkzeug:<name>); Abgleich Liste gegen Code in beide Richtungen durch den Static Software Tester |
+| P-3 | Prüffläche über git ls-files ohne -z: Namen mit Nicht-ASCII-Zeichen setzt git in Anführungszeichen, der Filter verwirft sie stumm; scheitert git ls-files, ist die Prüffläche leer, und der Lauf endet mit 0 | beheben: NUL-getrennte Liste (git ls-files -z, Lesen mit read -r -d ''), Fehlschlag Lage C (prueflaeche), leere Prüffläche Befund (Art bestand-leer, 6.8.3 Grund 1) |
+| P-4 | blenden kennt nur Zäune aus drei Rückwärtsakzenten am Zeilenanfang und schaltet bei jedem um: ein eingerückter Schlusszaun, ein kürzerer Zaun in einem längeren und ein offener Zaun blenden den Rest der Datei stumm aus | beheben: Zäune aus drei Rückwärtsakzenten oder drei Tilden, bis drei Leerzeichen Einzug; Schlusszaun mit demselben Zeichen, mindestens so lang wie der öffnende, danach nur Leerraum; ein bis zum Dateiende offener Zaun ist ein Befund (Art codeblock-offen, Zeile des öffnenden Zauns) |
+| P-5 | pfad_aufloesen, pfad_existiert_wurzel und die Zeilenzählung folgen ".." und symbolischen Verknüpfungen über die Wurzel hinaus; ein Verweis wie ../r3coscrum/CLAUDE.md, aus der Wurzel genannt, wird in dieser Arbeitsumgebung am Nachbarordner aufgelöst; eine versionierte Markdown-Verknüpfung würde mit ihrem Ziel gelesen | beheben: jeder Kandidat lexikalisch bereinigt (".", "..", doppelte Schrägstriche); verlässt er die Wurzel, gilt er als nicht vorhanden, ohne Dateizugriff, und findet sich kein Kandidat innerhalb, ist das ein Befund (Art pfad); liegt auf dem bereinigten Pfad eine symbolische Verknüpfung oder ist eine Datei der Prüffläche eine, ist das ein Befund (Art pfad-verknuepfung), gelesen wird sie nicht. Gilt auch für die Probe von Regel b |
+| P-6 | Zeilenverweis datei:N-M prüft nur M (datei:50-10 an einer Datei mit 20 Zeilen ist kein Fund); datei:0 ist kein Fund; ein Zeilenanhang an einem Verzeichnis wird nicht geprüft; Verweise nach Regel c und d verlassen die Schleife vor der Zeilenprüfung | beheben: N mindestens 1, N höchstens M, das grössere von N und M höchstens die Zeilenzahl; Zeilenanhang an einem Verzeichnis ist ein Fund (Art zeile); Prüfung 1 auch für Pfade im Archivstand und mit dem Präfix r3cosint/ |
+| P-7 | Ein Grund aus Leerzeichen allein gilt als Grund | beheben: ein Grund braucht ein Zeichen ausser Leerraum, sonst ausnahme-ohne-grund |
+| P-8 | wert_existiert_bereits gleicht nach der Form des Werts zurück, Pfade nur an der Wurzel; datei:zeile, nicht pfadförmige Werte, Werte mit Doppelpunkt und Werte aus Repo B nie (`docs/uebergaben/2026-10-26_d4-ps-4-r3coscrum-eingefaltet.md`) | beheben durch Ersatz: veraltet ist eine Ausnahme, die im Lauf keinen Fund deckt; ist_ausgenommen prüft beide Schlüssel und vermerkt jeden passenden als benutzt; wert_existiert_bereits entfällt. Je Eintrag höchstens ein Befund in der Rangfolge ausnahme-form, ausnahme-ohne-grund, ausnahme-veraltet |
+| P-9 | Flacher Klon und Teilklon prüft der Prüfer nicht; das `Makefile` prüft den flachen Klon, nicht den Teilklon; in einem Teilklon fehlen Objekte, und git kann sie beim Zugriff nachladen | beheben: beide im Prüfer Lage C (git rev-parse --is-shallow-repository; extensions.partialClone gesetzt); das `Makefile` bleibt unverändert und prüft weiter vorab |
+| P-10 | Der Prüfer erbt die Spracheinstellung des Aufrufers; Sortierung der Ausgabe und Zeichenklassen hängen davon ab | beheben: der Prüfer setzt LC_ALL=C für sich selbst |
+
+#### 1b Befundarten (Spalte "art" der Ausgabezeile: datei:zeile, Tabulator, art, Tabulator, wert)
+
+zeile, commit, blob-tree-verweis, anforderung, pfad, pfad-verknuepfung, abschnitt, skill, skill-form, skill-anforderung, frontmatter, codeblock-offen, bestand-leer, ausnahme-ohne-grund, ausnahme-form, ausnahme-veraltet. Die Ausgabeform der Zeile und der Abschnitte "=== Funde nach Prüfungsart" und "=== Funde vollständig" bleibt; der Abschnitt "=== Nicht prüfbar" entfällt.
+
+#### 1c Gedeckte Klassen (je mindestens ein Fall Soll Fund und einer Soll kein Fund, je mindestens eine Mutation)
+
+| Klasse | Gegenstand | Soll Fund (Beispiel) | Soll kein Fund (Beispiel) | Herkunft |
+|---|---|---|---|---|
+| KB-01 | Prüfung 1, Einzelzeile | datei:N hinter dem Dateiende; datei:0 | datei:N auf die letzte Zeile, auch ohne Schlussumbruch | Kopfkommentar, P-6 |
+| KB-02 | Prüfung 1, Bereich | datei:N-M mit M hinter dem Ende; datei:N-M mit N grösser M | N höchstens M höchstens Zeilenzahl | P-6 |
+| KB-03 | Prüfung 1 an Verzeichnis, Archivpfad, Präfix r3cosint/ | docs/adr:3; Archivpfad:N hinter dem Ende des Blobs | Archivpfad:N innerhalb; r3cosint/CLAUDE.md:1 | P-6, Stufe 2 |
+| KB-04 | Prüfung 2, Commit-Prüfsumme | 40 Hexzeichen ohne Objekt; Prüfsumme eines Baums | Commit des Grundbaums; Commit des Archivstands | Kopfkommentar, Stufe 2 |
+| KB-05 | Prüfung 2, Zweigform | die Form mit main hinter blob/ und hinter tree/ (je ein Fall) | Commit-Prüfsumme hinter blob/ | Kopfkommentar |
+| KB-06 | Prüfung 3 | Kennung ohne Überschrift; Kennung, die im Backlog nur ohne Leerzeichen hinter dem Rautezeichen steht | Kennung mit Überschrift der Ebenen 1, 3 und 6 | Kopfkommentar |
+| KB-07 | Prüfung 4, wurzelrelativ | fehlende Datei unter .claude/, .github/, docs/, scripts/; fehlender Wurzelname README.md | vorhandene Datei; vorhandenes Verzeichnis mit und ohne Schrägstrich; Präfix ./ | Kopfkommentar |
+| KB-08 | Prüfung 4, verzeichnisrelativ | weder an der Wurzel noch neben der nennenden Datei | nur neben der nennenden Datei (references/x.md in einer SKILL.md); ../ innerhalb der Wurzel | Kopfkommentar |
+| KB-09 | Prüfung 4, Gegenproben zu den Ausschlussregeln (Durchlässe: GB-03, GB-04, GB-06 bis GB-11; Fehlalarme: GB-05, zweiter Teil von GB-06) | claude/fehlt.md (mit Endung); docs/fehlt (zwei Segmente im eigenen Baum); .claude/fehlt.md (Punkt an erster Stelle); x/fehlt.md (zweites Segment mit Punkt); builds/x/fehlt.md (kein Erzeugnissegment) | dieselben Formen mit vorhandenem Ziel im Grundbaum, etwa das Verzeichnis docs/adr und die Datei claude/x.md | Kopfkommentar |
+| KB-10 | Regel b, Scharfschaltung | backend/fehlt.py bei bestehendem, auch leerem Verzeichnis backend/ | derselbe Verweis, solange backend/ fehlt | Regel b |
+| KB-11 | Regeln c und d, Archivstand | methodik/fehlt.md, nachweise/fehlt/, sprints/fehlt.md, r3coscrum/fehlt.md, r3cosint/fehlt.md | Datei und Verzeichnis im Archivstand; r3coscrum/CLAUDE.md, falls im Archivstand; r3cosint/CLAUDE.md | Regeln c, d, Stufe 2 |
+| KB-12 | Pfad ausserhalb und Verknüpfung | ../ausserhalb.md auf eine vorhandene Datei ausserhalb des Klons; Verweis über ein Verzeichnis, das eine Verknüpfung ist; versionierte Markdown-Verknüpfung in der Prüffläche (Ziel mit falschem Verweis wird nicht gelesen) | docs/../CLAUDE.md | P-5 |
+| KB-13 | Prüfung 5 | Angabe "Projektauftrag" mit einer Nummer ohne Überschrift; Klammerform und Abschnittsform einer solchen Nummer ohne das Wort ADR im Absatz und ohne eigene Überschrift | alle drei Formen mit vorhandener Nummer | Kopfkommentar |
+| KB-14 | Prüfung 6 | Name ohne Verzeichnis; Verzeichnis ohne SKILL.md | Name mit SKILL.md; Rolle ohne skills:; Name in zwei Rollen | Punkt 3 |
+| KB-15 | Prüfung 6, Form | Flussliste in eckigen Klammern; Skalar hinter skills:; leere Liste; Name ausserhalb des Musters; skills: zweimal | Blockliste mit Einzug, Name in Anführungszeichen | Punkt 3 |
+| KB-16 | Prüfung 7 | ohne Frontmatter; ohne metadata: oder ohne anforderung:; Wert nicht genau eine Kennung; anforderung: zweimal; Kennung ohne Überschrift | genau eine Kennung mit Überschrift | Punkt 3 |
+| KB-17 | Frontmatter | erste Zeile aus drei Bindestrichen ohne schliessende Zeile, in einer Rollendatei und in einer SKILL.md | geschlossenes Frontmatter, auch mit Wagenrücklauf am Zeilenende | Punkt 3 |
+| KB-18 | Ausblendung | falscher Verweis nach einem geschlossenen Zaun; nach einem mit drei Leerzeichen eingerückten Schlusszaun; nach einem Block aus drei Tilden, in dem eine Zeile aus drei Rückwärtsakzenten steht; offener Zaun (codeblock-offen) | falscher Verweis in einem Block aus drei Rückwärtsakzenten, aus drei Tilden und mit eingerücktem Zaun; in einem Block aus vier Rückwärtsakzenten, der eine Zeile aus drei Rückwärtsakzenten enthält | P-4 |
+| KB-19 | Prüffläche | falscher Verweis in einer Wurzel-Markdown-Datei, unter docs/ und .claude/ in Unterverzeichnissen; in einer versionierten Datei mit Nicht-ASCII-Namen; leere Prüffläche (bestand-leer) | dieselbe Datei unversioniert; Markdown-Datei unter scripts/ oder prototype/ | Kopfkommentar, P-3 |
+| KB-20 | Ausnahme, Unterdrückung | derselbe Wert in einer anderen Datei; datei:zeile an einer anderen Zeile | Schlüssel datei:zeile; Schlüssel datei mit senkrechtem Strich und Wert | 6.8.5 |
+| KB-21 | ausnahme-ohne-grund | Zeile ohne Tabulator; Tabulator ohne Grund; Grund aus Leerzeichen | Grund vorhanden | P-7 |
+| KB-22 | ausnahme-form | blosser Wert; datei:abc | datei:zeile mit sechsstelliger Nummer (Soll dann allein ausnahme-veraltet, nicht ausnahme-form) | 6.8.5 |
+| KB-23 | ausnahme-veraltet | Ausnahme ohne gedeckten Fund: Kennung inzwischen Überschrift, Prüfsumme inzwischen Commit, Pfad entstanden (an der Wurzel, neben der Datei, im Archivstand), Datei der Ausnahme nicht in der Prüffläche, datei:zeile an einer Zeile ohne Fund | Ausnahme, die einen Fund deckt; zwei Schlüssel für denselben Fund, beide benutzt | P-8 |
+| KB-24 | Rückgabewert und Zählung | 2 bei einem Fund; "Befunde: n" gleich der Zahl der Zeilen unter "Funde vollständig", Summe der Arten gleich n | Grundfall: 0, "Befunde: 0", Schlussausgabe nennt den Archivstand | Kopfkommentar |
+
+Eigenschaften (je mindestens ein Fall und eine Mutation): EB-1 kein Schreiben (Arbeitsbaum des Grundbaums vor und nach dem Lauf gleich, auch bei Lage C); EB-2 kein fester Ort (der Prüfer enthält ausserhalb von Kommentarzeilen keinen absoluten Pfad ausser /dev/null; statische Prüfung im Prüfmittel); EB-3 gleiche Eingabe, gleiche Ausgabe (zwei Läufe über denselben Baum, Standard- und Fehlerausgabe byte-gleich).
+
+#### 1d Lage C (Rückgabewert 3, vor jedem Urteil, in dieser Reihenfolge)
+
+| Klasse | Prüfmittel | Herstellung im Fall | Kennung in der Meldung | Beschaffungsweg in der Meldung |
+|---|---|---|---|---|
+| KC-01 | Werkzeug der geschlossenen Liste (je Werkzeug ein Fall) | PATH auf einen Werkzeugkasten ohne dieses Werkzeug | werkzeug:<name> | Werkzeug installieren |
+| KC-02 | Git-Arbeitsbaum | Lauf in einem Verzeichnis ohne Repository | git-arbeitsbaum | — |
+| KC-03 | vollständige Historie, flacher Klon | .git/shallow im Grundbaum (wie Z-079/080) | git-historie | git fetch --unshallow |
+| KC-04 | vollständige Historie, Teilklon | core.repositoryformatversion 1 und extensions.partialClone gesetzt | git-teilklon | vollständiger Klon |
+| KC-05 | Archivstand | Grundbaum ohne die Objekte des Archivstands | archivstand | git fetch origin +refs/heads/archiv/r3coscrum:refs/remotes/origin/archiv/r3coscrum |
+| KC-06 | Backlog | Datei fehlt | docs/05_Product_Backlog.md | — |
+| KC-07 | Projektauftrag | Datei fehlt | docs/00_Projektauftrag.md | — |
+| KC-08 | Ausnahmeliste | Datei fehlt (vorhanden und leer ist kein Lage C: Gegenprobe) | scripts/belege-ausnahmen.txt | — |
+| KC-09 | Referenzmenge des Backlogs | keine Kennung als Überschrift | referenzmenge-backlog | — |
+| KC-10 | Referenzmenge des Projektauftrags | keine Abschnittsnummer als Überschrift | referenzmenge-projektauftrag | — |
+| KC-11 | Prüffläche ermittelbar | beschädigte Indexdatei, git ls-files endet ungleich 0 | prueflaeche | — |
+
+Soll je Fall: Rückgabewert 3; Fehlerausgabe mit "LAGE C" und der Kennung; Standardausgabe ohne "Befunde:" und ohne Abschnitt "=== Funde"; Gegenprobe ist der Grundfall mit 0. Je Fall genau ein Mangel; bei zwei Mängeln meldet der Prüfer den ersten der Reihenfolge (ein Fall dazu). Das `Makefile` prüft weiter vorab und setzt für ein fehlendes Skript, fehlendes git, einen fehlenden Arbeitsbaum, einen flachen Klon, eine fehlende Ausnahmeliste, ein fehlendes Backlog und einen fehlenden Projektauftrag eigene Werte (im flachen Klon FEHLT=git-historie, Kriterium d); FEHLT=belege-pruefmittel steht in der Kette nur, wenn der Prüfer selbst mit Rückgabewert 3 endet.
+
+#### 1e Grenzen (je ein Fall mit dem benannten Verhalten: Durchlass Soll kein Fund, Fehlalarm Soll Fund)
+
+| Kennung | Grenze | Art | Fall (Beispiel) | Herkunft |
+|---|---|---|---|---|
+| GB-01 | Verweise ausserhalb von Rückwärtsakzenten | Durchlass | docs/fehlt.md ohne Akzente | Kopfkommentar |
+| GB-02 | Verweis, der über zwei Zeilen läuft | Durchlass | öffnender Akzent auf Zeile 1, schliessender auf Zeile 2 | Kopfkommentar |
+| GB-03 | Kandidat mit Leerzeichen, Pfadteil eines Shell-Befehls | Durchlass | bash scripts/fehlt.sh in Akzenten | Kopfkommentar |
+| GB-04 | Ausschlusszeichen und -formen: " ' $ = * < > { } ... … @, "://", führendes / und ~, Anfang blob/ oder tree/ | Durchlass | je Form ein Kandidat auf einen fehlenden Pfad | Kopfkommentar |
+| GB-05 | Platzhalter ohne Ausschlusszeichen | Fehlalarm | docs/adr/NNNN-titel.md | Kopfkommentar |
+| GB-06 | Zweignamen claude/, origin/, fix/ mit letztem Segment ohne Endung; release/ mit drei Segmenten nicht erkannt | Durchlass; Fehlalarm | claude/a/b kein Fund; release/a/b Fund | Kopfkommentar |
+| GB-07 | erstes Segment valITino | Durchlass | valITino/fehlt/x.md | Kopfkommentar |
+| GB-08 | Punkt im ersten Segment ausser an erster Stelle (Rechnername), auch bei echtem Pfad | Durchlass | docs.alt/fehlt.md | Kopfkommentar |
+| GB-09 | Inhaber/Repository: zwei Segmente, erstes nicht im eigenen Baum, zweites ohne Punkt | Durchlass | tests/architektur | Kopfkommentar |
+| GB-10 | ohne Schrägstrich nur Makefile, CLAUDE.md, README.md, CONTRIBUTING.md, .gitignore | Durchlass | fehlt.md | Kopfkommentar |
+| GB-11 | Regel a: Erzeugnis- und Abhängigkeitsverzeichnis als Segment | Durchlass | docs/build/fehlt.md | Kopfkommentar |
+| GB-12 | Prüfung 5: das Wort ADR im Absatz; eine Tabelle ohne Leerzeile gilt als ein Absatz | Durchlass | Klammerform einer fehlenden Nummer in einer Tabellenzeile, das Wort ADR in einer anderen Zeile derselben Tabelle | Kopfkommentar |
+| GB-13 | Prüfung 5: eigene Überschrift der nennenden Datei | Durchlass | Datei mit eigener Überschrift einer Nummer, die der Projektauftrag nicht führt, nennt sie in Klammerform | Kopfkommentar |
+| GB-14 | Prüfung 5: die Abschnittsform eines Unterabschnitts wird an ihren ersten beiden Stufen geprüft, die Klammerform eines Unterabschnitts gar nicht | Durchlass | Abschnittsform eines fehlenden Unterabschnitts einer vorhandenen Nummer; Klammerform eines Unterabschnitts einer fehlenden Nummer | neu benannt |
+| GB-15 | Schlüssel datei mit senkrechtem Strich und Wert deckt ein zweites, falsches Vorkommen in derselben Datei | Durchlass | zwei Vorkommen, eine Ausnahme | Kopfkommentar |
+| GB-16 | Prüfung 2: Kurzform und Grossschreibung nicht geprüft | Durchlass | 12 Hexzeichen; 40 Hexzeichen in Grossschreibung | neu benannt |
+| GB-17 | Prüfung 2: Zweigverweise mit einem anderen Zweignamen als main hinter blob/ oder tree/ | Durchlass | master hinter blob/ | neu benannt |
+| GB-18 | Prüfung 2: ein Commit gilt als bekannt, solange sein Objekt lokal vorliegt, auch unerreichbar | Durchlass | Commit eines gelöschten Zweigs im Grundbaum | neu benannt |
+| GB-19 | Prüfung 3: Kennung mit mehr als drei Ziffern wird an den ersten drei geprüft | Durchlass | vierstellige Form einer vorhandenen Kennung | neu benannt |
+| GB-20 | Prüfung 3: Vorhandensein, nicht Geltung (O-18) | Durchlass | Überschrift mit Zusatz "(gestrichen)" | 6.8.4, O-18 |
+| GB-21 | Prüfung 3: Referenzmenge aus allen Überschriften des Backlogs, auch in Codeblöcken | Durchlass | Überschrift nur in einem Codeblock des Backlogs | neu benannt |
+| GB-22 | ein Verweisziel im Arbeitsbaum gilt als vorhanden, auch unversioniert | Durchlass | unversionierte Datei als Ziel | neu benannt |
+| GB-23 | Archivstand fest: ein Pfad, der nur in einem späteren Stand des Zweigs besteht, ist ein Fund; eine Nachführung des Zweigs ist eine Änderung am Prüfer mit Fall | Fehlalarm | Commit auf dem Archivstand im Grundbaum, Pfad nur dort | Stufe 2 |
+| GB-24 | Zäune in Zitatblöcken oder mit mehr als drei Leerzeichen Einzug werden nicht erkannt, ihr Inhalt wird geprüft | Fehlalarm | Zitatblock mit einem Zaun aus drei Rückwärtsakzenten hinter dem Zitatzeichen und einem falschen Verweis | P-4 |
+| GB-25 | eine Ausnahme gilt für jede Prüfungsart am Fundort; Prüfung 7 meldet eine unbekannte Kennung zusätzlich zu Prüfung 3 | Eigenschaft | eine Ausnahme für die Kennung in der Datei deckt anforderung und skill-anforderung | Punkt 3 |
+| GB-26 | Prüfung 6: derselbe Name zweimal in einer Liste ist kein eigener Fund | Durchlass | doppelter Eintrag mit vorhandener Skill | Punkt 3 |
+
+Grenze des Prüfmittels: GP-B1 — die Zweige "nicht lesbar" von KC-06 bis KC-08 sind unter root nicht herstellbar (der Lauf ist root); gemessen nur ausserhalb von root, sonst als "nicht herstellbar" gezählt und gemeldet, ohne Mutation, Restpunkt wie ST-C6-10.
+
+#### 1f Zuordnung zu den vier Kategorien der Fremdmutationsrunde (Kriterium c)
+
+- Verweisformen (Prüfungen 1 bis 7): KB-01 bis KB-17.
+- Ausnahmeliste: KB-20 bis KB-23.
+- Lage C und Rückgabewerte: KC-01 bis KC-11, KB-24, EB-3.
+- Prüffläche: KB-18, KB-19, EB-1, EB-2.
+
+### Punkt 2 — Prüfmittel scripts/belege-pruefen-selbsttest.sh
+
+#### 2a Form
+
+1. Aufruf: bash scripts/belege-pruefen-selbsttest.sh [--mutationen] [--pruefer <pfad>]; ohne --pruefer gilt `scripts/belege-pruefen.sh` desselben Baums. Bis zur Einsetzung (Punkt 9, B8) läuft es gegen eine Arbeitskopie ausserhalb des Arbeitsbaums.
+2. Kopfzeile: Commit des Arbeitsbaums, SHA-256-Präfix des geprüften Prüfers und der Mutationsdatei, R3-Q-001, O-15.
+3. Je Fall eine dauerhafte Kennung B-nnn (dreistellig, fortlaufend, nie wiederverwendet), Klasse (KB-, KC-, EB- oder GB-Kennung), Gegenstand in einem Satz, Soll, Ist, Ergebnis.
+4. Soll "Fund": Rückgabewert 2 und genau die erwartete Menge der Zeilen unter "=== Funde vollständig" (Datei:Zeile, Art, Wert), verglichen als Menge ganzer Zeilen, nicht als Teilzeichenkette; "Befunde: n" gleich deren Zahl. Soll "kein Fund": Rückgabewert 0 und keine Zeile unter "=== Funde vollständig". Soll "Lage C": wie in 1d. Grenzfälle nach ihrer Art.
+5. Grundbaum je Lauf unter mktemp -d, nachweislich ausserhalb des Arbeitsbaums: git init, feste Identität und Zeitstempel, synthetisches Backlog mit wenigen Überschriften, synthetischer Projektauftrag mit Abschnittsüberschriften, CLAUDE.md, leere Ausnahmeliste, eine Rollendatei mit skills:, eine Skill mit SKILL.md und metadata.anforderung; die Objekte des Archivstands lokal aus dem Arbeitsbaum geholt (git fetch <arbeitsbaum> +refs/remotes/origin/archiv/r3coscrum:refs/remotes/origin/archiv/r3coscrum), ohne Netz; die Archivpfade der Fälle wählt der Bau aus dem Baum des Archivstands. Grundfall B-001: Grundbaum unverändert, Rückgabewert 0. Je Fall eine Kopie des Grundbaums, die Änderung, git add -A, ein Lauf des Prüfers mit dem Grundbaum als Arbeitsverzeichnis.
+6. Umgebung jedes Laufs: LC_ALL=C, TZ=UTC, HOME und XDG_CONFIG_HOME auf ein leeres Verzeichnis, GIT_CONFIG_NOSYSTEM=1, GIT_CONFIG_GLOBAL=/dev/null, GIT_ALLOW_PROTOCOL=file, feste GIT_AUTHOR_* und GIT_COMMITTER_*; für KC-01 PATH auf einen Werkzeugkasten aus Verknüpfungen ohne das eine Werkzeug, bash über den absoluten Pfad.
+7. Sperre: flock -n auf /tmp/r3cosint-belege-pruefen-selbsttest.lock für die ganze Laufzeit; ist sie besetzt, Rückgabewert 3 vor jeder Handlung (Muster `scripts/dod-gate-selbsttest.sh`, 6.12.25 j).
+8. Kein Schreiben in den Arbeitsbaum: ein eigener Fall vergleicht git status --porcelain --ignored --untracked-files=all des Arbeitsbaums vor und nach dem ganzen Lauf.
+9. Deckung, fail-closed (Abweichung ergibt 2): jede Kennung KB, KC, EB und GB im Kopfkommentar des geprüften Prüfers hat Fälle (KB: mindestens einen mit Soll Fund und einen mit Soll kein Fund; KC, EB, GB: mindestens einen), jeder Fall nennt eine Kennung, die im Kopfkommentar steht; jede Gruppe hat mindestens eine Kennung (eine leer gelesene Liste ist ein Fehlschlag).
+10. Rückgabewert: 0 alle Fälle bestanden und Deckung ohne Abweichung; 2 sonst; 3 Lage C des Prüfmittels (fehlendes bash, git, grep, sed, awk, mktemp, flock, sha256sum oder cmp; Archivstand fehlt im Arbeitsbaum, mit Beschaffungsweg; Sperre besetzt).
+11. Regressionsschutz ausserhalb des Prüfmittels, mit jeder Einsetzung: `scripts/dod-gate-selbsttest.sh` Normalmodus unverändert bestanden. Seine Fälle Z-079/080 (flacher Klon) und Z-199 (Scheinbaum ohne Backlog) rufen den echten Prüfer über das `Makefile` auf, dessen Vorabprüfungen vor dem Prüfer greifen; erwartet wird keine Änderung, belegt wird sie mit dem Lauf.
+
+#### 2b Mutationsmodus (--mutationen) und scripts/belege-pruefen-mutationen.txt
+
+- Zeilenform: Kennung BM-nnn, Tabulator, Klasse, Tabulator, sed-Ausdruck (angewandt mit sed -E auf eine Wegwerfkopie des Prüfers), Tabulator, Mindestsatz (Fallkennungen durch Komma, mindestens eine), Tabulator, Grund. Zeilen mit # am Anfang und Leerzeilen werden übergangen.
+- Ablauf: (1) Grundlinie: alle Fälle gegen eine unveränderte Kopie; fällt einer, endet der Modus mit 2 ohne Mutation. (2) Je Mutation: Kopie, sed; ist die Kopie byte-gleich mit dem Original (cmp) oder verwirft bash -n sie, ist die Mutation wirkungslos. (3) Erkannt ist sie, wenn jeder Fall ihres Mindestsatzes fällt. (4) Schluss: geprüft, erkannt, nicht erkannt, wirkungslos; Rückgabewert 0 nur bei 0 nicht erkannt und 0 wirkungslos.
+- Deckung: jede Klasse KB, KC und EB hat mindestens eine Mutation mit einem Fall dieser Klasse im Mindestsatz (mechanisch geprüft). Grenzen tragen keine Pflichtmutation; ihr Fall misst das benannte Verhalten.
+- Der Umsetzer fährt den Normalmodus und die neuen oder geänderten Mutationen; den ganzen Modus fährt der Dynamic Software Tester einmal je Einheit auf dem Endstand (Weisung vom 2026-10-27).
+
+#### 2c Fremdmutationsrunde (G0.2, Kriterium c)
+
+Der Dynamic Software Tester wählt ohne Kenntnis der Mutationsdatei mindestens sechs Fremdmutationen je Kategorie aus 1f (Änderungen am Prüfer, nicht am Prüfmittel) und fährt je Mutation den Normalmodus gegen die mutierte Kopie. Erkannt: mindestens ein Fall fällt. Nicht erkannt: Er prüft, ob die Mutante einen tatsächlich falschen Verweis mit Rückgabewert 0 durchlässt (falsches Grün, blockierend) oder nur falsch rot ist oder die Meldungsform ändert (nachrangig, Restpunkt). Ein Durchlass, den der unveränderte Prüfer an derselben Eingabe schon zeigt und den eine Grenze GB benennt, ist kein falsches Grün der Mutante (Auslegung zu Kriterium c, ADR 0002, 6.8, Nachtrag vom 2026-10-28).
+
+#### 2d Nachweisverzeichnis
+
+Erzeugerzeilen in `scripts/nachweise-erzeugen.sh` für das Prüfmittel und die Mutationsdatei; die Zeile "Belegpruefer" wird nachgeführt (Prüfungen 6 und 7, Stufe 2, Prüfmittel, weiterhin nicht abgenommen bis zum Merge); `docs/NACHWEISE.md` wird mit der Einheit neu erzeugt (DevOps Engineer, B8).
+
+### Punkt 3 — Prüfungen 6 und 7
+
+Frontmatter (beide Prüfungen, Rohtext, nicht ausgeblendet): liegt vor, wenn Zeile 1 genau aus drei Bindestrichen besteht, und endet an der nächsten Zeile, die genau so lautet; ein Wagenrücklauf am Zeilenende wird übergangen; fehlt die schliessende Zeile, Befund frontmatter (Zeile 1). Gelesen wird mit awk, ein Programm je Datei, Ausgabe "Zeile, Typ, Wert".
+
+Prüfung 6 (Art skill, skill-form):
+- Quelle: jede versionierte Datei .claude/agents/<name>.md (Prüfflächenliste aus P-3).
+- Schlüssel: eine Zeile im Frontmatter, die ohne Einzug mit "skills:" beginnt. Rest leer: Blockliste; Einträge sind die folgenden Zeilen der Form Einzug, Bindestrich, Leerraum, Name; Leerzeilen werden übergangen; die Liste endet an der ersten anderen Zeile. Rest nicht leer (Flussliste, Skalar): skill-form mit dem Rest als Wert. Blockliste ohne Eintrag: skill-form (Wert "leer"). "skills:" ein zweites Mal: skill-form an dessen Zeile.
+- Name: paarige gerade Anführungszeichen und Leerraum am Ende werden entfernt; Muster ^[a-z0-9]+(-[a-z0-9]+)*$, sonst skill-form.
+- Urteil: .claude/skills/<name>/SKILL.md besteht als reguläre Datei im Arbeitsbaum (Existenzregel von Prüfung 4, ohne Verknüpfung nach P-5); sonst skill an der Zeile des Eintrags, Wert der Name.
+- Mehrfachnennungen: dieselbe Skill in mehreren Rollen ist der Normalfall (heute dod-kette-belegen achtmal, einschleusung-pruefen sechsmal, pruefbefund-melden dreimal, in 13 Rollendateien mit skills:); derselbe Name zweimal in einer Liste wird je Eintrag geprüft, ohne eigenen Fund (GB-26); der Schlüssel zweimal ist skill-form. Rollen ohne Frontmatter oder ohne skills: ergeben keinen Fund.
+
+Prüfung 7 (Art skill-anforderung):
+- Quelle: jede versionierte Datei .claude/skills/<name>/SKILL.md mit genau einer Verzeichnisebene (heute drei).
+- Ohne Frontmatter: skill-anforderung an Zeile 1, Wert "fehlt".
+- metadata: eine Zeile "metadata:" ohne Einzug und ohne Wert, ihr Block reicht bis zur ersten nicht leeren Zeile ohne Einzug; fehlt sie, skill-anforderung (Wert "fehlt"); steht sie zweimal, skill-anforderung an der zweiten (Wert "metadata doppelt").
+- anforderung: genau eine eingerückte Zeile "anforderung: <wert>" im Block; fehlt sie, Wert "fehlt"; steht sie zweimal, Befund an der zweiten.
+- Wert: paarige Anführungszeichen und Leerraum am Ende entfernt; muss genau ^R3-[A-Z]-[0-9]{3}$ sein, sonst skill-anforderung mit dem gelesenen Wert; die Kennung muss in der Referenzmenge von Prüfung 3 stehen, sonst skill-anforderung mit der Kennung. Die zusätzliche Meldung von Prüfung 3 an derselben Zeile ist gewollt (GB-25). Heute tragen die drei Skills R3-Q-001, R3-Q-011 und R3-C-007, alle als Überschrift im Backlog.
+- Meldung über melden(), also mit Ausnahmen nach 6.8.5.
+
+### Punkt 4 — Stufe 2 (O-14)
+
+- S-1 Ersatzlos entfallen: die Variable R3COSCRUM_ROOT, der Block mit dem absoluten Pfad, die zweite Abfrage in git_hat_commit, nicht_pruefbar mit Liste, Zählung und Ausgabeabschnitt, die Zeile "Repo B (r3coscrum) mitgelesen". Kein Ersatz durch Umgebungsvariable, Suchpfad oder Konfigurationsdatei (EB-2): eine vom Aufrufer setzbare Angabe bände das Urteil wieder an den Aufrufer.
+- S-2 Archivstand als Konstante im Prüfer: `78bcef984583e665edb28f0f2e7ef8f1da0a87dc`. Der Kopfkommentar nennt die Herkunft (Kopf des Zweigs archiv/r3coscrum seit der Nachführung in Einheit D5) und GB-23. Gewählt ist der feste Commit statt der beweglichen Referenz origin/archiv/r3coscrum: Das Urteil hängt dann nicht davon ab, wohin eine Referenz zeigt, und ein überschriebener Zweig fällt als Lage C auf statt als anderes Ergebnis.
+- S-3 Lage C KC-05: Scheitert git cat-file -e <stand>^{commit}, Rückgabewert 3, Kennung archivstand, "Beschaffen: git fetch origin +refs/heads/archiv/r3coscrum:refs/remotes/origin/archiv/r3coscrum". Die explizite Refspec statt git fetch origin archiv/r3coscrum: Ohne Ziel legt git die Fernreferenz nur an, wenn die konfigurierte Refspec den Zweig abbildet; in einem Klon mit nur einem Zweig bliebe sie aus (im Bau mit einem Lauf zu belegen). Der Starthook `.claude/hooks/session-start-git-historie.sh` holt bei flachem Klon alle Zweige nach refs/remotes/origin/ und damit auch diesen.
+- S-4 Auflösung: Prüfung 2 einmal über git cat-file -e <wert>^{commit} im eigenen Repository. Regel c (erstes Segment methodik, nachweise, sprints) und Regel d mit Präfix r3coscrum/ (abgetrennt): Pfad nach P-5 bereinigt (verlässt er die Wurzel des Archivbaums: Fund pfad), dann git cat-file -t <stand>:<pfad> (blob Datei, tree Verzeichnis, Fehlschlag Fund pfad); Zeilenanhang nur an einem blob, Zeilenzahl über git cat-file blob <stand>:<pfad> mit awk 'END{print NR+0}', an einem tree Fund zeile. Regel d mit Präfix r3cosint/: Rest gegen die eigene Wurzel wie Prüfung 4 und 1.
+- S-5 Veraltung von Ausnahmen mit Werten aus Repo B: über die Benutzung (P-8), keine eigene Regel.
+- S-6 Schlussausgabe: "Repo B (r3coscrum): aufgelöst über den Archivstand <stand> (Zweig archiv/r3coscrum)"; weder Abschnitt noch Zeile "Nicht prüfbar" — jeder Verweis wird beurteilt, oder der Lauf endet in Lage C.
+- S-7 Haltepunkt im Bestandslauf (B7): Der DevOps Engineer erhebt jeden Verweis nach Regel c und d (nach `docs/uebergaben/2026-10-26_d4-ps-4-r3coscrum-eingefaltet.md` heute 86 Pfade) und jede Prüfsumme, die allein über den Archivstand oder gar nicht auflöst, mit ihrem Urteil. Lösen mehr als zehn Verweise nicht auf, Vorlage an den Software Architect statt Ausnahmen: Dann ist zu entscheiden, ob gegen den Stand oder gegen den Verlauf des Zweigs aufgelöst wird.
+
+### Punkt 5 — Vorabmessung der Scharfschaltung (G0.2, M1)
+
+- Wer: Dynamic Software Tester, auf einem anderen Modell als die Umsetzung. Wann: auf dem Endstand von G0.1, vor der statischen Prüfung von G0.2 oder neben ihr.
+- Wie: Wegwerf-Klon des Endstands mit vollständiger Historie; die Objekte des Archivstands lokal geholt (git fetch <arbeitsbaum> +refs/remotes/origin/archiv/r3coscrum:refs/remotes/origin/archiv/r3coscrum). V-0 ohne backend/ und deploy/: Rückgabewert 0, sonst Abbruch der Messung. V-1a mit leerem Verzeichnis backend/ (Stand von G1). V-1b mit leeren Verzeichnissen backend/ und deploy/ (Stand von G2). Je Messung die vollständige Fundliste; Funde unter frontend/ werden nicht gemessen (5.6, nicht Teil des Grundgerüsts).
+- Erwartet und bekannt: backend/src/r3cosint_api/ in ADR 0002, deploy/images/Dockerfile in `docs/uebergaben/2026-08-30_makefile-dod-abbruch-nach-3-4.md`.
+- Einordnung je Fund: (E1) entsteht mit G1 beziehungsweise G2 — nur, wenn der Pfad in der Ergebnisliste der Einheit in `docs/12_Freigabe_Grundgeruest.md`, Abschnitt 4 steht, sonst wird er am Ende der Einheit ein Fund; (E2) ortsgebundene Ausnahme, deren Grund die Tatsache nennt (etwa: entsteht mit Etappe 1, für backend/migrationen/; entsteht mit dem ersten Test, für backend/tests/integration/ und backend/tests/abnahme/), angelegt im selben Arbeitsstand wie die erste Datei unter backend/ (G1, Punkt 8) beziehungsweise deploy/ (G2, Punkt 5) und nicht früher, weil sie davor nach P-8 veraltet wäre; (E3) Textkorrektur in einem geltenden Text durch dessen Rolle, in G1 beziehungsweise G2.
+- Ergebnis: Tabelle in dieser Übergabe, Abschnitt G0, mit Datum, Commit des Endstands, Rolle, je Fund Datei, Zeile, Wert, Einordnung und Einheit; G1 und G2 übernehmen sie als Auftragsgrundlage. Die Messung aus `docs/uebergaben/2026-09-01_belegpruefer-abbruch-nach-3-4.md` (46 Funde, Fremdbeleg) ist damit abgelöst.
+
+### Punkt 6 — O-18
+
+Der Termin von O-18 lautet neu "mit einem maschinenlesbaren Statusfeld im Backlog" (mitentschieden mit der Freigabe des Grundgerüsts); eingetragen in ADR 0002, Abschnitt 8, Zeile O-18, und in ADR 0003, Teil A, Tabelle "Offene Punkte", mit Nachtrag in Teil B. GB-20 ist der Fall, der die Grenze misst; der Static Software Tester bestätigt in G0.2, dass Kopfkommentar und Fall dieselbe Grenze nennen (O-18 mit dem Static Software Tester, `docs/12_Freigabe_Grundgeruest.md`, Abschnitt 4, G0, Festlegung 5).
+
+### Punkt 7 — Abnahmekriterium und Messung
+
+- Massstab: `docs/12_Freigabe_Grundgeruest.md`, Abschnitt 4, G0, Abnahmekriterium (a) bis (d), unverändert. (a) Normalmodus und --mutationen je Rückgabewert 0 — alle Fälle bestanden, alle Mutationen erkannt, keine wirkungslos; (b) jede Fehlerklasse beide Fallarten, jede benannte Grenze ihr Fall (Static Software Tester, gestützt auf die mechanische Deckung aus 2a, Punkt 9); (c) Fremdmutationsrunde nach 2c, mindestens 24 Fremdmutationen; (d) make dod am Endstand mit D20 in Lage A bestanden, in einem flachen Klon Lage C mit FEHLT=git-historie, der Prüfer liest keinen Ort ausserhalb des Repositories.
+- Messung von (d), Teil "der Prüfer liest keinen Ort ausserhalb des Repositories": EB-2 (statisch) und KB-12 (Verhalten), dazu, wo verfügbar, eine Spur der Dateizugriffe eines Laufs über den Endstand: kein Zugriff auf einen Pfad ausserhalb des Klons ausser git-, System- und Werkzeugdateien.
+- Wer: Static und Dynamic Software Tester auf einem anderen Modell als die Umsetzung (3.4). Ändert eine Behebung den Prüfer, wiederholt der Dynamic Software Tester (a) und (d) auf dem neuen Endstand.
+- Falsches Grün aus (c): behoben mit Fall und Mutation (DevOps Engineer), statisch nachgeprüft, gezielt wiederholt; eine zweite Runde gibt es nicht; was bleibt, ist benannte Grenze und Restlücke in Kopfkommentar und Übergabe. Ein falsches Grün am unveränderten Prüfer, das in G0.2 bekannt wird, gehört nicht zu (c), ist aber Befund: Behebung oder Grenze nach Einordnung durch den Software Architect vor der Vorlage.
+- Register: Jedes falsche Grün meldet die Prüfrolle dem Vulnerability Manager; er entscheidet über den Eintrag im Schwachstellenregister.
+- Der Satz der Schlussausgabe, die Liste der Grenzen sei unvollständig, bleibt als Selbstauskunft und ist nicht das Kriterium (`docs/12_Freigabe_Grundgeruest.md`, Abschnitt 4, G0, Festlegung 6).
+
+### Punkt 8 — Kopfkommentar und Schlussausgabe
+
+- Der Block "NICHT ABGENOMMEN (Stand 2026-09-01)" bleibt bis zum Merge im Wortlaut stehen. Darunter in G0.1 ein Block "Stand 2026-10-28 (G0.1)": was sich mit G0 geändert hat (P-1 bis P-10, Stufe 2, Prüfungen 6 und 7), Prüfmittel und Mutationsdatei, Festlegung in ADR 0002, 6.8, Nachtrag vom 2026-10-28. Am Ende von G0.2 der Vermerk "Abnahme vorgelegt am <Datum>": Normalmodus n von n, Mutationsmodus m von m, Ergebnis der Fremdmutationsrunde, Fundort in der Übergabe. Die Folgeeinheit nach dem Merge ersetzt den Block "NICHT ABGENOMMEN (Stand 2026-09-01)" und den Vermerk "Abnahme vorgelegt" durch den Abnahmevermerk "Abgenommen am <Datum> durch den Merge des Pull Requests #nn" mit Merge-Commit; der Block "Stand 2026-10-28 (G0.1)" bleibt als Stand stehen; der Wortlaut davor bleibt in git.
+- Abschnitte nach dem Stand: Zweck und Grenze (unverändert im Kern); Prüffläche (P-3, Verknüpfungen nach P-5); Archivstand (ersetzt "ZWEITER ARBEITSBAUM"); Codeblöcke (P-4); die sieben Prüfungen mit Regeln a bis d (P-5, P-6, Stufe 2, Punkt 3); Ausnahmeliste (P-7, P-8, Rangfolge); Lage C (Reihenfolge, Kennungen, Beschaffungswege); Rückgabewert; Werkzeuge (geschlossene Liste gleich dem Code); Grenzen GB-01 bis GB-26. Jede Klasse und jede Grenze steht mit ihrer Kennung im Kopfkommentar, damit die Deckung aus 2a, Punkt 9 sie lesen kann. Der Abschnitt "NICHT UMGESETZT" entfällt.
+- Schlussausgabe: die Zeile "NICHT eingebaut: Prüfung 6 ..., Prüfung 7 ..." entfällt; Zeile zu Repo B nach S-6; "Nicht prüfbar" entfällt; die Aufzählung der Grenzen nennt die Kennungen GB-01 bis GB-26 mit Verweis auf den Kopfkommentar; der Absatz "ACHTUNG: Diese Liste der Grenzen ist NICHT vollstaendig ..." bleibt.
+
+### Punkt 9 — Schnitt und Bauschritte
+
+Entscheid: zwei Einheiten, G0.1 (Bau) und G0.2 (Messung und Abnahme). Gründe: (1) Die Schätzung der Vorlage (1 bis 2 Sitzungen) passt nicht sicher in eine Sitzung (3.3). (2) Jede Einheit hat ein eigenes, prüfbares Ende — G0.1 mit bestandenem Normal- und Mutationsmodus und D20 in Lage A über den Bestand, G0.2 mit dem gemessenen Kriterium —, so bleibt ein committbarer Stand, falls G0.2 nach 3.4 abbricht. (3) Der Mutationsmodus gehört in G0.1 (vom Koordinator am 2026-10-28 angenommen): Er ist Code des Prüfmittels und zeigt dem Bau, welcher Zweig von keinem Fall gehalten wird, bevor die Fremdmutationsrunde es zeigt; so wurde auch das Prüfmittel der Gates gebaut (ADR 0004, 6.13 g, E4.1). G0.2 baut nur noch Behebungen. Pull Request und Merge nach Entscheid 5 (Tabelle "Nachzuführen").
+
+G0.1 — Bau (DevOps Engineer), Soll zuerst:
+
+| Schritt | Inhalt | Ende |
+|---|---|---|
+| B0 | Erfassung: Prüfer, Ausnahmeliste, diese Festlegung; Lauf des heutigen Prüfers in einem Wegwerf-Klon des Bestands | Rückgabewert und Fundzahl festgehalten |
+| B1 | Prüfmittel nach 2a: Grundbaum, Läufer, Vergleich als Menge, Sperre, Umgebung, Kopfzeile, Parameter --pruefer; Liste der Kennungen aus Punkt 1; alle Fälle mit Soll | Lauf gegen den heutigen Prüfer: es fallen genau die Fälle von P-1 bis P-10, Stufe 2 und Punkt 3 (Liste in der Übergabe). Fällt ein anderer Fall: Haltepunkt H0, Meldung an den Software Architect, keine stille Anpassung |
+| B2 | P-1 bis P-10 an einer Arbeitskopie des Prüfers ausserhalb des Arbeitsbaums | ihre Fälle bestehen, kein anderer fällt |
+| B3 | Stufe 2 an der Arbeitskopie | dasselbe |
+| B4 | Prüfungen 6 und 7 an der Arbeitskopie | dasselbe |
+| B5 | Kopfkommentar und Schlussausgabe der Arbeitskopie nach Punkt 8 | Normalmodus 0 mit Deckung in beide Richtungen |
+| B6 | Mutationsdatei und Modus nach 2b | 0 nicht erkannt, 0 wirkungslos |
+| B7 | Bestandslauf (Haltepunkt H1): Arbeitskopie über einen Wegwerf-Klon des Bestands; jeder Fund, den der heutige Prüfer nicht hat, mit Datei, Zeile, Art, Wert; dazu S-7 | Liste an den Koordinator; Einordnung je Fund durch die Rolle des Dokuments (6.8.5): Textkorrektur, vor der Einsetzung und unter dem heutigen Prüfer unschädlich, oder ortsgebundene Ausnahme mit Grund |
+| B8 | Einsetzung in einem Lauf ohne Zwischenende einer anderen Rolle (Vorlage, Abschnitt 4, Einleitung): Arbeitskopie nach `scripts/belege-pruefen.sh`, die Ausnahmen aus B7, Erzeugerzeilen, Nachweisverzeichnis; danach, durch den Software Architect, Zeile D20 der Objekttabelle in ADR 0002, Abschnitt 6 und Kriterium D20 in `docs/06_Definition_of_Ready_und_Done.md` | make dod mit D20 in Lage A bestanden; `scripts/dod-gate-selbsttest.sh` Normalmodus unverändert; beide Modi gegen den eingesetzten Prüfer 0. Gelingt das nicht im selben Lauf: zurück auf den heutigen Prüfer, kein halber Stand |
+| B9 | Verifikation G0.1: Static Software Tester (ganzer Diff, Kopfkommentar gegen Code und Fallliste, Werkzeugliste, Ausnahmen aus B7, Zeile D20 in `docs/06_Definition_of_Ready_und_Done.md`), Dynamic Software Tester (beide Modi auf dem Endstand, make dod, Zeile D20 in `docs/06_Definition_of_Ready_und_Done.md`) | Befunde eingeordnet; Übergabe, Abschnitt G0.1 |
+
+Grund für die Arbeitskopie: Bis zur Einsetzung beurteilt das DoD-Gate bei jedem Ende einer Rolle den Arbeitsbaum mit dem dort liegenden Prüfer; ein halb eingeordneter neuer Prüfer im Arbeitsbaum sperrte denselben Zwischenstand mehrfach und zählte ihn als wiederholtes Scheitern (3.4). Das Prüfmittel selbst darf während des Baus im Arbeitsbaum liegen, es ist kein Kettenschritt.
+
+G0.2 — Messung und Abnahme:
+
+| Schritt | Inhalt | Rolle |
+|---|---|---|
+| M1 | Vorabmessung nach Punkt 5 | Dynamic Software Tester |
+| M2 | Kriterium (b), ganzer Diff von G0, dazu die Zeile D20 in `docs/06_Definition_of_Ready_und_Done.md` | Static Software Tester, mit dem Dynamic Software Tester für die Zeile D20 |
+| M3 | Kriterien (a) und (d) auf dem Endstand | Dynamic Software Tester |
+| M4 | Kriterium (c), blind | Dynamic Software Tester |
+| M5 | Behebung je falschem Grün mit Fall und Mutation; Nachprüfung; gezielte Wiederholung; Meldung an den Vulnerability Manager | DevOps Engineer; Static und Dynamic Software Tester; Vulnerability Manager |
+| M6 | Vermerk "Abnahme vorgelegt" im Kopfkommentar; Nachführungen (unten); Übergabe; Pull Request (Merge = Abnahme von G0) | DevOps Engineer; Rollen nach Punkt 10; Koordinator |
+
+### Punkt 10 — Rollen
+
+| Rolle | G0.1 | G0.2 |
+|---|---|---|
+| DevOps Engineer | B0 bis B8; Erzeugerzeilen | Behebungen; Vermerk "Abnahme vorgelegt" |
+| Static Software Tester (anderes Modell) | B9: ganzer Diff, Kopfkommentar gegen Code und Fallliste, Werkzeugliste in beide Richtungen, Reihenfolge der Lage C, Ausnahmen aus B7, Zeile D20 in `docs/06_Definition_of_Ready_und_Done.md` | M2 (Kriterium b, Zeile D20 in `docs/06_Definition_of_Ready_und_Done.md`); Nachprüfung jeder Behebung; O-18 mit dem Software Architect (GB-20) |
+| Dynamic Software Tester (anderes Modell) | B9: Normal- und Mutationsmodus auf dem Endstand, make dod, Regressionslauf von `scripts/dod-gate-selbsttest.sh`, Zeile D20 in `docs/06_Definition_of_Ready_und_Done.md` | M1, M3, M4; Zeile D20 in `docs/06_Definition_of_Ready_und_Done.md` (M2); gezielte Wiederholung |
+| Vulnerability Manager | bei Befund | Einordnung jedes falschen Grüns im Schwachstellenregister |
+| Protocol Master | — | Verfolgbarkeit über den Archivstand (O-14): am Endstand ist jeder Verweis auf Repo B aufgelöst oder ortsgebunden ausgenommen (Liste aus dem Lauf); Eintrag der Abnahme in der Folgeeinheit |
+| Product Owner | — | Backlog, Punkt 27 (Stand von G0) mit Zeile in den Nachführungen |
+| Requirements Engineer | — | Begriff "Grundgerüst" im Glossar (`docs/12_Freigabe_Grundgeruest.md`, Abschnitt 4, G0, Rollen) |
+| Software Architect | diese Festlegung; H0; Einordnung der B7-Funde in ADR-Texten; Zeile D20 der Objekttabelle und Kriterium D20 in `docs/06_Definition_of_Ready_und_Done.md` (B8, Entscheid 2) | Einordnung eines falschen Grüns am unveränderten Prüfer; O-15 in ADR 0002, Abschnitt 8, nach dem Merge |
+| Rolle des jeweiligen Dokuments | B7: Grund oder Textkorrektur (6.8.5) | — |
+| Koordinator | H0, H1, Übergabe | Übergabe; Pull Request mit der Anregung zum Schutz des Zweigs archiv/r3coscrum (Entscheid 4); Meldung an den Auftraggeber je Pull Request (Entscheid 5) |
+
+### Nachzuführen (wer, wann)
+
+| Gegenstand | Wer | Wann |
+|---|---|---|
+| ADR 0002, 6.8: Nachtrag vom 2026-10-28; Tabelle "Fortschreibungen": Zeile | Software Architect | erster Commit von G0 (Festlegung) |
+| ADR 0002, Abschnitt 8, Zeilen O-14 und O-18; ADR 0003, Teil A (Zeile O-18) mit Nachtrag in Teil B | Software Architect | erster Commit von G0, zusammen mit dem Nachtrag in 6.8 (Entscheid 1 des Koordinators vom 2026-10-28) |
+| ADR 0002, Abschnitt 6, Objekttabelle, Zeile D20, Spalte Prüfmittel: Archivstand, Teilklon, geschlossene Werkzeugliste statt der Aufzählung bash, git, grep, sed, awk | Software Architect | mit der Einsetzung (B8) |
+| Entscheid 2: `docs/06_Definition_of_Ready_und_Done.md`, Kriterium D20 (die sieben Prüfmittel um Archivstand und Teilklon, die Selbstprüfungen der Ausnahmeliste nach P-8), weil das Kriterium nach eigener Aussage aus 6.8.1 bis 6.8.5 schöpft | Software Architect; geprüft von Static und Dynamic Software Tester (dort für Done verantwortlich) in B9 und M2 | mit der Einsetzung (B8) |
+| Entscheid 3: Archivstand fest auf `78bcef984583e665edb28f0f2e7ef8f1da0a87dc`; archiv/r3coscrum wird nach dem Ende der Frist E-PS-5 nicht mehr nachgeführt, die Löschung von r3coscrum beim Auftraggeber berührt den Zweig in r3cosint nicht; jede spätere Nachführung ist eine Änderung am Prüfer mit Fall (GB-23) | Koordinator (Entscheid vom 2026-10-28 auf die Weisungen vom 2026-10-22); bei einer Änderung Software Architect und DevOps Engineer | dauerhaft |
+| Entscheid 4: Anregung an den Auftraggeber, den Zweig archiv/r3coscrum gegen Löschen und Überschreiben zu schützen; im Text des Pull Requests und in dieser Übergabe, nicht als Festlegung im ADR | Koordinator | mit dem Pull Request dieser Einheit |
+| Entscheid 5: G0.1 und G0.2 in dieser Sitzung mit einem Pull Request am Ende (Merge = Abnahme von G0 und Bestätigung des Eintrags der Freigabe, D8); fällt G0.2 nach 3.4, Pull Request nach G0.1 (Merge = Annahme des Baus, nicht Abnahme) | Koordinator; Kontingent beim Auftraggeber | Ende der Sitzung |
+| ADR 0002, Abschnitt 8, O-15; ADR 0003, Teil A (Grenze 8, Restpunkt 3, O-15); `CLAUDE.md` (Gate-Tabelle); Kommentar des Ziels belege im `Makefile`; Zeile "Belegpruefer" in `scripts/nachweise-erzeugen.sh`; Kopfkommentar | Software Architect, Koordinator, DevOps Engineer | Folgeeinheit nach dem Merge von G0 |
+| Festlegung für G4: Der Lauf auf der Gegenseite holt die vollständige Historie und den Archivstand, sonst endet D20 dort in Lage C | Software Architect | mit dem Schnitt von G4 |
