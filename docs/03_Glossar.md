@@ -5,7 +5,7 @@
 | **Arbeitsprodukt nach** | Projektauftrag 6.3 |
 | **Verantwortlich** | Requirements Engineer; ein benannter Verantwortlicher ist noch zu bestimmen |
 | **Lebensdauer** | langlebig |
-| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19. Nachgeführt 2026-09-21 mit dem Backlog-Eintrag R3-Q-010: Gate und Hook aufgenommen, beim Eintrag Freigabe-Gate die Homonym-Warnung um die Abgrenzung zum Gate ergänzt — beide Begriffe werden in Arbeitsprodukten und Regeln seit dem 2026-08-19 verwendet, standen aber nicht im Glossar, und "Gate" bezeichnete darin zwei verschiedene Sachen (R3 der Definition of Ready, Homonyme vermeiden). Nachgeführt 2026-09-23 mit dem Backlog-Eintrag R3-Q-011: Einschleusung, Fremder Inhalt und Harness aufgenommen — alle drei Begriffe tragen den Eintrag; "fremde Inhalte" wurde bisher für den Harness (CLAUDE.md, Abschnitt "Nicht verhandelbar") und für das Produkt (R3-F-017) ohne Abgrenzung gebraucht, und "Harness" selbst stand trotz Verwendung im Projektauftrag (5.15) und in CLAUDE.md nicht im Glossar (R3 der Definition of Ready) |
+| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19. Nachgeführt 2026-09-21 mit dem Backlog-Eintrag R3-Q-010: Gate und Hook aufgenommen, beim Eintrag Freigabe-Gate die Homonym-Warnung um die Abgrenzung zum Gate ergänzt — beide Begriffe werden in Arbeitsprodukten und Regeln seit dem 2026-08-19 verwendet, standen aber nicht im Glossar, und "Gate" bezeichnete darin zwei verschiedene Sachen (R3 der Definition of Ready, Homonyme vermeiden). Nachgeführt 2026-09-23 mit dem Backlog-Eintrag R3-Q-011: Einschleusung, Fremder Inhalt und Harness aufgenommen — alle drei Begriffe tragen den Eintrag; "fremde Inhalte" wurde bisher für den Harness (CLAUDE.md, Abschnitt "Nicht verhandelbar") und für das Produkt (R3-F-017) ohne Abgrenzung gebraucht, und "Harness" selbst stand trotz Verwendung im Projektauftrag (5.15) und in CLAUDE.md nicht im Glossar (R3 der Definition of Ready). Nachgeführt 2026-10-28 mit der Einheit G0: Grundgerüst aufgenommen — der Begriff wird im Projektauftrag (3.1), im Architekturentscheid und in der Freigabe des Grundgerüsts verwendet, stand aber nicht im Glossar; `docs/12_Freigabe_Grundgeruest.md` führt die Aufnahme in Abschnitt 1 als Restpunkt und weist sie in Abschnitt 4 (G0, Rollen) dem Requirements Engineer zu (R3 der Definition of Ready) |
 
 **Die Verwendung dieses Glossars ist für alle Arbeitsprodukte und für die
 Oberflächentexte verpflichtend** (6.3). Synonyme sind gekennzeichnet, Homonyme
@@ -179,6 +179,37 @@ Synonym für:* Freigabe.
 **Grabstein-Eintrag** — Was nach einer Löschung bleibt: Fallnummer,
 Löschzeitpunkt, freigebende Person, Rechtsgrundlage, Prüfsumme. Kein Inhalt.
 Hält die Protokollkette lückenlos (4.4).
+
+**Grundgerüst** — Der lauffähige, aber fachlogikfreie Stand nach ADR 0002,
+Abschnitt 5, den Projektauftrag 3.1 für den allerersten Durchlauf verlangt:
+"Architekturentscheid und Grundgerüst werden vorgelegt und freigegeben, bevor
+Fachlogik entsteht." Dazu gehören vor allem das Python-Projekt backend/ mit
+Sperrdatei, Importverträgen und den Paketen des Modulschnitts, deploy/ mit den
+getrennten Stapeln für Test/Schulung und Produktion, die Skripte der
+Definition-of-Done-Kette für D7, D10 und D12, der Belegprüfer D20 als
+abgenommenes Prüfmittel und ein Arbeitsablauf, der die Kette in einer Umgebung
+ausführt, die der Aufrufer nicht setzt; fachlogikfrei heisst, dass kein Paket
+des Modulschnitts Code ausser seiner Modulbeschreibung enthält, einzige
+Ausnahme ist `api` mit der ASGI-Anwendung ohne Route. Gebaut wird in den
+Einheiten G0 bis G4, Reihenfolge G0, G1, G3, G2, G4, nach der Freigabe des
+Grundgerüsts durch den Auftraggeber am 2026-10-28 (Merge des Pull Requests #38);
+jede Einheit wird durch den Merge ihres Pull Requests abgenommen. Diese
+Freigabe eröffnet den Bau und ersetzt keine Abnahme: Vorgelegt und freigegeben
+im Sinne von Projektauftrag 3.1 ist das Grundgerüst erst mit der Abnahme von
+G4, der letzten Einheit der Reihenfolge (`docs/12_Freigabe_Grundgeruest.md`,
+Abschnitte 1, 3 und 4). Das Grundgerüst ist nicht Etappe 1 und enthält keine
+Fachlogik; backend/migrationen/ entsteht erst mit der ersten Tabelle in
+Etappe 1, und das Grundgerüst berührt Backlog-Einträge, erfüllt aber keinen
+(`docs/12_Freigabe_Grundgeruest.md`, Abschnitte 3 und 4). Auch frontend/
+gehört nicht dazu: Vor der schriftlichen Prototyp-Freigabe entsteht kein
+Frontend-Produktionscode (Projektauftrag 5.6). *Abzugrenzen von:* Prototyp
+(siehe dort) — der Prototyp ist ein Wegwerf-Prototyp der Oberfläche mit
+synthetischen Daten, getrennt vom Produktionscode, und sein Code wird nach
+seiner Freigabe nicht weiterverwendet (Projektauftrag 5.6); das Grundgerüst
+enthält keine Oberfläche und ist der Rahmen im Ziel-Stack, in dem ab Etappe 1
+die Fachlogik entsteht. *Homonym-Warnung:* Die Freigabe des Grundgerüsts ist
+ein Prüfpunkt im Projektablauf (siehe Freigabe-Gate), weder die Freigabe
+einer Abfrage noch die Prototyp-Freigabe.
 
 ## H
 
