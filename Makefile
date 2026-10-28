@@ -684,6 +684,11 @@ endef
 # menschlichen Review. Das Werkzeug ist nach Eskalationsregel 3.4 abgebrochen
 # und NICHT abgenommen (O-15); seine Selbstauskunft erklaert die Liste ihrer
 # eigenen Grenzen ausdruecklich fuer unvollstaendig.
+# Nachtrag 2026-10-28: Abgenommen durch den Merge des Pull Requests #39
+# (Merge-Commit ba55b2dfdf0fd591f8649b56761766324b5c7b12; Einheit G0; O-15
+# erledigt), Abnahmekriterium docs/12_Freigabe_Grundgeruest.md, Abschnitt 4,
+# Pruefmittel scripts/belege-pruefen-selbsttest.sh; der Satz zur
+# unvollstaendigen Liste der Grenzen bleibt Selbstauskunft, nicht Kriterium.
 belege:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D20 belege] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
