@@ -5,8 +5,8 @@
 | **Arbeitsprodukt nach** | Projektauftrag 3.1 ("Architekturentscheid und Grundgerüst werden vorgelegt und freigegeben, bevor Fachlogik entsteht"), 3.3 (Umfang benennen, zerlegen, Zerlegung vorlegen), 6.6; ADR 0002, Abschnitte 5 und 9; CLAUDE.md, Lieferreihenfolge, Schritt 5 |
 | **Entscheidet** | Auftraggeber (S-01) |
 | **Vorbereitet** | 2026-10-27, Einheit FG: Koordinator (Abschnitte 1, 2, 5, 6, 7), Software Architect (Abschnitte 3 und 4; Festlegungen nach ADR 0002); statisch geprüft durch den Static Software Tester (Abschnitte des Koordinators; model-Feld verschieden von Protocol Master, Product Owner und DevOps Engineer) und für die Abschnitte 3 und 4 durch einen zweiten Static Software Tester, nach Angabe des Koordinators mit einem vom Software Architect abweichenden Modell gestartet (3.4) |
-| **Weisung** | 2026-10-27, zweiter Formweg, Wortlaut: "Ich habe #37 gemergt, mach weiter mit der Freigabe des Grundgerüsts" |
-| **Status** | **vorgelegt** — Entscheid des Auftraggebers offen; Formweg in Abschnitt 6 |
+| **Weisung** | 2026-10-27, zweiter Formweg, Wortlaut: "Ich habe #37 gemergt, mach weiter mit der Freigabe des Grundgerüsts"; danach, als Weisung nach der Freigabe, 2026-10-28, zweiter Formweg, Wortlaut (drei Absätze, hier durch " / " getrennt): "Also ich gebe das Go! / Wichtig ist, dass man vielleicht alles das macht, was man ohne den Docker-Daemon machen kann und sonst auch alles, was nicht von meiner Seite gerade abhängig ist. Sobald es aber so weit sein sollte, dann mir Bescheid geben und ich bereite dann natürlich die Umgebung vor, damit wirklich alles korrekt und sauber läuft. / Passt das?" |
+| **Status** | **freigegeben am 2026-10-28** — Merge des Pull Requests #38 (Merge-Commit `a271485bf422fc70aeb20eb2dae847866d1c9a1b`), Erklärung in Abschnitt 6 |
 
 ## 1. Was diese Freigabe ist
 
@@ -223,11 +223,11 @@ Fünf Einheiten, G0 bis G4; die Kennungen sind Kennungen, keine Reihenfolge, die
 
 ## 6. Freigabeerklärung
 
-*Nicht ausgefüllt. Die Freigabe wird mit dem Merge des Pull Requests der Einheit FG erteilt (erster Formweg; der Protocol Master trägt Merge-Commit, Zeitpunkt und den Wortlaut des Pull Requests in der Folgeeinheit hier und in ADR 0002, Abschnitt 10 ein) oder auf Anweisung an die Sitzung im exakten Wortlaut hierher übertragen (zweiter Formweg).*
+*Ausgefüllt am 2026-10-28 durch den Protocol Master im Auftrag des Koordinators nach dem Merge des Pull Requests #38 (erster Formweg; Protokollvermerk unten). Der Stand davor (Einheit FG, "Nicht ausgefüllt") liegt in git im Stand des Pull Requests #38 (Kopf `f3a101a64035b3be295723328a05235b97cb04ee`).*
 
 ### Entscheid (E-G-01)
 
-- [ ] **Freigegeben.** Der Bau des Grundgerüsts nach den Abschnitten 3 und 4 darf beginnen; die erste Einheit startet auf Weisung.
+- [x] **Freigegeben.** Der Bau des Grundgerüsts nach den Abschnitten 3 und 4 darf beginnen; die erste Einheit startet auf Weisung.
 - [ ] **Freigegeben mit Auflagen.** Der Bau darf beginnen; die Auflagen unten werden vor oder mit der genannten Einheit umgesetzt und als Fortschreibung von ADR 0002 geführt.
 - [ ] **Zurückgewiesen.** Nachbesserung gemäss Auflagen, danach erneute Vorlage.
 
@@ -235,26 +235,28 @@ Fünf Einheiten, G0 bis G4; die Kennungen sind Kennungen, keine Reihenfolge, die
 
 | Nr. | Auflage | Frist oder Bedingung |
 |---|---|---|
-| — | — | — |
+| — | Keine Auflagen. | — |
 
 ### Entscheide am Gate
 
 | Punkt | Entscheid |
 |---|---|
-| E-G-02 — O-15, Termin und Abnahmekriterium | — |
-| E-G-03 — R3-Q-005, Einordnung | — |
-| E-G-04 — Schwellen D3, D6, D8 | — |
-| E-G-05 — Terminierung von `Skill` | — |
-| E-G-06 — Arbeitsumgebung für G2 | — |
+| E-G-02 — O-15, Termin und Abnahmekriterium | (a) Der Termin von O-15 wird von "vor der Freigabe des Grundgerüsts" auf "vor G1" fortgeschrieben; die Abnahme des Belegprüfers D20 läuft als Einheit G0 nach dem Abnahmekriterium in Abschnitt 4 — mit dem Merge ohne Kommentar nach Abschnitt 1, Festlegung 2 |
+| E-G-03 — R3-Q-005, Einordnung | (a) Nach der letzten Einheit des Grundgerüsts, vor der ersten Einheit mit Fachlogik — mit dem Merge ohne Kommentar nach Abschnitt 1, Festlegung 2 |
+| E-G-04 — Schwellen D3, D6, D8 | (a) D6 wie in ADR 0002, Abschnitt 6 bestätigt; die offenen Schwellen von D3 und D8 allein für die Oberflächen-Anteile, offen bis frontend/package.json besteht; im Backend-Anteil Regelauswahl von ruff (darin O-21) und Umgang mit pip-audit-Funden in G1 durch Software Architect und SecDevOps Engineer (kein Ausschluss ohne Eintrag im Schwachstellenregister), Entscheid durch den Merge von G1 — mit dem Merge ohne Kommentar nach Abschnitt 1, Festlegung 2 |
+| E-G-05 — Terminierung von `Skill` | (a) Eigene kleine Einheit nach der letzten Einheit des Grundgerüsts, vor der ersten Einheit mit Fachlogik, als Fortschreibung von ADR 0001 — mit dem Merge ohne Kommentar nach Abschnitt 1, Festlegung 2 |
+| E-G-06 — Arbeitsumgebung für G2 | (a) Der Auftraggeber stellt vor G2 eine Arbeitsumgebung mit erreichbarem Docker-Daemon bereit — mit dem Merge ohne Kommentar nach Abschnitt 1, Festlegung 2 |
 
 ### Erklärung
 
-> Ich habe die Vorlage `docs/12_Freigabe_Grundgeruest.md` im Stand des Pull Requests der Einheit FG geprüft.
+> Ich habe die Vorlage `docs/12_Freigabe_Grundgeruest.md` im Stand des Pull Requests der Einheit FG (Pull Request #38, Kopf `f3a101a64035b3be295723328a05235b97cb04ee`) geprüft.
 > Der Entscheid oben gilt.
 
 | | |
 |---|---|
-| **Auftraggeber (S-01)** | — (Name nach offenem Entscheid E-11 nicht im Repository geführt; Beleg ist der Merge-Commit) |
+| **Auftraggeber (S-01)** | Freigabe erteilt am 2026-10-28 durch den Merge des Pull Requests #38 (Merge-Commit `a271485bf422fc70aeb20eb2dae847866d1c9a1b`), ohne Kommentar; danach Weisung vom 2026-10-28 im Wortlaut (drei Absätze, hier durch " / " getrennt): "Also ich gebe das Go! / Wichtig ist, dass man vielleicht alles das macht, was man ohne den Docker-Daemon machen kann und sonst auch alles, was nicht von meiner Seite gerade abhängig ist. Sobald es aber so weit sein sollte, dann mir Bescheid geben und ich bereite dann natürlich die Umgebung vor, damit wirklich alles korrekt und sauber läuft. / Passt das?"; Name nach offenem Entscheid E-11 nicht im Repository geführt |
+
+**Protokollvermerk zur Form:** Die Freigabe wurde am 2026-10-28 um 05:01:55 UTC durch den Merge des Pull Requests #38 erteilt — der erste der beiden unter "Formweg" beschriebenen Wege; sein Text sagt, dass der Merge die Freigabe des Grundgerüsts nach dieser Vorlage bedeutet, mit den Empfehlungen je Entscheidpunkt, sofern kein Kommentar und keine Weisung anderes sagt; weder ein Kommentar (0 Kommentare, 0 Reviews) noch eine Weisung mit abweichendem Entscheid lag vor dem Merge vor (Angabe des Koordinators). Dieser Abschnitt wurde daraufhin am 2026-10-28 vom Protocol Master im Auftrag des Koordinators übertragen (nach Abschnitt 1, Festlegung 2 trägt die Folgeeinheit den Entscheid ein; entschieden hat der Auftraggeber mit dem Merge); Urheber und Zeitpunkt der Freigabe belegt der Merge-Commit `a271485bf422fc70aeb20eb2dae847866d1c9a1b`, den Eintrag selbst die Commit-Historie des Arbeitszweigs. Der Wortlaut der Erklärung oben ist der in der Vorlage vorformulierte, nur im Stand präzisiert; der Auftraggeber hat ihn nicht selbst geschrieben, sein Wortlaut sind die beiden Weisungen im Kopf. Die Weisung vom 2026-10-28 kam nach der Freigabe und ist kein Entscheid am Gate. Die Namen bleiben gemäss offenem Entscheid E-11 ausserhalb des öffentlichen Repositories; die Zuordnung folgt der Stakeholderliste (S-01). Die Angaben zum Merge sind der Erhebung des Koordinators vom 2026-10-28 entnommen (GitHub-API und git), der Wortlaut der Weisung seiner Angabe — Fremdbeleg, von dieser Rolle nicht nachgemessen. Einzelheiten: ADR 0002, Abschnitt 10, Unterabschnitt "Freigabe des Grundgerüsts — Merge des Pull Requests #38 — erteilt am 2026-10-28, eingetragen am 2026-10-28".
 
 ### Formweg
 
