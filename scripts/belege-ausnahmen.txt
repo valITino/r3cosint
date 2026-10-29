@@ -26,6 +26,7 @@
 .claude/rules/dokumentation.md|docs/adr/NNNN-titel.md	Namensschablone, kein Verweis auf eine bestimmte Datei. NNNN steht fuer die Nummer des jeweiligen ADR.
 docs/00_Projektauftrag.md|./.claude/CLAUDE.md	Zitat aus dem Originalauftrag. Der Projektauftrag fuehrt die Stelle an, um die dortige Annahme als falsch zu kennzeichnen; die Datei soll gerade nicht existieren.
 docs/adr/0002-architekturentscheid-ziel-stack.md|docs/backlog.md	Hypothetischer Name, den der ADR als Gegenbeispiel nennt ("faende er ebenso wenig"). Die Datei soll nicht existieren -- das ist die Aussage.
+docs/adr/0002-architekturentscheid-ziel-stack.md|backend/src/r3cosint_api/	Gegenbeispiel in ADR 0002, 6.2.2 (Beleg vom 2026-08-30: Produktionscode unter einem falsch benannten Paket neben backend/src/r3cosint/); ein Verzeichnis dieses Namens entsteht nach ADR 0002, 4.1 nie, das einzige Wurzelpaket heisst r3cosint. Der Pfad darf nicht entstehen: Existierte er, waere die Ausnahme veraltet (Befund) und der Abgleich der Wurzelpakete in D18 schluege an (G1, O-11). Der Schluessel nennt die Datei und den Wert, nicht die Zeile, weil eine Zeilennummer mit jeder Aenderung an dieser Datei verrutscht; er deckt alle Vorkommen in ihr, darunter den Nachtrag vom 2026-10-28 zu Abschnitt 5.
 docs/uebergaben/2026-08-20_r3-c-001-freigabe-und-nachfuehrung.md|docs/06	Kurzform fuer docs/06_Definition_of_Ready_und_Done.md im Fliesstext, kein Pfadverweis.
 
 # --- Kennung, die es nie gab (Befund V-01, docs/08_Freigabe_Schritt_4.md) ---

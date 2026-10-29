@@ -1,0 +1,63 @@
+# Projekt- und Werkzeugkonfiguration von backend/ (ADR 0002, Abschnitt 5, Nachtrag vom
+# 2026-10-28, Einheit G1). Schranken der Abhängigkeiten: untere Schranke die beim Bau
+# aufgelöste Fassung, obere die nächste Hauptfassung (bei 0.x die nächste Nebenfassung,
+# für ruff stets die Nebenfassung); Exaktheit und Prüfsummen trägt uv.lock.
+
+[build-system]
+requires = ["uv_build>=0.11.32,<0.12"]
+build-backend = "uv_build"
+
+[project]
+name = "r3cosint"
+version = "0.0.0"
+description = "R3cOSINT: Verbindungsserver zwischen einem Sprachmodell und bestehenden Ermittlungsquellen (Grundgerüst)"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "fastapi>=0.162.0,<0.163",
+    "pydantic>=2.14.1,<3",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.17.3,<0.18",
+    "mypy>=2.4.1,<3",
+    "pytest>=9.2.0,<10",
+    "pytest-cov>=7.1.0,<8",
+    "import-linter>=2.15,<3",
+    "pip-audit>=2.10.1,<3",
+    "httpx>=0.28.1,<0.29",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+python-preference = "only-system"
+python-downloads = "never"
+required-version = ">=0.11.32,<0.12"
+
+[tool.ruff]
+target-version = "py313"
+src = ["src"]
+fix = false
+
+[tool.ruff.lint]
+select = ["F", "E4", "E7", "E9", "B", "S", "ASYNC", "DTZ", "T20", "BLE", "TID", "PGH", "RUF", "I", "UP", "INP"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "INP001"]
+"src/r3cosint/ausgang/**" = ["TID251"]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"urllib.request".msg = "Ausgehende Verbindungen nur in r3cosint.ausgang (Vertrag 2, ADR 0002, 4.3)."
+"http.client".msg = "Ausgehende Verbindungen nur in r3cosint.ausgang (Vertrag 2, ADR 0002, 4.3)."
+
+[tool.mypy]
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-config --strict-markers --import-mode=importlib"
+xfail_strict = true
+markers = ["abnahme: Abnahmetest eines Backlog-Eintrags (ADR 0002, 3.12)"]
+
+[tool.coverage.run]
+branch = false
