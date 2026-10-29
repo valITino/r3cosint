@@ -143,6 +143,27 @@
 # vorhandenem Gegenstand) — nicht erst, wenn zusaetzlich ein Werkzeug fehlt,
 # und unabhaengig vom Namen des Pakets (ADR 0002, Abschnitt 6.2.2).
 #
+# Nachtrag 2026-10-28 (Einheit G1, ADR 0002, Abschnitte 5 und 6): Die Angaben "heute" in
+# den Kommentaren der Ziele beschreiben den Bestand vom 2026-08-30. Mit backend/ (G1)
+# sind D1 (Backend-Anteil), D2 bis D6, D8 und D18 Lage A; D7 bleibt Lage C (FEHLT=scripts/
+# abnahme-abgleich.sh, terminiert), ebenso D9 (FEHLT=scripts/rueckkanal-pruefen.sh,
+# terminiert). D11 hat ein zweites Pruefmittel: scripts/gitleaks.toml (fehlt sie, ist D11
+# Lage C); schreibt git bei der Probe vor dem Historienlauf auf stderr, ist D11 Lage C mit
+# FEHLT=git-log. Den Inhalt von scripts/gitleaks.toml liest kein Lauf von gitleaks (die
+# eingebaute Liste ueberspringt die Datei); D11 bindet sie an GITLEAKS_KONFIG_SHA256
+# (DT-G1-01; fehlt sha256sum, ist D11 Lage C mit FEHLT=sha256sum). Grenze: der
+# Historienlauf liest fruehere Fassungen der Datei nicht; die Bindung haelt nur Staende,
+# die durch die Kette gehen. Git-Attribute und -Konfiguration von Aufrufer und System
+# blenden "git log -p" nicht mehr (DT-G1-06): Lauf 2 mit --text --no-textconv --no-color --root,
+# HOME auf ein leeres Wegwerfverzeichnis, GIT_CONFIG_NOSYSTEM und GIT_ATTR_NOSYSTEM. Merge-Commits
+# zeigt "git log -p" nur mit -m; Lauf 2 und Probe tragen es, damit ein Schluessel, der nur in
+# einer Merge-Aufloesung steht und danach entfernt wurde, nicht unsichtbar bleibt. Attribute im
+# Repository uebersteuern allein die Optionen; ein externer Diff-Treiber wirkt bei
+# git log -p ohne --ext-diff nicht (gemessen). Preis: gehoert das Repository einem anderen
+# Benutzer, meldet D11 wegen "dubious ownership" in beiden Faellen Lage C, je nach Umgebung des
+# Aufrufers mit FEHLT=git-log (sie traut dem Verzeichnis, das leere HOME von D11 nicht) oder mit
+# FEHLT=git-arbeitsbaum (sie traut ihm nicht; schon die Wache mit git rev-parse scheitert).
+#
 # Was dieses Makefile NICHT ist: kein Ersatz fuer die vier eigenen
 # Projektskripte, die laut ADR 0002 Abschnitt 6 "mit dem Grundgeruest"
 # entstehen (scripts/abnahme-abgleich.sh, scripts/rueckkanal-pruefen.sh,
@@ -537,9 +558,13 @@ endif
 # einzeln, mit Begruendung UND mit einem Satz dazu ergaenzt, was sie einem
 # Aufrufer erlaubt. Das ist der Unterschied: Eine Luecke faellt dann als
 # Fehlschlag auf, nicht als stiller Durchgang.
-UV := env -i PATH="$(PATH)" HOME="$(HOME)" PYTHONNOUSERSITE=1 UV_NO_CACHE=1 \
-	$(foreach v,SSL_CERT_FILE SSL_CERT_DIR CURL_CA_BUNDLE REQUESTS_CA_BUNDLE PIP_CERT NODE_EXTRA_CA_CERTS HTTPS_PROXY HTTP_PROXY NO_PROXY https_proxy http_proxy no_proxy LANG LC_ALL,$(if $($(v)),$(v)="$($(v))" )) \
-	uv
+# G1 (ADR 0002, Abschnitt 6, Zeile D6; 2026-10-28): UV_UMFELD ist das bereinigte
+# Umfeld ohne das Programm, UV haengt "uv" an -- der Text von UV ist derselbe wie
+# vorher. D6 setzt COVERAGE_FILE HINTER diesem "env -i" und nur dort; vor "env -i"
+# gesetzt, loescht env die Variable (gemessen 2026-10-28), die Umleitung wirkte nicht.
+UV_UMFELD := env -i PATH="$(PATH)" HOME="$(HOME)" PYTHONNOUSERSITE=1 UV_NO_CACHE=1 \
+	$(foreach v,SSL_CERT_FILE SSL_CERT_DIR CURL_CA_BUNDLE REQUESTS_CA_BUNDLE PIP_CERT NODE_EXTRA_CA_CERTS HTTPS_PROXY HTTP_PROXY NO_PROXY https_proxy http_proxy no_proxy LANG LC_ALL,$(if $($(v)),$(v)="$($(v))" ))
+UV := $(UV_UMFELD) uv
 
 # -----------------------------------------------------------------------------
 # B1 — Pruefmittel im gesperrten Umfeld nachweisen, nicht im PATH
@@ -684,6 +709,11 @@ endef
 # menschlichen Review. Das Werkzeug ist nach Eskalationsregel 3.4 abgebrochen
 # und NICHT abgenommen (O-15); seine Selbstauskunft erklaert die Liste ihrer
 # eigenen Grenzen ausdruecklich fuer unvollstaendig.
+# Nachtrag 2026-10-28: Abgenommen durch den Merge des Pull Requests #39
+# (Merge-Commit ba55b2dfdf0fd591f8649b56761766324b5c7b12; Einheit G0; O-15
+# erledigt), Abnahmekriterium docs/12_Freigabe_Grundgeruest.md, Abschnitt 4,
+# Pruefmittel scripts/belege-pruefen-selbsttest.sh; der Satz zur
+# unvollstaendigen Liste der Grenzen bleibt Selbstauskunft, nicht Kriterium.
 belege:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D20 belege] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
@@ -909,7 +939,11 @@ linter:
 			[ -n "$$fehlt" ] || fehlt="ruff"
 			hat_lage_c=1
 		else
-			$(UV) run --project backend --locked ruff check backend || fehlgeschlagen=1
+			# G1 (O-21, ADR 0002, Abschnitt 6, Zeile D3): --extend-select S schlaegt select und
+			# ignore der Konfiguration; die Gruppe S bleibt in D3 und ist nicht ueber
+			# backend/pyproject.toml abschaltbar. Im Backend-Anteil keine Schwelle: jeder Fund
+			# laesst D3 ungleich 0 enden.
+			$(UV) run --project backend --locked ruff check --extend-select S backend || fehlgeschlagen=1
 		fi
 	fi
 	if [ -f frontend/package.json ]; then
@@ -961,7 +995,11 @@ typen:
 			[ -n "$$fehlt" ] || fehlt="mypy"
 			hat_lage_c=1
 		else
-			$(UV) run --project backend --locked mypy backend/src backend/tests || fehlgeschlagen=1
+			# G1 (ADR 0002, Abschnitt 6, Zeile D4): --config-file nennt die Konfiguration. Aus der
+			# Wurzel liest mypy [tool.mypy] aus backend/pyproject.toml nicht; ohne die Angabe endete
+			# eine unannotierte Funktion mit Rueckgabewert 0 (gemessen 2026-10-28), der strenge
+			# Modus bliebe ohne Wirkung.
+			$(UV) run --project backend --locked mypy --config-file backend/pyproject.toml backend/src backend/tests || fehlgeschlagen=1
 		fi
 	fi
 	if [ -f frontend/package.json ]; then
@@ -1022,9 +1060,14 @@ typen:
 # Anmerkung "Zu D18" (ADR 0002, Abschnitt 6): Die Vertragsdatei muss jedes
 # oberste Paket unterhalb backend/src/ als Wurzelpaket nennen, sonst liefe
 # der Pruefer an vorhandenem Produktionscode vorbei und meldete Lage A, ohne
-# etwas beurteilt zu haben. Ob dieser Abgleich im Aufruf hier oder als
-# Vertrag im Pruefer selbst sitzt, ist offen (DevOps Engineer entscheidet es;
-# hier noch nicht umgesetzt, siehe Bericht).
+# etwas beurteilt zu haben. G1 (O-11, 2026-10-28): Der Abgleich sitzt hier im
+# Rezept (Ort (a)), vor lint-imports, und liest root_packages mit tomllib im
+# Projektumfeld. Oberste Namen sind jedes Verzeichnis unter backend/src/, in dem
+# irgendwo eine *.py-Datei liegt, und jede *.py-Datei unmittelbar darunter; ein
+# Name, der in root_packages fehlt, laesst D18 ungleich 0 enden und wird genannt.
+# Ein in root_packages genanntes, aber fehlendes Wurzelpaket meldet lint-imports
+# selbst. Ort (b), ein eigener Vertragstyp, scheidet aus: er sieht nur den Graphen
+# der Wurzelpakete und braucht ein zweites Paket oder einen Suchpfad.
 architekturvertraege:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D18 architekturvertraege] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
@@ -1057,6 +1100,27 @@ architekturvertraege:
 			fehlt="lint-imports"
 			hat_lage_c=1
 		else
+			# G1 (O-11): Abgleich der Wurzelpakete vor lint-imports; beide Laeufe laufen immer.
+			# Unter .ONESHELL entfernt GNU Make 4.3 die fuehrenden Leerzeichen jeder Rezeptzeile
+			# (gemessen 2026-10-28); der Quelltext unten kommt deshalb ohne Einrueckung aus.
+			$(UV) run --project backend --locked python -I - <<'PYEOF' || fehlgeschlagen=1
+	import os, sys, tomllib
+	QUELLE, VERTRAG = "backend/src", "backend/importvertraege.toml"
+	MELDUNG = "[D18 architekturvertraege] Wurzelpakete:"
+	def werfen(fehler): raise fehler
+	def hat_py(pfad): return any(name.endswith(".py") for _, _, dateien in os.walk(pfad, onerror=werfen) for name in dateien)
+	try: eintraege = list(os.scandir(QUELLE))
+	except OSError as fehler: print(MELDUNG, QUELLE, "nicht lesbar:", fehler, file=sys.stderr); sys.exit(2)
+	try: namen = {e.name for e in eintraege if e.is_dir() and hat_py(e.path)} | {e.name[:-3] for e in eintraege if not e.is_dir() and e.name.endswith(".py")}
+	except OSError as fehler: print(MELDUNG, "nicht auswertbar:", fehler, file=sys.stderr); sys.exit(2)
+	try: wurzeln = tomllib.load(open(VERTRAG, "rb"))["tool"]["importlinter"]["root_packages"]
+	except (OSError, KeyError, TypeError, tomllib.TOMLDecodeError) as fehler: print(MELDUNG, VERTRAG, "nicht auswertbar:", type(fehler).__name__, fehler, file=sys.stderr); sys.exit(2)
+	if not isinstance(wurzeln, list) or not all(isinstance(w, str) for w in wurzeln): print(MELDUNG, VERTRAG, "root_packages ist keine Liste von Namen.", file=sys.stderr); sys.exit(2)
+	fehlend = sorted(namen - set(wurzeln))
+	for name in fehlend: print(MELDUNG, "unter", QUELLE, "steht", name, "- nicht in root_packages von", VERTRAG, "(O-11).", file=sys.stderr)
+	if fehlend: sys.exit(1)
+	print(MELDUNG, ", ".join(sorted(namen)), "unter", QUELLE, "- alle in root_packages von", VERTRAG + ".")
+	PYEOF
 			$(UV) run --project backend --locked lint-imports --config backend/importvertraege.toml || fehlgeschlagen=1
 		fi
 	fi
@@ -1082,7 +1146,15 @@ test:
 			[ -n "$$fehlt" ] || fehlt="pytest"
 			hat_lage_c=1
 		else
-			$(UV) run --project backend --locked pytest -q --strict-markers || fehlgeschlagen=1
+			# G1 (ADR 0002, Abschnitt 6, Zeile D5): -c nennt die Konfiguration, der Pfad den
+			# gesammelten Gegenstand. Aus der Wurzel gilt backend/pyproject.toml nicht von selbst.
+			# Gemessen am echten Bau (Backend Engineer, 2026-10-28; ADR 0002, Abschnitt 5, Zeile
+			# "pytest, D5 und D7", Vermerk "Berichtigt"): der bisherige Aufruf ohne Pfad endet mit
+			# Rueckgabewert 1 (53 gesammelt, die zwei Konfigurationstests fallen), mit --strict-markers
+			# und -m abnahme mit 4 (Marker abnahme im Ausdruck unbekannt). Die 2 gilt nur fuer den
+			# Nachbau mit einem Abnahmetest. testpaths greift nur, wenn das Aufrufverzeichnis das
+			# rootdir ist.
+			$(UV) run --project backend --locked pytest -c backend/pyproject.toml -q --strict-markers backend/tests || fehlgeschlagen=1
 		fi
 	fi
 	if [ -f frontend/package.json ]; then
@@ -1145,13 +1217,18 @@ abdeckung:
 		else
 			# E2 (zusaetzlich): COVERAGE_FILE zeigt auf eine Wegwerfdatei, damit
 			# "make dod" keine ".coverage" im Arbeitsbaum hinterlaesst.
+			# G1 (ADR 0002, Abschnitt 6, Zeile D6): Die Variable steht HINTER "env -i"
+			# ($(UV_UMFELD)), allein in diesem Rezept. Vor "env -i" gesetzt wurde sie
+			# geloescht: die Umleitung wirkte nicht, ".coverage" lag in der Wurzel, nur durch
+			# .gitignore verdeckt (gemessen 2026-10-28). Beide Laeufe tragen die Konfiguration
+			# (-c, --cov-config) und den Pfad backend/tests; aus der Wurzel greift keine von beiden.
 			covdatei=$$(mktemp)
-			COVERAGE_FILE="$$covdatei" $(UV) run --project backend --locked pytest --cov=backend/src/r3cosint --cov-fail-under=$(COV_FAIL_UNDER) || fehlgeschlagen=1
+			$(UV_UMFELD) COVERAGE_FILE="$$covdatei" uv run --project backend --locked pytest -c backend/pyproject.toml --cov-config=backend/pyproject.toml --cov=backend/src/r3cosint --cov-fail-under=$(COV_FAIL_UNDER) backend/tests || fehlgeschlagen=1
 			kritische_flags=""
 			for m in $(KRITISCHE_MODULE); do
 				kritische_flags="$$kritische_flags --cov=backend/src/r3cosint/$$m"
 			done
-			COVERAGE_FILE="$$covdatei" $(UV) run --project backend --locked pytest $$kritische_flags --cov-fail-under=$(COV_FAIL_UNDER_KRITISCH) || fehlgeschlagen=1
+			$(UV_UMFELD) COVERAGE_FILE="$$covdatei" uv run --project backend --locked pytest -c backend/pyproject.toml --cov-config=backend/pyproject.toml $$kritische_flags --cov-fail-under=$(COV_FAIL_UNDER_KRITISCH) backend/tests || fehlgeschlagen=1
 			rm -f "$$covdatei"
 		fi
 	fi
@@ -1190,7 +1267,11 @@ abnahme:
 			[ -n "$$fehlt" ] || fehlt="pytest"
 			hat_lage_c=1
 		else
-			$(UV) run --project backend --locked pytest -q -m abnahme || fehlgeschlagen=1
+			# G1 (ADR 0002, Abschnitt 6, Zeile D7): erster Teil wie D5, mit -m abnahme. Im
+			# Grundgeruest gibt es keinen Abnahmetest, pytest endet dann mit 5; die Klassifizierung
+			# stellt die Lage C (scripts/abnahme-abgleich.sh fehlt) vor A_FAIL, D7 bleibt die
+			# terminierte Lage C. Den Rueckgabewert 5 behandelt G3.
+			$(UV) run --project backend --locked pytest -c backend/pyproject.toml -q -m abnahme backend/tests || fehlgeschlagen=1
 		fi
 	fi
 	# G1: fester Dateiname ersetzt durch Glob -- "docs/05_Product_Backlog.md"
@@ -1260,7 +1341,22 @@ abhaengigkeiten:
 			[ -n "$$fehlt" ] || fehlt="pip-audit"
 			hat_lage_c=1
 		else
-			$(UV) run --project backend --locked pip-audit --strict || fehlgeschlagen=1
+			# G1 (ADR 0002, Abschnitt 6, Zeile D8): Gegenstand ist die Sperrdatei. Der Befehl
+			# "pip-audit --strict" ueber die Umgebung kann nicht bestehen, sobald r3cosint als
+			# Paket darin steht (gemessen 2026-10-28: "Dependency not found on PyPI"). Export aller
+			# Gruppen ohne das eigene Projekt in eine Wegwerfdatei ausserhalb des Arbeitsbaums
+			# (Kettengrundsatz), dann pip-audit -r mit --require-hashes (belegt zugleich die
+			# Pruefsummen der Sperrdatei). Netz noetig: ohne Netz endet der Schritt ungleich 0 als
+			# A_FAIL, nicht als Lage C (Restpunkt zu O-20). Kein --ignore-vuln: ein Ausschluss erst
+			# nach Eintrag im Schwachstellenregister, in einer eigenen Einheit.
+			expdatei=$$(mktemp)
+			if $(UV) export --project backend --locked --all-groups --no-emit-project --format requirements-txt -o "$$expdatei"; then
+				$(UV) run --project backend --locked pip-audit -r "$$expdatei" --no-deps --disable-pip --strict --require-hashes || fehlgeschlagen=1
+			else
+				echo "[D8 abhaengigkeiten] uv export endete ungleich 0: die Sperrdatei ist nicht exportierbar (veraltet oder unlesbar)." >&2
+				fehlgeschlagen=1
+			fi
+			rm -f "$$expdatei"
 		fi
 	fi
 	if [ -f frontend/package.json ]; then
@@ -1398,6 +1494,61 @@ prototyp-trennung:
 # Befund steht zuoberst), aber KEIN Lauf schneidet den anderen ab: beide
 # laufen immer, beide Befunde erscheinen, der Schritt endet ungleich 0,
 # sobald einer der beiden ungleich 0 endet.
+# G1 (ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-28, Zeilen "D11 und O-10 (a)" und
+# "D11, Register und Folgen"; Abschnitt 6, Zeile D11; Register SR-014 bis SR-016):
+# Haertung beider Laeufe, KEINE Ausschlussliste (O-10 a).
+#   --config scripts/gitleaks.toml (allein [extend] mit useDefault = true): Ohne --config
+#     laedt gitleaks die Variable GITLEAKS_CONFIG und eine Datei .gitleaks.toml im Baum;
+#     beide koennen die Regeln durch keine ersetzen (gemessen 2026-10-28: Rueckgabewert 0
+#     bei vorhandenem Schluessel). --config schlaegt beide. Fehlt die Datei, ist das
+#     Lage C (Pruefmittel fehlt).
+#   --ignore-gitleaks-allow: die Inline-Marke gitleaks:allow unterdrueckt keinen Fund.
+#   env -i (D11_UMFELD, auch fuer git ls-files der Selbstpruefung): Der Aufrufer setzt
+#     keine Variable, auch kein GIT_DIR. PATH wird durchgereicht, HOME zeigt auf ein leeres
+#     Wegwerfverzeichnis (DT-G1-06, unten); gemessen, dass gitleaks beide Modi auch ohne HOME
+#     und ohne TMPDIR richtig fuehrt.
+#     GIT_NO_REPLACE_OBJECTS=1, weil ein Ersatzobjekt (git replace) den
+#     Historienlauf taeuscht: ein Commit mit Schluessel, durch einen harmlosen ersetzt,
+#     blieb unsichtbar (gemessen 2026-10-28: Rueckgabewert 0; mit der Variablen im
+#     env -i Rueckgabewert 1; im Aufrufer gesetzt wirkungslos, env -i loescht sie).
+#   Selbstpruefung vor den Laeufen (SR-016), Pruefung auf .gitleaksignore und Probe von
+#     git log vor dem Historienlauf (Lage C FEHLT=git-log), siehe im Rezept.
+#   Git-Attribute (DT-G1-06, Messung des Dynamic Software Testers): "* -diff" in
+#     .git/info/attributes, in $HOME/.config/git/attributes, ueber core.attributesFile, ein
+#     textconv-Treiber oder eine .gitattributes blenden "git log -p"; Lauf 2 fand einen
+#     Schluessel nur in der Historie dann nicht mehr (Rueckgabewert 0). Lauf 2 traegt deshalb
+#     --log-opts="--full-history --all --text --no-textconv --no-color --root -m" (die
+#     Vorgaben bleiben darin; --no-color und --root nach eigener Messung: color.ui=always und
+#     log.showRoot=false im Repository liessen Lauf 2 ebenfalls nichts finden). -m, weil
+#     "git log -p" Merge-Commits sonst nicht zeigt: ein Schluessel, der nur in einer
+#     Merge-Aufloesung steht (evil merge) und danach entfernt wurde, blieb unsichtbar
+#     (gemessen 2026-10-28: Rueckgabewert 0 ohne -m, 1 mit -m; --cc fand ihn nicht). Preis:
+#     Lauf 2 liest Merge-Commits je Elternteil, an der Historie dieses Projekts etwa 2,2 s
+#     statt etwa 1,3 s. Die Probe fragt denselben Befehl: ohne -m in der Probe bliebe ein
+#     Merge-Commit mit unlesbarem Baum unbemerkt, git schriebe erst in Lauf 2 auf stderr und
+#     Lauf 2 endete mit Rueckgabewert 0 (gemessen).
+#     HOME ist je Lauf von D11 ein leeres Wegwerfverzeichnis
+#     (danach entfernt; scheitert mktemp, ist das A_FAIL), dazu GIT_CONFIG_NOSYSTEM=1 und
+#     GIT_ATTR_NOSYSTEM=1: Konfiguration und Attribute von Aufrufer und System gelten nicht.
+#     Grenzen: was im Repository selbst steht (.git/config, .git/info/attributes,
+#     .gitattributes) uebersteuern allein die Optionen; ein externer Diff-Treiber wirkt bei
+#     git log -p ohne --ext-diff nicht (gemessen mit diff.drv.command und diff.external).
+#     Preis: gehoert das Repository einem anderen Benutzer, enden die git-Aufrufe im leeren
+#     HOME mit "dubious ownership". Das ist in beiden Faellen Lage C, je nach Umgebung des
+#     Aufrufers mit FEHLT=git-log (sie traut dem Verzeichnis, etwa ueber safe.directory; dann
+#     scheitern git ls-files der Selbstpruefung und die Probe, gemessen 2026-10-28) oder mit
+#     FEHLT=git-arbeitsbaum (sie traut ihm nicht; dann scheitert schon die Wache mit
+#     git rev-parse in ihrer Umgebung, und die Selbstpruefung entfaellt).
+#   Inhaltsbindung (DT-G1-01): gitleaks ueberspringt jede Datei dieses Namens und die
+#     Selbstpruefung nimmt scripts/gitleaks.toml aus; ihren Inhalt liest sonst kein Lauf
+#     (ein Schluessel als Kommentarzeile blieb unbemerkt, gemessen 2026-10-28). Das Rezept
+#     bindet die Datei an die SHA-256-Summe unten. Eine gewollte Aenderung der Konfiguration
+#     aendert den Sollwert im selben Commit. override: eine Zuweisung auf der Befehlszeile
+#     oder mit make -e ersetzt ihn nicht. Grenze: der Historienlauf liest fruehere Fassungen
+#     der Datei nicht; die Bindung haelt nur Staende, die durch die Kette gehen.
+override GITLEAKS_KONFIG_SHA256 := ebefda5618f25bd3b463e3e7d8116dbb8e247b92bd8f559cf551d897348b5b34
+D11_UMFELD := env -i PATH="$(PATH)" HOME="$$d11_home" GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 GIT_NO_REPLACE_OBJECTS=1
+GITLEAKS := $(D11_UMFELD) gitleaks
 geheimnisse:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D11 geheimnisse] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
@@ -1415,9 +1566,93 @@ geheimnisse:
 		echo "Beschaffen: https://github.com/gitleaks/gitleaks (Release-Binary oder Paketmanager, z. B. 'brew install gitleaks')." >&2
 		fehlt="gitleaks"
 		hat_lage_c=1
+	elif [ ! -f scripts/gitleaks.toml ] || [ ! -r scripts/gitleaks.toml ]; then
+		echo "[D11 geheimnisse] LAGE C: scripts/gitleaks.toml fehlt oder ist nicht lesbar. Sie ist Pruefmittel von D11 (ADR 0002, Abschnitt 6, Objekttabelle): ohne sie liefen die Laeufe mit den Regeln, die Umgebung oder Baum vorgeben." >&2
+		fehlt="scripts/gitleaks.toml"
+		hat_lage_c=1
+	elif ! command -v sha256sum >/dev/null 2>&1; then
+		echo "[D11 geheimnisse] LAGE C: 'sha256sum' ist nicht installiert; die Bindung von scripts/gitleaks.toml an ihre Pruefsumme (DT-G1-01) kann nicht geprueft werden." >&2
+		fehlt="sha256sum"
+		hat_lage_c=1
 	else
+		# Inhaltsbindung (DT-G1-01): gitleaks ueberspringt jede Datei dieses Namens und die
+		# Selbstpruefung nimmt scripts/gitleaks.toml aus; ihren Inhalt liest sonst kein Lauf (ein
+		# Schluessel als Kommentarzeile blieb unbemerkt). Die Summe wird mit dem Sollwert oben
+		# verglichen; eine gewollte Aenderung der Datei aendert den Sollwert im selben Commit.
+		# Grenze: der Historienlauf liest fruehere Fassungen der Datei nicht, die Bindung haelt
+		# nur Staende, die durch die Kette gehen. Abweichung ist A_FAIL; die Laeufe laufen weiter.
+		konfig_summe=$$(sha256sum scripts/gitleaks.toml 2>/dev/null | cut -d' ' -f1)
+		if [ "$$konfig_summe" != "$(GITLEAKS_KONFIG_SHA256)" ]; then
+			echo "[D11 geheimnisse] scripts/gitleaks.toml veraendert: Pruefsumme $${konfig_summe:-unlesbar} statt $(GITLEAKS_KONFIG_SHA256); gewollte Aenderung: Sollwert im Makefile anpassen." >&2
+			fehlgeschlagen=1
+		fi
+		# Umfeld (DT-G1-06): leeres Wegwerf-HOME fuer git und gitleaks (D11_UMFELD). Scheitert mktemp,
+		# ist das A_FAIL; die Laeufe folgen dann nur zur Information mit leerem HOME (welche
+		# Konfiguration git dabei liest, ist nicht gemessen).
+		d11_home=$$(mktemp -d)
+		if [ -z "$$d11_home" ] || [ ! -d "$$d11_home" ]; then
+			echo "[D11 geheimnisse] Umfeld nicht herstellbar: mktemp -d schlug fehl (leeres HOME fuer git und gitleaks)." >&2
+			d11_home=""
+			fehlgeschlagen=1
+		fi
+		# Selbstpruefung (SR-016, ADR 0002, 6.2.3: uebersprungen wird nur, was kein Repository-
+		# Inhalt sein kann): Die eingebaute Liste von gitleaks 8.21.2 ueberspringt Pfade, ohne zu
+		# fragen, ob die Datei versioniert ist; ein Schluessel dort bliebe in beiden Laeufen
+		# unsichtbar. Je Familie ein Muster der Liste (venv/lib, lib/pythonN, dist-info,
+		# node_modules), als Obermenge nachgebildet (grep -E, Gross- und Kleinschreibung gleich,
+		# LC_ALL=C; gemessen gegen gitleaks selbst, auch die Faltung von s und k in Go: kein Pfad,
+		# den gitleaks ueberspringt und das Muster nicht nennt). Geprueft werden die Pfade von
+		# git ls-files und die noch nicht hinzugefuegten, nicht ignorierten Dateien, weil D11 vor
+		# dem Commit laeuft. Ein Treffer laesst den Schritt ungleich 0 enden; die Laeufe 1 und 2
+		# laufen trotzdem, damit alle Befunde erscheinen. Die Familien stehen einzeln im case.
+		# Fuenfte Familie gitleaks-toml: gitleaks ueberspringt jeden Pfad, der gitleaks.toml
+		# enthaelt (Muster ohne Anker); einzige Ausnahme ist scripts/gitleaks.toml selbst.
+		# Deren Inhalt liest kein Lauf; ihn haelt die Pruefsumme GITLEAKS_KONFIG_SHA256 (DT-G1-01).
+		if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+			selbst_ok=1
+			selbst_dir=$$(mktemp -d)
+			if [ -z "$$selbst_dir" ] || [ ! -d "$$selbst_dir" ]; then
+				echo "[D11 geheimnisse] Selbstpruefung nicht ausfuehrbar: mktemp -d schlug fehl." >&2
+				selbst_ok=0; fehlgeschlagen=1
+			elif ! $(D11_UMFELD) git ls-files -z --cached --others --exclude-standard > "$$selbst_dir/pfade"; then
+				echo "[D11 geheimnisse] Selbstpruefung nicht ausfuehrbar: git ls-files endete ungleich 0." >&2
+				selbst_ok=0; fehlgeschlagen=1
+			else
+				LC_ALL=C grep -zvxF -e 'scripts/gitleaks.toml' "$$selbst_dir/pfade" > "$$selbst_dir/pfade2"; grep_rc=$$?
+				if [ "$$grep_rc" -gt 1 ]; then
+					echo "[D11 geheimnisse] Selbstpruefung nicht ausfuehrbar: grep endete mit $$grep_rc (Ausnahme scripts/gitleaks.toml)." >&2
+					selbst_ok=0; fehlgeschlagen=1
+				fi
+				for familie in venv lib-python dist-info node_modules gitleaks-toml; do
+					case "$$familie" in
+						venv) muster='(v?env|virtualenv)/lib(64)?/.+$$' ;;
+						lib-python) muster='(^|/)(lib(64)?/python[23](\.[0-9]{1,2})+/|python/[23](\.[0-9]{1,2})+/lib(64)?/).+$$' ;;
+						dist-info) muster='(^|/)[^/]+-[0-9.]+\.di.{1,2}t-info/.+$$' ;;
+						node_modules) muster='(^|/)node_modules/' ;;
+						gitleaks-toml) muster='gitleaks\.toml' ;;
+					esac
+					LC_ALL=C grep -zEi -e "$$muster" "$$selbst_dir/pfade2" > "$$selbst_dir/treffer"; grep_rc=$$?
+					if [ "$$grep_rc" -eq 0 ]; then
+						echo "[D11 geheimnisse] Selbstpruefung: Pfade der Familie $$familie, die gitleaks 8.21.2 in seiner eingebauten Liste ueberspringt (kein Lauf meldet dort einen Fund; ADR 0002, 6.2.3), stehen im Baum:" >&2
+						tr '\0' '\n' < "$$selbst_dir/treffer" | head -n 5 | sed 's/^/    /' >&2
+						selbst_ok=0; fehlgeschlagen=1
+					elif [ "$$grep_rc" -ne 1 ]; then
+						echo "[D11 geheimnisse] Selbstpruefung nicht ausfuehrbar: grep endete mit $$grep_rc (Familie $$familie)." >&2
+						selbst_ok=0; fehlgeschlagen=1
+					fi
+				done
+			fi
+			rm -rf "$$selbst_dir"
+			[ "$$selbst_ok" -eq 1 ] && echo "[D11 geheimnisse] Selbstpruefung: kein Pfad im Baum unter den fuenf Familien, die gitleaks ueberspringt."
+		fi
+		# .gitleaksignore im Arbeitsbaum unterdrueckt Funde in beiden Laeufen; --gitleaks-ignore-path
+		# schliesst das nicht (gemessen 2026-10-28). Befund am Gegenstand: A_FAIL.
+		if [ -e .gitleaksignore ] || [ -L .gitleaksignore ]; then
+			echo "[D11 geheimnisse] .gitleaksignore im Arbeitsbaum: gitleaks 8.21.2 liest sie in beiden Laeufen und unterdrueckt damit Funde (gemessen 2026-10-28); sie hat im Baum nichts zu suchen (ADR 0002, 6.2.3)." >&2
+			fehlgeschlagen=1
+		fi
 		echo "[D11 geheimnisse] Lauf 1/2 -- Arbeitsbaum (gitleaks detect --no-git):"
-		gitleaks detect --no-git --redact --exit-code 1 --source . || fehlgeschlagen=1
+		$(GITLEAKS) detect --no-git --redact --exit-code 1 --ignore-gitleaks-allow --config scripts/gitleaks.toml --source . || fehlgeschlagen=1
 		echo "[D11 geheimnisse] Lauf 2/2 -- Git-Historie (gitleaks detect):"
 		if ! command -v git >/dev/null 2>&1; then
 			echo "[D11 geheimnisse] LAGE C: 'git' ist nicht installiert; der Historienlauf kann nicht stattfinden. Lauf 1 ist gelaufen, sein Befund steht oben." >&2
@@ -1428,8 +1663,24 @@ geheimnisse:
 			fehlt="git-arbeitsbaum"
 			hat_lage_c=1
 		else
-			gitleaks detect --redact --exit-code 1 || fehlgeschlagen=1
+			# Probe: gitleaks 8.21.2 liest die Historie unbestaendig weniger (Rueckgabewert 0), sobald
+			# git waehrend "git log" auf stderr schreibt, etwa wegen .git/info/grafts, auch leer
+			# (gemessen 2026-10-28). Dieselbe Abfrage vorab im selben Umfeld; jede Ausgabe auf stderr
+			# oder ein Rueckgabewert ungleich 0 ist Lage C (git-log): das Pruefmittel traegt die
+			# Aussage ueber die Historie nicht (6.9.2). Lauf 2 entfaellt dann. Die Probe traegt -m wie
+			# Lauf 2: ein Merge-Commit mit unlesbarem Baum faellt nur mit -m auf (gemessen 2026-10-28).
+			git_err=$$(mktemp)
+			if [ -n "$$git_err" ] && $(D11_UMFELD) git -C . log -p -U0 --full-history --all --text --no-textconv --no-color --root -m > /dev/null 2> "$$git_err" && [ ! -s "$$git_err" ]; then
+				$(GITLEAKS) detect --redact --exit-code 1 --ignore-gitleaks-allow --config scripts/gitleaks.toml --log-opts="--full-history --all --text --no-textconv --no-color --root -m" || fehlgeschlagen=1
+			else
+				echo "[D11 geheimnisse] LAGE C: git log schreibt auf stderr oder endet ungleich 0; gitleaks liest die Historie dann unvollstaendig oder gar nicht, 'bestanden' waere nicht belegt. Lauf 2 entfaellt:" >&2
+				[ -n "$$git_err" ] && head -n 3 "$$git_err" | sed 's/^/    /' >&2
+				[ -n "$$fehlt" ] || fehlt="git-log"
+				hat_lage_c=1
+			fi
+			rm -f "$$git_err"
 		fi
+		[ -n "$$d11_home" ] && rm -rf "$$d11_home"
 	fi
 	$(call KLASSIFIZIEREN,D11,geheimnisse,entfaellt -- das Repository existiert immer.)
 

@@ -1,0 +1,17 @@
+# R3cOSINT -- Konfiguration von gitleaks fuer den Kettenschritt D11
+# (make geheimnisse). ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-28
+# (Festlegung fuer G1), Zeile "D11 und O-10 (a)"; Abschnitt 6, Zeile D11;
+# Schwachstellenregister SR-014, SR-015, SR-016.
+#
+# Inhalt allein [extend] mit useDefault = true: Die eingebauten Regeln von
+# gitleaks (Fassung 8.21.2, gepinnt im Sitzungsstart-Hook) bleiben vollstaendig
+# erhalten. Eine Datei OHNE useDefault ersetzt sie durch keine (gemessen
+# 2026-10-28: Rueckgabewert 0 bei vorhandenen Schluesseln).
+#
+# Diese Datei enthaelt keine Allowlist, keine Pfadmuster und keine eigenen
+# Regeln. Ein Ausschluss ist nicht vorgesehen (ADR 0002, 6.2.3). Sie wird mit
+# --config an beiden Laeufen von D11 uebergeben und schlaegt damit die
+# Umgebungsvariable GITLEAKS_CONFIG und eine Datei .gitleaks.toml im Baum.
+
+[extend]
+useDefault = true

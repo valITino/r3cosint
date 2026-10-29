@@ -1,0 +1,135 @@
+# Architekturverträge nach ADR 0002, 4.3 im Umfang von G1, geprüft von import-linter in D18
+# (make architekturvertraege, --config backend/importvertraege.toml).
+# Die Quellenlisten der Verträge 2, 3 und 6 zählen die obersten Pakete einzeln auf; das
+# ausgenommene Paket fehlt in der Liste (ein ignore_imports ohne Treffer ist ein Fehler).
+# tests/architektur/test_vertragsquellen.py gleicht die Listen mit dem Paketbaum ab; der
+# Abgleich der Wurzelpakete im Rezept von D18 deckt ein oberstes Paket neben r3cosint ab.
+# Die Verträge 4 und 5 (Schreibverträge) entstehen mit der ersten Spur- beziehungsweise
+# Bestandstabelle und gelten bis dahin nicht als bestanden.
+
+[tool.importlinter]
+root_packages = ["r3cosint"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Vertrag 1 (R3-F-014): vorschlag und ausfuehrung sind voneinander unabhaengig"
+type = "independence"
+modules = [
+    "r3cosint.freigabe.vorschlag",
+    "r3cosint.freigabe.ausfuehrung",
+]
+
+[[tool.importlinter.contracts]]
+name = "Vertrag 2 (R3-F-015): ausgehende Verbindungen nur in ausgang"
+type = "forbidden"
+source_modules = [
+    "r3cosint.core",
+    "r3cosint.kanon",
+    "r3cosint.spur",
+    "r3cosint.fall",
+    "r3cosint.zugriff",
+    "r3cosint.freigabe",
+    "r3cosint.beschaffung",
+    "r3cosint.fremd",
+    "r3cosint.llm",
+    "r3cosint.graph",
+    "r3cosint.export",
+    "r3cosint.api",
+    "r3cosint.mcpsrv",
+]
+forbidden_modules = [
+    "httpx",
+    "httpx2",
+    "httpcore",
+    "httpcore2",
+    "requests",
+    "urllib3",
+    "aiohttp",
+    "httplib2",
+    "pycurl",
+    "websockets",
+    "websocket",
+    "grpc",
+    "socket",
+    "smtplib",
+    "ftplib",
+    "imaplib",
+    "poplib",
+    "xmlrpc",
+]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Vertrag 3 (R3-F-018), ausserhalb llm: kein Modellendpunkt"
+type = "forbidden"
+source_modules = [
+    "r3cosint.core",
+    "r3cosint.kanon",
+    "r3cosint.spur",
+    "r3cosint.fall",
+    "r3cosint.zugriff",
+    "r3cosint.freigabe",
+    "r3cosint.beschaffung",
+    "r3cosint.ausgang",
+    "r3cosint.fremd",
+    "r3cosint.graph",
+    "r3cosint.export",
+    "r3cosint.api",
+    "r3cosint.mcpsrv",
+]
+forbidden_modules = [
+    "openai",
+    "anthropic",
+    "mistralai",
+    "cohere",
+    "ollama",
+    "litellm",
+]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Vertrag 3 (R3-F-018), in llm: keine Herstellerbibliothek"
+type = "forbidden"
+source_modules = [
+    "r3cosint.llm",
+]
+forbidden_modules = [
+    "anthropic",
+    "mistralai",
+    "cohere",
+    "ollama",
+    "litellm",
+]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Vertrag 6: api wird von keinem anderen Modul importiert"
+type = "forbidden"
+source_modules = [
+    "r3cosint.core",
+    "r3cosint.kanon",
+    "r3cosint.spur",
+    "r3cosint.fall",
+    "r3cosint.zugriff",
+    "r3cosint.freigabe",
+    "r3cosint.beschaffung",
+    "r3cosint.ausgang",
+    "r3cosint.fremd",
+    "r3cosint.llm",
+    "r3cosint.graph",
+    "r3cosint.export",
+    "r3cosint.mcpsrv",
+]
+forbidden_modules = [
+    "r3cosint.api",
+]
+
+[[tool.importlinter.contracts]]
+name = "Vertrag 7: Produktionscode importiert prototype nicht"
+type = "forbidden"
+source_modules = [
+    "r3cosint",
+]
+forbidden_modules = [
+    "prototype",
+]

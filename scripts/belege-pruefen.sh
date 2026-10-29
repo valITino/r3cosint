@@ -1,26 +1,49 @@
 #!/usr/bin/env bash
 #
 # ============================================================================
-# NICHT ABGENOMMEN (Stand 2026-09-01) -- Abbruch nach Eskalationsregel 3.4
+# ABGENOMMEN (2026-10-28) -- Merge des Pull Requests #39
 # ============================================================================
-# Was dieses Skript FINDET, ist unabhaengig belegt: neun eingebaute
-# Fehlerklassen wurden in drei Pruefrunden je gefangen, die Unterscheidung
-# zwischen Zweigname und kaputtem Pfad haelt, die Scharfschaltung bei
-# entstehendem backend/ haelt, der Lauf veraendert nichts.
+# Abgenommen am 2026-10-28 durch den Merge des Pull Requests #39 (Merge-Commit
+# ba55b2dfdf0fd591f8649b56761766324b5c7b12), erster Formweg: ADR 0002,
+# Abschnitt 10, Unterabschnitt "Abnahme von G0 (Belegpruefer D20, O-15, mit
+# Pruefmittel; SR-009 bis SR-013) -- Merge des Pull Requests #39 -- erteilt am
+# 2026-10-28, eingetragen am 2026-10-28". Einheit G0. Damit ist O-15 (Abnahme
+# dieses Pruefers) erledigt; O-14 (Stufe 2 ueber den Archivstand) ist mit G0
+# gebaut und abgenommen.
 #
-# Nicht abgenommen ist, was dieses Skript UEBER SICH SELBST sagt. Dreimal in
-# Folge hat eine unabhaengige Pruefung eine reale Grenze gefunden, die in der
-# Selbstauskunft fehlte -- und jedes Mal in der Schicht, welche die
-# vorangegangene Behebung erst erreichbar gemacht hatte. Das ist dieselbe
-# Fehlerklasse, gegen die dieses Skript gebaut ist, nur auf es selbst
-# angewandt: eine Aussage, die staerker ist als das, was sie traegt.
+# Abnahmekriterium: docs/12_Freigabe_Grundgeruest.md, Abschnitt 4, G0,
+# (a) bis (d). Ergebnisse:
+#   (a) Pruefmittel scripts/belege-pruefen-selbsttest.sh mit 311 Faellen,
+#       Modus --mutationen mit 162 Mutationen in
+#       scripts/belege-pruefen-mutationen.txt. Endlauf des
+#       Dynamic Software Testers am Endstand: Normalmodus 307 von 311
+#       bestanden, 0 gefallen, 4 als root nicht herstellbar, Rueckgabewert 0;
+#       Mutationsmodus 162 von 162 erkannt, 0 wirkungslos, Rueckgabewert 0.
+#   (b) Jede Fehlerklasse hat beide Fallarten, jede der 36 Grenzen ihren Fall
+#       (Abgleich des Static Software Testers).
+#   (c) Fremdmutationsrunde des Dynamic Software Testers, blind gewaehlt, 32
+#       Mutationen: am Stand G0.1 nicht erfuellt (10 falsches Gruen); jedes
+#       falsche Gruen mit Fall und Mutation behoben, statisch nachgeprueft und
+#       gezielt wiederholt (14 von 14 Mutanten erkannt); keine zweite Runde,
+#       Restluecken benannt.
+#   (d) make dod: D20 in Lage A bestanden (Dynamic Software Tester am Stand
+#       nach M5c; vor dem Commit am Endstand wiederholt); im flachen Klon
+#       Lage C (FEHLT=git-historie); bei fehlendem Archivstand Lage C (Kennung
+#       archivstand); der Pruefer liest keinen Ort ausserhalb des
+#       Repositories.
 #
-# Deshalb steht in der Schlussausgabe jetzt, dass die Liste der Grenzen
-# unvollstaendig ist. Das ist keine Ausrede, sondern die einzige Aussage, die
-# nach drei Runden noch belegbar war.
+# Was ein gruener Lauf aussagt, bleibt wie im Abschnitt ZWECK UND GRENZE unten
+# beschrieben ("der Verweis zeigt auf etwas Vorhandenes", nicht "die Aussage
+# stimmt"). Der Satz der Schlussausgabe, die Liste der Grenzen sei nicht
+# vollstaendig, bleibt als Selbstauskunft stehen und ist nicht das
+# Abnahmekriterium (docs/12_Freigabe_Grundgeruest.md, Abschnitt 4, G0,
+# Festlegung 6).
 #
-# Einzelheiten und was zu entscheiden ist:
-# docs/uebergaben/2026-09-01_belegpruefer-abbruch-nach-3-4.md
+# Verlauf, Messungen und Restpunkte:
+# docs/uebergaben/2026-10-28_d8-freigabe-grundgeruest-g0-belegpruefer.md,
+# Abschnitt "Einheit G0". Fruehere Fassung dieses Kopfes (Block NICHT
+# ABGENOMMEN, Stand 2026-09-01, und Block Stand 2026-10-28 (G0.2)) in git bis
+# Commit 4a4f4db07dc101b5f0e46a0b072f97009355b148.
 # ============================================================================
 #
 # ============================================================================
@@ -70,14 +93,6 @@
 #   stehen in der Loeschliste (eine Codezeile, ST-G0-25, EB-3); die Zeile der Schlussausgabe zu GB-32 nennt den
 #   Tabulator nicht mehr (ST-G0-26); alles Uebrige sind Kommentarzeilen (Grenze aus OF-16 mit Doppelfehler,
 #   Beschaffungsweg beim Lesen, awk-Operand mit Bindestrich, Umbrueche, Schreibweise).
-# Stand 2026-10-28 (G0.2): Abnahme vorgelegt am 2026-10-28 mit dem Pull Request der Einheit G0 (Merge = Abnahme). Gebaut nach
-#   ADR 0002, 6.8, Nachtrag vom 2026-10-28; Pruefmittel scripts/belege-pruefen-selbsttest.sh mit 311 Faellen, Modus
-#   --mutationen mit 162 Mutationen (scripts/belege-pruefen-mutationen.txt). Endlauf des Dynamic Software Testers am
-#   Endstand: Normalmodus 307 von 311 bestanden, 0 gefallen, 4 als root nicht herstellbar (GP-B1), Rueckgabewert 0;
-#   Mutationsmodus 162 von 162 erkannt, 0 wirkungslos, Rueckgabewert 0; als Nicht-root 309 von 309 am Stand vor M5d.
-#   Fremdmutationsrunde (32 Mutationen, 10 falsches Gruen) mit Fall und Mutation behoben, gezielt wiederholt (14 von 14).
-#   Verlauf, Messungen und Restpunkte in der Uebergabe vom 2026-10-28, Abschnitt G0. Der Block NICHT ABGENOMMEN oben bleibt
-#   bis zum Merge stehen.
 #
 # belege-pruefen.sh — Herkunftsangaben gegen ihren Fundort prüfen
 #
