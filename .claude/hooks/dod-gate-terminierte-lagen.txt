@@ -58,10 +58,12 @@
 # von ADR 0002) fuehrte D7, D10 und D12 als Lage C; D9 war Lage B und ist seit
 # der ersten Datei unter backend/ (2026-10-28, Einheit G1) Lage C (Eintrag unten);
 # D11 ist ein Werkzeug (gitleaks), also nicht terminierbar (kein Eintrag).
+# Stand 2026-10-30 (Einheit G3.4): die Liste fuehrt allein den Eintrag D9 (unten); die Eintraege D7, D10 und D12 sind
+# mit G3.2 bis G3.4 entfallen (Kommentarzeilen unten; ADR 0003, Teil B, Nachtrag vom 2026-10-30 zu 6.12.5).
 
-D7 abnahme|scripts/abnahme-abgleich.sh	scripts/abnahme-abgleich.sh besteht heute nicht; ADR 0002, Abschnitt 6 fuehrt es als eigenes Projektartefakt, das mit dem Grundgeruest entsteht (Zeile D7 der Objekttabelle).
-D10 prototyp-trennung|scripts/prototyp-trennung-pruefen.sh	scripts/prototyp-trennung-pruefen.sh besteht heute nicht; ADR 0002, Abschnitt 6 fuehrt es als eigenes Projektartefakt, das mit dem Grundgeruest entsteht (Zeile D10 der Objekttabelle, Betriebsart als O-8 offen).
-D12 nachweise|scripts/nachweise-vollstaendig.sh	scripts/nachweise-vollstaendig.sh besteht heute nicht; ADR 0002, Abschnitt 6 fuehrt es als eigenes Projektartefakt, das mit dem Grundgeruest entsteht (Zeile D12 der Objekttabelle, Form als O-8 offen).
+# Eintrag D7 entfallen am 2026-10-29 (Einheit G3.2): scripts/abnahme-abgleich.sh besteht; ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3).
+# Eintrag D10 entfallen am 2026-10-30 (Einheit G3.3): scripts/prototyp-trennung-pruefen.sh besteht; ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3).
+# Eintrag D12 entfallen am 2026-10-30 (Einheit G3.4): scripts/nachweise-vollstaendig.sh besteht; ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3).
 
 # Eintrag D9 (2026-10-28, Einheit G1): D9 ist mit der ersten Datei unter backend/ Lage C; der Eintrag ueberdauert das Grundgeruest bis R3-C-004.
 D9 rueckkanal|scripts/rueckkanal-pruefen.sh	scripts/rueckkanal-pruefen.sh besteht heute nicht; ADR 0002, Abschnitt 6 fuehrt es als eigenes Projektartefakt, das mit R3-C-004 entsteht (Zeile D9 der ersten Tabelle und der Objekttabelle); der Eintrag ueberdauert das Grundgeruest und entfaellt mit R3-C-004 (ADR 0003, Teil B, Nachtrag vom 2026-10-28 zu 6.12.5).

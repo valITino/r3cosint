@@ -756,7 +756,7 @@ trap 'rm -f "$ausgabe_datei"' EXIT
 
 # DT2-B2: OHNE diese Zeile erbte "make dod" das TMPDIR dieses Skripts
 # unveraendert -- zeigte DAS in den Baum, haette die Kette SELBST (z. B.
-# Makefile, Ziel "nachweise": nachweis_tmp; Ziel "abdeckung": covdatei) dort
+# Makefile, Ziel "abdeckung": covdatei) dort
 # kurzzeitig eine Datei angelegt, unabhaengig davon, dass die WEGWERFDATEI
 # DIESES Skripts (N-06) bereits sicher ausserhalb liegt. $ausgabe_verz_phys
 # ist nach der Ausweich-Pruefung oben immer das Verzeichnis der TATSAECHLICH
