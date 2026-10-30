@@ -60,7 +60,7 @@
 # D11 ist ein Werkzeug (gitleaks), also nicht terminierbar (kein Eintrag).
 
 # Eintrag D7 entfallen am 2026-10-29 (Einheit G3.2): scripts/abnahme-abgleich.sh besteht; ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3).
-D10 prototyp-trennung|scripts/prototyp-trennung-pruefen.sh	scripts/prototyp-trennung-pruefen.sh besteht heute nicht; ADR 0002, Abschnitt 6 fuehrt es als eigenes Projektartefakt, das mit dem Grundgeruest entsteht (Zeile D10 der Objekttabelle, Betriebsart als O-8 offen).
+# Eintrag D10 entfallen am 2026-10-30 (Einheit G3.3): scripts/prototyp-trennung-pruefen.sh besteht; ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3).
 D12 nachweise|scripts/nachweise-vollstaendig.sh	scripts/nachweise-vollstaendig.sh besteht heute nicht; ADR 0002, Abschnitt 6 fuehrt es als eigenes Projektartefakt, das mit dem Grundgeruest entsteht (Zeile D12 der Objekttabelle, Form als O-8 offen).
 
 # Eintrag D9 (2026-10-28, Einheit G1): D9 ist mit der ersten Datei unter backend/ Lage C; der Eintrag ueberdauert das Grundgeruest bis R3-C-004.

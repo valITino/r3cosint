@@ -123,7 +123,9 @@
 #                                       nicht Produktionscode; der Schritt
 #                                       laeuft nach 5.6 praktisch immer),
 #                                       scripts/prototyp-trennung-pruefen.sh
-#                                       fehlt vollstaendig
+#                                       fehlt vollstaendig (so bis zum
+#                                       2026-10-30; seitdem Lage A, siehe
+#                                       Nachtrag G3.3 unten)
 #   D11 geheimnisse          Lage C  — gitleaks fehlt, das Repository
 #                                       existiert bereits und koennte
 #                                       Geheimnisse enthalten (zwei Laeufe,
@@ -137,9 +139,9 @@
 # deploy/compose.test.yml entstehen, wechseln D1 bis D8 automatisch nach
 # Lage A. D9 wechselt nach Lage C, sobald backend/, frontend/ oder deploy/
 # mindestens eine Datei enthaelt (ADR 0002, Abschnitt 6, Objekttabelle) und
-# scripts/rueckkanal-pruefen.sh weiterhin fehlt. D10 ist bereits heute Lage C,
-# weil prototype/ besteht (siehe Tabelle oben) und bleibt es, solange
-# scripts/prototyp-trennung-pruefen.sh fehlt. D18 wechselt beim Erscheinen
+# scripts/rueckkanal-pruefen.sh weiterhin fehlt. D10 war bis zum 2026-10-30 Lage C,
+# weil prototype/ besteht (siehe Tabelle oben) und scripts/prototyp-trennung-pruefen.sh
+# fehlte; fehlt es wieder, ist D10 wieder Lage C. D18 wechselt beim Erscheinen
 # irgendeiner *.py-Datei unterhalb backend/src/ OHNE
 # backend/importvertraege.toml sofort nach Lage C (Pruefmittel fehlt bei
 # vorhandenem Gegenstand) — nicht erst, wenn zusaetzlich ein Werkzeug fehlt,
@@ -148,7 +150,8 @@
 # Nachtrag 2026-10-28 (Einheit G1, ADR 0002, Abschnitte 5 und 6): Die Angaben "heute" in
 # den Kommentaren der Ziele beschreiben den Bestand vom 2026-08-30. Mit backend/ (G1)
 # sind D1 (Backend-Anteil), D2 bis D6, D8 und D18 Lage A; D7 blieb Lage C bis zum 2026-10-29
-# (FEHLT=scripts/abnahme-abgleich.sh, terminiert; siehe Nachtrag G3.2 unten); D9 bleibt Lage C
+# (FEHLT=scripts/abnahme-abgleich.sh, terminiert; siehe Nachtrag G3.2 unten) und D10 bis zum 2026-10-30
+# (FEHLT=scripts/prototyp-trennung-pruefen.sh, terminiert; siehe Nachtrag G3.3 unten); D9 bleibt Lage C
 # (FEHLT=scripts/rueckkanal-pruefen.sh, terminiert). D11 hat ein zweites Pruefmittel: scripts/gitleaks.toml (fehlt sie, ist D11
 # Lage C); schreibt git bei der Probe vor dem Historienlauf auf stderr, ist D11 Lage C mit
 # FEHLT=git-log. Den Inhalt von scripts/gitleaks.toml liest kein Lauf von gitleaks (die
@@ -182,11 +185,21 @@
 # noch keinen Abnahmetest haben muessen, fuehrt die Ausnahmeliste scripts/abnahme-ausnahmen.txt.
 # Der Eintrag zu D7 in .claude/hooks/dod-gate-terminierte-lagen.txt ist entfallen.
 #
+# Nachtrag 2026-10-30 (Einheit G3.3, ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3), Zeilen zu D10):
+# scripts/prototyp-trennung-pruefen.sh besteht, D10 ist Lage A, solange es besteht und das Gate traegt. Das Rezept des
+# Ziels prototyp-trennung laeuft in dieser Reihenfolge: (a) die Objektbedingung "prototype/ vorhanden" bleibt (sonst
+# Lage B); (b) fehlt das Skript, Lage C mit FEHLT=scripts/prototyp-trennung-pruefen.sh; (c) sonst das Skript ohne Argument:
+# 0 bestanden, 3 Lage C mit FEHLT=prototyp-trennung-pruefmittel, jeder andere Wert ungleich 0 A_FAIL (Rueckgabewert 2:
+# Funde). Das Skript ruft das Gate .claude/hooks/block-prototype-import.sh unveraendert je Textdatei unter prototype/,
+# backend/, frontend/ und deploy/ auf, vorab eine Kontrollprobe mit vier Ereignissen; Fallklassen KD-1 bis KD-9, Grenzen
+# GD-1 bis GD-6 und die des Gates: Kopfkommentar des Skripts. Der Eintrag zu D10 in
+# .claude/hooks/dod-gate-terminierte-lagen.txt ist entfallen.
+#
 # Was dieses Makefile NICHT ist: kein Ersatz fuer die eigenen
 # Projektskripte, die laut ADR 0002 Abschnitt 6 "mit dem Grundgeruest"
-# entstehen (scripts/abnahme-abgleich.sh besteht seit dem 2026-10-29, Einheit G3.2; es fehlen
-# noch scripts/rueckkanal-pruefen.sh, scripts/prototyp-trennung-pruefen.sh und
-# scripts/nachweise-vollstaendig.sh),
+# entstehen (scripts/abnahme-abgleich.sh besteht seit dem 2026-10-29, Einheit G3.2,
+# scripts/prototyp-trennung-pruefen.sh seit dem 2026-10-30, Einheit G3.3; es fehlen noch
+# scripts/rueckkanal-pruefen.sh und scripts/nachweise-vollstaendig.sh),
 # und kein Ersatz fuer backend/importvertraege.toml selbst, das laut ADR 0002
 # Abschnitt 5 mit dem Grundgeruest entsteht. Fehlen sie, meldet der jeweilige
 # Schritt das ehrlich statt es vorzutaeuschen.
@@ -708,14 +721,15 @@ endef
 # Gegenstand. Deshalb hat dieser Schritt KEINE Lage B (ADR 0002, 6.8.3).
 #
 # Weshalb er als ERSTER laeuft und nicht am Ende (ADR 0002, 6.8.2): Die Kette
-# bricht beim ersten Schritt ab, der ungleich 0 endet, und sie bricht heute bei
-# D7 ab. Ein Schritt hinter D7 liefe bis zum Grundgeruest nie. Schlimmer noch:
-# Er wuerde in genau dem Augenblick zum ersten Mal laufen, in dem er am
+# brach beim ersten Schritt ab, der ungleich 0 endete, und sie brach damals bei
+# D7 ab. Ein Schritt hinter D7 waere bis zum Grundgeruest nie gelaufen. Schlimmer
+# noch: Er waere in genau dem Augenblick zum ersten Mal gelaufen, in dem er am
 # meisten meldet -- die Regel des Skripts, Verweise in noch nicht gebaute
 # Baeume nicht zu beanstanden, schaltet sich mit dem Entstehen von backend/
-# selbst scharf, und dasselbe Grundgeruest bringt scripts/abnahme-abgleich.sh
+# selbst scharf, und dasselbe Grundgeruest brachte scripts/abnahme-abgleich.sh
 # und damit das Ende der Lage C bei D7. Erster Lauf und Scharfschaltung fielen
-# zusammen.
+# zusammen. Stand 2026-10-30: D7 ist seit der Einheit G3.2 Lage A, und die Kette
+# laeuft ueber Lagen C hinweg weiter (ADR 0002, 6.12.6); die Reihenfolge bleibt.
 #
 # Fehlendes git ergibt Lage C und nicht Lage B: Der Gegenstand sind die
 # Dokumente, git ist nur das Mittel, mit dem der Bestand abgegrenzt wird. Der
@@ -1495,6 +1509,19 @@ rueckkanal:
 # Importe (geprueft am 2026-08-25); das aendert an der Objektbedingung nichts,
 # weil der Gegenstand die TRENNUNG ist, nicht der Inhalt von prototype/
 # selbst -- eine Stapelpruefung urteilt ueber den Bestand.
+#
+# Bau in G3.3 (ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3), Zeilen zu D10). Das Rezept ruft
+# scripts/prototyp-trennung-pruefen.sh ohne Argument auf und ordnet den Rueckgabewert zu: 0 bestanden; 3 Lage C mit
+# FEHLT=prototyp-trennung-pruefmittel (das Pruefmittel faellt aus: ein Werkzeug der geschlossenen Liste fehlt, das Gate
+# fehlt, ist nicht lesbar oder eine Verknuepfung, ein Argument, kein Git-Arbeitsbaum, die Ablage ist nicht herstellbar
+# oder liegt im Arbeitsbaum, git ls-files scheitert oder die Liste ist unvollstaendig gelesen, eine Datei ist nicht
+# lesbar, das Ereignis ist nicht herstellbar, die Kontrollprobe weicht ab, das Gate antwortet auf eine Datei weder mit
+# Sperre noch mit Durchlauf, das Gesamtbudget ist erschoepft; Klassen KD-3 bis KD-6 und KD-9 im Kopf des Skripts);
+# jeder andere Wert ungleich 0 A_FAIL
+# (Rueckgabewert 2: mindestens eine Sperre der Richtung 1 oder 2, eine Verknuepfung oder ein Untermodul unter einer
+# Wurzel). Fehlt das Skript, bleibt es Lage C mit FEHLT=scripts/prototyp-trennung-pruefen.sh. Was ein gruener Lauf
+# aussagt und was nicht (Bezuege ohne Importwort, Prosa, ignorierte und binaere Dateien, die Grenzen des Gates):
+# Kopfkommentar des Skripts.
 prototyp-trennung:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D10 prototyp-trennung] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
@@ -1504,11 +1531,18 @@ prototyp-trennung:
 	fi
 	if [ "$$hat_objekt" -eq 1 ]; then
 		if [ -f scripts/prototyp-trennung-pruefen.sh ]; then
-			bash scripts/prototyp-trennung-pruefen.sh || fehlgeschlagen=1
+			bash scripts/prototyp-trennung-pruefen.sh; pruefer_rc=$$?
+			if [ "$$pruefer_rc" -eq 3 ]; then
+				echo "[D10 prototyp-trennung] LAGE C: scripts/prototyp-trennung-pruefen.sh meldet Lage C (Rueckgabewert 3), Grund siehe oben." >&2
+				[ -n "$$fehlt" ] || fehlt="prototyp-trennung-pruefmittel"
+				hat_lage_c=1
+			elif [ "$$pruefer_rc" -ne 0 ]; then
+				echo "[D10 prototyp-trennung] scripts/prototyp-trennung-pruefen.sh endete mit Rueckgabewert $$pruefer_rc." >&2
+				fehlgeschlagen=1
+			fi
 		else
 			echo "[D10 prototyp-trennung] LAGE C: prototype/ existiert, aber scripts/prototyp-trennung-pruefen.sh fehlt." >&2
 			echo "Der bestehende Hook block-prototype-import.sh deckt nur den Schreibweg ab (PreToolUse), nicht den bereits geschriebenen Bestand." >&2
-			echo "Betriebsart und Form sind mit DevOps und Protocol Master zu klaeren (ADR 0002, Abschnitt 8, O-8)." >&2
 			fehlt="scripts/prototyp-trennung-pruefen.sh"
 			hat_lage_c=1
 		fi

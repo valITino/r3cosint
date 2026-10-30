@@ -210,6 +210,7 @@
 #F|A-215|EA-6,GA-7|fund|Beendigung (ST-G3-11)|Lesefehler nach der ersten Zeile der Ausnahmeliste: das Lesen endet wie am Dateiende, die Ausnahme fehlt, der Eintrag ist faellig
 #F|A-216|EA-6,GA-7|fund|Beendigung (ST-G3-11)|Lesefehler nach der ersten Zeile der Sammeldatei: das Lesen endet wie am Dateiende, der zweite Test fehlt
 #F|A-217|GA-7|statisch|Beendigung (ST-G3-11)|bash laesst die Variable bei einem Lesefehler unveraendert und liefert 1 (Annahme der Faelle A-208 und A-214 bis A-216)
+#F|A-218|EA-1|kein-fund+ausgabe|Umfeld|CDPATH des Aufrufers aendert die Wurzel bei relativem Aufruf (bash scripts/abnahme-abgleich.sh <Sammeldatei>, wie make ihn macht) nicht: Urteil wie ohne CDPATH, keine Lage C, kein Pfad auf der Standardausgabe
 #F|A-299|EA-2|arbeitsbaum|Kettengrundsatz|der Arbeitsbaum des Aufrufers ist nach dem ganzen Lauf gleich wie davor
 #
 
@@ -466,6 +467,7 @@ fall_zuruecksetzen() {
   LC_MIT=()
   NH_GRUND=""
   CWD_WAHL=""
+  AUFRUF_REL=""
   SKRIPT_ORT="scripts/abnahme-abgleich.sh"
   STAT_OK=""
   STAT_SOLL=""
@@ -509,9 +511,10 @@ grundbaum_bauen() {
 # 9. Lauf des gepruefen Skripts und Bewertung
 # =============================================================================
 lauf_pruefer() { # lauf_pruefer <cwd> <aus> <fehler> [VAR=WERT...] : setzt LAUF_RC; das Skript liegt am Ort $SKRIPT_ORT des Baums
-  local cwd="$1" out="$2" err="$3"
+  local cwd="$1" out="$2" err="$3" skript="$BAUM/$SKRIPT_ORT"
   shift 3
-  ( cd "$cwd" && exec timeout -k 5 "$FALL_ZEITGRENZE" env -i "${ENV_BASIS[@]}" "$@" "$BASH_BIN" "$BAUM/$SKRIPT_ORT" "${ARGS[@]+"${ARGS[@]}"}" </dev/null ) >"$out" 2>"$err"
+  if [ "$AUFRUF_REL" = 1 ]; then skript="$SKRIPT_ORT"; fi
+  ( cd "$cwd" && exec timeout -k 5 "$FALL_ZEITGRENZE" env -i "${ENV_BASIS[@]}" "$@" "$BASH_BIN" "$skript" "${ARGS[@]+"${ARGS[@]}"}" </dev/null ) >"$out" 2>"$err"
   LAUF_RC=$?
 }
 stderr_kopf() { head -n 3 "$1" 2>/dev/null | tr '\n' ' ' | cut -c1-300; }
@@ -972,6 +975,7 @@ f_A185() { STAT_SOLL="die Zeilen der Antwort von sort werden nicht mit einer Ers
   treffer=$(code_text | grep -c 'SORTIERT//'); probe=$(printf '%s\nx="${SORTIERT//[!a]/}"\n' "$(code_text)" | grep -c 'SORTIERT//')
   STAT_IST="Zeilen mit SORTIERT//: $treffer; Probe der Pruefung: $probe"
   if [ "$treffer" = 0 ] && [ "$probe" -ge 1 ]; then STAT_OK=1; fi; }
+f_A218() { AUFRUF_REL=1; CWD_WAHL="$BAUM"; mkdir -p "$FALL/lockvogel/scripts" || herstellung_fehler "lockvogel"; env_zusatz "CDPATH=$FALL/lockvogel"; ausgabe_mit "Gesammelte Abnahmetests: 2"; ausgabe_mit "Befunde: 0"; ausgabe_ohne "$FALL/lockvogel"; }
 f_A299() { :; }
 
 # =============================================================================

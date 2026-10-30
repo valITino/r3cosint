@@ -82,8 +82,10 @@
 #   als A_FAIL fest und ruft das Skript dann nicht auf.
 #
 # EIGENSCHAFTEN
-#   EA-1  Umfeld: das Skript setzt LC_ALL=C und loescht vor dem ersten git-Aufruf die git-Variablen des Aufrufers; es
-#         setzt GIT_NO_REPLACE_OBJECTS=1. Das Urteil haengt weder von der Spracheinstellung noch von diesen Variablen ab.
+#   EA-1  Umfeld: das Skript setzt LC_ALL=C, loescht vor dem ersten cd ein CDPATH und vor dem ersten git-Aufruf die
+#         git-Variablen des Aufrufers; es setzt GIT_NO_REPLACE_OBJECTS=1. Das Urteil haengt weder von der Spracheinstellung noch
+#         von diesen Variablen noch von CDPATH ab (bei relativem Aufruf, wie make ihn macht, lenkte ein CDPATH "cd scripts/.."
+#         um und schriebe den Zielpfad auf die Standardausgabe).
 #   EA-2  Schreibfrei: das Skript schreibt keine Datei in den Arbeitsbaum (Kettengrundsatz, ADR 0002, Abschnitt 6). Eine
 #         Wegwerfdatei legt es selbst nicht an; ein Here-String taete es (Bash legt ab 64 KiB, vor Version 5.1 immer, eine Datei
 #         in TMPDIR beziehungsweise /tmp an), deshalb benutzt das Skript keinen.
@@ -190,6 +192,8 @@ fi
 unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_NAMESPACE GIT_CEILING_DIRECTORIES GIT_SHALLOW_FILE GIT_DISCOVERY_ACROSS_FILESYSTEM GIT_GLOB_PATHSPECS GIT_NOGLOB_PATHSPECS GIT_LITERAL_PATHSPECS GIT_ICASE_PATHSPECS 2>/dev/null || true
 unset "${!GIT_TRACE@}" 2>/dev/null || true
 export GIT_NO_REPLACE_OBJECTS=1
+# EA-1: ein CDPATH des Aufrufers lenkt "cd scripts/.." bei relativem Aufruf um und schreibt den Zielpfad auf die Standardausgabe
+unset CDPATH
 
 # KC-3 Git-Arbeitsbaum: die Wurzel ist das Verzeichnis ueber dem scripts/ dieses Skripts, nicht das Arbeitsverzeichnis
 # des Aufrufers (ein Lauf aus einem fremden Repository urteilte sonst ueber das falsche)
