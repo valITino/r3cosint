@@ -111,7 +111,9 @@
 #   D6  abdeckung            Lage B  — nichts zu messen
 #   D7  abnahme              Lage C  — Backlog existiert bereits mit echten
 #                                       Abnahmekriterien, scripts/abnahme-
-#                                       abgleich.sh fehlt vollstaendig
+#                                       abgleich.sh fehlt vollstaendig (so
+#                                       bis zum 2026-10-29; seitdem Lage A,
+#                                       siehe Nachtrag G3.2 unten)
 #   D8  abhaengigkeiten      Lage B  — nichts zu pruefen
 #   D9  rueckkanal           Lage B  — weder backend/ noch frontend/ noch
 #                                       deploy/ enthaelt eine Datei
@@ -145,9 +147,9 @@
 #
 # Nachtrag 2026-10-28 (Einheit G1, ADR 0002, Abschnitte 5 und 6): Die Angaben "heute" in
 # den Kommentaren der Ziele beschreiben den Bestand vom 2026-08-30. Mit backend/ (G1)
-# sind D1 (Backend-Anteil), D2 bis D6, D8 und D18 Lage A; D7 bleibt Lage C (FEHLT=scripts/
-# abnahme-abgleich.sh, terminiert), ebenso D9 (FEHLT=scripts/rueckkanal-pruefen.sh,
-# terminiert). D11 hat ein zweites Pruefmittel: scripts/gitleaks.toml (fehlt sie, ist D11
+# sind D1 (Backend-Anteil), D2 bis D6, D8 und D18 Lage A; D7 blieb Lage C bis zum 2026-10-29
+# (FEHLT=scripts/abnahme-abgleich.sh, terminiert; siehe Nachtrag G3.2 unten); D9 bleibt Lage C
+# (FEHLT=scripts/rueckkanal-pruefen.sh, terminiert). D11 hat ein zweites Pruefmittel: scripts/gitleaks.toml (fehlt sie, ist D11
 # Lage C); schreibt git bei der Probe vor dem Historienlauf auf stderr, ist D11 Lage C mit
 # FEHLT=git-log. Den Inhalt von scripts/gitleaks.toml liest kein Lauf von gitleaks (die
 # eingebaute Liste ueberspringt die Datei); D11 bindet sie an GITLEAKS_KONFIG_SHA256
@@ -164,10 +166,27 @@
 # Aufrufers mit FEHLT=git-log (sie traut dem Verzeichnis, das leere HOME von D11 nicht) oder mit
 # FEHLT=git-arbeitsbaum (sie traut ihm nicht; schon die Wache mit git rev-parse scheitert).
 #
-# Was dieses Makefile NICHT ist: kein Ersatz fuer die vier eigenen
+# Nachtrag 2026-10-29 (Einheit G3.2, ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3), Zeile
+# "D7, Ziel abnahme im Makefile"): scripts/abnahme-abgleich.sh besteht, D7 ist Lage A, solange es
+# besteht und seine Eingaben tragen. Das Rezept des Ziels abnahme laeuft in dieser Reihenfolge:
+# (a) fehlt das Skript, Lage C mit FEHLT=scripts/abnahme-abgleich.sh; (b) besteht
+# backend/pyproject.toml, die Wachen fuer uv und pytest (Lage C mit FEHLT=uv beziehungsweise
+# FEHLT=pytest) und der erste Teil mit -m abnahme, bei dem der Rueckgabewert 5 (nichts gesammelt)
+# kein Fehlschlag ist und jeder andere Wert ungleich 0 A_FAIL; (c) ein Sammellauf mit denselben
+# Angaben und --collect-only in eine Wegwerfdatei ausserhalb des Arbeitsbaums (mktemp, am Ende
+# entfernt; scheitert mktemp, Lage C mit FEHLT=mktemp), bei 0 oder 5 weiter, sonst A_FAIL ohne
+# Abgleich; ohne backend/pyproject.toml bleibt die Datei leer; (d) bash scripts/abnahme-abgleich.sh
+# mit der Datei als einzigem Argument: 0 bestanden, 3 Lage C mit FEHLT=abnahme-pruefmittel, jeder
+# andere Wert ungleich 0 A_FAIL (Rueckgabewert 2: Funde). Suchmuster und Pruefung auf
+# Abnahmekriterien stehen nicht mehr im Rezept, sondern im Skript (ADR 0002, 6.3.2). Eintraege, die
+# noch keinen Abnahmetest haben muessen, fuehrt die Ausnahmeliste scripts/abnahme-ausnahmen.txt.
+# Der Eintrag zu D7 in .claude/hooks/dod-gate-terminierte-lagen.txt ist entfallen.
+#
+# Was dieses Makefile NICHT ist: kein Ersatz fuer die eigenen
 # Projektskripte, die laut ADR 0002 Abschnitt 6 "mit dem Grundgeruest"
-# entstehen (scripts/abnahme-abgleich.sh, scripts/rueckkanal-pruefen.sh,
-# scripts/prototyp-trennung-pruefen.sh, scripts/nachweise-vollstaendig.sh),
+# entstehen (scripts/abnahme-abgleich.sh besteht seit dem 2026-10-29, Einheit G3.2; es fehlen
+# noch scripts/rueckkanal-pruefen.sh, scripts/prototyp-trennung-pruefen.sh und
+# scripts/nachweise-vollstaendig.sh),
 # und kein Ersatz fuer backend/importvertraege.toml selbst, das laut ADR 0002
 # Abschnitt 5 mit dem Grundgeruest entsteht. Fehlen sie, meldet der jeweilige
 # Schritt das ehrlich statt es vorzutaeuschen.
@@ -1241,72 +1260,99 @@ abdeckung:
 # =============================================================================
 # D7 — Aufgabenspezifische Abnahmekriterien
 # =============================================================================
-# UEBERLEGUNG (verlangt vom Auftrag, keine Regel): Das Pruefmittel
-# scripts/abnahme-abgleich.sh ist laut ADR 0002 "eigenes Projektartefakt,
-# entsteht mit dem Grundgeruest" und fehlt vollstaendig. Trotzdem ist dies
-# NICHT Lage B: Das Objekt der Pruefung ist nicht der Programmcode, sondern
-# docs/05_Product_Backlog.md -- und dieses Dokument existiert bereits, mit
-# realen Eintraegen und realen Abnahmekriterien, unabhaengig davon, ob
-# backend/pyproject.toml existiert. Wuerde der Abgleich heute laufen, faende er fuer jedes
-# Kriterium keinen Test (weil noch kein Code existiert) -- ein echtes,
-# berechenbares Ergebnis, keine gegenstandslose Frage. "0" vorzutaeuschen
-# waere deshalb eine Luege: Lage C.
+# Objekt der Pruefung ist der Backlog (docs/05_Product_Backlog*.md), nicht der
+# Programmcode. Er besteht seit der Freigabe von Schritt 3 dauerhaft; D7 hat
+# deshalb KEINE Lage B (ADR 0002, 6.3.2): Ein Rezept, das ihn nicht findet oder
+# in ihm keine Abnahmefeldzeile, hat nichts geprueft. Das erkennt das Skript
+# (Suchmuster, Eintraege, Abnahmefeldzeilen) und meldet es mit dem
+# Rueckgabewert 3 (Lage C); das Rezept haelt dafuer keine eigene Pruefung mehr.
+#
+# Bau in G3.2 (ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3), Zeile "D7,
+# Ziel abnahme im Makefile"). Reihenfolge des Rezepts:
+#   (a) scripts/abnahme-abgleich.sh fehlt: Lage C mit
+#       FEHLT=scripts/abnahme-abgleich.sh, nichts weiter.
+#   (b) Besteht backend/pyproject.toml: Wachen fuer uv und pytest (Lage C mit
+#       FEHLT=uv beziehungsweise FEHLT=pytest, der Rest entfaellt) und der erste
+#       Teil, pytest mit -m abnahme. Der Rueckgabewert 5 (nichts gesammelt) ist
+#       kein Fehlschlag, jeder andere Wert ungleich 0 ist A_FAIL; der Schritt
+#       laeuft trotzdem weiter, damit alle Befunde erscheinen.
+#   (c) Sammellauf mit denselben Angaben und --collect-only in eine Wegwerfdatei
+#       ausserhalb des Arbeitsbaums (mktemp, am Ende entfernt; scheitert mktemp,
+#       ist das Lage C mit FEHLT=mktemp). Rueckgabewert 0 oder 5: weiter; jeder
+#       andere Wert: A_FAIL ohne Abgleich (ein Sammelfehler entsteht an einer
+#       Testdatei und ist ein Befund, keine Lage C). Ohne backend/pyproject.toml
+#       bleibt die Datei leer.
+#   (d) bash scripts/abnahme-abgleich.sh mit der Datei als einzigem Argument:
+#       0 bestanden; 3 Lage C mit FEHLT=abnahme-pruefmittel; jeder andere Wert
+#       ungleich 0 A_FAIL (Rueckgabewert 2: Funde).
+# Was ein gruener Lauf aussagt und was nicht (Gesammeltsein statt Bestehen,
+# Grenzen GA-1 bis GA-7): Kopfkommentar von scripts/abnahme-abgleich.sh.
 abnahme:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D7 abnahme] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
-	if [ -f backend/pyproject.toml ]; then
-		hat_objekt=1
-		if ! command -v uv >/dev/null 2>&1; then
-			echo "[D7 abnahme] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
-			[ -n "$$fehlt" ] || fehlt="uv"
-			hat_lage_c=1
-		elif ! $(UMFELD_PROBE) pytest >/dev/null 2>&1; then
-			echo "[D7 abnahme] LAGE C: backend/pyproject.toml existiert, aber 'pytest' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
-			echo "Beschaffen: pytest in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
-			[ -n "$$fehlt" ] || fehlt="pytest"
-			hat_lage_c=1
-		else
-			# G1 (ADR 0002, Abschnitt 6, Zeile D7): erster Teil wie D5, mit -m abnahme. Im
-			# Grundgeruest gibt es keinen Abnahmetest, pytest endet dann mit 5; die Klassifizierung
-			# stellt die Lage C (scripts/abnahme-abgleich.sh fehlt) vor A_FAIL, D7 bleibt die
-			# terminierte Lage C. Den Rueckgabewert 5 behandelt G3.
-			$(UV) run --project backend --locked pytest -c backend/pyproject.toml -q -m abnahme backend/tests || fehlgeschlagen=1
-		fi
-	fi
-	# G1: fester Dateiname ersetzt durch Glob -- "docs/05_Product_Backlog.md"
-	# allein uebersah z. B. eine Umbenennung nach "docs/05_Product_Backlog_v2.md"
-	# und meldete danach faelschlich Lage B mit Rueckgabewert 0, obwohl der
-	# Backlog nur umbenannt, nicht verschwunden war.
-	# E4 (ADR 0002, dritte Fortschreibung 6.3.2): D7 hat KEINE Lage B mehr. Der
-	# Backlog besteht seit der Freigabe von Schritt 3 dauerhaft; findet das
-	# Suchmuster nichts, ist das ein Befund und kein "nichts zu pruefen".
-	# M3: Es werden ALLE Treffer genannt, nicht nur der erste, und es wird
-	# nicht behauptet, sie enthielten Abnahmekriterien, ohne nachzusehen.
-	hat_objekt=1
-	backlog_treffer=$$(compgen -G "docs/05_Product_Backlog*.md" 2>/dev/null || true)
-	if [ -z "$$backlog_treffer" ]; then
-		echo "[D7 abnahme] LAGE C: kein Backlog gefunden (Muster docs/05_Product_Backlog*.md). Der Backlog besteht seit der Freigabe von Schritt 3 dauerhaft; sein Fehlen ist ein Befund, nicht ein leerer Gegenstand (ADR 0002, 6.3.2)." >&2
-		[ -n "$$fehlt" ] || fehlt="docs/05_Product_Backlog.md"
+	hat_objekt=1; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
+	sammeldatei=""
+	if [ ! -f scripts/abnahme-abgleich.sh ]; then
+		echo "[D7 abnahme] LAGE C: scripts/abnahme-abgleich.sh existiert nicht." >&2
+		echo "Der Abgleich Backlog gegen Testkennungen (Projektauftrag 6.6) kann deshalb nicht laufen; 'bestanden' waere hier nicht belegt." >&2
+		[ -n "$$fehlt" ] || fehlt="scripts/abnahme-abgleich.sh"
 		hat_lage_c=1
 	else
-		# "tr" macht auch aus dem abschliessenden Umbruch ein Leerzeichen; ohne
-		# das nachfolgende "sed" stand in der Meldung ein doppeltes Leerzeichen
-		# (Befund der dynamischen Pruefung vom 2026-09-01).
-		backlog_liste=$$(printf '%s' "$$backlog_treffer" | tr '\n' ' ' | sed 's/[[:space:]]*$$//')
-		mit_kriterien=$$(grep -l -- '\*\*Abnahme:\*\*' $$backlog_treffer 2>/dev/null | tr '\n' ' ' | sed 's/[[:space:]]*$$//' || true)
-		if [ -z "$$mit_kriterien" ]; then
-			echo "[D7 abnahme] LAGE C: gefunden wurde $$backlog_liste, aber keine dieser Dateien fuehrt Abnahmekriterien (Muster '**Abnahme:**')." >&2
-			[ -n "$$fehlt" ] || fehlt="backlog-abnahmekriterien"
-			hat_lage_c=1
-		elif [ -f scripts/abnahme-abgleich.sh ]; then
-			bash scripts/abnahme-abgleich.sh || fehlgeschlagen=1
-		else
-			echo "[D7 abnahme] LAGE C: $$mit_kriterien fuehrt Abnahmekriterien, aber scripts/abnahme-abgleich.sh existiert nicht." >&2
-			echo "Der Abgleich Backlog gegen Testkennungen (Projektauftrag 6.6) kann deshalb nicht laufen; 'bestanden' waere hier nicht belegt." >&2
-			echo "Skript folgt mit dem Grundgeruest (ADR 0002, Abschnitt 5 und 6, D7)." >&2
-			[ -n "$$fehlt" ] || fehlt="scripts/abnahme-abgleich.sh"
-			hat_lage_c=1
+		if [ -f backend/pyproject.toml ]; then
+			if ! command -v uv >/dev/null 2>&1; then
+				echo "[D7 abnahme] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
+				[ -n "$$fehlt" ] || fehlt="uv"
+				hat_lage_c=1
+			elif ! $(UMFELD_PROBE) pytest >/dev/null 2>&1; then
+				echo "[D7 abnahme] LAGE C: backend/pyproject.toml existiert, aber 'pytest' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
+				echo "Beschaffen: pytest in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
+				[ -n "$$fehlt" ] || fehlt="pytest"
+				hat_lage_c=1
+			else
+				# Erster Teil (G1, Grund wie D5): -c nennt die Konfiguration, der Pfad den
+				# gesammelten Gegenstand. Rueckgabewert 5 heisst: kein Test mit dem Marker
+				# abnahme gesammelt, das ist kein Fehlschlag (ADR 0002, Abschnitt 5, Nachtrag
+				# vom 2026-10-29 (G3), Regel c); das Urteil ueber fehlende Abnahmetests traegt
+				# der Abgleich unten.
+				$(UV) run --project backend --locked pytest -c backend/pyproject.toml -q -m abnahme backend/tests; abnahme_rc=$$?
+				if [ "$$abnahme_rc" -ne 0 ] && [ "$$abnahme_rc" -ne 5 ]; then
+					echo "[D7 abnahme] pytest -m abnahme endete mit Rueckgabewert $$abnahme_rc." >&2
+					fehlgeschlagen=1
+				fi
+			fi
+		fi
+		if [ "$$hat_lage_c" -eq 0 ]; then
+			# Die Sammeldatei liegt ausserhalb des Arbeitsbaums (Kettengrundsatz, ADR 0002,
+			# Abschnitt 6) und wird am Ende entfernt. Ohne backend/pyproject.toml bleibt sie leer:
+			# das Skript bekommt trotzdem genau eine Datei (Rueckgabewert 3 bei fehlender Datei).
+			sammeldatei=$$(mktemp)
+			if [ -z "$$sammeldatei" ] || [ ! -f "$$sammeldatei" ]; then
+				echo "[D7 abnahme] LAGE C: mktemp schlug fehl (Sammeldatei fuer den Abgleich nicht herstellbar)." >&2
+				sammeldatei=""
+				[ -n "$$fehlt" ] || fehlt="mktemp"
+				hat_lage_c=1
+			else
+				sammel_ok=1
+				if [ -f backend/pyproject.toml ]; then
+					$(UV) run --project backend --locked pytest -c backend/pyproject.toml --collect-only -q -m abnahme backend/tests > "$$sammeldatei"; sammel_rc=$$?
+					if [ "$$sammel_rc" -ne 0 ] && [ "$$sammel_rc" -ne 5 ]; then
+						echo "[D7 abnahme] Sammellauf von pytest endete mit Rueckgabewert $$sammel_rc; der Abgleich wird nicht ausgefuehrt (ein Sammelfehler entsteht an einer Testdatei und ist ein Befund)." >&2
+						fehlgeschlagen=1; sammel_ok=0
+					fi
+				fi
+				if [ "$$sammel_ok" -eq 1 ]; then
+					bash scripts/abnahme-abgleich.sh "$$sammeldatei"; abgleich_rc=$$?
+					if [ "$$abgleich_rc" -eq 3 ]; then
+						echo "[D7 abnahme] LAGE C: scripts/abnahme-abgleich.sh meldet Lage C (Rueckgabewert 3), Grund siehe oben." >&2
+						[ -n "$$fehlt" ] || fehlt="abnahme-pruefmittel"
+						hat_lage_c=1
+					elif [ "$$abgleich_rc" -ne 0 ]; then
+						echo "[D7 abnahme] scripts/abnahme-abgleich.sh endete mit Rueckgabewert $$abgleich_rc." >&2
+						fehlgeschlagen=1
+					fi
+				fi
+				rm -f "$$sammeldatei"
+			fi
 		fi
 	fi
 	$(call KLASSIFIZIEREN,D7,abnahme,tritt nicht ein -- D7 hat seit ADR 0002 6.3.2 keine Lage B.)

@@ -59,7 +59,7 @@
 # der ersten Datei unter backend/ (2026-10-28, Einheit G1) Lage C (Eintrag unten);
 # D11 ist ein Werkzeug (gitleaks), also nicht terminierbar (kein Eintrag).
 
-D7 abnahme|scripts/abnahme-abgleich.sh	scripts/abnahme-abgleich.sh besteht heute nicht; ADR 0002, Abschnitt 6 fuehrt es als eigenes Projektartefakt, das mit dem Grundgeruest entsteht (Zeile D7 der Objekttabelle).
+# Eintrag D7 entfallen am 2026-10-29 (Einheit G3.2): scripts/abnahme-abgleich.sh besteht; ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3).
 D10 prototyp-trennung|scripts/prototyp-trennung-pruefen.sh	scripts/prototyp-trennung-pruefen.sh besteht heute nicht; ADR 0002, Abschnitt 6 fuehrt es als eigenes Projektartefakt, das mit dem Grundgeruest entsteht (Zeile D10 der Objekttabelle, Betriebsart als O-8 offen).
 D12 nachweise|scripts/nachweise-vollstaendig.sh	scripts/nachweise-vollstaendig.sh besteht heute nicht; ADR 0002, Abschnitt 6 fuehrt es als eigenes Projektartefakt, das mit dem Grundgeruest entsteht (Zeile D12 der Objekttabelle, Form als O-8 offen).
 

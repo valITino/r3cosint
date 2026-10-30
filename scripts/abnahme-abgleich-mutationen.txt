@@ -1,0 +1,97 @@
+# scripts/abnahme-abgleich-mutationen.txt -- Mutationen fuer den Modus --mutationen des Pruefmittels
+# scripts/abnahme-abgleich-selbsttest.sh (Kettenschritt D7, scripts/abnahme-abgleich.sh)
+#
+# Anforderung R3-Q-001. Grundlage: ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (Festlegung fuer G3), Zeile "Faelle, Mutationen und
+# Rueckgabewerte"; Muster: scripts/belege-pruefen-mutationen.txt. Einheit G3.2.
+#
+# FORM: je Zeile fuenf Felder, getrennt durch genau vier Tabulatoren; nur ASCII (keine Umlaute):
+#   Kennung AM-nnn <TAB> Klasse (KA-, KC- oder EA-Kennung) <TAB> sed-Ausdruck <TAB> Mindestsatz <TAB> Grund
+#   - Kennung: dauerhaft, nie wiederverwendet. Klasse: die Fehlerklasse oder Eigenschaft, die die Mutation treffen soll.
+#   - sed-Ausdruck: wird mit sed -E --sandbox (e, r und w sind verboten) auf eine Wegwerfkopie des Skripts angewandt (nicht auf das
+#     Pruefmittel); er darf keinen Tabulator enthalten und haftet an einer Codezeile des Skripts, nicht an Kommentarzeilen. Als Begrenzer
+#     dient die Tilde, weil Codezeilen das Rautezeichen tragen.
+#   - Mindestsatz: Fallkennungen A-nnn durch Komma, mindestens eine; nur diese Faelle laufen gegen die Mutante. Ein Fall mit Soll
+#     arbeitsbaum steht in keinem Mindestsatz.
+#   Zeilen mit # am Anfang und Leerzeilen werden uebergangen.
+# AUSGANG JE MUTATION: ERKANNT, wenn jeder Fall des Mindestsatzes gegen die Mutante faellt. WIRKUNGSLOS, wenn die Kopie byte-gleich mit
+#   dem Skript ist, bash -n sie verwirft oder sed mit einem Fehler endet. NICHT_ERKANNT sonst (auch wenn ein Fall des Mindestsatzes nicht
+#   herstellbar ist). Der Modus endet mit 0 nur ohne nicht erkannte und ohne wirkungslose Mutation.
+# DECKUNG (mechanisch, Abweichung ergibt 2): jede Klasse KA, KC und EA im Kopfkommentar des Skripts hat mindestens eine Mutation, deren
+#   Mindestsatz einen Fall dieser Klasse enthaelt; die Klasse jeder Zeile gehoert zu einem Fall ihres Mindestsatzes. Die Grenzen GA tragen
+#   keine Pflichtmutation.
+# PFLEGE: Aendert sich das Skript so, dass ein Anker nicht mehr trifft, meldet der Modus die Mutation als wirkungslos; die Zeile wird
+#   angepasst, nicht gestrichen. Neue Zeilen erhalten die naechste freie Kennung am Ende der Datei. GRENZE des Modus: Eine Mutation, die
+#   das Urteil nicht aendert, ist nicht erkennbar.
+#
+# --- Klassen KA ---------------------------------------------------------------------------------------------------
+AM-001	KA-1	s~^RE_TESTPRAEFIX='.*'$~RE_TESTPRAEFIX='^test_'~	A-010,A-011	Der Praefix eines Abnahmetests wird auf test_ gelockert: ein Name ohne die Form der Kennung ist kein KA-1 mehr.
+AM-002	KA-1	s~"\$\{fn:-\(leer\)\}"~"$fn"~	A-013	Eine Knotenkennung ohne Funktionsnamen traegt keinen sichtbaren Schluessel mehr.
+AM-003	KA-2	s~^    fund "KA-2" .*$~    :~	A-020,A-021	Eine Kennung ohne Eintrag wird nicht mehr gemeldet.
+AM-004	KA-3	s~^    fund "KA-3" .*$~    :~	A-030,A-032	Ein Name ohne abgebildeten Testnamen seines Eintrags wird nicht mehr gemeldet.
+AM-005	KA-3	s~ \|\| \[ -z "\$\{E_NAMENSET\["\$id\|\$srest"\]\+x\}" \]; then$~; then~	A-030,A-031	Ein Name, dessen Rest abbildbar ist, aber kein Testname des Eintrags, gilt nicht mehr als KA-3.
+AM-006	KA-4	s~^      fund "KA-4" .*$~      :~	A-040,A-041	Ein Testname ohne gesammelten Abnahmetest wird nicht mehr gemeldet.
+AM-007	KA-4	s~^    name="\$\{zeile%%\\\[\*\}"$~    name="$zeile"~	A-012	Der Parameterteil in eckigen Klammern wird nicht mehr vom Funktionsnamen getrennt.
+AM-008	KA-5	s~^    fund "KA-5" .*$~    :~	A-050,A-052	Ein faelliger Eintrag ohne eigenen Testnamen wird nicht mehr gemeldet.
+AM-009	KA-6	s~^    fund "KA-6" "\$id" "Kennung mit mehr als einer.*$~    :~	A-060,A-067	Eine Kennung mit zwei Ueberschriften wird nicht mehr gemeldet.
+AM-010	KA-6	s~^              fund "KA-6" "\$sp" "Testname nicht abbildbar.*$~              :~	A-061	Ein eigener Testname mit nicht abbildbarem Rest wird nicht mehr gemeldet.
+AM-011	KA-6	s~^            if \[\[ \$srest =. \$RE_REST \]\]; then$~            if true; then~	A-061	Ein eigener Testname gilt ohne Pruefung des Rests als abbildbar.
+AM-012	KA-6	s~^  if \[ -z "\$\{E_NAMENSET\["\$sid\|\$srest"\]\+x\}" \]; then$~  if false; then~	A-062,A-064	Ein fremder Testname, den sein Eintrag nicht fuehrt, gilt als in Ordnung.
+AM-013	KA-6	s~^          elif \[\[ \$srest =. \$RE_REST \]\]; then$~          elif true; then~	A-065	Ein fremder Testname mit nicht abbildbarem Rest wird als Querverweis geprueft statt als nicht abbildbar gemeldet.
+AM-014	KA-7	s~^    if \[\[ \$zeile =. \$RE_UNZULAESSIG \]\]; then$~    if false; then~	A-075	Zeichen ausserhalb von ASCII und Wagenruecklauf in der Ausnahmeliste werden nicht mehr als solche gemeldet.
+AM-015	KA-7	s~^    if \[ "\$\{#tabs\}" -ne 1 \]; then$~    if false; then~	A-070,A-080	Zeilen ohne oder mit mehreren Tabulatoren werden nicht mehr als Feldzahlfehler gemeldet.
+AM-016	KA-7	s~^RE_KENNUNG='.*'$~RE_KENNUNG='^R3-.*$'~	A-071	Die Form der Kennung in der Ausnahmeliste wird nicht mehr geprueft.
+AM-017	KA-7	s~^    if \[ -n "\$\{EXC_GESEHEN\["\$id"\]\+x\}" \]; then$~    if false; then~	A-073	Eine doppelte Kennung in der Ausnahmeliste wird nicht mehr gemeldet.
+AM-018	KA-7	s~^RE_ETAPPE_GRUND='.*'$~RE_ETAPPE_GRUND='^nicht begonnen, Etappe [0-9]+$'~	A-072	Als Etappe im Grund gelten auch Werte ausserhalb von 0 bis 6.
+AM-019	KA-7	s~^      if \[ -z "\$pfad" \] \|\| .*; then$~      if false; then~	A-074	Ein Pfad ohne repository-relative Form (leer, absolut, mit ..) wird nicht mehr gemeldet.
+AM-020	KA-8	s~^    fund "KA-8" "\$id" "Kennung ohne Ueberschrift im Backlog"$~    :~	A-090	Eine Ausnahme fuer eine Kennung ohne Ueberschrift wird nicht mehr gemeldet.
+AM-021	KA-8	s~^      "\$praefix"\*\) fund .*$~      "$praefix"*) break ;;~	A-091,A-033	Eine Ausnahme fuer einen Eintrag, zu dem ein Abnahmetest gesammelt ist, wird nicht mehr gemeldet.
+AM-022	KA-8	s~elif \[ "\$\{E_ETAPPE\["\$id"\]\}" != "\$n" \]; then~elif false; then~	A-092	Eine Etappe im Grund, die vom Feld Etappe abweicht, wird nicht mehr gemeldet.
+AM-023	KA-8	s~^      if \[ -z "\$\{E_HATET\["\$id"\]\+x\}" \]; then$~      if false; then~	A-093	Ein fehlendes Feld Etappe wird nicht mehr gemeldet.
+AM-024	KA-8	s~elif \[ "\$\{E_ETAPPE\["\$id"\]\}" != "zweite Fassung" \]; then~elif false; then~	A-094	Der Grund zweite Fassung bei einem anderen Feld Etappe wird nicht mehr gemeldet.
+AM-025	KA-8	s~if weg_verknuepft "\$pfad" \|\| \[ ! -e "\$pfad" \]; then~if [ ! -e "$pfad" ]; then~	A-097	Ein Pfad ueber eine Verknuepfung gilt als bestehend.
+AM-026	KA-8	s~if weg_verknuepft "\$pfad" \|\| \[ ! -e "\$pfad" \]; then~if weg_verknuepft "$pfad"; then~	A-095	Ein Pfad, der nicht besteht, gilt als bestehend.
+# --- Klassen KC ---------------------------------------------------------------------------------------------------
+AM-027	KC-1	s~^if \[ "\$#" -ne 1 \] \|\| ~if [ "$#" -lt 1 ] || ~	A-111	Zwei Argumente sind kein Aufrufmangel mehr.
+AM-028	KC-1	s~ \|\| \[ -z "\$1" \]; then$~; then~	A-112	Ein leeres Argument ist kein Aufrufmangel mehr.
+AM-029	KC-2	s~^WERKZEUGE="git sort"$~WERKZEUGE="sort"~	A-113	git fehlt in der Liste der geprueften Werkzeuge.
+AM-030	KC-2	s~^WERKZEUGE="git sort"$~WERKZEUGE="git"~	A-114	sort fehlt in der Liste der geprueften Werkzeuge.
+AM-031	KC-2	s~^if \[ "\$\{BASH_VERSINFO\[0\]:-0\}" -lt 4 \]; then$~if false; then~	A-211	Die Pruefung der bash-Version entfaellt.
+AM-032	KC-2	s~^export LC_ALL=C$~export LC_ALL=C; cat /dev/null~	A-116,A-210	Das Skript ruft einen Befehl auf, der nicht in der geschlossenen Liste steht.
+AM-033	KC-3	s~ \|\| \[ "\$GITTOP" != "\$WURZEL" \]; then$~; then~	A-121	Eine Wurzel unterhalb der obersten Ebene des Arbeitsbaums gilt als Arbeitsbaum.
+AM-034	KC-3	s~git -C "\$WURZEL" rev-parse --show-toplevel~git rev-parse --show-toplevel~	A-122	Der Arbeitsbaum wird am Arbeitsverzeichnis des Aufrufers bestimmt statt an der Wurzel des Skripts.
+AM-035	KC-4	s~^\[ -f "\$SAMMEL" \] \|\| lage_c.*$~:~	A-131	Eine Sammeldatei, die keine regulaere Datei ist, gilt als Sammeldatei.
+AM-036	KC-4	s~^\[ ! -L "\$SAMMEL" \] \|\| lage_c.*$~:~	A-132	Eine Sammeldatei, die eine Verknuepfung ist, gilt als Sammeldatei.
+AM-037	KC-4	s~^if \[ ! -e "\$SAMMEL" \] && \[ ! -L "\$SAMMEL" \]; then$~if false; then~	A-130	Eine fehlende Sammeldatei wird nicht als fehlend gemeldet.
+AM-038	KC-4	s~^case "\$SAMMEL" in /\*\) ;; \*\) SAMMEL="\$PWD/\$SAMMEL" ;; esac$~:~	A-134	Ein relativer Pfad der Sammeldatei wird erst nach dem Wechsel in die Wurzel aufgeloest.
+AM-039	KC-5	s~^if \[ "\$N_ABNZEILEN" -eq 0 \]; then$~if false; then~	A-141,A-145	Ein Backlog ohne Abnahmefeldzeile in einem Eintrag ist keine Lage C mehr.
+AM-040	KC-5	s~^  if weg_verknuepft "\$f"; then lage_c.*$~  :~	A-142,A-143	Eine Backlog-Datei ueber eine Verknuepfung wird gelesen.
+AM-041	KC-5	s~^if \[ "\$\{#BACKLOGS\[@\]\}" -eq 0 \]; then$~if false; then~	A-140	Ein fehlender Backlog wird nicht als fehlend gemeldet.
+AM-042	KC-5	s~^  \[ -f "\$f" \] \|\| lage_c "backlog".*$~  :~	A-144	Eine Datei nach dem Suchmuster, die keine regulaere Datei ist, gilt als Backlog.
+AM-043	KC-5	s~^for f in docs/05_Product_Backlog\*\.md; do$~for f in docs/*.md; do~	A-001,A-148	Das Suchmuster des Backlogs erfasst jede Markdown-Datei unter docs/.
+AM-044	KC-6	s~^if \[ ! -e "\$AUSNAHMEDATEI" \] && \[ ! -L "\$AUSNAHMEDATEI" \]; then$~if false; then~	A-160	Eine fehlende Ausnahmeliste wird nicht als fehlend gemeldet.
+AM-045	KC-6	s~^if weg_verknuepft "\$AUSNAHMEDATEI"; then lage_c.*$~:~	A-162,A-163	Eine Ausnahmeliste ueber eine Verknuepfung wird gelesen.
+AM-046	KC-6	s~^\[ -f "\$AUSNAHMEDATEI" \] \|\| lage_c.*$~:~	A-161	Eine Ausnahmeliste, die keine regulaere Datei ist, wird gelesen.
+# --- Klassen EA ---------------------------------------------------------------------------------------------------
+AM-047	EA-1	s~^unset GIT_DIR .*$~:~	A-170	Die git-Variablen des Aufrufers werden nicht mehr geloescht.
+AM-048	EA-1	s~^export LC_ALL=C$~:~	A-171,A-213	Die Spracheinstellung des Aufrufers gilt: Zeichenklassen und Sortierung haengen von ihr ab.
+AM-049	EA-2	s~^echo "Befunde: \$BEFUNDE"$~: > "$WURZEL/.abnahme-spur"; echo "Befunde: $BEFUNDE"~	A-172,A-173	Das Skript legt eine Datei im Baum an.
+AM-050	EA-3	s~^echo "Backlog: \$LISTE_BACKLOG"$~echo "Backlog: $LISTE_BACKLOG $RANDOM"~	A-174,A-212	Die Ausgabe traegt eine Zufallszahl: zwei Laeufe liefern verschiedene Ausgaben.
+AM-051	EA-4	s~ \| sort -u\)"; then$~)"; then~	A-175	Die Funde werden nicht sortiert und nicht auf gleiche Zeilen reduziert.
+AM-052	EA-4	s~^echo "Befunde: \$BEFUNDE"$~echo "Befunde: $((BEFUNDE + 1))"~	A-010,A-176	Die Zahl in der Schlusszeile ist um eins zu gross.
+AM-053	EA-4	s~^echo "=== Funde"$~echo "=== Befunde"~	A-010	Der Abschnitt der Funde traegt eine andere Ueberschrift.
+AM-054	EA-5	s~^    if \[\[ \$zeile == "- \*\*Abnahme:"\* \]\] \|\| \[\[ \$zeile == "- \*\*Abnahme,"\* \]\]; then$~    if [[ $zeile == "- **Abnahme:"* ]]; then~	A-003	Zeilen "Abnahme, maschinell:" und "Abnahme, menschlich:" werden nicht gelesen.
+AM-055	EA-5	s~^RE_EINTRAG='.*'$~RE_EINTRAG='^#{3,6} (R3-[A-Z]-[0-9]{3})([^0-9]|$)'~	A-005	Auch eine Ueberschrift der Ebene vier mit Kennung gilt als Eintrag.
+AM-056	EA-5	s~^    case "\$zeile" in \*\.py::\*\) ;; \*\) continue ;; esac$~    case "$zeile" in *::*) ;; *) continue ;; esac~	A-042	Jede Zeile mit :: gilt als Knotenkennung, nicht nur Zeilen mit .py::.
+AM-057	EA-5	s~^        et="\$\{et%%"\$MITTELPUNKT"\*\}"$~        :~	A-099	Das Feld Etappe reicht bis zum Zeilenende statt bis zum naechsten Feld.
+AM-058	EA-5	s~^        trimmen "\$et"$~        TRIM="$et"~	A-099	Der Wert des Feldes Etappe wird nicht von Leerraum befreit.
+AM-059	EA-5	s~^    SPANS\+=\("\$\{rest%%"\$BT"\*\}"\)$~    :~	A-001,A-003	Woerter in Rueckwaertsakzenten werden nicht gelesen.
+AM-060	EA-2	s~^  cur="\$\{z%%\|\*\}"; zrest=.*$~  IFS='|' read -r cur sid srest <<< "$z"~	A-183	Die Felder des Querverweises werden wieder mit einem Here-String gelesen.
+AM-061	KC-7	s~ \| sort -u\)"; then$~ | sort -u)" || true; then~	A-180	Ein Fehler von sort wird nicht als Fehler erkannt.
+AM-062	KC-7	s~^    elif \[ "\$SORT_ZEILEN" != "\$BEFUNDE" \]; then$~    elif false; then~	A-181	Die Zeilenzahl der Antwort von sort wird nicht gegen die erfasste Zahl der Funde gehalten.
+AM-063	KC-7	s~^    for z in "\$\{!FUNDSET\[@\]\}"; do SORTIERT=.*; done$~    :~	A-180,A-181	Bei einem Mangel von sort gehen die erfassten Funde verloren.
+AM-064	KC-7	s~^if \[ -n "\$SORT_MANGEL" \]; then$~if false; then~	A-180,A-181	Ein Mangel von sort aendert den Rueckgabewert nicht: Fund 2 statt Lage C 3.
+AM-065	KC-7	s~^BEFUNDE=\$\{#FUNDSET\[@\]\}$~BEFUNDE=0~	A-182	Die Funde werden nicht beim Erfassen gezaehlt.
+AM-066	EA-6	s~^  while zeile=; (IFS= read .*# Backlog)$~  while \1~	A-214	Die Zeilenvariable der Backlog-Schleife wird vor dem Lesen nicht geleert: nach einem Lesefehler wird die letzte Zeile erneut verarbeitet, die Schleife endet nicht.
+AM-067	EA-6	s~^  while zeile=; (IFS= read .*# Ausnahmeliste)$~  while \1~	A-215	Die Zeilenvariable der Schleife ueber die Ausnahmeliste wird vor dem Lesen nicht geleert: nach einem Lesefehler wird die letzte Zeile erneut verarbeitet, die Schleife endet nicht.
+AM-068	EA-6	s~^  while zeile=; (IFS= read .*# Sammeldatei)$~  while \1~	A-216	Die Zeilenvariable der Schleife ueber die Sammeldatei wird vor dem Lesen nicht geleert: nach einem Lesefehler wird die letzte Zeile erneut verarbeitet, die Schleife endet nicht.
+AM-069	KC-7	s~^      SORT_ZEILEN="\$\(printf .*$~      SORT_NL="${SORTIERT//[!$NL]/}"; SORT_ZEILEN=$(( ${#SORT_NL} + 1 ))~	A-185	Die Zeilen der Antwort von sort werden wieder mit der quadratischen Ersetzung ueber die ganze Antwort gezaehlt (40 000 Zeilen: ueber vier Minuten).
