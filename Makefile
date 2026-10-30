@@ -133,7 +133,9 @@
 #                                       Abschnitt 6.1.1)
 #   D12 nachweise            Lage C  — scripts/nachweise-erzeugen.sh existiert
 #                                       und laeuft echt; scripts/nachweise-
-#                                       vollstaendig.sh fehlt vollstaendig
+#                                       vollstaendig.sh fehlt vollstaendig (so
+#                                       bis zum 2026-10-30; seitdem Lage A,
+#                                       siehe Nachtrag G3.4 unten)
 #
 # Sobald backend/pyproject.toml, frontend/package.json oder
 # deploy/compose.test.yml entstehen, wechseln D1 bis D8 automatisch nach
@@ -141,7 +143,9 @@
 # mindestens eine Datei enthaelt (ADR 0002, Abschnitt 6, Objekttabelle) und
 # scripts/rueckkanal-pruefen.sh weiterhin fehlt. D10 war bis zum 2026-10-30 Lage C,
 # weil prototype/ besteht (siehe Tabelle oben) und scripts/prototyp-trennung-pruefen.sh
-# fehlte; fehlt es wieder, ist D10 wieder Lage C. D18 wechselt beim Erscheinen
+# fehlte; fehlt es wieder, ist D10 wieder Lage C. D12 war bis zum 2026-10-30 Lage C,
+# weil scripts/nachweise-vollstaendig.sh fehlte; fehlt es wieder, ist D12 wieder
+# Lage C. D18 wechselt beim Erscheinen
 # irgendeiner *.py-Datei unterhalb backend/src/ OHNE
 # backend/importvertraege.toml sofort nach Lage C (Pruefmittel fehlt bei
 # vorhandenem Gegenstand) — nicht erst, wenn zusaetzlich ein Werkzeug fehlt,
@@ -151,7 +155,8 @@
 # den Kommentaren der Ziele beschreiben den Bestand vom 2026-08-30. Mit backend/ (G1)
 # sind D1 (Backend-Anteil), D2 bis D6, D8 und D18 Lage A; D7 blieb Lage C bis zum 2026-10-29
 # (FEHLT=scripts/abnahme-abgleich.sh, terminiert; siehe Nachtrag G3.2 unten) und D10 bis zum 2026-10-30
-# (FEHLT=scripts/prototyp-trennung-pruefen.sh, terminiert; siehe Nachtrag G3.3 unten); D9 bleibt Lage C
+# (FEHLT=scripts/prototyp-trennung-pruefen.sh, terminiert; siehe Nachtrag G3.3 unten) und D12 bis zum 2026-10-30
+# (FEHLT=scripts/nachweise-vollstaendig.sh, terminiert; siehe Nachtrag G3.4 unten); D9 bleibt Lage C
 # (FEHLT=scripts/rueckkanal-pruefen.sh, terminiert). D11 hat ein zweites Pruefmittel: scripts/gitleaks.toml (fehlt sie, ist D11
 # Lage C); schreibt git bei der Probe vor dem Historienlauf auf stderr, ist D11 Lage C mit
 # FEHLT=git-log. Den Inhalt von scripts/gitleaks.toml liest kein Lauf von gitleaks (die
@@ -195,11 +200,26 @@
 # GD-1 bis GD-6 und die des Gates: Kopfkommentar des Skripts. Der Eintrag zu D10 in
 # .claude/hooks/dod-gate-terminierte-lagen.txt ist entfallen.
 #
+# Nachtrag 2026-10-30 (Einheit G3.4, ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3), Zeilen zu D12):
+# scripts/nachweise-vollstaendig.sh besteht, D12 ist Lage A, solange es besteht und der Erzeuger traegt. Das Rezept des
+# Ziels nachweise prueft der Reihe nach drei Wachen, jede ein eigener Block: (a) fehlt git, Lage C mit FEHLT=git; (b) fehlt der
+# Erzeuger, Lage C mit FEHLT=scripts/nachweise-erzeugen.sh; (c) fehlt das Skript, Lage C mit
+# FEHLT=scripts/nachweise-vollstaendig.sh; gemeldet wird der erste Mangel. Besteht das Skript, laeuft es unabhaengig von (a) und
+# (b) ohne Argument: 0 bestanden, 3 Lage C mit FEHLT=nachweise-pruefmittel (wenn nicht schon (a) oder (b) einen Mangel gemeldet
+# hat), jeder andere Wert ungleich 0 A_FAIL (Rueckgabewert 2: Funde); in der Marke geht Lage C einem A_FAIL vor. Das Rezept ruft
+# den Erzeuger nicht mehr selbst auf; das
+# Skript ruft ihn unter env -i gegen ein absolutes Ziel in eigener Ablage ausserhalb des Arbeitsbaums auf und haelt die
+# Pfade der Tabelle gegen alle versionierten und unversionierten, nicht ignorierten Dateien (ohne .gitkeep und
+# docs/NACHWEISE.md); Fallklassen KN-1 bis KN-9, Grenzen GN-1 bis GN-5: Kopfkommentar des Skripts. Der Erzeuger loescht
+# ein CDPATH des Aufrufers vor seinem ersten cd. Der Eintrag zu D12 in .claude/hooks/dod-gate-terminierte-lagen.txt ist
+# entfallen.
+#
 # Was dieses Makefile NICHT ist: kein Ersatz fuer die eigenen
 # Projektskripte, die laut ADR 0002 Abschnitt 6 "mit dem Grundgeruest"
 # entstehen (scripts/abnahme-abgleich.sh besteht seit dem 2026-10-29, Einheit G3.2,
-# scripts/prototyp-trennung-pruefen.sh seit dem 2026-10-30, Einheit G3.3; es fehlen noch
-# scripts/rueckkanal-pruefen.sh und scripts/nachweise-vollstaendig.sh),
+# scripts/prototyp-trennung-pruefen.sh seit dem 2026-10-30, Einheit G3.3,
+# scripts/nachweise-vollstaendig.sh seit dem 2026-10-30, Einheit G3.4; es fehlt noch
+# scripts/rueckkanal-pruefen.sh),
 # und kein Ersatz fuer backend/importvertraege.toml selbst, das laut ADR 0002
 # Abschnitt 5 mit dem Grundgeruest entsteht. Fehlen sie, meldet der jeweilige
 # Schritt das ehrlich statt es vorzutaeuschen.
@@ -1767,23 +1787,33 @@ geheimnisse:
 # =============================================================================
 # D12 — Nachweise
 # =============================================================================
-# UEBERLEGUNG: Zwei Teilschritte, unterschiedlicher Bestand. Objekt der
-# Pruefung ist die Artefaktliste des Erzeugers (siehe scripts/nachweise-
-# erzeugen.sh) -- bereits heute real und umfangreich (Dokumentation,
-# Rollendateien, Hooks, Regeln), unabhaengig von backend/frontend.
-# scripts/nachweise-erzeugen.sh EXISTIERT bereits und wird deshalb echt
-# aufgerufen (die "Haelfte seines Pruefmittels", wie im Auftrag benannt).
-# scripts/nachweise-vollstaendig.sh fehlt dagegen vollstaendig; sein Zweck
-# (kein nachweispflichtiges Artefakt fehlt in der Liste) ist eine reale,
-# nicht triviale Frage am bestehenden Bestand. "0" vorzutaeuschen waere eine
-# Luege -> Lage C, unabhaengig von backend/frontend/deploy.
+# UEBERLEGUNG: Objekt der Pruefung ist die Artefaktliste des Erzeugers (siehe
+# scripts/nachweise-erzeugen.sh) -- bereits heute real und umfangreich
+# (Dokumentation, Rollendateien, Hooks, Regeln), unabhaengig von
+# backend/frontend. Bis zum 2026-10-30 fehlte scripts/nachweise-vollstaendig.sh;
+# sein Zweck (kein nachweispflichtiges Artefakt fehlt in der Liste, keine Zeile
+# zeigt ins Leere) ist eine reale, nicht triviale Frage am bestehenden Bestand,
+# und "0" vorzutaeuschen waere eine Luege gewesen -> Lage C, unabhaengig von
+# backend/frontend/deploy.
 # E2: "make dod" darf als spaeterer Stop-Hook (R3-Q-001) nicht selbst
 # ungefragt eine versionierte Datei aendern -- sonst erzeugt jeder Stopp
 # eine Aenderung an docs/NACHWEISE.md, die niemand angefordert hat.
-# scripts/nachweise-erzeugen.sh nimmt laut eigenem Kopf ein Ausgabeargument
-# entgegen (geprueft); dieses Ziel nutzt es und schreibt in eine
-# Wegwerfdatei. Der Zweck von D12 -- der Rueckgabewert des Erzeugers wird
-# geprueft -- bleibt erfuellt, die Kette bleibt lesend.
+#
+# Bau in G3.4 (ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3), Zeilen zu D12, Form (i)). Das Rezept ruft
+# scripts/nachweise-vollstaendig.sh ohne Argument auf und ordnet den Rueckgabewert zu: 0 bestanden; 3 Lage C mit
+# FEHLT=nachweise-pruefmittel (das Pruefmittel faellt aus: ein Werkzeug der geschlossenen Liste fehlt, ein Argument, kein
+# Git-Arbeitsbaum, der Erzeuger fehlt oder ist nicht lesbar, die Ablage ist nicht herstellbar oder liegt im Arbeitsbaum,
+# git scheitert oder die Liste ist unvollstaendig gelesen, der Erzeuger endet weder mit 0 noch mit 1, meldet Unbekanntes
+# oder bei sauberem Stand NICHT COMMITTET, die Tabelle ist nicht lesbar oder die Zahl ihrer Artefakte fehlt oder stimmt nicht;
+# Klassen KN-3 bis KN-6 und KN-8 im Kopf des Skripts); jeder andere Wert
+# ungleich 0 A_FAIL (Rueckgabewert 2: eine Datei ohne Zeile, eine Zeile ohne Artefakt, eine Meldung "FEHLT:" des
+# Erzeugers, bei sauberem Stand eine Abweichung der committeten Liste). Den Erzeuger ruft das Skript selbst auf, unter
+# env -i gegen ein absolutes Ziel in eigener Ablage ausserhalb des Arbeitsbaums; der eigene Erzeugerlauf des Rezepts
+# entfaellt (vor dem Commit endet der Erzeuger mit 1, sobald eine Einheit ein Artefakt samt Zeile hinzufuegt; der Lauf
+# des Rezepts machte D12 in jeder solchen Einheit rot). Die Wachen fuer git, den Erzeuger und das Skript bleiben, ebenso
+# die Zeile vor dem zweiten fehlenden Gegenstand (Anker der Mutation Z-130 in scripts/dod-gate-mutationen.txt). Was ein
+# gruener Lauf aussagt und was nicht (nur der Pfad einer Zeile wird geprueft, Verzeichniszeilen, ignorierte Dateien,
+# KN-9 nur am sauberen Stand): Kopfkommentar des Skripts.
 nachweise:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D12 nachweise] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
@@ -1793,19 +1823,24 @@ nachweise:
 		[ -n "$$fehlt" ] || fehlt="git"
 		hat_lage_c=1
 	elif [ -f scripts/nachweise-erzeugen.sh ]; then
-		nachweis_tmp=$$(mktemp)
-		bash scripts/nachweise-erzeugen.sh "$$nachweis_tmp" || fehlgeschlagen=1
-		rm -f "$$nachweis_tmp"
+		: # Form (i): den Erzeuger ruft scripts/nachweise-vollstaendig.sh selbst auf, gegen ein Ziel in eigener Ablage; das Rezept laesst ihn nicht mehr laufen
 	else
 		echo "[D12 nachweise] LAGE C: scripts/nachweise-erzeugen.sh fehlt." >&2
 		[ -n "$$fehlt" ] || fehlt="scripts/nachweise-erzeugen.sh"
 		hat_lage_c=1
 	fi
 	if [ -f scripts/nachweise-vollstaendig.sh ]; then
-		bash scripts/nachweise-vollstaendig.sh || fehlgeschlagen=1
+		bash scripts/nachweise-vollstaendig.sh; pruefer_rc=$$?
+		if [ "$$pruefer_rc" -eq 3 ]; then
+			echo "[D12 nachweise] LAGE C: scripts/nachweise-vollstaendig.sh meldet Lage C (Rueckgabewert 3), Grund siehe oben." >&2
+			[ -n "$$fehlt" ] || fehlt="nachweise-pruefmittel"
+			hat_lage_c=1
+		elif [ "$$pruefer_rc" -ne 0 ]; then
+			echo "[D12 nachweise] scripts/nachweise-vollstaendig.sh endete mit Rueckgabewert $$pruefer_rc." >&2
+			fehlgeschlagen=1
+		fi
 	else
-		echo "[D12 nachweise] LAGE C: scripts/nachweise-vollstaendig.sh fehlt. docs/NACHWEISE.md wird zwar erzeugt, aber dass kein nachweispflichtiges Artefakt in der Liste fehlt, ist damit nicht belegt." >&2
-		echo "Skript folgt mit dem Grundgeruest (ADR 0002, Abschnitt 6, D12; zu klaeren mit Protocol Master und DevOps, Abschnitt 9)." >&2
+		echo "[D12 nachweise] LAGE C: scripts/nachweise-vollstaendig.sh fehlt. Dass kein nachweispflichtiges Artefakt in der Liste des Erzeugers fehlt, ist damit nicht belegt." >&2
 		[ -n "$$fehlt" ] || fehlt="scripts/nachweise-vollstaendig.sh"
 		hat_lage_c=1
 	fi

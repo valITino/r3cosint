@@ -1,0 +1,89 @@
+# scripts/nachweise-vollstaendig-mutationen.txt -- Mutationen fuer den Modus --mutationen des Pruefmittels
+# scripts/nachweise-vollstaendig-selbsttest.sh (Kettenschritt D12, scripts/nachweise-vollstaendig.sh)
+#
+# Anforderung R3-Q-001. Grundlage: ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (Festlegung fuer G3), Zeile "Faelle, Mutationen und
+# Rueckgabewerte"; Muster: scripts/prototyp-trennung-pruefen-mutationen.txt und scripts/belege-pruefen-mutationen.txt. Einheit G3.4.
+#
+# FORM: je Zeile fuenf Felder, getrennt durch genau vier Tabulatoren; nur ASCII (keine Umlaute):
+#   Kennung NM-nnn <TAB> Klasse (KN-Kennung) <TAB> sed-Ausdruck <TAB> Mindestsatz <TAB> Grund
+#   - Kennung: dauerhaft, nie wiederverwendet. Klasse: die Fehlerklasse, die die Mutation treffen soll.
+#   - sed-Ausdruck: wird mit sed -E --sandbox (e, r und w sind verboten) auf eine Wegwerfkopie des Skripts angewandt (nicht auf das
+#     Pruefmittel); er darf keinen Tabulator enthalten und haftet an einer Codezeile des Skripts, nicht an Kommentarzeilen. Als Begrenzer
+#     dient die Tilde, weil Codezeilen das Rautezeichen tragen; ein senkrechter Strich im Muster steht als [|].
+#   - Mindestsatz: Fallkennungen durch Komma; erkannt ist die Mutation, wenn jeder dieser Faelle gegen die Mutante faellt.
+#   - Grund: ein Satz, was die Mutation aendert.
+# Ohne Mutation bleiben (unerreichbar oder gleichwertig, siehe GP-N6 und GP-N7 im Kopf des Pruefmittels): "export LC_ALL=C",
+# "export GIT_NO_REPLACE_OBJECTS=1", das Loeschen der git-Variablen des Aufrufers allein (gleichwertig zu "env -i"; beide zusammen: NM-061),
+# GIT_CONFIG_NOSYSTEM und GIT_CONFIG_GLOBAL (HOME ist leer, "env -i" loescht die Variablen des Aufrufers) und der Fall "nicht lesbar" (N-075).
+NM-001	KN-6	s~^unset CDPATH$~:~	N-088	Ein CDPATH des Aufrufers wird nicht geloescht: bei relativem Aufruf lenkt "cd scripts/.." die Wurzel um.
+NM-002	KN-6	s~^if \[ "\$#" -ne 0 \]; then$~if false; then~	N-060	Ein Argument ist keine Lage C.
+NM-003	KN-6	s~ env dirname mktemp~ env mktemp~	N-064	dirname steht nicht in der Liste der Werkzeuge: der Erzeuger liefe ohne dirname in der falschen Wurzel.
+NM-004	KN-6	s~ rm sort grep"$~ rm grep"~	N-068	sort steht nicht in der Liste der Werkzeuge.
+NM-005	KN-6	s~ sort grep"$~ sort"~	N-069	grep steht nicht in der Liste der Werkzeuge.
+NM-006	KN-6	s~^if \[ "\$\{BASH_VERSINFO\[0\]:-0\}" -lt 4 \]; then$~if false; then~	N-093	Die Pruefung der bash-Version entfaellt.
+NM-007	KN-6	s~^if weg_verknuepft "\$ERZEUGER_REL"; then~if false; then~	N-073	Eine Verknuepfung auf dem Weg zum Erzeuger wird nicht gemeldet.
+NM-008	KN-6	s~^\[ -f "\$ERZEUGER_REL" \] [|][|] lage_c "erzeuger" .*$~:~	N-074	Ein Verzeichnis an der Stelle des Erzeugers wird nicht als keine regulaere Datei gemeldet.
+NM-009	KN-6	s~^if \[ ! -e "\$ERZEUGER_REL" \] && \[ ! -L "\$ERZEUGER_REL" \]; then$~if false; then~	N-072	Der fehlende Erzeuger wird nicht als fehlend gemeldet.
+NM-010	KN-7	s~^  "\$WURZEL"/\*\) lage_c "ablage"~  "$WURZEL"/NIE) lage_c "ablage"~	N-076	Eine Ablage im Arbeitsbaum ist keine Lage C.
+NM-011	KN-6	s~^if \[ -z "\$ABLAGE" \] [|][|] \[ ! -d "\$ABLAGE" \]; then$~if false; then~	N-077	Ein Fehlschlag von mktemp -d wird nicht gemeldet.
+NM-012	KN-6	s~^if \[ -z "\$GITTOP" \] [|][|] \[ "\$GITTOP" != "\$WURZEL" \]; then$~if [ -z "$GITTOP" ]; then~	N-071	Eine Wurzel unterhalb der obersten Ebene des Git-Arbeitsbaums gilt als Arbeitsbaum.
+NM-013	KN-3	s~ --cached --others --exclude-standard >~ --cached --exclude-standard >~	N-021	Unversionierte Dateien gehoeren nicht zur Sollmenge.
+NM-014	KN-3	s~ --others --exclude-standard >~ --others >~	N-022	Ignorierte Dateien gehoeren zur Sollmenge.
+NM-015	KN-3	s~^  case "\$\{f##\*/\}" in \.gitkeep\) continue ;; esac$~  :~	N-020	Dateien namens .gitkeep sind nicht ausgenommen.
+NM-016	KN-3	s~ in \.gitkeep\) continue ;;~ in .gitkeep*) continue ;;~	N-021	Der Ausschluss gilt auch fuer Namen, die mit .gitkeep beginnen.
+NM-017	KN-3	s~^  if \[ "\$f" = "\$LISTE_REL" \]; then continue; fi$~  :~	N-001	docs/NACHWEISE.md ist nicht ausgenommen.
+NM-018	KN-3	s~^  if \[ "\$f" = "\$LISTE_REL" \]; then continue; fi$~  if [ "${f##*/}" = "NACHWEISE.md" ]; then continue; fi~	N-021	Der Ausschluss gilt fuer jede Datei namens NACHWEISE.md, nicht allein fuer den Pfad docs/NACHWEISE.md.
+NM-019	KN-2	s~^    DIRSET\["\$d"\]=1$~    :~	N-001	Die Verzeichnisse der Sollmenge werden nicht erfasst: jede Verzeichniszeile ist eine Zeile ohne Artefakt.
+NM-020	KN-3	s~^while IFS= read -r -d '' f; do$~while IFS= read -r f; do~	N-025	Die Liste wird nicht NUL-getrennt gelesen.
+NM-021	KN-3	s~^  case "\$ANZ" in \*\[\[:cntrl:\]\]\*\) printf -v ANZ '%q' "\$ANZ" ;; esac$~  :~	N-025	Steuerzeichen im Pfad werden in der Ausgabe nicht als Folge geschrieben.
+NM-022	KN-6	s~^elif \[ "\$LISTE_ZAHL" != "\$N_GELESEN" \]; then$~elif false; then~	N-079	Die gelesenen Eintraege der Liste werden nicht gegen die gezaehlten gehalten.
+NM-023	KN-4	s~^if \[ "\$ERZ_RC" -ne 0 \] && \[ "\$ERZ_RC" -ne 1 \]; then$~if false; then~	N-035,N-036	Ein Rueckgabewert des Erzeugers ausser 0 und 1 ist keine Lage C.
+NM-024	KN-4	s~^if \[ -n "\$UNBEKANNT" \]; then$~if false; then~	N-039	Eine unbekannte Zeile der Fehlerausgabe des Erzeugers ist keine Lage C.
+NM-025	KN-4	s~^if \[ "\$ERZ_RC" -eq 1 \] && .*; then$~if false; then~	N-034	Rueckgabewert 1 ohne Meldungszeile ist keine Lage C.
+NM-026	KN-4	s~; do fund "KN-4" "\$p"; done~; do :; done~	N-030,N-033	Die Meldung FEHLT: des Erzeugers ist kein Fund.
+NM-027	KN-4	s~ [|][|] \[ -n "\$\{DIRSET\["\$p"\]\+x\}" \]; then NCSET~; then NCSET~	N-032	NICHT COMMITTET fuer ein Verzeichnis mit einer Datei der Sollmenge wird nicht gezaehlt.
+NM-028	KN-4	s~^  if \[ -n "\$\{SSET\["\$p"\]\+x\}" \] .* fi$~  NCSET["$p"]=1~	N-010	NICHT COMMITTET zaehlt auch fuer einen Pfad ausserhalb der Sollmenge.
+NM-029	KN-5	s~^    if \[ "\$in_tab" = 0 \]; then$~    if false; then~	N-050	Der Kopfblock der Datei wird als Tabelle gelesen: seine Zeile mit dem Pfad des Erzeugers gilt als Artefaktzeile.
+NM-030	KN-5	s~^    if \[ "\$skip" = 1 \]; then skip=0; continue; fi$~    :~	N-001	Die Trennzeile unter dem Tabellenkopf wird als Artefaktzeile gelesen.
+NM-031	KN-5	s~^    case "\$pfadsp" in .*esac$~    :~	N-052	Der Pfad einer Zeile braucht keine Rueckwaertsakzente.
+NM-032	KN-5	s~^    case "\$zeile" in "[|] "\*\) ;; \*\) break ;; esac$~    case "$zeile" in "\| "*) ;; *) continue ;; esac~	N-054	Zeilen nach dem Ende der Tabelle werden noch als Artefaktzeilen gelesen.
+NM-033	KN-5	s~^if \[ "\$T_ZEILEN" -eq 0 \]; then lage_c "tabelle".*$~:~	N-037	Eine leere Tabelle ist keine Lage C.
+NM-034	KN-4	s~^if \[ ! -s "\$ZIEL" \]; then$~if false; then~	N-038	Ein nicht geschriebenes Ziel wird nicht gemeldet.
+NM-035	KN-5	s~^  kopf\) lage_c "tabelle" .*$~  kopf) ;;~	N-053	Ein fehlender Tabellenkopf wird nicht gemeldet.
+NM-036	KN-5	s~^  if \[ -z "\$\{PSET\["\$p"\]\+x\}" \]; then PSET\["\$p"\]=1; N_PFADE=\$\(\(N_PFADE \+ 1\)\); fi$~  PSET["$p"]=1; N_PFADE=$((N_PFADE + 1))~	N-013	Gleiche Pfade mehrerer Zeilen zaehlen mehrfach.
+NM-037	KN-1	s~^  if \[ "\$erfasst" = 0 \]; then fund "KN-1" "\$f"; fi$~  :~	N-002	Eine Datei ohne Zeile ist kein Fund.
+NM-038	KN-1	s~^    case "\$p" in \*/\*\) p="\$\{p%/\*\}" ;; \*\) break ;; esac$~    break~	N-004,N-006	Eine Verzeichniszeile deckt die Dateien darunter nicht.
+NM-039	KN-1	s~^    case "\$p" in \*/\*\) p="\$\{p%/\*\}" ;;~    case "$p" in */*) p="${p%?}" ;;~	N-005	Eine Verzeichniszeile deckt jeden Pfad mit demselben Anfang, nicht nur ganze Pfadsegmente.
+NM-040	KN-2	s~; then fund "KN-2" "\$p"; fi$~; then :; fi~	N-010	Eine Zeile ohne Artefakt ist kein Fund.
+NM-041	KN-2	s~ && \[ -z "\$\{DIRSET\["\$p"\]\+x\}" \]; then fund "KN-2"~; then fund "KN-2"~	N-001	Eine Verzeichniszeile gilt als Zeile ohne Artefakt.
+NM-042	KN-9	s~^elif \[ -s "\$ABLAGE/status" \]; then$~elif false; then~	N-003	KN-9 wird auch am schmutzigen Baum beurteilt.
+NM-043	KN-9	s~^elif \[ -s "\$ABLAGE/status" \]; then$~elif true; then~	N-110	KN-9 wird nie beurteilt.
+NM-044	KN-9	s~^    fund "KN-9" "\$LISTE_REL"$~    :~	N-114	Eine in HEAD fehlende docs/NACHWEISE.md ist kein Fund.
+NM-045	KN-9	s~^      fund "KN-9" "\$LISTE_REL"$~      :~	N-115	Eine committete Datei ohne lesbare Tabelle ist kein Fund.
+NM-046	KN-9	s~^        if \[ -z "\$\{PSET\["\$p"\]\+x\}" \]; then fund~        if false; then fund~	N-110	Ein Pfad nur in der committeten Liste ist kein Fund.
+NM-047	KN-9	s~^        if \[ -z "\$\{ASET\["\$p"\]\+x\}" \]; then fund~        if false; then fund~	N-111	Ein Pfad nur in der frischen Liste ist kein Fund.
+NM-048	KN-9	s~^      if \[ "\$ART_ALT" != "\$ART_NEU" \]; then fund~      if false; then fund~	N-112	Eine abweichende Zahl der Artefakte ist kein Fund.
+NM-049	KN-8	s~^if \[ "\$BEFUNDE" -gt 0 \]; then exit 2; fi$~if false; then exit 2; fi~	N-007	Ein Fund aendert den Rueckgabewert nicht: 0 statt 2.
+NM-050	KN-8	s~^if \[ "\$\{#LAGEC\[@\]\}" -gt 0 \]; then$~if false; then~	N-079	Eine Lage C nach dem Urteil aendert den Rueckgabewert nicht.
+NM-051	KN-8	s~ [|] sort\)"; then$~)"; then~	N-102	Die Fundzeilen werden nicht sortiert.
+NM-052	KN-8	s~ [|] sort\)"; then$~ \| sort)" \|\| true; then~	N-080	Ein Fehler von sort wird nicht als Fehler erkannt.
+NM-053	KN-8	s~^    elif \[ "\$SORT_ZEILEN" != "\$BEFUNDE" \]; then$~    elif false; then~	N-081	Die Zeilenzahl der Antwort von sort wird nicht gegen die erfasste Zahl der Funde gehalten.
+NM-054	KN-8	s~^    for z in "\$\{!FUNDSET\[@\]\}"; do SORTIERT=.*; done$~    :~	N-080	Bei einem Mangel von sort gehen die erfassten Funde verloren.
+NM-055	KN-8	s~^BEFUNDE=\$\{#FUNDSET\[@\]\}$~BEFUNDE=0~	N-007	Die Funde werden nicht gezaehlt.
+NM-056	KN-7	s~^  if \[ -n "\$ABLAGE" \]; then rm -rf "\$ABLAGE"; fi$~  :~	N-092	Die Ablage wird nach dem Lauf nicht entfernt.
+NM-057	KN-7	s~; done < "\$ABLAGE/status"$~; done <<< "x"~	N-091	Ein Here-String im Code des Skripts.
+NM-058	KN-7	s~^  "\$BASH_BIN" "\$WURZEL/\$ERZEUGER_REL" "\$ZIEL" >~  "$BASH_BIN" "$WURZEL/$ERZEUGER_REL" >~	N-090	Der Erzeuger wird ohne Ziel aufgerufen und schreibt docs/NACHWEISE.md in den Arbeitsbaum.
+NM-059	KN-7	s~ "GIT_OPTIONAL_LOCKS=0" git "\$@"$~ git "$@"~	N-090	git laeuft mit optionalen Sperren und darf den Index auffrischen.
+NM-060	KN-3	s~^  env -i "PATH=~  env "PATH=~	N-023	git laeuft nicht unter env -i: die globale Konfiguration des Aufrufers (GIT_CONFIG_COUNT) wirkt.
+NM-061	KN-6	s~^unset GIT_DIR .*$~:~;s~^  env -i "PATH=~  env "PATH=~	N-085	Weder werden die git-Variablen des Aufrufers geloescht noch laeuft git unter env -i.
+NM-062	KN-6	s~^if \[ "\$LISTE_RC" -ne 0 \]; then$~if false; then~	N-078	Ein Fehlschlag von git ls-files wird nicht gemeldet.
+NM-063	KN-6	s~^if \[ "\$STATUS_RC" -ne 0 \]; then$~if false; then~	N-082	Ein Fehlschlag von git status wird nicht gemeldet.
+NM-064	KN-6	s~^  if \[ "\$LSTREE_RC" -ne 0 \]; then$~  if false; then~	N-083	Ein Fehlschlag von git ls-tree wird nicht gemeldet.
+NM-065	KN-6	s~^    if \[ "\$CAT_RC" -ne 0 \]; then$~    if false; then~	N-084	Ein Fehlschlag von git cat-file wird nicht gemeldet.
+NM-066	KN-5	s~^if \[ -z "\$T_ARTEFAKTE" \]; then lage_c "tabelle".*$~:~	N-055	Eine frische Liste ohne lesbare Zahl der Artefakte ist keine Lage C: die Zahl bleibt ungelesen.
+NM-067	KN-5	s~^if \[ "\$T_ARTEFAKTE" != .*; then lage_c "tabelle".*$~:~	N-056	Die Zahl der Artefakte im Kopf der frischen Liste wird nicht gegen Tabellenzeilen und Meldungen FEHLT: gehalten.
+NM-068	KN-9	s~ [|][|] \[ -z "\$T_ARTEFAKTE" \]; then$~; then~	N-116	Eine committete Liste ohne lesbare Zahl der Artefakte ist kein Fund KN-9.
+NM-069	KN-4	s~^  if \[ "\$N_NC" -gt 0 \]; then$~  if false; then~	N-041	NICHT COMMITTET bei leerem git status bleibt ein Hinweis: ein Erzeuger, dessen git log scheitert, wird nicht bemerkt.
+NM-070	KN-8	s~^  LAGEC\+=\("git-status: (.*)"\)$~  lage_c "git-status" "\1"~	N-082	Das Scheitern von git status bricht vor der Ausgabe ab: die erfassten Funde gehen verloren.
+NM-071	KN-8	s~^    LAGEC\+=\("git-kopf: (git ls-tree .*)"\)$~    lage_c "git-kopf" "\1"~	N-083	Das Scheitern von git ls-tree bricht vor der Ausgabe ab: die erfassten Funde gehen verloren.
+NM-072	KN-8	s~^      LAGEC\+=\("git-kopf: (git cat-file .*)"\)$~      lage_c "git-kopf" "\1"~	N-084	Das Scheitern von git cat-file bricht vor der Ausgabe ab: die erfassten Funde gehen verloren.
