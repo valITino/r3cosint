@@ -58,6 +58,8 @@
 # von ADR 0002) fuehrte D7, D10 und D12 als Lage C; D9 war Lage B und ist seit
 # der ersten Datei unter backend/ (2026-10-28, Einheit G1) Lage C (Eintrag unten);
 # D11 ist ein Werkzeug (gitleaks), also nicht terminierbar (kein Eintrag).
+# Stand 2026-10-30 (Einheit G3.4): die Liste fuehrt allein den Eintrag D9 (unten); die Eintraege D7, D10 und D12 sind
+# mit G3.2 bis G3.4 entfallen (Kommentarzeilen unten; ADR 0003, Teil B, Nachtrag vom 2026-10-30 zu 6.12.5).
 
 # Eintrag D7 entfallen am 2026-10-29 (Einheit G3.2): scripts/abnahme-abgleich.sh besteht; ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3).
 # Eintrag D10 entfallen am 2026-10-30 (Einheit G3.3): scripts/prototyp-trennung-pruefen.sh besteht; ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3).
