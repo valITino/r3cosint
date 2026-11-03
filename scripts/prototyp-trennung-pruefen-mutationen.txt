@@ -1,0 +1,68 @@
+# =============================================================================
+# scripts/prototyp-trennung-pruefen-mutationen.txt -- Mutationsdatei zu scripts/prototyp-trennung-pruefen-selbsttest.sh (D10)
+# =============================================================================
+# Einheit G3.3. Jede Zeile ist eine Mutation des gepruefen Skripts scripts/prototyp-trennung-pruefen.sh. Der Modus --mutationen des
+# Selbsttests wendet den sed-Ausdruck (sed -E --sandbox) auf eine Wegwerfkopie an und laesst nur die Faelle des Mindestsatzes gegen die
+# Mutante laufen; erkannt ist sie, wenn jeder dieser Faelle faellt.
+# Zeilenform: Kennung DM-nnn, Tabulator, Klasse (KD-Kennung), Tabulator, sed-Ausdruck, Tabulator, Mindestsatz (Fallkennungen D-nnn
+# durch Komma), Tabulator, Grund. Genau vier Tabulatoren je Zeile, nur ASCII, Trennzeichen des sed-Ausdrucks ist die Tilde.
+# Die Ausdruecke haengen am Text des Skripts: wer eine Zeile des Skripts aendert, prueft die Mutationen (eine Mutation ohne Wirkung
+# meldet der Modus als WIRKUNGSLOS). Nicht mutiert werden: die Zweige (KD-6), deren Faelle als root nicht herstellbar sind (D-088,
+# D-097), und die Grenzen GD und GP (ihre Faelle messen den Durchlass, nicht eine Aenderung des Skripts).
+# Ohne Wirkung und deshalb ohne Mutation: das Loeschen der git-Variablen und GIT_NO_REPLACE_OBJECTS im Skript (die git-Aufrufe laufen
+# unter "env -i", beides ist doppelt gesichert) sowie CLAUDE_PROJECT_DIR im Aufruf des Gates (das Arbeitsverzeichnis ist die Wurzel).
+DM-001	KD-1	s~^        "\$MARKE_R1"\*\) G_KLASSE=fund1;~        "${MARKE_R1}ZZ"*) G_KLASSE=fund1;~	D-002	Die Sperre der Richtung 1 wird nicht als Fund erkannt (die Marke passt nie).
+DM-002	KD-2	s~^        "\$MARKE_R2"\*\) G_KLASSE=fund2;~        "${MARKE_R2}ZZ"*) G_KLASSE=fund2;~	D-010	Die Sperre der Richtung 2 wird nicht als Fund erkannt (die Marke passt nie).
+DM-003	KD-1	s~^MARKE_R1='BLOCKIERT \(Projektauftrag 5\.6\): Richtung 1'$~MARKE_R1='BLOCKIERT (Projektauftrag 5.6): Richtung 3'~	D-001,D-002	Die Marke der Richtung 1 weicht vom Meldetext des Gates ab: Kontrollprobe und Funde fallen.
+DM-004	KD-2	s~^MARKE_R2='BLOCKIERT \(Projektauftrag 5\.6\): Richtung 2'$~MARKE_R2='BLOCKIERT (Projektauftrag 5.6): Richtung 3'~	D-001,D-010	Die Marke der Richtung 2 weicht vom Meldetext des Gates ab: Kontrollprobe und Funde fallen.
+DM-010	KD-3	s~ --cached --others --exclude-standard -- ~ --cached --exclude-standard -- ~	D-020	Unversionierte Dateien gehoeren nicht zur Auswahl.
+DM-011	KD-3	s~ --cached --others --exclude-standard -- ~ --cached --others -- ~	D-021	Ignorierte Dateien gehoeren zur Auswahl.
+DM-012	KD-3	s~^BAUWURZELN=\(prototype backend frontend deploy\)$~BAUWURZELN=(prototype backend frontend)~	D-005	deploy fehlt in der Liste der vier Wurzeln.
+DM-013	KD-3	s~^BAUWURZELN=\(prototype backend frontend deploy\)$~BAUWURZELN=(prototype backend deploy)~	D-004	frontend fehlt in der Liste der vier Wurzeln.
+DM-014	KD-3	s~^BAUWURZELN=\(prototype backend frontend deploy\)$~BAUWURZELN=(prototype frontend deploy)~	D-002	backend fehlt in der Liste der vier Wurzeln.
+DM-015	KD-3	s~^BAUWURZELN=\(prototype backend frontend deploy\)$~BAUWURZELN=(backend frontend deploy)~	D-010	prototype fehlt in der Liste der vier Wurzeln.
+DM-016	KD-3	s~^BAUWURZELN=\(prototype backend frontend deploy\)$~BAUWURZELN=(prototype backend frontend deploy scripts)~	D-024	scripts steht zusaetzlich in der Liste: Dateien ausserhalb der vier Wurzeln werden geprueft.
+DM-017	KD-3	s~^while IFS= read -r -d '' f; do$~while IFS= read -r f; do~	D-002,D-022	Die Liste der Dateien wird zeilen- statt NUL-getrennt gelesen.
+DM-018	KD-3	s~^  case "\$ANZ" in \*\[\[:cntrl:\]\]\*\) printf -v ANZ '%q' "\$ANZ" ;; esac$~  :~	D-023	Steuerzeichen im Pfad werden nicht als Folge geschrieben: der Zeilenumbruch bricht die Fundzeile.
+DM-019	KD-3	s~^  env -i "PATH=\$PATH" "HOME=\$ABLAGE/home" "LC_ALL=C" "GIT_CONFIG_NOSYSTEM=1" .* git "\$@"$~  git "$@"~	D-093	git laeuft mit der Konfiguration des Aufrufers: eine globale Ausschlussliste blendet unversionierte Dateien.
+DM-020	KD-4	s~^echo "Kontrollprobe: \$PROBE_OK von 4"$~PROBE_OK=4; echo "Kontrollprobe: $PROBE_OK von 4"~	D-040	Die Kontrollprobe gilt immer als bestanden.
+DM-021	KD-4	s~^if \[ "\$PROBE_OK" -ne 4 \]; then$~if [ "$PROBE_OK" -lt 0 ]; then~	D-042,D-043	Eine abweichende Kontrollprobe ist keine Lage C.
+DM-022	KD-4	s~^  if \[ "\$G_KLASSE" = "\$soll" \]; then$~  if [ "$G_KLASSE" = "$soll" ] || [ "$nr" = 4 ]; then~	D-046	Das vierte Ereignis der Kontrollprobe (Richtung 2, muss durchlaufen) wird nicht ausgewertet.
+DM-023	KD-4	s~^  if \[ "\$G_KLASSE" = "\$soll" \]; then$~  if [ "$G_KLASSE" = "$soll" ] || [ "$nr" = 2 ]; then~	D-045	Das zweite Ereignis der Kontrollprobe (Richtung 1, muss durchlaufen) wird nicht ausgewertet.
+DM-024	KD-4	s~^  if \[ "\$G_KLASSE" = "\$soll" \]; then$~  if [ "$G_KLASSE" = "$soll" ] || [ "$nr" = 1 ]; then~	D-043	Das erste Ereignis der Kontrollprobe (Richtung 1, muss sperren) wird nicht ausgewertet.
+DM-025	KD-4	s~^  if \[ "\$G_KLASSE" = "\$soll" \]; then$~  if [ "$G_KLASSE" = "$soll" ] || [ "$nr" = 3 ]; then~	D-042	Das dritte Ereignis der Kontrollprobe (Richtung 2, muss sperren) wird nicht ausgewertet.
+DM-026	KD-4	s~^    if \[ ! -s "\$ABLAGE/g\.err" \] && \[ ! -s "\$ABLAGE/g\.aus" \]; then G_KLASSE=frei; return; fi$~    G_KLASSE=frei; return~	D-047,D-065	Ein Rueckgabewert 0 mit Text gilt als Durchlauf.
+DM-027	KD-4	s~^        "\$MARKE_R2"\*\) G_KLASSE=fund2;~        "$MARKE_R2"*) G_KLASSE=fund1;~	D-044	Die Richtung der Sperre wird nicht unterschieden: beide gelten als Richtung 1.
+DM-030	KD-5	s~^  if \[ "\$G_RC" = 2 \]; then$~  if [ "$G_RC" = 2 ]; then G_KLASSE=fund1; G_ZEILE="x"; return; fi; if false; then~	D-061,D-062,D-067	Jeder Rueckgabewert 2 gilt als Fund, auch ohne die Marke.
+DM-031	KD-5	s~^  G_KLASSE=andere; G_ZEILE=""$~  G_KLASSE=frei; G_ZEILE=""~	D-060,D-063,D-064	Eine unbekannte Antwort des Gates (1, 124, 137) gilt als Durchlauf.
+DM-032	KD-9	s~^if \[ "\$\{#LAGEC\[@\]\}" -gt 0 \]; then$~if false; then~	D-060	Eine Lage C je Datei aendert den Rueckgabewert nicht.
+DM-033	KD-9	s~^if \[ "\$\{#LAGEC\[@\]\}" -gt 0 \]; then$~if [ "${#LAGEC[@]}" -gt 0 ] \&\& [ "${#FUNDE[@]}" -eq 0 ]; then~	D-060,D-152	Ein Fund geht der Lage C vor (Vorrang vertauscht).
+DM-040	KD-6	s~^for w in \$WERKZEUGE; do$~for w in ; do~	D-072,D-075	Die Werkzeuge der geschlossenen Liste werden nicht geprueft.
+DM-041	KD-6	s~^WERKZEUGE="bash git jq grep ~WERKZEUGE="bash git grep ~	D-072	jq fehlt in der Liste der geprueften Werkzeuge.
+DM-042	KD-6	s~ cut wc"$~ cut"~	D-083	wc fehlt in der Liste der geprueften Werkzeuge.
+DM-043	KD-6	s~ rm cat sed~ rm sed~	D-079	cat fehlt in der Liste der geprueften Werkzeuge.
+DM-044	KD-6	s~^if \[ -z "\$GITTOP" \] \|\| \[ "\$GITTOP" != "\$WURZEL" \]; then$~if false; then~	D-085,D-086	Die Wurzel muss kein Git-Arbeitsbaum und nicht dessen oberste Ebene sein.
+DM-045	KD-6	s~^if \[ ! -e "\$GATE_REL" \] && \[ ! -L "\$GATE_REL" \]; then$~if false; then~	D-087	Ein fehlendes Gate wird nicht als fehlend gemeldet.
+DM-046	KD-6	s~^if weg_verknuepft "\$GATE_REL"; then .*$~:~	D-089,D-110	Eine Verknuepfung auf dem Weg zum Gate wird nicht erkannt.
+DM-047	KD-6	s~^if \[ "\$#" -ne 0 \]; then$~if false; then~	D-084	Ein Argument ist kein unbekannter Aufruf.
+DM-048	KD-6	s~^  env -i "PATH=\$PATH" "HOME=\$ABLAGE/home" "TMPDIR=\$ABLAGE/tmp" "CLAUDE_PROJECT_DIR=\$WURZEL" "LC_ALL=C" \\$~  env \\~	D-092	Das Gate laeuft mit dem Umfeld des Aufrufers statt unter env -i.
+DM-049	KD-8	s~ "TMPDIR=\$ABLAGE/tmp"~~	D-141	Das Gate bekommt kein eigenes TMPDIR: seine Ablage liegt im TMPDIR des Aufrufers.
+DM-050	KD-8	s~^  "\$WURZEL"/\*\) lage_c "ablage" .*$~  "$WURZEL"/*) : ;;~	D-094	Eine Ablage im Arbeitsbaum ist keine Lage C.
+DM-051	KD-6	s~^if \[ -z "\$ABLAGE" \] \|\| \[ ! -d "\$ABLAGE" \]; then$~if false; then~	D-095	Das Scheitern von mktemp -d wird nicht geprueft.
+DM-052	KD-6	s~^if \[ "\$LISTE_RC" -ne 0 \]; then$~if false; then~	D-096	Das Scheitern von git ls-files wird nicht geprueft.
+DM-060	KD-7	s~^  if \[ -L "\$f" \]; then$~  if false; then~	D-103,D-109	Eine Verknuepfung unter einer Wurzel ist kein Fund.
+DM-061	KD-7	s~^  if \[ -d "\$f" \]; then$~  if false; then~	D-105,D-106	Ein Untermodul und ein verschachteltes Repository sind kein Fund.
+DM-062	KD-7	s~^  if \[ ! -e "\$f" \]; then anz .*$~  :~	D-108	Eine Datei, die nur im Index steht, wird nicht als solche genannt.
+DM-063	KD-7	s~^  if \[ ! -f "\$f" \]; then anz .*$~  :~	D-107	Eine Nicht-Datei wird nicht als solche genannt (ein Fifo wuerde als leer gezaehlt).
+DM-064	KD-7	s~^  if \[ ! -s "\$f" \]; then anz "\$f"; LEER\+=.*$~  :~	D-100	Eine leere Datei wird nicht als leer gezaehlt.
+DM-065	KD-7	s~^  grep -Iq '' -- "\$f" 2>~  grep -Iq . -- "$f" 2>~	D-102	Eine Datei aus einem Zeilenumbruch gilt als binaer.
+DM-066	KD-7	s~^  if \[ "\$GREP_RC" -eq 1 \]; then anz .*$~  :~	D-101	Eine binaere Datei geht an das Gate.
+DM-070	KD-8	s~^trap aufraeumen EXIT$~:~	D-141	Die Ablage wird nicht entfernt.
+DM-071	KD-8	s~"\$ABLAGE/ereignis\.json"~ereignis.json~g	D-140	Das Ereignis wird in den Arbeitsbaum geschrieben.
+DM-080	KD-9	s~^if \[ "\$\{#FUNDE\[@\]\}" -gt 0 \]; then exit 2; fi$~if [ "${#FUNDE[@]}" -gt 0 ]; then exit 1; fi~	D-150	Ein Fund endet mit Rueckgabewert 1 statt 2.
+DM-081	KD-9	s~^echo "Befunde: \$\{#FUNDE\[@\]\}"$~echo "Befunde: $(( ${#FUNDE[@]} + 1 ))"~	D-150	Die Zahl der Schlusszeile ist um eins zu gross.
+DM-082	KD-9	s~^  if \[ "\$SECONDS" -ge "\$BUDGET_S" \]; then BUDGET_UEBERSCHRITTEN=1; break; fi$~  :~	D-152	Das Gesamtbudget wirkt nicht.
+DM-083	KD-9	s~^echo "=== Funde"$~echo "Lauf $RANDOM"; echo "=== Funde"~	D-151	Die Ausgabe traegt eine Zufallszahl: zwei Laeufe liefern verschiedene Ausgaben.
+DM-084	KD-9	s~^echo "Kontrollprobe: \$PROBE_OK von 4"$~:~	D-001	Die Zeile der Kontrollprobe fehlt in der Ausgabe.
+DM-085	KD-3	s~^elif \[ "\$BUDGET_UEBERSCHRITTEN" != 1 \] && \[ "\$LISTE_ZAHL" != "\$N_GELESEN" \]; then$~elif false; then~	D-111	Die Zahl der gelesenen Eintraege wird nicht gegen die Zahl der Eintraege der Liste gehalten: ein Lesefehler wirkt wie das Ende der Liste.
+DM-086	KD-6	s~^unset CDPATH$~:~	D-112	Ein CDPATH des Aufrufers wird nicht geloescht: bei relativem Aufruf lenkt "cd scripts/.." die Wurzel um (falsche Lage C git-arbeitsbaum).

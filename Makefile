@@ -111,7 +111,9 @@
 #   D6  abdeckung            Lage B  — nichts zu messen
 #   D7  abnahme              Lage C  — Backlog existiert bereits mit echten
 #                                       Abnahmekriterien, scripts/abnahme-
-#                                       abgleich.sh fehlt vollstaendig
+#                                       abgleich.sh fehlt vollstaendig (so
+#                                       bis zum 2026-10-29; seitdem Lage A,
+#                                       siehe Nachtrag G3.2 unten)
 #   D8  abhaengigkeiten      Lage B  — nichts zu pruefen
 #   D9  rueckkanal           Lage B  — weder backend/ noch frontend/ noch
 #                                       deploy/ enthaelt eine Datei
@@ -121,7 +123,9 @@
 #                                       nicht Produktionscode; der Schritt
 #                                       laeuft nach 5.6 praktisch immer),
 #                                       scripts/prototyp-trennung-pruefen.sh
-#                                       fehlt vollstaendig
+#                                       fehlt vollstaendig (so bis zum
+#                                       2026-10-30; seitdem Lage A, siehe
+#                                       Nachtrag G3.3 unten)
 #   D11 geheimnisse          Lage C  — gitleaks fehlt, das Repository
 #                                       existiert bereits und koennte
 #                                       Geheimnisse enthalten (zwei Laeufe,
@@ -129,15 +133,19 @@
 #                                       Abschnitt 6.1.1)
 #   D12 nachweise            Lage C  — scripts/nachweise-erzeugen.sh existiert
 #                                       und laeuft echt; scripts/nachweise-
-#                                       vollstaendig.sh fehlt vollstaendig
+#                                       vollstaendig.sh fehlt vollstaendig (so
+#                                       bis zum 2026-10-30; seitdem Lage A,
+#                                       siehe Nachtrag G3.4 unten)
 #
 # Sobald backend/pyproject.toml, frontend/package.json oder
 # deploy/compose.test.yml entstehen, wechseln D1 bis D8 automatisch nach
 # Lage A. D9 wechselt nach Lage C, sobald backend/, frontend/ oder deploy/
 # mindestens eine Datei enthaelt (ADR 0002, Abschnitt 6, Objekttabelle) und
-# scripts/rueckkanal-pruefen.sh weiterhin fehlt. D10 ist bereits heute Lage C,
-# weil prototype/ besteht (siehe Tabelle oben) und bleibt es, solange
-# scripts/prototyp-trennung-pruefen.sh fehlt. D18 wechselt beim Erscheinen
+# scripts/rueckkanal-pruefen.sh weiterhin fehlt. D10 war bis zum 2026-10-30 Lage C,
+# weil prototype/ besteht (siehe Tabelle oben) und scripts/prototyp-trennung-pruefen.sh
+# fehlte; fehlt es wieder, ist D10 wieder Lage C. D12 war bis zum 2026-10-30 Lage C,
+# weil scripts/nachweise-vollstaendig.sh fehlte; fehlt es wieder, ist D12 wieder
+# Lage C. D18 wechselt beim Erscheinen
 # irgendeiner *.py-Datei unterhalb backend/src/ OHNE
 # backend/importvertraege.toml sofort nach Lage C (Pruefmittel fehlt bei
 # vorhandenem Gegenstand) — nicht erst, wenn zusaetzlich ein Werkzeug fehlt,
@@ -145,9 +153,11 @@
 #
 # Nachtrag 2026-10-28 (Einheit G1, ADR 0002, Abschnitte 5 und 6): Die Angaben "heute" in
 # den Kommentaren der Ziele beschreiben den Bestand vom 2026-08-30. Mit backend/ (G1)
-# sind D1 (Backend-Anteil), D2 bis D6, D8 und D18 Lage A; D7 bleibt Lage C (FEHLT=scripts/
-# abnahme-abgleich.sh, terminiert), ebenso D9 (FEHLT=scripts/rueckkanal-pruefen.sh,
-# terminiert). D11 hat ein zweites Pruefmittel: scripts/gitleaks.toml (fehlt sie, ist D11
+# sind D1 (Backend-Anteil), D2 bis D6, D8 und D18 Lage A; D7 blieb Lage C bis zum 2026-10-29
+# (FEHLT=scripts/abnahme-abgleich.sh, terminiert; siehe Nachtrag G3.2 unten) und D10 bis zum 2026-10-30
+# (FEHLT=scripts/prototyp-trennung-pruefen.sh, terminiert; siehe Nachtrag G3.3 unten) und D12 bis zum 2026-10-30
+# (FEHLT=scripts/nachweise-vollstaendig.sh, terminiert; siehe Nachtrag G3.4 unten); D9 bleibt Lage C
+# (FEHLT=scripts/rueckkanal-pruefen.sh, terminiert). D11 hat ein zweites Pruefmittel: scripts/gitleaks.toml (fehlt sie, ist D11
 # Lage C); schreibt git bei der Probe vor dem Historienlauf auf stderr, ist D11 Lage C mit
 # FEHLT=git-log. Den Inhalt von scripts/gitleaks.toml liest kein Lauf von gitleaks (die
 # eingebaute Liste ueberspringt die Datei); D11 bindet sie an GITLEAKS_KONFIG_SHA256
@@ -164,10 +174,52 @@
 # Aufrufers mit FEHLT=git-log (sie traut dem Verzeichnis, das leere HOME von D11 nicht) oder mit
 # FEHLT=git-arbeitsbaum (sie traut ihm nicht; schon die Wache mit git rev-parse scheitert).
 #
-# Was dieses Makefile NICHT ist: kein Ersatz fuer die vier eigenen
+# Nachtrag 2026-10-29 (Einheit G3.2, ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3), Zeile
+# "D7, Ziel abnahme im Makefile"): scripts/abnahme-abgleich.sh besteht, D7 ist Lage A, solange es
+# besteht und seine Eingaben tragen. Das Rezept des Ziels abnahme laeuft in dieser Reihenfolge:
+# (a) fehlt das Skript, Lage C mit FEHLT=scripts/abnahme-abgleich.sh; (b) besteht
+# backend/pyproject.toml, die Wachen fuer uv und pytest (Lage C mit FEHLT=uv beziehungsweise
+# FEHLT=pytest) und der erste Teil mit -m abnahme, bei dem der Rueckgabewert 5 (nichts gesammelt)
+# kein Fehlschlag ist und jeder andere Wert ungleich 0 A_FAIL; (c) ein Sammellauf mit denselben
+# Angaben und --collect-only in eine Wegwerfdatei ausserhalb des Arbeitsbaums (mktemp, am Ende
+# entfernt; scheitert mktemp, Lage C mit FEHLT=mktemp), bei 0 oder 5 weiter, sonst A_FAIL ohne
+# Abgleich; ohne backend/pyproject.toml bleibt die Datei leer; (d) bash scripts/abnahme-abgleich.sh
+# mit der Datei als einzigem Argument: 0 bestanden, 3 Lage C mit FEHLT=abnahme-pruefmittel, jeder
+# andere Wert ungleich 0 A_FAIL (Rueckgabewert 2: Funde). Suchmuster und Pruefung auf
+# Abnahmekriterien stehen nicht mehr im Rezept, sondern im Skript (ADR 0002, 6.3.2). Eintraege, die
+# noch keinen Abnahmetest haben muessen, fuehrt die Ausnahmeliste scripts/abnahme-ausnahmen.txt.
+# Der Eintrag zu D7 in .claude/hooks/dod-gate-terminierte-lagen.txt ist entfallen.
+#
+# Nachtrag 2026-10-30 (Einheit G3.3, ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3), Zeilen zu D10):
+# scripts/prototyp-trennung-pruefen.sh besteht, D10 ist Lage A, solange es besteht und das Gate traegt. Das Rezept des
+# Ziels prototyp-trennung laeuft in dieser Reihenfolge: (a) die Objektbedingung "prototype/ vorhanden" bleibt (sonst
+# Lage B); (b) fehlt das Skript, Lage C mit FEHLT=scripts/prototyp-trennung-pruefen.sh; (c) sonst das Skript ohne Argument:
+# 0 bestanden, 3 Lage C mit FEHLT=prototyp-trennung-pruefmittel, jeder andere Wert ungleich 0 A_FAIL (Rueckgabewert 2:
+# Funde). Das Skript ruft das Gate .claude/hooks/block-prototype-import.sh unveraendert je Textdatei unter prototype/,
+# backend/, frontend/ und deploy/ auf, vorab eine Kontrollprobe mit vier Ereignissen; Fallklassen KD-1 bis KD-9, Grenzen
+# GD-1 bis GD-6 und die des Gates: Kopfkommentar des Skripts. Der Eintrag zu D10 in
+# .claude/hooks/dod-gate-terminierte-lagen.txt ist entfallen.
+#
+# Nachtrag 2026-10-30 (Einheit G3.4, ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3), Zeilen zu D12):
+# scripts/nachweise-vollstaendig.sh besteht, D12 ist Lage A, solange es besteht und der Erzeuger traegt. Das Rezept des
+# Ziels nachweise prueft der Reihe nach drei Wachen, jede ein eigener Block: (a) fehlt git, Lage C mit FEHLT=git; (b) fehlt der
+# Erzeuger, Lage C mit FEHLT=scripts/nachweise-erzeugen.sh; (c) fehlt das Skript, Lage C mit
+# FEHLT=scripts/nachweise-vollstaendig.sh; gemeldet wird der erste Mangel. Besteht das Skript, laeuft es unabhaengig von (a) und
+# (b) ohne Argument: 0 bestanden, 3 Lage C mit FEHLT=nachweise-pruefmittel (wenn nicht schon (a) oder (b) einen Mangel gemeldet
+# hat), jeder andere Wert ungleich 0 A_FAIL (Rueckgabewert 2: Funde); in der Marke geht Lage C einem A_FAIL vor. Das Rezept ruft
+# den Erzeuger nicht mehr selbst auf; das
+# Skript ruft ihn unter env -i gegen ein absolutes Ziel in eigener Ablage ausserhalb des Arbeitsbaums auf und haelt die
+# Pfade der Tabelle gegen alle versionierten und unversionierten, nicht ignorierten Dateien (ohne .gitkeep und
+# docs/NACHWEISE.md); Fallklassen KN-1 bis KN-9, Grenzen GN-1 bis GN-5: Kopfkommentar des Skripts. Der Erzeuger loescht
+# ein CDPATH des Aufrufers vor seinem ersten cd. Der Eintrag zu D12 in .claude/hooks/dod-gate-terminierte-lagen.txt ist
+# entfallen.
+#
+# Was dieses Makefile NICHT ist: kein Ersatz fuer die eigenen
 # Projektskripte, die laut ADR 0002 Abschnitt 6 "mit dem Grundgeruest"
-# entstehen (scripts/abnahme-abgleich.sh, scripts/rueckkanal-pruefen.sh,
-# scripts/prototyp-trennung-pruefen.sh, scripts/nachweise-vollstaendig.sh),
+# entstehen (scripts/abnahme-abgleich.sh besteht seit dem 2026-10-29, Einheit G3.2,
+# scripts/prototyp-trennung-pruefen.sh seit dem 2026-10-30, Einheit G3.3,
+# scripts/nachweise-vollstaendig.sh seit dem 2026-10-30, Einheit G3.4; es fehlt noch
+# scripts/rueckkanal-pruefen.sh),
 # und kein Ersatz fuer backend/importvertraege.toml selbst, das laut ADR 0002
 # Abschnitt 5 mit dem Grundgeruest entsteht. Fehlen sie, meldet der jeweilige
 # Schritt das ehrlich statt es vorzutaeuschen.
@@ -689,14 +741,15 @@ endef
 # Gegenstand. Deshalb hat dieser Schritt KEINE Lage B (ADR 0002, 6.8.3).
 #
 # Weshalb er als ERSTER laeuft und nicht am Ende (ADR 0002, 6.8.2): Die Kette
-# bricht beim ersten Schritt ab, der ungleich 0 endet, und sie bricht heute bei
-# D7 ab. Ein Schritt hinter D7 liefe bis zum Grundgeruest nie. Schlimmer noch:
-# Er wuerde in genau dem Augenblick zum ersten Mal laufen, in dem er am
+# brach beim ersten Schritt ab, der ungleich 0 endete, und sie brach damals bei
+# D7 ab. Ein Schritt hinter D7 waere bis zum Grundgeruest nie gelaufen. Schlimmer
+# noch: Er waere in genau dem Augenblick zum ersten Mal gelaufen, in dem er am
 # meisten meldet -- die Regel des Skripts, Verweise in noch nicht gebaute
 # Baeume nicht zu beanstanden, schaltet sich mit dem Entstehen von backend/
-# selbst scharf, und dasselbe Grundgeruest bringt scripts/abnahme-abgleich.sh
+# selbst scharf, und dasselbe Grundgeruest brachte scripts/abnahme-abgleich.sh
 # und damit das Ende der Lage C bei D7. Erster Lauf und Scharfschaltung fielen
-# zusammen.
+# zusammen. Stand 2026-10-30: D7 ist seit der Einheit G3.2 Lage A, und die Kette
+# laeuft ueber Lagen C hinweg weiter (ADR 0002, 6.12.6); die Reihenfolge bleibt.
 #
 # Fehlendes git ergibt Lage C und nicht Lage B: Der Gegenstand sind die
 # Dokumente, git ist nur das Mittel, mit dem der Bestand abgegrenzt wird. Der
@@ -1241,72 +1294,99 @@ abdeckung:
 # =============================================================================
 # D7 — Aufgabenspezifische Abnahmekriterien
 # =============================================================================
-# UEBERLEGUNG (verlangt vom Auftrag, keine Regel): Das Pruefmittel
-# scripts/abnahme-abgleich.sh ist laut ADR 0002 "eigenes Projektartefakt,
-# entsteht mit dem Grundgeruest" und fehlt vollstaendig. Trotzdem ist dies
-# NICHT Lage B: Das Objekt der Pruefung ist nicht der Programmcode, sondern
-# docs/05_Product_Backlog.md -- und dieses Dokument existiert bereits, mit
-# realen Eintraegen und realen Abnahmekriterien, unabhaengig davon, ob
-# backend/pyproject.toml existiert. Wuerde der Abgleich heute laufen, faende er fuer jedes
-# Kriterium keinen Test (weil noch kein Code existiert) -- ein echtes,
-# berechenbares Ergebnis, keine gegenstandslose Frage. "0" vorzutaeuschen
-# waere deshalb eine Luege: Lage C.
+# Objekt der Pruefung ist der Backlog (docs/05_Product_Backlog*.md), nicht der
+# Programmcode. Er besteht seit der Freigabe von Schritt 3 dauerhaft; D7 hat
+# deshalb KEINE Lage B (ADR 0002, 6.3.2): Ein Rezept, das ihn nicht findet oder
+# in ihm keine Abnahmefeldzeile, hat nichts geprueft. Das erkennt das Skript
+# (Suchmuster, Eintraege, Abnahmefeldzeilen) und meldet es mit dem
+# Rueckgabewert 3 (Lage C); das Rezept haelt dafuer keine eigene Pruefung mehr.
+#
+# Bau in G3.2 (ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3), Zeile "D7,
+# Ziel abnahme im Makefile"). Reihenfolge des Rezepts:
+#   (a) scripts/abnahme-abgleich.sh fehlt: Lage C mit
+#       FEHLT=scripts/abnahme-abgleich.sh, nichts weiter.
+#   (b) Besteht backend/pyproject.toml: Wachen fuer uv und pytest (Lage C mit
+#       FEHLT=uv beziehungsweise FEHLT=pytest, der Rest entfaellt) und der erste
+#       Teil, pytest mit -m abnahme. Der Rueckgabewert 5 (nichts gesammelt) ist
+#       kein Fehlschlag, jeder andere Wert ungleich 0 ist A_FAIL; der Schritt
+#       laeuft trotzdem weiter, damit alle Befunde erscheinen.
+#   (c) Sammellauf mit denselben Angaben und --collect-only in eine Wegwerfdatei
+#       ausserhalb des Arbeitsbaums (mktemp, am Ende entfernt; scheitert mktemp,
+#       ist das Lage C mit FEHLT=mktemp). Rueckgabewert 0 oder 5: weiter; jeder
+#       andere Wert: A_FAIL ohne Abgleich (ein Sammelfehler entsteht an einer
+#       Testdatei und ist ein Befund, keine Lage C). Ohne backend/pyproject.toml
+#       bleibt die Datei leer.
+#   (d) bash scripts/abnahme-abgleich.sh mit der Datei als einzigem Argument:
+#       0 bestanden; 3 Lage C mit FEHLT=abnahme-pruefmittel; jeder andere Wert
+#       ungleich 0 A_FAIL (Rueckgabewert 2: Funde).
+# Was ein gruener Lauf aussagt und was nicht (Gesammeltsein statt Bestehen,
+# Grenzen GA-1 bis GA-7): Kopfkommentar von scripts/abnahme-abgleich.sh.
 abnahme:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D7 abnahme] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
-	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
-	if [ -f backend/pyproject.toml ]; then
-		hat_objekt=1
-		if ! command -v uv >/dev/null 2>&1; then
-			echo "[D7 abnahme] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
-			[ -n "$$fehlt" ] || fehlt="uv"
-			hat_lage_c=1
-		elif ! $(UMFELD_PROBE) pytest >/dev/null 2>&1; then
-			echo "[D7 abnahme] LAGE C: backend/pyproject.toml existiert, aber 'pytest' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
-			echo "Beschaffen: pytest in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
-			[ -n "$$fehlt" ] || fehlt="pytest"
-			hat_lage_c=1
-		else
-			# G1 (ADR 0002, Abschnitt 6, Zeile D7): erster Teil wie D5, mit -m abnahme. Im
-			# Grundgeruest gibt es keinen Abnahmetest, pytest endet dann mit 5; die Klassifizierung
-			# stellt die Lage C (scripts/abnahme-abgleich.sh fehlt) vor A_FAIL, D7 bleibt die
-			# terminierte Lage C. Den Rueckgabewert 5 behandelt G3.
-			$(UV) run --project backend --locked pytest -c backend/pyproject.toml -q -m abnahme backend/tests || fehlgeschlagen=1
-		fi
-	fi
-	# G1: fester Dateiname ersetzt durch Glob -- "docs/05_Product_Backlog.md"
-	# allein uebersah z. B. eine Umbenennung nach "docs/05_Product_Backlog_v2.md"
-	# und meldete danach faelschlich Lage B mit Rueckgabewert 0, obwohl der
-	# Backlog nur umbenannt, nicht verschwunden war.
-	# E4 (ADR 0002, dritte Fortschreibung 6.3.2): D7 hat KEINE Lage B mehr. Der
-	# Backlog besteht seit der Freigabe von Schritt 3 dauerhaft; findet das
-	# Suchmuster nichts, ist das ein Befund und kein "nichts zu pruefen".
-	# M3: Es werden ALLE Treffer genannt, nicht nur der erste, und es wird
-	# nicht behauptet, sie enthielten Abnahmekriterien, ohne nachzusehen.
-	hat_objekt=1
-	backlog_treffer=$$(compgen -G "docs/05_Product_Backlog*.md" 2>/dev/null || true)
-	if [ -z "$$backlog_treffer" ]; then
-		echo "[D7 abnahme] LAGE C: kein Backlog gefunden (Muster docs/05_Product_Backlog*.md). Der Backlog besteht seit der Freigabe von Schritt 3 dauerhaft; sein Fehlen ist ein Befund, nicht ein leerer Gegenstand (ADR 0002, 6.3.2)." >&2
-		[ -n "$$fehlt" ] || fehlt="docs/05_Product_Backlog.md"
+	hat_objekt=1; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
+	sammeldatei=""
+	if [ ! -f scripts/abnahme-abgleich.sh ]; then
+		echo "[D7 abnahme] LAGE C: scripts/abnahme-abgleich.sh existiert nicht." >&2
+		echo "Der Abgleich Backlog gegen Testkennungen (Projektauftrag 6.6) kann deshalb nicht laufen; 'bestanden' waere hier nicht belegt." >&2
+		[ -n "$$fehlt" ] || fehlt="scripts/abnahme-abgleich.sh"
 		hat_lage_c=1
 	else
-		# "tr" macht auch aus dem abschliessenden Umbruch ein Leerzeichen; ohne
-		# das nachfolgende "sed" stand in der Meldung ein doppeltes Leerzeichen
-		# (Befund der dynamischen Pruefung vom 2026-09-01).
-		backlog_liste=$$(printf '%s' "$$backlog_treffer" | tr '\n' ' ' | sed 's/[[:space:]]*$$//')
-		mit_kriterien=$$(grep -l -- '\*\*Abnahme:\*\*' $$backlog_treffer 2>/dev/null | tr '\n' ' ' | sed 's/[[:space:]]*$$//' || true)
-		if [ -z "$$mit_kriterien" ]; then
-			echo "[D7 abnahme] LAGE C: gefunden wurde $$backlog_liste, aber keine dieser Dateien fuehrt Abnahmekriterien (Muster '**Abnahme:**')." >&2
-			[ -n "$$fehlt" ] || fehlt="backlog-abnahmekriterien"
-			hat_lage_c=1
-		elif [ -f scripts/abnahme-abgleich.sh ]; then
-			bash scripts/abnahme-abgleich.sh || fehlgeschlagen=1
-		else
-			echo "[D7 abnahme] LAGE C: $$mit_kriterien fuehrt Abnahmekriterien, aber scripts/abnahme-abgleich.sh existiert nicht." >&2
-			echo "Der Abgleich Backlog gegen Testkennungen (Projektauftrag 6.6) kann deshalb nicht laufen; 'bestanden' waere hier nicht belegt." >&2
-			echo "Skript folgt mit dem Grundgeruest (ADR 0002, Abschnitt 5 und 6, D7)." >&2
-			[ -n "$$fehlt" ] || fehlt="scripts/abnahme-abgleich.sh"
-			hat_lage_c=1
+		if [ -f backend/pyproject.toml ]; then
+			if ! command -v uv >/dev/null 2>&1; then
+				echo "[D7 abnahme] LAGE C: backend/pyproject.toml existiert, aber 'uv' fehlt." >&2
+				[ -n "$$fehlt" ] || fehlt="uv"
+				hat_lage_c=1
+			elif ! $(UMFELD_PROBE) pytest >/dev/null 2>&1; then
+				echo "[D7 abnahme] LAGE C: backend/pyproject.toml existiert, aber 'pytest' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
+				echo "Beschaffen: pytest in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
+				[ -n "$$fehlt" ] || fehlt="pytest"
+				hat_lage_c=1
+			else
+				# Erster Teil (G1, Grund wie D5): -c nennt die Konfiguration, der Pfad den
+				# gesammelten Gegenstand. Rueckgabewert 5 heisst: kein Test mit dem Marker
+				# abnahme gesammelt, das ist kein Fehlschlag (ADR 0002, Abschnitt 5, Nachtrag
+				# vom 2026-10-29 (G3), Regel c); das Urteil ueber fehlende Abnahmetests traegt
+				# der Abgleich unten.
+				$(UV) run --project backend --locked pytest -c backend/pyproject.toml -q -m abnahme backend/tests; abnahme_rc=$$?
+				if [ "$$abnahme_rc" -ne 0 ] && [ "$$abnahme_rc" -ne 5 ]; then
+					echo "[D7 abnahme] pytest -m abnahme endete mit Rueckgabewert $$abnahme_rc." >&2
+					fehlgeschlagen=1
+				fi
+			fi
+		fi
+		if [ "$$hat_lage_c" -eq 0 ]; then
+			# Die Sammeldatei liegt ausserhalb des Arbeitsbaums (Kettengrundsatz, ADR 0002,
+			# Abschnitt 6) und wird am Ende entfernt. Ohne backend/pyproject.toml bleibt sie leer:
+			# das Skript bekommt trotzdem genau eine Datei (Rueckgabewert 3 bei fehlender Datei).
+			sammeldatei=$$(mktemp)
+			if [ -z "$$sammeldatei" ] || [ ! -f "$$sammeldatei" ]; then
+				echo "[D7 abnahme] LAGE C: mktemp schlug fehl (Sammeldatei fuer den Abgleich nicht herstellbar)." >&2
+				sammeldatei=""
+				[ -n "$$fehlt" ] || fehlt="mktemp"
+				hat_lage_c=1
+			else
+				sammel_ok=1
+				if [ -f backend/pyproject.toml ]; then
+					$(UV) run --project backend --locked pytest -c backend/pyproject.toml --collect-only -q -m abnahme backend/tests > "$$sammeldatei"; sammel_rc=$$?
+					if [ "$$sammel_rc" -ne 0 ] && [ "$$sammel_rc" -ne 5 ]; then
+						echo "[D7 abnahme] Sammellauf von pytest endete mit Rueckgabewert $$sammel_rc; der Abgleich wird nicht ausgefuehrt (ein Sammelfehler entsteht an einer Testdatei und ist ein Befund)." >&2
+						fehlgeschlagen=1; sammel_ok=0
+					fi
+				fi
+				if [ "$$sammel_ok" -eq 1 ]; then
+					bash scripts/abnahme-abgleich.sh "$$sammeldatei"; abgleich_rc=$$?
+					if [ "$$abgleich_rc" -eq 3 ]; then
+						echo "[D7 abnahme] LAGE C: scripts/abnahme-abgleich.sh meldet Lage C (Rueckgabewert 3), Grund siehe oben." >&2
+						[ -n "$$fehlt" ] || fehlt="abnahme-pruefmittel"
+						hat_lage_c=1
+					elif [ "$$abgleich_rc" -ne 0 ]; then
+						echo "[D7 abnahme] scripts/abnahme-abgleich.sh endete mit Rueckgabewert $$abgleich_rc." >&2
+						fehlgeschlagen=1
+					fi
+				fi
+				rm -f "$$sammeldatei"
+			fi
 		fi
 	fi
 	$(call KLASSIFIZIEREN,D7,abnahme,tritt nicht ein -- D7 hat seit ADR 0002 6.3.2 keine Lage B.)
@@ -1449,6 +1529,19 @@ rueckkanal:
 # Importe (geprueft am 2026-08-25); das aendert an der Objektbedingung nichts,
 # weil der Gegenstand die TRENNUNG ist, nicht der Inhalt von prototype/
 # selbst -- eine Stapelpruefung urteilt ueber den Bestand.
+#
+# Bau in G3.3 (ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3), Zeilen zu D10). Das Rezept ruft
+# scripts/prototyp-trennung-pruefen.sh ohne Argument auf und ordnet den Rueckgabewert zu: 0 bestanden; 3 Lage C mit
+# FEHLT=prototyp-trennung-pruefmittel (das Pruefmittel faellt aus: ein Werkzeug der geschlossenen Liste fehlt, das Gate
+# fehlt, ist nicht lesbar oder eine Verknuepfung, ein Argument, kein Git-Arbeitsbaum, die Ablage ist nicht herstellbar
+# oder liegt im Arbeitsbaum, git ls-files scheitert oder die Liste ist unvollstaendig gelesen, eine Datei ist nicht
+# lesbar, das Ereignis ist nicht herstellbar, die Kontrollprobe weicht ab, das Gate antwortet auf eine Datei weder mit
+# Sperre noch mit Durchlauf, das Gesamtbudget ist erschoepft; Klassen KD-3 bis KD-6 und KD-9 im Kopf des Skripts);
+# jeder andere Wert ungleich 0 A_FAIL
+# (Rueckgabewert 2: mindestens eine Sperre der Richtung 1 oder 2, eine Verknuepfung oder ein Untermodul unter einer
+# Wurzel). Fehlt das Skript, bleibt es Lage C mit FEHLT=scripts/prototyp-trennung-pruefen.sh. Was ein gruener Lauf
+# aussagt und was nicht (Bezuege ohne Importwort, Prosa, ignorierte und binaere Dateien, die Grenzen des Gates):
+# Kopfkommentar des Skripts.
 prototyp-trennung:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D10 prototyp-trennung] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
@@ -1458,11 +1551,18 @@ prototyp-trennung:
 	fi
 	if [ "$$hat_objekt" -eq 1 ]; then
 		if [ -f scripts/prototyp-trennung-pruefen.sh ]; then
-			bash scripts/prototyp-trennung-pruefen.sh || fehlgeschlagen=1
+			bash scripts/prototyp-trennung-pruefen.sh; pruefer_rc=$$?
+			if [ "$$pruefer_rc" -eq 3 ]; then
+				echo "[D10 prototyp-trennung] LAGE C: scripts/prototyp-trennung-pruefen.sh meldet Lage C (Rueckgabewert 3), Grund siehe oben." >&2
+				[ -n "$$fehlt" ] || fehlt="prototyp-trennung-pruefmittel"
+				hat_lage_c=1
+			elif [ "$$pruefer_rc" -ne 0 ]; then
+				echo "[D10 prototyp-trennung] scripts/prototyp-trennung-pruefen.sh endete mit Rueckgabewert $$pruefer_rc." >&2
+				fehlgeschlagen=1
+			fi
 		else
 			echo "[D10 prototyp-trennung] LAGE C: prototype/ existiert, aber scripts/prototyp-trennung-pruefen.sh fehlt." >&2
 			echo "Der bestehende Hook block-prototype-import.sh deckt nur den Schreibweg ab (PreToolUse), nicht den bereits geschriebenen Bestand." >&2
-			echo "Betriebsart und Form sind mit DevOps und Protocol Master zu klaeren (ADR 0002, Abschnitt 8, O-8)." >&2
 			fehlt="scripts/prototyp-trennung-pruefen.sh"
 			hat_lage_c=1
 		fi
@@ -1687,23 +1787,33 @@ geheimnisse:
 # =============================================================================
 # D12 — Nachweise
 # =============================================================================
-# UEBERLEGUNG: Zwei Teilschritte, unterschiedlicher Bestand. Objekt der
-# Pruefung ist die Artefaktliste des Erzeugers (siehe scripts/nachweise-
-# erzeugen.sh) -- bereits heute real und umfangreich (Dokumentation,
-# Rollendateien, Hooks, Regeln), unabhaengig von backend/frontend.
-# scripts/nachweise-erzeugen.sh EXISTIERT bereits und wird deshalb echt
-# aufgerufen (die "Haelfte seines Pruefmittels", wie im Auftrag benannt).
-# scripts/nachweise-vollstaendig.sh fehlt dagegen vollstaendig; sein Zweck
-# (kein nachweispflichtiges Artefakt fehlt in der Liste) ist eine reale,
-# nicht triviale Frage am bestehenden Bestand. "0" vorzutaeuschen waere eine
-# Luege -> Lage C, unabhaengig von backend/frontend/deploy.
+# UEBERLEGUNG: Objekt der Pruefung ist die Artefaktliste des Erzeugers (siehe
+# scripts/nachweise-erzeugen.sh) -- bereits heute real und umfangreich
+# (Dokumentation, Rollendateien, Hooks, Regeln), unabhaengig von
+# backend/frontend. Bis zum 2026-10-30 fehlte scripts/nachweise-vollstaendig.sh;
+# sein Zweck (kein nachweispflichtiges Artefakt fehlt in der Liste, keine Zeile
+# zeigt ins Leere) ist eine reale, nicht triviale Frage am bestehenden Bestand,
+# und "0" vorzutaeuschen waere eine Luege gewesen -> Lage C, unabhaengig von
+# backend/frontend/deploy.
 # E2: "make dod" darf als spaeterer Stop-Hook (R3-Q-001) nicht selbst
 # ungefragt eine versionierte Datei aendern -- sonst erzeugt jeder Stopp
 # eine Aenderung an docs/NACHWEISE.md, die niemand angefordert hat.
-# scripts/nachweise-erzeugen.sh nimmt laut eigenem Kopf ein Ausgabeargument
-# entgegen (geprueft); dieses Ziel nutzt es und schreibt in eine
-# Wegwerfdatei. Der Zweck von D12 -- der Rueckgabewert des Erzeugers wird
-# geprueft -- bleibt erfuellt, die Kette bleibt lesend.
+#
+# Bau in G3.4 (ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3), Zeilen zu D12, Form (i)). Das Rezept ruft
+# scripts/nachweise-vollstaendig.sh ohne Argument auf und ordnet den Rueckgabewert zu: 0 bestanden; 3 Lage C mit
+# FEHLT=nachweise-pruefmittel (das Pruefmittel faellt aus: ein Werkzeug der geschlossenen Liste fehlt, ein Argument, kein
+# Git-Arbeitsbaum, der Erzeuger fehlt oder ist nicht lesbar, die Ablage ist nicht herstellbar oder liegt im Arbeitsbaum,
+# git scheitert oder die Liste ist unvollstaendig gelesen, der Erzeuger endet weder mit 0 noch mit 1, meldet Unbekanntes
+# oder bei sauberem Stand NICHT COMMITTET, die Tabelle ist nicht lesbar oder die Zahl ihrer Artefakte fehlt oder stimmt nicht;
+# Klassen KN-3 bis KN-6 und KN-8 im Kopf des Skripts); jeder andere Wert
+# ungleich 0 A_FAIL (Rueckgabewert 2: eine Datei ohne Zeile, eine Zeile ohne Artefakt, eine Meldung "FEHLT:" des
+# Erzeugers, bei sauberem Stand eine Abweichung der committeten Liste). Den Erzeuger ruft das Skript selbst auf, unter
+# env -i gegen ein absolutes Ziel in eigener Ablage ausserhalb des Arbeitsbaums; der eigene Erzeugerlauf des Rezepts
+# entfaellt (vor dem Commit endet der Erzeuger mit 1, sobald eine Einheit ein Artefakt samt Zeile hinzufuegt; der Lauf
+# des Rezepts machte D12 in jeder solchen Einheit rot). Die Wachen fuer git, den Erzeuger und das Skript bleiben, ebenso
+# die Zeile vor dem zweiten fehlenden Gegenstand (Anker der Mutation Z-130 in scripts/dod-gate-mutationen.txt). Was ein
+# gruener Lauf aussagt und was nicht (nur der Pfad einer Zeile wird geprueft, Verzeichniszeilen, ignorierte Dateien,
+# KN-9 nur am sauberen Stand): Kopfkommentar des Skripts.
 nachweise:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D12 nachweise] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
@@ -1713,19 +1823,24 @@ nachweise:
 		[ -n "$$fehlt" ] || fehlt="git"
 		hat_lage_c=1
 	elif [ -f scripts/nachweise-erzeugen.sh ]; then
-		nachweis_tmp=$$(mktemp)
-		bash scripts/nachweise-erzeugen.sh "$$nachweis_tmp" || fehlgeschlagen=1
-		rm -f "$$nachweis_tmp"
+		: # Form (i): den Erzeuger ruft scripts/nachweise-vollstaendig.sh selbst auf, gegen ein Ziel in eigener Ablage; das Rezept laesst ihn nicht mehr laufen
 	else
 		echo "[D12 nachweise] LAGE C: scripts/nachweise-erzeugen.sh fehlt." >&2
 		[ -n "$$fehlt" ] || fehlt="scripts/nachweise-erzeugen.sh"
 		hat_lage_c=1
 	fi
 	if [ -f scripts/nachweise-vollstaendig.sh ]; then
-		bash scripts/nachweise-vollstaendig.sh || fehlgeschlagen=1
+		bash scripts/nachweise-vollstaendig.sh; pruefer_rc=$$?
+		if [ "$$pruefer_rc" -eq 3 ]; then
+			echo "[D12 nachweise] LAGE C: scripts/nachweise-vollstaendig.sh meldet Lage C (Rueckgabewert 3), Grund siehe oben." >&2
+			[ -n "$$fehlt" ] || fehlt="nachweise-pruefmittel"
+			hat_lage_c=1
+		elif [ "$$pruefer_rc" -ne 0 ]; then
+			echo "[D12 nachweise] scripts/nachweise-vollstaendig.sh endete mit Rueckgabewert $$pruefer_rc." >&2
+			fehlgeschlagen=1
+		fi
 	else
-		echo "[D12 nachweise] LAGE C: scripts/nachweise-vollstaendig.sh fehlt. docs/NACHWEISE.md wird zwar erzeugt, aber dass kein nachweispflichtiges Artefakt in der Liste fehlt, ist damit nicht belegt." >&2
-		echo "Skript folgt mit dem Grundgeruest (ADR 0002, Abschnitt 6, D12; zu klaeren mit Protocol Master und DevOps, Abschnitt 9)." >&2
+		echo "[D12 nachweise] LAGE C: scripts/nachweise-vollstaendig.sh fehlt. Dass kein nachweispflichtiges Artefakt in der Liste des Erzeugers fehlt, ist damit nicht belegt." >&2
 		[ -n "$$fehlt" ] || fehlt="scripts/nachweise-vollstaendig.sh"
 		hat_lage_c=1
 	fi
