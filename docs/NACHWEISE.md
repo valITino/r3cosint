@@ -5,7 +5,7 @@
 | **Erzeugt durch** | `scripts/nachweise-erzeugen.sh` |
 | **Grundlage** | Projektauftrag 6.6 |
 | **Verantwortlich** | Protocol Master |
-| **Stand des Repositories** | `bc1f48ce41b6cbbc0f504816bcce1c386137ca54` |
+| **Stand des Repositories** | `153e926ab8776b7970d321eb3da52ed792f5ce36` |
 | **Artefakte** | 155 |
 
 **Diese Datei wird erzeugt, nicht von Hand gepflegt** (6.6). Sie wird in der
@@ -45,7 +45,7 @@ selbst trägt die vollständigen 40 Stellen.
 | Methodik, Scrum-Aufbau | `docs/methodik/scrum-aufbau.md` | [`b24f7813ddf1`](https://github.com/valITino/r3cosint/blob/b24f7813ddf1567bbc7c7f94d3ffad6ebb68189f/docs/methodik/scrum-aufbau.md) | 2026-10-26 | Kopie aus dem frueheren Methodik-Repository, byte-gleich; Quell-Commit in docs/methodik/QUELLEN.md |
 | Methodik, Uebergabevermerke | `docs/methodik/UEBERGABE.md` | [`b24f7813ddf1`](https://github.com/valITino/r3cosint/blob/b24f7813ddf1567bbc7c7f94d3ffad6ebb68189f/docs/methodik/UEBERGABE.md) | 2026-10-26 | Kopie aus dem frueheren Methodik-Repository, byte-gleich, eingefrorenes Archiv; Quell-Commit in docs/methodik/QUELLEN.md |
 | ADR 0001 Rollenmodell | `docs/adr/0001-rollenmodell.md` | [`1f8865cc3670`](https://github.com/valITino/r3cosint/blob/1f8865cc36701702f1bb61bc47e40cf948b51756/docs/adr/0001-rollenmodell.md) | 2026-09-25 | Rechte, Modell und maxTurns je Rolle |
-| ADR 0002 Ziel-Stack | `docs/adr/0002-architekturentscheid-ziel-stack.md` | [`bc1f48ce41b6`](https://github.com/valITino/r3cosint/blob/bc1f48ce41b6cbbc0f504816bcce1c386137ca54/docs/adr/0002-architekturentscheid-ziel-stack.md) | 2026-11-03 | Architekturentscheid R3-C-001: Stack, Modulschnitt, DoD-Kette; Status im Dokument |
+| ADR 0002 Ziel-Stack | `docs/adr/0002-architekturentscheid-ziel-stack.md` | [`153e926ab877`](https://github.com/valITino/r3cosint/blob/153e926ab8776b7970d321eb3da52ed792f5ce36/docs/adr/0002-architekturentscheid-ziel-stack.md) | 2026-11-03 | Architekturentscheid R3-C-001: Stack, Modulschnitt, DoD-Kette; Status im Dokument |
 | ADR 0003 Definition-of-Done-Gate | `docs/adr/0003-definition-of-done-gate.md` | [`d903a574559f`](https://github.com/valITino/r3cosint/blob/d903a574559ffaef8976d7f065fc974aab2547ba/docs/adr/0003-definition-of-done-gate.md) | 2026-11-03 | Architekturentscheid R3-Q-001: Definition-of-Done-Gate; Teil A Stand, Teil B Entscheidlog, verschoben aus ADR 0002, 6.12 |
 | ADR 0004 PreToolUse-Gates | `docs/adr/0004-pretooluse-gates.md` | [`ac9ad570f24a`](https://github.com/valITino/r3cosint/blob/ac9ad570f24a855ac160375390f5f97468759af9/docs/adr/0004-pretooluse-gates.md) | 2026-10-27 | Architekturentscheid R3-Q-010: PreToolUse-Gates und Pruefmittel; Teil A Stand, Teil B Entscheidlog, verschoben aus ADR 0002, 6.13 |
 | ADR 0005 Fremde Inhalte im Harness | `docs/adr/0005-fremde-inhalte-im-harness.md` | [`924c300ccadb`](https://github.com/valITino/r3cosint/blob/924c300ccadb1af5da3b39d986bebca400ef0425/docs/adr/0005-fremde-inhalte-im-harness.md) | 2026-10-28 | Architekturentscheid R3-Q-011: fremde Inhalte im Harness; Teil A Stand, Teil B Entscheidlog, verschoben aus ADR 0002, 6.14 |
