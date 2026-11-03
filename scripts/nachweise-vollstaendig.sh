@@ -6,7 +6,7 @@
 # Anforderung R3-Q-001 (das DoD-Gate stuetzt sich auf die Kette). Grundlage: Projektauftrag 6.6 (das Nachweisverzeichnis nimmt die
 # Artefakte des Projekts auf); ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (Festlegung fuer G3), Zeilen zu D12, und Abschnitt 6
 # (Zeile D12: der Schritt schreibt nicht in den Arbeitsbaum); docs/12_Freigabe_Grundgeruest.md, Abschnitt 4, G3, Festlegung 3.
-# Muster: scripts/belege-pruefen.sh (D20), scripts/abnahme-abgleich.sh (D7) und scripts/prototyp-trennung-pruefen.sh (D10). Einheit G3.4.
+# Muster: scripts/belege-pruefen.sh (D20), scripts/abnahme-abgleich.sh (D7) und scripts/prototyp-trennung-pruefen.sh (D10). Einheit G3.4; Nacharbeiten N2.3 (ADR 0002, Abschnitt 5, Nachtrag und Fortschreibung vom 2026-11-03).
 #
 # ZWECK
 #   Das Nachweisverzeichnis docs/NACHWEISE.md wird von scripts/nachweise-erzeugen.sh erzeugt; die Artefaktliste steht im Erzeuger. D12
@@ -22,9 +22,13 @@
 # ABLAUF (in dieser Reihenfolge; ein Mangel in den Schritten 1 bis 9 ist Lage C vor jedem Urteil, ausser wo unten "nach dem Urteil")
 #   1  Aufruf, Werkzeuge der geschlossenen Liste (siehe WERKZEUGE) und die Version von bash (assoziative Felder ab Version 4).
 #   2  Umfeld: die git-Variablen des Aufrufers werden geloescht (GIT_DIR, GIT_WORK_TREE, GIT_INDEX_FILE und weitere),
-#      GIT_NO_REPLACE_OBJECTS=1, LC_ALL=C, kein CDPATH. Jeder git-Aufruf und der Aufruf des Erzeugers laufen unter "env -i" mit
+#      GIT_NO_REPLACE_OBJECTS=1, LC_ALL=C, kein CDPATH. Ein Ersatzobjekt unter refs/replace bleibt ohne Wirkung allein ueber die Zuweisung
+#      in git_neutral und am Aufruf des Erzeugers (dessen git log wird sonst leer); die export-Zeile im Kopf hat keine eigene Wirkung.
+#      Jeder git-Aufruf und der Aufruf des Erzeugers laufen unter "env -i" mit
 #      festen Variablen (PATH des Aufrufers, leeres HOME, GIT_CONFIG_NOSYSTEM=1, GIT_CONFIG_GLOBAL=/dev/null, GIT_OPTIONAL_LOCKS=0).
-#   3  Ablage: mktemp -d ausserhalb des Arbeitsbaums; ein trap raeumt in jedem Ausgang ab.
+#   3  Ablage: das Zielverzeichnis (TMPDIR, leer oder ungesetzt /tmp) wird VOR mktemp -d mit cd und pwd -P aufgeloest; ist es nicht
+#      erreichbar oder liegt es im Arbeitsbaum, ist das Lage C ablage, ohne dass mktemp aufgerufen wird. Dann mktemp -d und die
+#      Pruefung nach dem Anlegen (ausserhalb des Arbeitsbaums); ein trap raeumt in jedem Ausgang ab.
 #   4  Git-Arbeitsbaum: die Wurzel des Skripts ist die oberste Ebene eines Git-Arbeitsbaums.
 #   5  Erzeuger: scripts/nachweise-erzeugen.sh ist eine regulaere, lesbare Datei; auf dem Weg liegt keine Verknuepfung.
 #   6  Sollmenge S (KN-3): git ls-files -z --cached --others --exclude-standard, ohne Dateien mit dem Namen .gitkeep und ohne
@@ -35,15 +39,17 @@
 #      Erzeugers ("Nachweisverzeichnis erzeugt, aber unvollstaendig: ...") tragen; jede andere Zeile ist Lage C. Rueckgabewert 1
 #      ohne eine Zeile FEHLT: oder NICHT COMMITTET: ist Lage C.
 #   8  Tabelle: gelesen wird die zweite Spalte (Pfad, in Rueckwaertsakzenten) jeder Zeile unter dem Tabellenkopf
-#      "| Artefakt | Pfad | Fester Verweis | Stand | Beschreibung |" bis zur ersten Zeile, die nicht mit "| " beginnt; zusaetzlich
+#      "| Artefakt | Pfad | Fester Verweis | Stand | Beschreibung |" und der Trennzeile "|---|---|---|---|---|" direkt darunter bis zur
+#      ersten Zeile, die nicht mit "| " beginnt; zusaetzlich
 #      die Zahl der Artefakte aus dem Kopfblock ("| **Artefakte** | n |"); sie muss die Zahl der Tabellenzeilen plus die der Meldungen
 #      "FEHLT:" des Erzeugers sein. Kein Ziel, kein Tabellenkopf, eine Zeile ohne diese Form, keine Zeile, keine lesbare Zahl oder eine
-#      andere Zahl: Lage C, Kennung tabelle.
-#   9  Abgleich (KN-1, KN-2, KN-4) und Vergleich der committeten Liste (KN-9, nur bei leerem git status; sonst "nicht beurteilt").
+#      andere Zahl, eine andere Trennzeile: Lage C, Kennung tabelle.
+#   9  Abgleich (KN-1, KN-2, KN-4), die Dateien von HEAD (git ls-tree -r -z --name-only HEAD) und Vergleich der committeten Liste
+#      (KN-9, nur bei leerem git status; sonst "nicht beurteilt").
 #      Ein Mangel hier ist Lage C NACH dem Urteil: die Funde stehen in derselben Ausgabe (Kennungen git-status, git-kopf, tabelle fuer
 #      die committete Liste), die Zeile KN-9 sagt dann "nicht beurteilt ... (Lage C)"; bei der Kennung nicht-committet (unten) laeuft
-#      der Vergleich weiter. Bei leerem git status ist jede Meldung NICHT COMMITTET fuer einen Pfad von S ein Mangel des Erzeugers
-#      (sein git log scheitert unbemerkt): Lage C, Kennung nicht-committet.
+#      der Vergleich weiter. Ist eine Meldung NICHT COMMITTET fuer einen Pfad in HEAD (Datei oder Verzeichnis mit einer Datei aus HEAD)
+#      ein Mangel des Erzeugers (sein git log scheitert unbemerkt), gleich ob git status leer ist: Lage C, Kennung nicht-committet.
 #
 # FEHLERKLASSEN (Kennungen einzeln, ohne Bereichsschreibweise; das Pruefmittel zaehlt sie aus diesem Kommentar ab)
 #   KN-1  Datei ohne Zeile: eine Datei der Sollmenge S ohne Zeile mit ihrem Pfad oder dem eines Verzeichnisses ueber ihr ist ein
@@ -58,19 +64,21 @@
 #         NUL-getrennt gelesen und in der Ausgabe mit Steuerzeichen als Folge geschrieben.
 #   KN-4  Erzeuger: "FEHLT: <Pfad>" (Zeile fuer eine Datei, die nicht besteht) ist ein Fund (FUND TAB KN-4 TAB Pfad).
 #         "NICHT COMMITTET: <Pfad>" fuer eine Datei von S oder ein Verzeichnis mit einer Datei von S ist ein Hinweis mit Zahl und
-#         kein Fund (der Verweis entsteht mit dem Commit), bei leerem git status aber Lage C (nicht-committet: der Erzeuger wertet das
-#         Scheitern seines git log nicht aus). Lage C: Rueckgabewert weder 0 noch 1, Rueckgabewert 1 ohne Meldungszeile, eine unbekannte
+#         kein Fund (der Verweis entsteht mit dem Commit). Steht der Pfad aber in HEAD (als Datei oder als Verzeichnis mit einer Datei
+#         aus HEAD), ist das Lage C nicht-committet, gleich ob git status leer ist: ein Pfad aus HEAD hat einen Commit, der Erzeuger
+#         wertet das Scheitern seines git log nicht aus (der Fall des leeren git status ist ein Teilfall). Die Funde stehen in
+#         derselben Ausgabe. Lage C: Rueckgabewert weder 0 noch 1, Rueckgabewert 1 ohne Meldungszeile, eine unbekannte
 #         Zeile der Fehlerausgabe (etwa "dirname: command not found").
 #   KN-5  Tabelle: nur die Zeilen unter dem Tabellenkopf sind Artefaktzeilen; der Kopfblock der Datei, auch seine Zeile
 #         "Erzeugt durch" mit dem Pfad des Erzeugers, und der Text nach der Tabelle sind es nicht. Gleiche Pfade mehrerer Zeilen zaehlen
 #         als ein Pfad ("Tabelle: n Zeilen, m Pfade"). Lage C: kein Ziel, kein Tabellenkopf, eine Zeile ohne die Form
-#         | Name | `Pfad` | ... |, keine Zeile, keine lesbare Zeile "| **Artefakte** | n |" im Kopfblock, eine Zahl n, die nicht die Zahl
+#         | Name | `Pfad` | ... |, eine Zeile nach dem Tabellenkopf, die nicht die Trennzeile |---|---|---|---|---| ist, keine Zeile, keine lesbare Zeile "| **Artefakte** | n |" im Kopfblock, eine Zahl n, die nicht die Zahl
 #         der Tabellenzeilen plus der Meldungen FEHLT: ist (der Erzeuger zaehlt die Eintraege seiner Liste, auch die fehlenden).
 #   KN-6  Umfeld: ein Werkzeug der geschlossenen Liste fehlt, bash ist aelter als Version 4, ein Argument, kein Git-Arbeitsbaum um die
 #         Wurzel (auch: die Wurzel ist nicht die oberste Ebene), der Erzeuger fehlt, ist keine regulaere Datei, nicht lesbar oder
-#         eine Verknuepfung, die Ablage ist nicht herstellbar oder liegt im Arbeitsbaum, git ls-files, git status, git ls-tree oder
-#         git cat-file scheitert. Das Umfeld des Aufrufers (git-Variablen, globale git-Konfiguration, CDPATH, Arbeitsverzeichnis)
-#         aendert das Urteil nicht; ein TMPDIR im Arbeitsbaum oder ein TMPDIR, das nicht besteht, ist Lage C (Ablage).
+#         eine Verknuepfung, die Ablage ist nicht herstellbar oder liegt im Arbeitsbaum, git ls-files, git status, git ls-tree (auch
+#         git ls-tree -r HEAD) oder git cat-file scheitert. Das Umfeld des Aufrufers (git-Variablen, globale git-Konfiguration, CDPATH, Arbeitsverzeichnis)
+#         aendert das Urteil nicht; ein TMPDIR im Arbeitsbaum, ein TMPDIR, das nicht besteht, und ein relatives TMPDIR (gesetzt, nicht leer, erstes Zeichen nicht "/") sind Lage C (Ablage), geprueft vor dem Aufruf von mktemp.
 #   KN-7  Schreibfrei: das Skript schreibt nichts in den Arbeitsbaum (Kettengrundsatz, ADR 0002, Abschnitt 6): das Ziel des
 #         Erzeugers liegt in der Ablage, docs/NACHWEISE.md bleibt unveraendert, git laeuft ohne optionale Sperren, es gibt keinen
 #         Here-String (Bash legt dafuer ab 64 KiB, vor Version 5.1 immer, eine Wegwerfdatei an); die Ablage ist nach dem Lauf entfernt.
@@ -81,21 +89,23 @@
 #         mit einem Fehler oder liefert es nicht so viele Zeilen wie Funde erfasst sind, ist das Lage C.
 #   KN-9  Die committete Liste: bei leerem "git status --porcelain --untracked-files=all" werden die Pfadmenge und die Zahl der
 #         Artefakte der in HEAD committeten docs/NACHWEISE.md gegen die frische Liste gehalten; jeder Pfad in nur einer der beiden
-#         Mengen, eine abweichende Zahl der Artefakte (Fund auf docs/NACHWEISE.md), eine Datei ohne lesbare Tabelle oder ohne lesbare
-#         Zahl der Artefakte und eine Datei, die in HEAD fehlt, sind Funde (FUND TAB KN-9 TAB Pfad). Bei nicht leerem git status ist die
+#         Mengen, eine abweichende Zahl der Artefakte (Fund auf docs/NACHWEISE.md), eine Datei ohne lesbare Tabelle (auch mit einer
+#         anderen Trennzeile als |---|---|---|---|---|) oder ohne lesbare Zahl der Artefakte und eine Datei, die in HEAD fehlt, sind Funde (FUND TAB KN-9 TAB Pfad). Bei nicht leerem git status ist die
 #         committete Liste zwangslaeufig
 #         einen Commit alt: "KN-9: nicht beurteilt", kein Fund. Verglichen werden weder Pruefsummen noch Stand noch Beschreibung (GN-2).
 #
 # SCHNITTSTELLE ZU DEN MELDUNGEN DES ERZEUGERS (hier vermerkt, nicht am Erzeuger; wie der Meldetext des Gates bei D10)
 #   Die Zeilen "FEHLT: <Pfad>" und "NICHT COMMITTET: <Pfad>" der Fehlerausgabe, die Kopfzeile der Tabelle und die Zeile
 #   "| **Artefakte** | n |" des Kopfblocks sind die Schnittstelle zwischen dem Erzeuger und D12. Aendert sich eine, wird die
-#   Fehlerausgabe unbekannt, die Tabelle unlesbar oder die Zahl falsch: Lage C (rot, nie gruen). Gelesen am Erzeuger (Einheit G3.4, 2026-10-30):
+#   Fehlerausgabe unbekannt, die Tabelle unlesbar oder die Zahl falsch: Lage C (rot, nie gruen). Zur Tabelle gehoert die Trennzeile
+#   "|---|---|---|---|---|" direkt unter der Kopfzeile (so schreibt sie der Erzeuger); jede andere Zeile dort ist bei der frischen Liste
+#   Lage C (Kennung tabelle), bei der committeten Liste ein Fund KN-9. Gelesen am Erzeuger (Einheit G3.4, 2026-10-30):
 #     Rueckgabewert 0 bei Erfolg, 1 wenn ein Artefakt fehlt oder nicht committet ist; je fehlender Datei eine Zeile "FEHLT: <Pfad>"
 #     (ohne Tabellenzeile), je nicht committeter Datei "NICHT COMMITTET: <Pfad>" (mit Tabellenzeile "*noch nicht committet*"); bei
 #     Rueckgabewert 1 eine Schlusszeile "Nachweisverzeichnis erzeugt, aber unvollstaendig: ..." (mit "a" mit Umlaut); alle Meldungen
 #     auf stderr; die Zahl im Kopfblock ist die Zahl der Eintraege der Artefaktliste, auch der fehlenden.
 #
-# GRENZEN (benannt, nicht geschlossen; je Grenze ein Fall im Pruefmittel, der sie als Durchlass oder Fehlalarm misst)
+# GRENZEN (benannt, nicht geschlossen; je Grenze GN ein Fall im Pruefmittel, der sie als Durchlass oder Fehlalarm misst)
 #   GN-1  Pfade mit senkrechtem Strich oder Zeilenumbruch lassen sich im Erzeuger nicht als Zeile aufnehmen (Trennzeichen der
 #         Artefaktliste, eine Zeile je Eintrag): die Datei ist ein KN-1, solange kein Verzeichnis ueber ihr eine Zeile hat
 #         (Fehlalarm). Ein Rueckwaertsakzent im Pfad wird gelesen (erster und letzter Akzent der Spalte begrenzen den Pfad).
@@ -105,6 +115,9 @@
 #   GN-3  Eine Verzeichniszeile deckt jede Datei darunter, auch eine neue (Durchlass, nach der Festlegung gewollt: kleinere Liste).
 #   GN-4  Ignorierte Dateien (.gitignore, .git/info/exclude) gehoeren nicht zu S (Durchlass); die globale und die Systemkonfiguration
 #         von git gelten nicht.
+#   Grenze des Pruefmittels GP-N9 (im Kopf des Selbsttests): die Eintraege der HEAD-Liste (git ls-tree -r -z --name-only HEAD) werden nicht
+#         gegen einen zweiten Lesepfad gezaehlt; ein Scheitern von git ist Lage C git-kopf, eine stille Verkuerzung bei Rueckgabewert 0 ist
+#         nicht belegt. Kein zweiter Lesepfad gebaut.
 #   GN-5  KN-9 urteilt nur am sauberen Stand (Kopf des Pull Requests, Klon des Pruefers, Lauf auf der Gegenseite); vor dem Commit einer
 #         Einheit ist die committete Liste zwangslaeufig einen Commit alt, dort steht "nicht beurteilt" (Durchlass vor dem Commit).
 #
@@ -135,7 +148,8 @@ set -uo pipefail
 
 # KN-6: Sortierung, Zeichenklassen und Wortgrenzen haengen sonst von der Spracheinstellung des Aufrufers ab.
 export LC_ALL=C
-# KN-6: ein CDPATH des Aufrufers lenkt "cd scripts/.." bei relativem Aufruf um und schreibt den Zielpfad auf die Standardausgabe
+# KN-6: ein CDPATH des Aufrufers lenkt "cd scripts/.." bei relativem Aufruf um; der Zielpfad gelangt in die Befehlsersetzung der
+# Wurzel (nicht auf die Standardausgabe des Skripts) und verfaelscht sie: Folge Lage C git-arbeitsbaum
 unset CDPATH
 
 PROG="nachweise-vollstaendig.sh"
@@ -144,6 +158,7 @@ NL=$'\n'
 ERZEUGER_REL="scripts/nachweise-erzeugen.sh"
 LISTE_REL="docs/NACHWEISE.md"
 TABELLENKOPF='| Artefakt | Pfad | Fester Verweis | Stand | Beschreibung |'
+TRENNZEILE='|---|---|---|---|---|'
 RE_ARTEFAKTE='^\| \*\*Artefakte\*\* \| ([0-9]+) \|$'
 WERKZEUGE="bash git env dirname mktemp mkdir rm sort grep"
 
@@ -190,13 +205,32 @@ case "$QUELLE" in */*) QUELLVERZ="${QUELLE%/*}" ;; *) QUELLVERZ="." ;; esac
 WURZEL="$(cd "$QUELLVERZ/.." 2>/dev/null && pwd -P)" || WURZEL=""
 [ -n "$WURZEL" ] || lage_c "git-arbeitsbaum" "das Verzeichnis ueber dem Skript ist nicht erreichbar ($QUELLVERZ/..)."
 
-# Schritt 3: Ablage ausserhalb des Arbeitsbaums (KN-7)
+# Schritt 3: Ablage ausserhalb des Arbeitsbaums (KN-7). Das Zielverzeichnis (TMPDIR, leer oder ungesetzt /tmp) wird VOR mktemp -d mit cd
+# und pwd -P aufgeloest: ein Ort im Arbeitsbaum oder ein Ort, der nicht erreichbar ist, ist Lage C, ohne dass mktemp aufgerufen wird.
+# Ein TMPDIR, das gesetzt, nicht leer und nicht absolut ist (erstes Zeichen nicht "/"), ist vorher schon Lage C: ein relativer Ort haengt
+# vom Arbeitsverzeichnis ab, und cd liest einen Wert mit "-" am Anfang als Option (bei "-" als OLDPWD)
+if [ -n "${TMPDIR:-}" ]; then
+  case "$TMPDIR" in
+    /*) ;;
+    *) lage_c "ablage" "TMPDIR ($TMPDIR) ist nicht absolut; ein relativer Ort haengt vom Arbeitsverzeichnis ab; mktemp wurde nicht aufgerufen." "einen absoluten Ort als TMPDIR waehlen" ;;
+  esac
+fi
+TMPZIEL="${TMPDIR:-/tmp}"
+TMPZIEL="$(cd "$TMPZIEL" 2>/dev/null && pwd -P)" || TMPZIEL=""
+if [ -z "$TMPZIEL" ]; then
+  lage_c "ablage" "das Verzeichnis fuer die Ablage (${TMPDIR:-/tmp}) ist nicht erreichbar; mktemp wurde nicht aufgerufen." "das temporaere Verzeichnis (TMPDIR) auf Platz und Rechte pruefen"
+fi
+case "$TMPZIEL/" in
+  "$WURZEL"/*) lage_c "ablage" "das Verzeichnis fuer die Ablage ($TMPZIEL) liegt im Arbeitsbaum ($WURZEL); mktemp wurde nicht aufgerufen." "TMPDIR ausserhalb des Arbeitsbaums waehlen" ;;
+esac
 ABLAGE="$(mktemp -d)" || ABLAGE=""
 if [ -z "$ABLAGE" ] || [ ! -d "$ABLAGE" ]; then
   ABLAGE=""
   lage_c "ablage" "mktemp -d schlug fehl; die Ablage fuer die frische Liste ist nicht herstellbar." "das temporaere Verzeichnis (TMPDIR) auf Platz und Rechte pruefen"
 fi
-ABLAGE="$(cd "$ABLAGE" 2>/dev/null && pwd -P)" || lage_c "ablage" "die Ablage ist nicht erreichbar."
+# ABLAGE haelt den von mktemp gelieferten Pfad fuer den trap, bis die Aufloesung gelungen ist; scheitert sie, raeumt der trap ihn ab
+ABLAGE_AUFG="$(cd "$ABLAGE" 2>/dev/null && pwd -P)" || lage_c "ablage" "die Ablage ist nicht erreichbar."
+ABLAGE="$ABLAGE_AUFG"
 case "$ABLAGE/" in
   "$WURZEL"/*) lage_c "ablage" "die Ablage liegt im Arbeitsbaum ($WURZEL); das Skript schreibt nichts in den Arbeitsbaum (Kettengrundsatz)." "TMPDIR ausserhalb des Arbeitsbaums waehlen"
 esac
@@ -251,7 +285,7 @@ if weg_verknuepft "$ERZEUGER_REL"; then lage_c "erzeuger-verknuepfung" "auf dem 
 [ -f "$ERZEUGER_REL" ] || lage_c "erzeuger" "$ERZEUGER_REL ist keine regulaere Datei."
 [ -r "$ERZEUGER_REL" ] || lage_c "erzeuger" "$ERZEUGER_REL ist nicht lesbar."
 
-declare -A SSET=() DIRSET=() PSET=() ASET=() NCSET=() FUNDSET=()
+declare -A SSET=() DIRSET=() PSET=() ASET=() NCSET=() FUNDSET=() HSET=() HDIRSET=() HEADNCSET=()
 fund() { # fund <klasse> <pfad> : eine Fundzeile (gleiche Zeilen einmal)
   anz "$2"
   FUNDSET["FUND${TAB}$1${TAB}$ANZ"]=1
@@ -325,6 +359,7 @@ tabelle_lesen() { # tabelle_lesen <eingabe> <ausgabe> : schreibt je Artefaktzeil
       if [ "$zeile" = "$TABELLENKOPF" ]; then in_tab=1; skip=1; T_URTEIL=ok; fi
       continue
     fi
+    if [ "$skip" = 1 ] && [ "$zeile" != "$TRENNZEILE" ]; then T_URTEIL=trenn; return 0; fi
     if [ "$skip" = 1 ]; then skip=0; continue; fi
     case "$zeile" in "| "*) ;; *) break ;; esac
     rn=$((rn + 1))
@@ -347,6 +382,7 @@ tabelle_lesen "$ZIEL" "$ABLAGE/pfade.neu" || lage_c "tabelle" "die Pfadspalte de
 case "$T_URTEIL" in
   ok) ;;
   kopf) lage_c "tabelle" "die frische Liste hat keinen Tabellenkopf '$TABELLENKOPF'; die Form des Erzeugers hat sich geaendert." ;;
+  trenn) lage_c "tabelle" "die Zeile nach dem Tabellenkopf der frischen Liste ist nicht die Trennzeile '$TRENNZEILE'; die Form des Erzeugers hat sich geaendert." ;;
   *) lage_c "tabelle" "Tabellenzeile ${T_URTEIL#zeile:} der frischen Liste hat nicht die Form | Name | \`Pfad\` | ... |." ;;
 esac
 if [ "$T_ZEILEN" -eq 0 ]; then lage_c "tabelle" "die frische Liste hat keine Artefaktzeile (leere Tabelle)."; fi
@@ -381,6 +417,31 @@ N_NC=${#NCSET[@]}
 # (LAGEC): die erfassten Funde stehen in derselben Ausgabe, die Zeile KN-9 sagt dann "nicht beurteilt"
 git_neutral status --porcelain --untracked-files=all > "$ABLAGE/status" 2> "$ABLAGE/status.err"
 STATUS_RC=$?
+# KN-4: Die Dateien von HEAD. Meldet der Erzeuger NICHT COMMITTET fuer einen Pfad, der in HEAD als Datei steht oder ein Verzeichnis mit
+# einer Datei aus HEAD ist, ist sein git log gescheitert (ein Pfad aus HEAD hat einen Commit): Lage C nicht-committet, gleich ob git
+# status leer ist (der Fall des sauberen Stands ist ein Teilfall). Scheitert die Liste, ist das Lage C git-kopf (Muster SR-009)
+git_neutral ls-tree -r -z --name-only HEAD > "$ABLAGE/headliste" 2> "$ABLAGE/headliste.err"
+HEADLISTE_RC=$?
+N_HEADNC=0
+if [ "$HEADLISTE_RC" -ne 0 ]; then
+  LAGEC+=("git-kopf: git ls-tree -r HEAD endet mit Rueckgabewert $HEADLISTE_RC: $(kopfzeile "$ABLAGE/headliste.err")")
+else
+  while IFS= read -r -d '' f; do
+    HSET["$f"]=1
+    d="$f"
+    while :; do
+      case "$d" in */*) d="${d%/*}" ;; *) break ;; esac
+      HDIRSET["$d"]=1
+    done
+  done < "$ABLAGE/headliste"
+  for p in "${NC[@]+"${NC[@]}"}"; do
+    if [ -n "${HSET["$p"]+x}" ] || [ -n "${HDIRSET["$p"]+x}" ]; then HEADNCSET["$p"]=1; fi
+  done
+  N_HEADNC=${#HEADNCSET[@]}
+  if [ "$N_HEADNC" -gt 0 ]; then
+    LAGEC+=("nicht-committet: der Erzeuger meldet NICHT COMMITTET fuer $N_HEADNC Pfad(e), die in HEAD stehen; ein Pfad aus HEAD hat einen Commit, das kann nicht stimmen (sein git log scheitert).")
+  fi
+fi
 if [ "$STATUS_RC" -ne 0 ]; then
   LAGEC+=("git-status: git status endet mit Rueckgabewert $STATUS_RC: $(kopfzeile "$ABLAGE/status.err")")
   KN9="KN-9: nicht beurteilt -- git status scheitert (Lage C)"
@@ -389,11 +450,8 @@ elif [ -s "$ABLAGE/status" ]; then
   while zeile=; IFS= read -r zeile || [ -n "$zeile" ]; do N_STATUS=$((N_STATUS + 1)); done < "$ABLAGE/status"
   KN9="KN-9: nicht beurteilt -- Arbeitsbaum nicht sauber (git status: $N_STATUS Zeile(n)); die committete Liste ist einen Commit alt"
 else
-  # Bei leerem git status ist jede Datei von S committet. Eine Meldung NICHT COMMITTET fuer einen Pfad von S ist dann ein Mangel des
-  # Erzeugers (er wertet das Scheitern seines git log nicht aus und meldet "nicht committet"), kein Hinweis
-  if [ "$N_NC" -gt 0 ]; then
-    LAGEC+=("nicht-committet: bei leerem git status meldet der Erzeuger NICHT COMMITTET fuer $N_NC Pfad(e) der Sollmenge; das kann bei sauberem Stand nicht stimmen (sein git log scheitert).")
-  fi
+  # Bei leerem git status ist jede Datei von S committet, jeder Pfad von S steht in HEAD: die Meldung NICHT COMMITTET ist dann schon
+  # oben als Lage C nicht-committet erfasst (Teilfall der Regel zu HEAD)
   git_neutral ls-tree -z HEAD -- "$LISTE_REL" > "$ABLAGE/lstree" 2> "$ABLAGE/lstree.err"
   LSTREE_RC=$?
   if [ "$LSTREE_RC" -ne 0 ]; then

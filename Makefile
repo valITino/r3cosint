@@ -1698,8 +1698,9 @@ geheimnisse:
 		# Selbstpruefung (SR-016, ADR 0002, 6.2.3: uebersprungen wird nur, was kein Repository-
 		# Inhalt sein kann): Die eingebaute Liste von gitleaks 8.21.2 ueberspringt Pfade, ohne zu
 		# fragen, ob die Datei versioniert ist; ein Schluessel dort bliebe in beiden Laeufen
-		# unsichtbar. Je Familie ein Muster der Liste (venv/lib, lib/pythonN, dist-info,
-		# node_modules), als Obermenge nachgebildet (grep -E, Gross- und Kleinschreibung gleich,
+		# unsichtbar. Zehn Familien, je als Obermenge eines oder mehrerer Muster der Liste
+		# nachgebildet (venv/lib, lib/pythonN, dist-info, node_modules, gitleaks-toml, vendor-go,
+		# bower, vendor-ruby, endung-ohne-punkt, bau-dateien; grep -E, Gross- und Kleinschreibung gleich ausser bei endung-ohne-punkt,
 		# LC_ALL=C; gemessen gegen gitleaks selbst, auch die Faltung von s und k in Go: kein Pfad,
 		# den gitleaks ueberspringt und das Muster nicht nennt). Geprueft werden die Pfade von
 		# git ls-files und die noch nicht hinzugefuegten, nicht ignorierten Dateien, weil D11 vor
@@ -1708,6 +1709,59 @@ geheimnisse:
 		# Fuenfte Familie gitleaks-toml: gitleaks ueberspringt jeden Pfad, der gitleaks.toml
 		# enthaelt (Muster ohne Anker); einzige Ausnahme ist scripts/gitleaks.toml selbst.
 		# Deren Inhalt liest kein Lauf; ihn haelt die Pruefsumme GITLEAKS_KONFIG_SHA256 (DT-G1-01).
+		# Familien sechs bis zehn (N2.4, ADR 0002, Abschnitt 5, Nachtrag vom 2026-11-03 und Fortschreibung
+		# vom 2026-11-03; SR-016, Teil b3): vendor-go (vendor/ gefolgt von github.com, golang.org/x,
+		# google.golang.org, gopkg.in, istio.io, k8s.io oder sigs.k8s.io und /), bower (bower_components/),
+		# vendor-ruby (vendor/bundle/ oder vendor/ruby/), endung-ohne-punkt (der Pfad endet auf eine der
+		# 15 Endungen doc, docx, zip, xls, pdf, bin, socket, vsidx, v2, suo, wsuo, dll, pdb, exe, gltf, und das
+		# Zeichen davor ist kein Punkt, oder der Name besteht allein aus der Endung; suo nur, wenn davor weder Punkt
+		# noch w steht, weil wsuo die laengere Endung ist; mit Punkt davor gilt die
+		# Akzeptanz (b2), Dateiarten mit Punkt) und bau-dateien (Bau- und Sperrdateien fremder Werkzeuge, die im
+		# Projekt keinen legitimen Platz haben; ohne Anker, deshalb auch als Verzeichnisname wirksam). Alle
+		# sind Obermengen der Muster von gitleaks (ohne Anker, Gross- und Kleinschreibung gleich, wie die
+		# ersten fuenf; Ausnahme endung-ohne-punkt: sie wird ohne -i geprueft, weil Muster Nr 4 von gitleaks
+		# ohne (?i) steht und unter -i das Zeichen w vor suo nicht mehr ausgeschlossen bliebe, a.Wsuo aber
+		# uebersprungen wird); Fehlalarme gegenueber gitleaks (etwa xvendor/github.com/, ein Name auf -pdf) sind der
+		# Preis in sicherer Richtung und am Gegenstand umzubenennen, nicht auszunehmen. In den Mustern steht
+		# $$ fuer das Zeilenende (Schreibweise des Makefile).
+		# Inventar (N2.4, 2026-11-03): gelesen mit strings aus dem Binary gitleaks 8.21.2 (SHA-256
+		# 50b742abd7daad8bbddb6301f3017efb680632d9a5b3b4d8f137b3aac250e359), Abschnitt allowlist paths:
+		# 26 globale Muster und 2 regelbezogene; die Vorhersage der 26 gegen gitleaks selbst ist in einer
+		# Stichprobe von 14492 uebersprungenen Pfaden ohne Abweichung bestaetigt (Stichprobe, kein Beweis der
+		# Vollstaendigkeit; bei jeder anderen Fassung von gitleaks zu wiederholen). Jedes Muster steht an genau
+		# einem Ort; gemischte Muster sind nach der Pfadform geteilt.
+		#   Nr  1  gitleaks\.toml                                  gitleaks-toml (scripts/gitleaks.toml selbst: Bindung GITLEAKS_KONFIG_SHA256)
+		#   Nr  2  (?i)\.(bmp|gif|jpe?g|svg|tiff?)$$                Akzeptanz (b2)
+		#   Nr  3  \.(eot|[ot]tf|woff2?)$$                          Akzeptanz (b2)
+		#   Nr  4  (.*?)(doc|docx|zip|xls|pdf|bin|socket|vsidx|v2|suo|wsuo|.dll|pdb|exe|gltf)$$
+		#                                                          geteilt: Zeichen davor kein Punkt oder Name allein die Endung: endung-ohne-punkt (ohne -i, wie das Muster ohne (?i)); Punkt davor: Akzeptanz (b2)
+		#   Nr  5  go\.(mod|sum|work(\.sum)?)$$                     geteilt: go.mod, go.work, go.work.sum: bau-dateien; go.sum und cargo.sum: Akzeptanz (b2)
+		#   Nr  6  (^|/)vendor/modules\.txt$$                       bau-dateien
+		#   Nr  7  (^|/)vendor/(github\.com|golang\.org/x|google\.golang\.org|gopkg\.in|istio\.io|k8s\.io|sigs\.k8s\.io)/.*$$    vendor-go
+		#   Nr  8  (^|/)gradlew(\.bat)?$$                           bau-dateien
+		#   Nr  9  (^|/)gradle\.lockfile$$                          bau-dateien
+		#   Nr 10  (^|/)mvnw(\.cmd)?$$                              bau-dateien
+		#   Nr 11  (^|/)\.mvn/wrapper/MavenWrapperDownloader\.java$$    bau-dateien
+		#   Nr 12  (^|/)node_modules/.*?$$                          node_modules
+		#   Nr 13  (^|/)package-lock\.json$$                        Akzeptanz (b2)
+		#   Nr 14  (^|/)yarn\.lock$$                                Akzeptanz (b2)
+		#   Nr 15  (^|/)pnpm-lock\.yaml$$                           Akzeptanzvorschlag (b), nicht gesperrt; bis zur Annahme ungedeckt
+		#   Nr 16  (^|/)npm-shrinkwrap\.json$$                      Akzeptanzvorschlag (b), nicht gesperrt; bis zur Annahme ungedeckt
+		#   Nr 17  (^|/)bower_components/.*?$$                      bower
+		#   Nr 18  (^|/)(jquery(-?ui)?|swagger-?ui)[a-zA-Z0-9.-]+\.js(\.map)?$$    bau-dateien
+		#   Nr 19  (^|/)(Pipfile|poetry)\.lock$$                    Akzeptanz (b2)
+		#   Nr 20  (?i)/?(v?env|virtualenv)/lib(64)?/.+$$           venv
+		#   Nr 21  (?i)(^|/)(lib(64)?/python[23](\.\d{1,2})+/|python/[23](\.\d{1,2})+/lib(64)?/).+$$    lib-python
+		#   Nr 22  (?i)(^|/)[a-z0-9_.]+-[0-9.]+\.dist-info/.+$$      dist-info
+		#   Nr 23  (^|/)vendor/(bundle|ruby)/.*?$$                  vendor-ruby
+		#   Nr 24  \.gem$$                                          Akzeptanz (b2)
+		#   Nr 25  verification-metadata.xml                       bau-dateien (ohne Anker: auch als Verzeichnisname wirksam; die Nennung in (b2) ist damit gegenstandslos)
+		#   Nr 26  Database.refactorlog                            bau-dateien (ohne Anker: auch als Verzeichnisname wirksam)
+		#   Nr R1  (^|/)@octokit/auth-token/README\.md$$            bau-dateien (nur die Regel github-app-token ueberspringt den Pfad)
+		#   Nr R2  (^|/)@octokit/auth-token/README\.md$$            bau-dateien (nur die Regel github-pat ueberspringt den Pfad)
+		# Das Muster der Familie bau-dateien deckt die Nummern 6, 8 bis 11, 18, 25, 26, R1 und R2 sowie den Go-Teil
+		# von Nr 5. Die Dateien pnpm-lock.yaml und npm-shrinkwrap.json (Nr 15, 16) bleiben bewusst frei: Sperrdateien, die ein
+		# spaeteres frontend/ legitim fuehren kann (Akzeptanzvorschlag (b), Annahme durch den Merge der Einheit).
 		if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 			selbst_ok=1
 			selbst_dir=$$(mktemp -d)
@@ -1723,15 +1777,22 @@ geheimnisse:
 					echo "[D11 geheimnisse] Selbstpruefung nicht ausfuehrbar: grep endete mit $$grep_rc (Ausnahme scripts/gitleaks.toml)." >&2
 					selbst_ok=0; fehlgeschlagen=1
 				fi
-				for familie in venv lib-python dist-info node_modules gitleaks-toml; do
+				for familie in venv lib-python dist-info node_modules gitleaks-toml vendor-go bower vendor-ruby endung-ohne-punkt bau-dateien; do
+					gross=i
+					[ "$$familie" = endung-ohne-punkt ] && gross=
 					case "$$familie" in
 						venv) muster='(v?env|virtualenv)/lib(64)?/.+$$' ;;
 						lib-python) muster='(^|/)(lib(64)?/python[23](\.[0-9]{1,2})+/|python/[23](\.[0-9]{1,2})+/lib(64)?/).+$$' ;;
 						dist-info) muster='(^|/)[^/]+-[0-9.]+\.di.{1,2}t-info/.+$$' ;;
 						node_modules) muster='(^|/)node_modules/' ;;
 						gitleaks-toml) muster='gitleaks\.toml' ;;
+						vendor-go) muster='vendor/(github\.com|golang\.org/x|google\.golang\.org|gopkg\.in|istio\.io|k8s\.io|sigs\.k8s\.io)/' ;;
+						bower) muster='bower_components/' ;;
+						vendor-ruby) muster='vendor/(bundle|ruby)/' ;;
+						endung-ohne-punkt) muster='(^|[^.])(doc|docx|zip|xls|pdf|bin|socket|vsidx|v2|wsuo|dll|pdb|exe|gltf)$$|(^|[^.w])suo$$' ;;
+						bau-dateien) muster='(^|/)(vendor/modules\.txt|gradlew|gradle\.lockfile|mvnw|\.mvn/wrapper/MavenWrapperDownloader\.java)|(^|/)(jquery|swagger-?ui)[a-zA-Z0-9.-]+\.js|verification-metadata.xml|Database.refactorlog|go\.(mod|work(\.sum)?)$$|@octokit/auth-token/README\.md' ;;
 					esac
-					LC_ALL=C grep -zEi -e "$$muster" "$$selbst_dir/pfade2" > "$$selbst_dir/treffer"; grep_rc=$$?
+					LC_ALL=C grep -zE$$gross -e "$$muster" "$$selbst_dir/pfade2" > "$$selbst_dir/treffer"; grep_rc=$$?
 					if [ "$$grep_rc" -eq 0 ]; then
 						echo "[D11 geheimnisse] Selbstpruefung: Pfade der Familie $$familie, die gitleaks 8.21.2 in seiner eingebauten Liste ueberspringt (kein Lauf meldet dort einen Fund; ADR 0002, 6.2.3), stehen im Baum:" >&2
 						tr '\0' '\n' < "$$selbst_dir/treffer" | head -n 5 | sed 's/^/    /' >&2
@@ -1743,7 +1804,7 @@ geheimnisse:
 				done
 			fi
 			rm -rf "$$selbst_dir"
-			[ "$$selbst_ok" -eq 1 ] && echo "[D11 geheimnisse] Selbstpruefung: kein Pfad im Baum unter den fuenf Familien, die gitleaks ueberspringt."
+			[ "$$selbst_ok" -eq 1 ] && echo "[D11 geheimnisse] Selbstpruefung: kein Pfad im Baum unter den zehn Familien, die gitleaks ueberspringt."
 		fi
 		# .gitleaksignore im Arbeitsbaum unterdrueckt Funde in beiden Laeufen; --gitleaks-ignore-path
 		# schliesst das nicht (gemessen 2026-10-28). Befund am Gegenstand: A_FAIL.

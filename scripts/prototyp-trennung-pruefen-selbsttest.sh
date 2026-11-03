@@ -5,7 +5,8 @@
 #
 # Anforderung R3-Q-001 (das DoD-Gate stuetzt sich auf die Kette). Grundlage: ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29
 # (Festlegung fuer G3), Zeilen zu D10 und "Faelle, Mutationen und Rueckgabewerte"; docs/12_Freigabe_Grundgeruest.md, Abschnitt 4,
-# G3, Festlegungen 2 und 5. Muster: scripts/belege-pruefen-selbsttest.sh und scripts/abnahme-abgleich-selbsttest.sh. Einheit G3.3.
+# G3, Festlegungen 2 und 5. Muster: scripts/belege-pruefen-selbsttest.sh und scripts/abnahme-abgleich-selbsttest.sh. Einheit G3.3;
+# nachgefuehrt in Einheit N2.2 (Festlegung: ADR 0002, Abschnitt 5, Nachtrag vom 2026-11-03, und Fortschreibung vom 2026-11-03).
 #
 # AUFRUF
 #   bash scripts/prototyp-trennung-pruefen-selbsttest.sh [--mutationen] [--pruefer <pfad>]
@@ -60,9 +61,10 @@
 #   Kennung hat genau eine Funktion f_D<nnn> weiter unten und umgekehrt (mechanisch geprueft). Kennungen D-nnn sind dauerhaft und
 #   werden nie wiederverwendet.
 #
-# DECKUNG (als eigener Abschnitt der Ausgabe, nicht in der Zaehlung der Faelle): jede Kennung KD und GD im Kopfkommentar des
-#   geprueften Skripts hat Faelle (KD-1 bis KD-7: mindestens einen mit Soll fund, lage-c oder lage-c+funde und einen mit Soll
-#   kein-fund; KD-8, KD-9 und GD: mindestens einen); jede Klasse, die ein Fall nennt, steht im Kopfkommentar oder ist eine Grenze
+# DECKUNG (als eigener Abschnitt der Ausgabe, nicht in der Zaehlung der Faelle): jede Kennung KD im Kopfkommentar des geprueften
+#   Skripts hat ohne Ausnahme mindestens einen Fall mit Soll fund, lage-c oder lage-c+funde und mindestens einen mit Soll kein-fund
+#   oder kein-fund+ausgabe; jede Kennung GD hat mindestens einen Fall (Einheit N2.2, DT-G3-01: die Ausnahmen nach Nummer und die
+#   Auswertung einer einzelnen Ziffer entfallen); jede Klasse, die ein Fall nennt, steht im Kopfkommentar oder ist eine Grenze
 #   des Gates (GP). Der Kopfkommentar nennt die Kennungen einzeln, ohne Bereichsschreibweise.
 #
 # MODUS --mutationen: Mutationsdatei scripts/prototyp-trennung-pruefen-mutationen.txt im Verzeichnis dieses Skripts
@@ -88,7 +90,10 @@
 #          Verknuepfungen und mkfifo voraus.
 #   GP-D6  Die Faelle D-091 bis D-093 messen die Wirkung der Variablen des Aufrufers, nicht die Liste der geloeschten Variablen. Ein
 #          Name, der aus der Liste im Skript faellt, ohne dass ein Fall ihn nennt, bleibt unbemerkt. BASH_ENV des Aufrufers wirkt
-#          vor der ersten Zeile des Skripts und ist nicht abwehrbar; sein Weg in das Gate ist durch "env -i" geschlossen, aber ohne Fall.
+#          vor der ersten Zeile des Skripts und ist nicht abwehrbar, ebenso exportierte Funktionen, SHELLOPTS und BASHOPTS des
+#          Aufrufers; ihr Weg in das Gate ist durch "env -i" geschlossen, aber ohne Fall. Die Zusicherung ausgabe_ohne in D-112 ist
+#          ohne Wirkung: ein CDPATH-Pfad gelangt in die Befehlsersetzung der Wurzel (Folge Lage C git-arbeitsbaum), nie auf die
+#          Standardausgabe des Skripts; das Urteil von D-112 tragen "Geprueft:" und der Rueckgabewert 0.
 #   GP-D7  "export LC_ALL=C" im Skript hat keine beobachtbare Wirkung auf die Faelle: dazu gibt es weder Fall noch Mutation.
 #   GP-D8  Das Gesamtbudget von 120 s wird an einer Kopie mit BUDGET_S=2 gemessen (D-152), nicht mit 120 s; der Wert 120 selbst ist
 #          ungemessen.
@@ -613,7 +618,7 @@ code_text() { grep -vE '^[[:space:]]*(#|$)' "$PRUEFER"; }
 #F|D-020|KD-3|fund|Auswahl|unversionierte, nicht ignorierte Datei mit verbotenem Import ist ein Fund (die Kette urteilt vor dem Commit)
 #F|D-021|KD-3,GD-6|kein-fund+ausgabe|Auswahl|ignorierte Datei (*.log) mit verbotenem Import wird nicht geprueft (Durchlass GD-6)
 #F|D-022|KD-3|fund|Auswahl|Dateiname mit Leerzeichen
-#F|D-023|KD-3|fund|Auswahl|Dateiname mit Zeilenumbruch: der Pfad steht als Folge in einer Zeile, "Befunde: 1"
+#F|D-023|KD-3,KD-7|fund|Auswahl|Dateiname mit Zeilenumbruch in der Mitte: Fund der Art Steuerzeichen, der Pfad steht als Folge in einer Zeile, "Befunde: 1"
 #F|D-024|KD-3,GD-5|kein-fund+ausgabe|Auswahl|verbotene Importe ausserhalb der vier Wurzeln (scripts/, tools/, Makefile, .github/) sind nicht Gegenstand (Durchlass GD-5)
 #F|D-025|KD-3|fund|Auswahl|Umlaut im Namen und Latin-1-Bytes im Inhalt: die Datei geht an das Gate
 #F|D-026|KD-3|kein-fund+ausgabe|Auswahl|Verzeichnisse, die nur wie eine Wurzel beginnen (prototypes/, prototype-alt/, backend2/), sind keine Wurzel
@@ -661,13 +666,13 @@ code_text() { grep -vE '^[[:space:]]*(#|$)' "$PRUEFER"; }
 #F|D-092|KD-6|fund|Umfeld|CLAUDE_PROJECT_DIR, TMPDIR und HOME des Aufrufers aendern das Urteil nicht
 #F|D-093|KD-6,KD-3|fund|Umfeld|globale git-Konfiguration des Aufrufers mit einer Ausschlussliste blendet keine Datei
 #F|D-094|KD-6,KD-8|lage-c|Ablage|TMPDIR des Aufrufers zeigt in den Arbeitsbaum: Lage C, nichts wird dort geschrieben
-#F|D-095|KD-6|lage-c|Ablage|TMPDIR des Aufrufers zeigt auf ein Verzeichnis, das nicht besteht: Lage C
+#F|D-095|KD-6|lage-c|Ablage|TMPDIR des Aufrufers zeigt auf ein Verzeichnis, das nicht besteht: Lage C ablage vor dem Anlegen
 #F|D-096|KD-6|lage-c|Auswahl|git ls-files scheitert (Index unlesbar): Lage C, nie "kein Fund"
 #F|D-097|KD-6|lage-c+funde|Datei|eine nicht lesbare Textdatei: Lage C mit Dateiname
 #F|D-098|KD-6|statisch|Werkzeuge|die Werkzeugliste im Kopfkommentar und die im Code nennen dieselben Werkzeuge
 #F|D-099|KD-6|statisch|Werkzeuge|ausserhalb von Kommentarzeilen ruft das Skript keinen Befehl ausser denen der Liste auf (mit Probe der Pruefung)
 #F|D-100|KD-7,GD-4|kein-fund+ausgabe|Nicht-Text|eine leere Datei geht nicht an das Gate, wird gezaehlt und genannt
-#F|D-101|KD-7,GD-4|kein-fund+ausgabe|Nicht-Text|eine binaere Datei mit verbotenem Muster geht nicht an das Gate, wird gezaehlt und genannt (Durchlass GD-4)
+#F|D-101|KD-7,GD-4|kein-fund+ausgabe|Nicht-Text|eine .png-Datei mit NUL-Byte und verbotenem Muster geht nicht an das Gate, wird gezaehlt und genannt (Durchlass GD-4)
 #F|D-102|KD-7|kein-fund+ausgabe|Nicht-Text|eine Datei aus einem Zeilenumbruch ist Text, nicht leer und nicht binaer
 #F|D-103|KD-7,GP-5|fund|Nicht-Text|eine versionierte Verknuepfung unter backend/ ist ein Fund
 #F|D-104|KD-7|fund|Nicht-Text|eine unversionierte Verknuepfung auf ein Verzeichnis unter prototype/ ist ein Fund
@@ -678,7 +683,24 @@ code_text() { grep -vE '^[[:space:]]*(#|$)' "$PRUEFER"; }
 #F|D-109|KD-7|fund|Nicht-Text|eine Verknuepfung ohne Ziel ist eine Verknuepfung (Fund), keine fehlende Datei
 #F|D-110|KD-6|lage-c|Gate|.claude ist eine Verknuepfung: die Verknuepfung liegt auf dem Weg zum Gate
 #F|D-111|KD-3,KD-6|lage-c+funde|Auswahl|die Zahl der gelesenen Eintraege weicht von der gezaehlten ab (grep -zc liefert 999): ein Lesefehler wirkt nicht wie das Ende der Liste, Lage C
-#F|D-112|KD-6|kein-fund+ausgabe|Umfeld|CDPATH des Aufrufers aendert die Wurzel bei relativem Aufruf (bash scripts/prototyp-trennung-pruefen.sh, wie make ihn macht) nicht: Urteil wie ohne CDPATH, keine Lage C, kein Pfad auf der Standardausgabe
+#F|D-112|KD-6|kein-fund+ausgabe|Umfeld|CDPATH des Aufrufers aendert die Wurzel bei relativem Aufruf (bash scripts/prototyp-trennung-pruefen.sh, wie make ihn macht) nicht: Urteil wie ohne CDPATH, keine Lage C (die Zusicherung ausgabe_ohne ist ohne Wirkung, GP-D6)
+#F|D-113|KD-7|fund|Steuerzeichen|Name "backend/x.md" mit abschliessendem Zeilenumbruch und Import aus prototype/ im Inhalt: Fund der Art Steuerzeichen, die Datei geht nicht an das Gate (Durchlass ueber die Kuerzung des Gates)
+#F|D-114|KD-7|fund|Steuerzeichen|Name mit Tabulator unter prototype/: Fund der Art Steuerzeichen, der Pfad als Folge geschrieben
+#F|D-115|KD-7|fund|Steuerzeichen|Name mit dem Byte 127 unter backend/: Fund der Art Steuerzeichen
+#F|D-116|KD-7|kein-fund+ausgabe|Steuerzeichen (Gegenprobe)|Name mit Leerzeichen und Umlaut ohne Import: kein Steuerzeichen (Bytes ab 32 ausser 127), kein Fund
+#F|D-117|KD-7,GD-4|fund|NUL-Byte|eine .py-Datei mit Import und einem NUL-Byte nach mehr als 200000 Zeichen ohne Zeilenende: Fund der Art NUL-Byte
+#F|D-118|KD-7,GD-4|fund|NUL-Byte|eine .js-Datei in UTF-16: Fund der Art NUL-Byte
+#F|D-119|KD-7,KD-1|fund|NUL-Byte|eine .png-Datei ohne NUL-Byte mit Import aus prototype/ unter backend/ ist Text und geht an das Gate: Fund der Richtung 1
+#F|D-123|KD-7|kein-fund+ausgabe|NUL-Byte (Gegenprobe)|eine grosse Textdatei (mehr als 200000 Zeichen) ohne NUL-Byte und ohne Import: Text, kein Fund
+#F|D-124|KD-7|fund|NUL-Byte|eine Datei mit NUL-Byte und Endung in Grossschreibung (.PNG) ist nicht auf der Liste: Fund der Art NUL-Byte
+#F|D-125|KD-3|fund|Konfliktstufen|Merge-Konflikt in einer Datei unter backend/ mit Import aus prototype/ auf beiden Seiten: genau eine Fundzeile, "Befunde: 1"
+#F|D-126|KD-3|kein-fund+ausgabe|Konfliktstufen (Gegenprobe)|Merge-Konflikt ohne Import: die Datei wird einmal gezaehlt
+#F|D-127|KD-6,KD-8|lage-c|Ablage|TMPDIR im Arbeitsbaum, im Suchpfad ein Ersatz fuer mktemp, der seinen Aufruf protokolliert: Lage C ablage ohne Aufruf von mktemp
+#F|D-128|KD-6|lage-c|Ablage|mktemp -d scheitert bei erreichbarem Zielverzeichnis (Ersatz mit Rueckgabewert 1): Lage C ablage
+#F|D-129|KD-6,KD-7|lage-c+funde|Datei|das Lesen auf NUL-Bytes scheitert (Ersatz fuer tr mit Rueckgabewert 1 bei tr -cd): Lage C je Datei mit Kennung datei, nie kein Fund
+#F|D-130|KD-6,KD-8|lage-c|Ablage|TMPDIR "-" mit OLDPWD im Arbeitsbaum und einem Verzeichnis "-" im Baum: Lage C ablage (relativ) vor jedem cd, kein Aufruf von mktemp, keine Reste
+#F|D-131|KD-6,KD-8|lage-c|Ablage|TMPDIR "tmp" (relativ) mit einem Verzeichnis tmp im Baum: Lage C ablage, kein Aufruf von mktemp, keine Reste
+#F|D-132|KD-6,KD-8|lage-c|Ablage|Ersatz fuer mktemp legt die Ablage im Arbeitsbaum an (uebergeht TMPDIR): Lage C ablage nach dem Anlegen, der trap raeumt sie ab
 #F|D-120|GD-1|kein-fund+ausgabe|Grenze|Bezuege ohne Importwort (COPY prototype/, Volume, file:) erkennt das Gate nicht (Durchlass GD-1)
 #F|D-121|GD-3|kein-fund+ausgabe|Grenze|Verknuepfung ausserhalb der Wurzeln, ueber die ein Import fuehrt, ist nicht Gegenstand (Durchlass GD-3)
 #F|D-122|GP-1,GP-2,GP-6|kein-fund+ausgabe|Grenzen des Gates|Alias (GP-1), Wurzelpfad in Richtung 2 (GP-2), Python-Form mit generischem Namen in Richtung 2 (GP-6): Durchlass
@@ -708,7 +730,7 @@ f_D013() { datei prototype/app.js 'import h from "./lokal/helper";'; grundzaehlu
 f_D020() { datei backend/neu.py 'from prototype import helper'; erwarte backend/neu.py "Richtung 1"; }
 f_D021() { datei backend/zwischen.log 'from prototype import helper'; grundzaehlung; }
 f_D022() { datei "backend/mit leerzeichen.py" 'from prototype import helper'; erwarte "backend/mit leerzeichen.py" "Richtung 1" "'backend/mit leerzeichen.py' ist Produktionscode"; }
-f_D023() { local n=$'backend/mit\numbruch.py'; datei "$n" 'from prototype import helper'; erwarte "$n" "Richtung 1" "BLOCKIERT (Projektauftrag 5.6): Richtung 1"; }
+f_D023() { local n=$'backend/mit\numbruch.py'; datei "$n" 'from prototype import helper'; erwarte "$n" "Steuerzeichen" "Steuerzeichen"; }
 f_D024() { datei scripts/x.js 'import h from "../prototype/helper";'; datei tools/x.js 'import h from "../prototype/helper";'
   datei Makefile 'x = import h from "../prototype/helper";'; datei .github/workflows/x.js 'import h from "../prototype/helper";'; grundzaehlung; }
 f_D025() { local n=$'backend/uebung_\xc3\xa4.py'; roh "$n" 'caf\xe9 = 1\nfrom prototype import helper\n'; erwarte "$n" "Richtung 1"; }
@@ -794,7 +816,7 @@ f_D093() { mkdir -p "$FALL/hg" || herstellung_fehler "hg"
   env_zusatz "HOME=$FALL/hg"; env_zusatz "XDG_CONFIG_HOME=$FALL/hg"; env_zusatz "GIT_CONFIG_GLOBAL=$FALL/hg/.gitconfig"
   erwarte backend/neu.py "Richtung 1"; }
 f_D094() { mkdir -p "$BAUM/tmpin" || herstellung_fehler "tmpin"; env_zusatz "TMPDIR=$BAUM/tmpin"; lc ablage; lc_mit "Arbeitsbaum"; }
-f_D095() { env_zusatz "TMPDIR=$FALL/gibt-es-nicht"; lc ablage; lc_mit "mktemp -d schlug fehl"; }
+f_D095() { env_zusatz "TMPDIR=$FALL/gibt-es-nicht"; lc ablage; lc_mit "nicht erreichbar"; }
 f_D096() { printf 'kaputt' > "$BAUM/.git/index" || herstellung_fehler "Index"; lc git-liste; ausgabe_mit "Kontrollprobe: 4 von 4"; }
 f_D097() { als_root_nicht; datei backend/zu.py 'x = 1'; chmod 000 "$BAUM/backend/zu.py"; lc datei; lc_mit "backend/zu.py"; lc_mit "nicht lesbar"; }
 f_D098() { STAT_SOLL="die Werkzeugliste im Kopfkommentar und die im Code nennen dieselben Werkzeuge"
@@ -813,7 +835,7 @@ f_D099() { STAT_SOLL="ausserhalb von Kommentarzeilen ruft das Skript keinen Befe
   if [ -z "$treffer" ] && [ "$probe" -ge 1 ]; then STAT_OK=1; fi; }
 
 f_D100() { datei backend/leer.py; ausgabe_mit "Leer: backend/leer.py"; geprueft 5 2 3 0 0 1 0 0; }
-f_D101() { roh backend/daten.bin 'import h from "../prototype/h";\n\000\n'; ausgabe_mit "Binaer: backend/daten.bin"; geprueft 5 2 3 0 0 0 1 0; }
+f_D101() { roh backend/daten.png 'import h from "../prototype/h";\n\000\n'; ausgabe_mit "Binaer: backend/daten.png"; geprueft 5 2 3 0 0 0 1 0; }
 f_D102() { roh backend/nur_umbruch.py '\n'; geprueft 6 2 4 0 0 0 0 0; ausgabe_ohne "Leer: backend/nur_umbruch.py"; ausgabe_ohne "Binaer: backend/nur_umbruch.py"; }
 f_D103() { verknuepfung backend/verweis.py ../prototype/app.js; vers backend/verweis.py; erwarte backend/verweis.py Verknuepfung "symbolische Verknuepfung"; }
 f_D104() { verknuepfung prototype/zu_backend ../backend; erwarte prototype/zu_backend Verknuepfung; }
@@ -837,6 +859,98 @@ exec $GREP_BIN "\$@"
 GREPZAEHLT
   env_zusatz "PATH=$KASTEN"; lc liste; lc_mit "gelesen wurden 5"; lc_mit "999"; }
 f_D112() { AUFRUF_REL=1; CWD_WAHL="$BAUM"; mkdir -p "$FALL/lockvogel/scripts" || herstellung_fehler "lockvogel"; env_zusatz "CDPATH=$FALL/lockvogel"; grundzaehlung; ausgabe_mit "Kontrollprobe: 4 von 4"; ausgabe_ohne "$FALL/lockvogel"; }
+f_D113() { local n=$'backend/x.md\n'; datei "$n" 'import h from "../prototype/helper";'; erwarte "$n" "Steuerzeichen" "Steuerzeichen"; }
+f_D114() { local n=$'prototype/mit\ttab.js'; datei "$n" 'const a = 1;'; erwarte "$n" "Steuerzeichen" "Steuerzeichen"; }
+f_D115() { local n=$'backend/del\x7f.py'; datei "$n" 'x = 1'; erwarte "$n" "Steuerzeichen" "Steuerzeichen"; }
+f_D116() { local n=$'backend/mit leer\xc3\xa4.py'; datei "$n" 'x = 1'; geprueft 6 2 4 0 0 0 0 0; ausgabe_ohne "Leer: $n"; }
+# Hilfen der NUL-Faelle: grosse Datei ohne Zeilenende, UTF-16 ohne iconv
+gross_datei() { # gross_datei <pfad> <anfang> <byte nach der Fuellung: nul|text>
+  local p="$BAUM/$1"
+  mkdir -p "${p%/*}" || herstellung_fehler "Verzeichnis fuer $p"
+  { printf '%s' "$2"; head -c 200100 /dev/zero | tr '\000' 'a'
+    if [ "$3" = nul ]; then printf '\000x'; else printf 'x'; fi; } > "$p" || herstellung_fehler "grosse Datei $p"
+}
+f_D117() { gross_datei backend/gross.py 'from prototype import helper;' nul; erwarte backend/gross.py "NUL-Byte"; }
+f_D118() { local p="$BAUM/backend/utf16.js" s='import h from "../prototype/h";' i
+  { printf '\377\376'; for ((i = 0; i < ${#s}; i++)); do printf '%s\000' "${s:i:1}"; done; } > "$p" || herstellung_fehler "UTF-16"
+  erwarte backend/utf16.js "NUL-Byte"; }
+f_D119() { datei backend/bild.png 'from prototype import helper'; erwarte backend/bild.png "Richtung 1"; }
+f_D123() { gross_datei backend/gross.py 'x = 1;' text; geprueft 6 2 4 0 0 0 0 0; }
+f_D124() { roh backend/BILD.PNG 'x\000y\n'; erwarte backend/BILD.PNG "NUL-Byte"; }
+# Merge-Konflikt: derselbe Pfad steht mit drei Stufen im Index (git merge endet mit 1, der Konflikt ist gewollt)
+konflikt() { # konflikt <pfad> <zeile A> <zeile B>
+  local basis; basis=$(gitg -C "$BAUM" rev-parse HEAD) || herstellung_fehler "HEAD"
+  gitg -C "$BAUM" checkout -q -b zweig-a || herstellung_fehler "Zweig a"
+  datei "$1" "$2" 'def f():' '    return 2'; vers "$1"; gitg -C "$BAUM" commit -q -m a || herstellung_fehler "Commit a"
+  gitg -C "$BAUM" checkout -q -b zweig-b "$basis" || herstellung_fehler "Zweig b"
+  datei "$1" "$3" 'def f():' '    return 3'; vers "$1"; gitg -C "$BAUM" commit -q -m b || herstellung_fehler "Commit b"
+  gitg -C "$BAUM" merge -q zweig-a >/dev/null 2>&1
+  if [ -z "$(gitg -C "$BAUM" ls-files -u -- "$1")" ]; then herstellung_fehler "kein Konflikt im Index"; fi
+}
+f_D125() { konflikt backend/src/paket/modul.py 'from prototype import a' 'from prototype import b'; erwarte backend/src/paket/modul.py "Richtung 1"; }
+f_D126() { konflikt backend/src/paket/modul.py 'import os' 'import sys'; grundzaehlung; }
+f_D127() { mkdir -p "$BAUM/tmpin" "$FALL/prot" || herstellung_fehler "tmpin"; : > "$FALL/prot/mktemp.log" || herstellung_fehler "Protokoll"
+  kasten $KASTEN_VOLL
+  kasten_ersatz mktemp <<MKTEMPERSATZ
+#!/usr/bin/env bash
+printf 'Aufruf\n' >> "$FALL/prot/mktemp.log"
+exec $MKTEMP_BIN "\$@"
+MKTEMPERSATZ
+  env_zusatz "PATH=$KASTEN"; env_zusatz "TMPDIR=$BAUM/tmpin"; lc ablage; lc_mit "Arbeitsbaum"; nach_lauf nach_D127; }
+nach_D127() {
+  local arr
+  if [ -s "$FALL/prot/mktemp.log" ]; then ERG=GEFALLEN; DETAIL+=("mktemp wurde aufgerufen, obwohl das Zielverzeichnis im Arbeitsbaum liegt ($(grep -c '' "$FALL/prot/mktemp.log") Aufruf(e))"); fi
+  shopt -s nullglob dotglob; arr=("$BAUM/tmpin"/*); shopt -u nullglob dotglob
+  if [ "${#arr[@]}" -ne 0 ]; then ERG=GEFALLEN; DETAIL+=("im Arbeitsbaum ist etwas entstanden (${#arr[@]} Eintraege unter tmpin)"); fi
+  IST="$IST; Aufrufe von mktemp: $(grep -c '' "$FALL/prot/mktemp.log")"
+}
+f_D128() { kasten $KASTEN_VOLL
+  kasten_ersatz mktemp <<'MKTEMPFEHL'
+#!/usr/bin/env bash
+exit 1
+MKTEMPFEHL
+  env_zusatz "PATH=$KASTEN"; lc ablage; lc_mit "mktemp -d schlug fehl"; }
+f_D129() { kasten $KASTEN_VOLL
+  kasten_ersatz tr <<TRFEHL
+#!/usr/bin/env bash
+case "\$1:\$2" in -cd:'\000') exit 1 ;; esac
+exec $(command -v tr) "\$@"
+TRFEHL
+  env_zusatz "PATH=$KASTEN"; lc datei; lc_mit "backend/src/paket/modul.py"; lc_mit "tr oder wc endet mit Rueckgabewert 1"; }
+# Hilfe der Faelle D-130 und D-131: Ersatz fuer mktemp, der jeden Aufruf protokolliert und dann das echte mktemp aufruft
+mktemp_protokoll() {
+  mkdir -p "$FALL/prot" || herstellung_fehler "prot"; : > "$FALL/prot/mktemp.log" || herstellung_fehler "Protokoll"
+  kasten $KASTEN_VOLL
+  kasten_ersatz mktemp <<MKTEMPERSATZ
+#!/usr/bin/env bash
+printf 'Aufruf\n' >> "$FALL/prot/mktemp.log"
+exec $MKTEMP_BIN "\$@"
+MKTEMPERSATZ
+  env_zusatz "PATH=$KASTEN"
+}
+nach_relativ() { # kein Aufruf von mktemp, keine Reste im Baum (Verzeichnis - oder tmp bleibt leer)
+  local arr d
+  if [ -s "$FALL/prot/mktemp.log" ]; then ERG=GEFALLEN; DETAIL+=("mktemp wurde aufgerufen, obwohl TMPDIR relativ ist"); fi
+  for d in "$BAUM/-" "$BAUM/tmp"; do
+    [ -d "$d" ] || continue
+    shopt -s nullglob dotglob; arr=("$d"/*); shopt -u nullglob dotglob
+    if [ "${#arr[@]}" -ne 0 ]; then ERG=GEFALLEN; DETAIL+=("Reste im Arbeitsbaum: ${#arr[@]} Eintraege unter ${d#"$BAUM"/}"); fi
+  done
+  IST="$IST; Aufrufe von mktemp: $(grep -c '' "$FALL/prot/mktemp.log")"
+}
+f_D130() { mkdir -p "$BAUM/-" "$BAUM/tmpin" || herstellung_fehler "Verzeichnisse"; mktemp_protokoll
+  env_zusatz "TMPDIR=-"; env_zusatz "OLDPWD=$BAUM/tmpin"; lc ablage; lc_mit "relativ"; nach_lauf nach_relativ; }
+f_D131() { mkdir -p "$BAUM/tmp" || herstellung_fehler "tmp"; mktemp_protokoll
+  env_zusatz "TMPDIR=tmp"; lc ablage; lc_mit "relativ"; nach_lauf nach_relativ; }
+f_D132() { kasten $KASTEN_VOLL
+  kasten_ersatz mktemp <<MKTEMPBAUM
+#!/usr/bin/env bash
+mkdir -p "$BAUM/ablage-im-baum" && printf '%s\n' "$BAUM/ablage-im-baum"
+MKTEMPBAUM
+  env_zusatz "PATH=$KASTEN"; lc ablage; lc_mit "die Ablage liegt im Arbeitsbaum"; nach_lauf nach_D132; }
+nach_D132() {
+  if [ -e "$BAUM/ablage-im-baum" ]; then ERG=GEFALLEN; DETAIL+=("die im Arbeitsbaum angelegte Ablage ist nach dem Lauf nicht abgeraeumt"); fi
+}
 f_D120() { datei deploy/Dockerfile 'FROM scratch' 'COPY prototype/ /app/prototype/'
   datei deploy/compose.yml 'services:' '  a:' '    volumes:' '      - ./prototype:/app/prototype'
   datei frontend/package.json '{"dependencies": {"x": "file:../prototype"}}'
@@ -845,7 +959,7 @@ f_D121() { verknuepfung scripts/verweis ../prototype; datei backend/src/paket/ui
 f_D122() { datei backend/alias.js 'import h from "@proto/helper";'; datei prototype/abs.js 'import h from "/backend/x";'; datei prototype/modul.py 'from lib import helper'
   geprueft 8 4 4 0 0 0 0 0; }
 
-f_D140() { datei backend/neu.py 'from prototype import helper'; datei backend/leer.py; roh backend/daten.bin 'x\000y\n'
+f_D140() { datei backend/neu.py 'from prototype import helper'; datei backend/leer.py; roh backend/daten.png 'x\000y\n'
   verknuepfung backend/verweis.py ../prototype/app.js; datei prototype/neu.js 'import h from "../backend/x";'; }
 f_D141() { mkdir -p "$FALL/tmpx" || herstellung_fehler "tmpx"; : > "$FALL/mktemp.log" || herstellung_fehler "Protokoll"
   kasten $KASTEN_VOLL
@@ -1041,7 +1155,7 @@ fallliste_lesen() {
 # =============================================================================
 deckung_pruefen() {
   DECK_ABW=0
-  local k cl grp n f cls fehl anz num
+  local k cl grp n f cls fehl anz
   local -A IM_KOPF=() KL_ANZ=() KL_ERK=() KL_KEIN=()
   while IFS= read -r k; do
     [ -n "$k" ] && IM_KOPF[$k]=1
@@ -1071,12 +1185,9 @@ deckung_pruefen() {
   while IFS= read -r k; do
     [ -n "$k" ] || continue
     if [ "${KL_ANZ[$k]:-0}" -eq 0 ]; then fehl="$fehl $k"; DECK_ABW=$((DECK_ABW + 1)); fi
-    if [ "${k:0:2}" = "KD" ]; then
-      num="${k:3:1}"
-      if [ "$num" -le 7 ] && [ "${KL_ANZ[$k]:-0}" -gt 0 ]; then
-        if [ "${KL_ERK[$k]:-0}" -eq 0 ]; then echo "$PM: Deckung ABWEICHUNG: $k ohne Fall, der den Mangel erkennt (Soll fund, lage-c oder lage-c+funde)"; DECK_ABW=$((DECK_ABW + 1)); fi
-        if [ "${KL_KEIN[$k]:-0}" -eq 0 ]; then echo "$PM: Deckung ABWEICHUNG: $k ohne Fall mit Soll kein Fund"; DECK_ABW=$((DECK_ABW + 1)); fi
-      fi
+    if [ "${k:0:2}" = "KD" ] && [ "${KL_ANZ[$k]:-0}" -gt 0 ]; then
+      if [ "${KL_ERK[$k]:-0}" -eq 0 ]; then echo "$PM: Deckung ABWEICHUNG: $k ohne Fall, der den Mangel erkennt (Soll fund, lage-c oder lage-c+funde)"; DECK_ABW=$((DECK_ABW + 1)); fi
+      if [ "${KL_KEIN[$k]:-0}" -eq 0 ]; then echo "$PM: Deckung ABWEICHUNG: $k ohne Fall mit Soll kein Fund"; DECK_ABW=$((DECK_ABW + 1)); fi
     fi
   done < <(printf '%s\n' "${!IM_KOPF[@]}" | sort)
   if [ -n "$fehl" ]; then echo "$PM: Deckung ABWEICHUNG: Kennungen im Kopfkommentar ohne Fall:$fehl"; fi
