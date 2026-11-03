@@ -2,7 +2,7 @@
 # scripts/nachweise-vollstaendig-selbsttest.sh (Kettenschritt D12, scripts/nachweise-vollstaendig.sh)
 #
 # Anforderung R3-Q-001. Grundlage: ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (Festlegung fuer G3), Zeile "Faelle, Mutationen und
-# Rueckgabewerte"; Muster: scripts/prototyp-trennung-pruefen-mutationen.txt und scripts/belege-pruefen-mutationen.txt. Einheit G3.4.
+# Rueckgabewerte"; Muster: scripts/prototyp-trennung-pruefen-mutationen.txt und scripts/belege-pruefen-mutationen.txt. Einheit G3.4; Nacharbeiten N2.3 (NM-010, NM-069 neu ausgerichtet, NM-073 bis NM-083 neu; Fortschreibung vom 2026-11-03).
 #
 # FORM: je Zeile fuenf Felder, getrennt durch genau vier Tabulatoren; nur ASCII (keine Umlaute):
 #   Kennung NM-nnn <TAB> Klasse (KN-Kennung) <TAB> sed-Ausdruck <TAB> Mindestsatz <TAB> Grund
@@ -12,8 +12,8 @@
 #     dient die Tilde, weil Codezeilen das Rautezeichen tragen; ein senkrechter Strich im Muster steht als [|].
 #   - Mindestsatz: Fallkennungen durch Komma; erkannt ist die Mutation, wenn jeder dieser Faelle gegen die Mutante faellt.
 #   - Grund: ein Satz, was die Mutation aendert.
-# Ohne Mutation bleiben (unerreichbar oder gleichwertig, siehe GP-N6 und GP-N7 im Kopf des Pruefmittels): "export LC_ALL=C",
-# "export GIT_NO_REPLACE_OBJECTS=1", das Loeschen der git-Variablen des Aufrufers allein (gleichwertig zu "env -i"; beide zusammen: NM-061),
+# Ohne Mutation bleiben (unerreichbar oder gleichwertig, siehe GP-N6, GP-N7 und GP-N8 im Kopf des Pruefmittels): "export LC_ALL=C",
+# "export GIT_NO_REPLACE_OBJECTS=1" im Kopf des Skripts (die Zuweisungen in git_neutral und am Aufruf des Erzeugers: NM-081, NM-082), das Loeschen der git-Variablen des Aufrufers allein (gleichwertig zu "env -i"; beide zusammen: NM-061),
 # GIT_CONFIG_NOSYSTEM und GIT_CONFIG_GLOBAL (HOME ist leer, "env -i" loescht die Variablen des Aufrufers) und der Fall "nicht lesbar" (N-075).
 NM-001	KN-6	s~^unset CDPATH$~:~	N-088	Ein CDPATH des Aufrufers wird nicht geloescht: bei relativem Aufruf lenkt "cd scripts/.." die Wurzel um.
 NM-002	KN-6	s~^if \[ "\$#" -ne 0 \]; then$~if false; then~	N-060	Ein Argument ist keine Lage C.
@@ -24,7 +24,7 @@ NM-006	KN-6	s~^if \[ "\$\{BASH_VERSINFO\[0\]:-0\}" -lt 4 \]; then$~if false; the
 NM-007	KN-6	s~^if weg_verknuepft "\$ERZEUGER_REL"; then~if false; then~	N-073	Eine Verknuepfung auf dem Weg zum Erzeuger wird nicht gemeldet.
 NM-008	KN-6	s~^\[ -f "\$ERZEUGER_REL" \] [|][|] lage_c "erzeuger" .*$~:~	N-074	Ein Verzeichnis an der Stelle des Erzeugers wird nicht als keine regulaere Datei gemeldet.
 NM-009	KN-6	s~^if \[ ! -e "\$ERZEUGER_REL" \] && \[ ! -L "\$ERZEUGER_REL" \]; then$~if false; then~	N-072	Der fehlende Erzeuger wird nicht als fehlend gemeldet.
-NM-010	KN-7	s~^  "\$WURZEL"/\*\) lage_c "ablage"~  "$WURZEL"/NIE) lage_c "ablage"~	N-076	Eine Ablage im Arbeitsbaum ist keine Lage C.
+NM-010	KN-7	s~^  "\$WURZEL"/\*\) lage_c "ablage" "die Ablage liegt~  "$WURZEL"/NIE) lage_c "ablage" "die Ablage liegt~	N-095	Eine Ablage, die mktemp im Arbeitsbaum angelegt hat, ist nach dem Anlegen keine Lage C (die Pruefung nach dem Anlegen).
 NM-011	KN-6	s~^if \[ -z "\$ABLAGE" \] [|][|] \[ ! -d "\$ABLAGE" \]; then$~if false; then~	N-077	Ein Fehlschlag von mktemp -d wird nicht gemeldet.
 NM-012	KN-6	s~^if \[ -z "\$GITTOP" \] [|][|] \[ "\$GITTOP" != "\$WURZEL" \]; then$~if [ -z "$GITTOP" ]; then~	N-071	Eine Wurzel unterhalb der obersten Ebene des Git-Arbeitsbaums gilt als Arbeitsbaum.
 NM-013	KN-3	s~ --cached --others --exclude-standard >~ --cached --exclude-standard >~	N-021	Unversionierte Dateien gehoeren nicht zur Sollmenge.
@@ -83,7 +83,18 @@ NM-065	KN-6	s~^    if \[ "\$CAT_RC" -ne 0 \]; then$~    if false; then~	N-084	Ei
 NM-066	KN-5	s~^if \[ -z "\$T_ARTEFAKTE" \]; then lage_c "tabelle".*$~:~	N-055	Eine frische Liste ohne lesbare Zahl der Artefakte ist keine Lage C: die Zahl bleibt ungelesen.
 NM-067	KN-5	s~^if \[ "\$T_ARTEFAKTE" != .*; then lage_c "tabelle".*$~:~	N-056	Die Zahl der Artefakte im Kopf der frischen Liste wird nicht gegen Tabellenzeilen und Meldungen FEHLT: gehalten.
 NM-068	KN-9	s~ [|][|] \[ -z "\$T_ARTEFAKTE" \]; then$~; then~	N-116	Eine committete Liste ohne lesbare Zahl der Artefakte ist kein Fund KN-9.
-NM-069	KN-4	s~^  if \[ "\$N_NC" -gt 0 \]; then$~  if false; then~	N-041	NICHT COMMITTET bei leerem git status bleibt ein Hinweis: ein Erzeuger, dessen git log scheitert, wird nicht bemerkt.
+NM-069	KN-4	s~^    if \[ -n "\$\{HSET\["\$p"\]\+x\}" \] [|][|] \[ -n "\$\{HDIRSET\["\$p"\]\+x\}" \]; then~    if false; then~	N-041,N-042,N-043,N-044	Die Bedingung "Pfad in HEAD" entfaellt: NICHT COMMITTET fuer einen Pfad aus HEAD bleibt ein Hinweis, ein Erzeuger, dessen git log scheitert, wird nicht bemerkt.
 NM-070	KN-8	s~^  LAGEC\+=\("git-status: (.*)"\)$~  lage_c "git-status" "\1"~	N-082	Das Scheitern von git status bricht vor der Ausgabe ab: die erfassten Funde gehen verloren.
 NM-071	KN-8	s~^    LAGEC\+=\("git-kopf: (git ls-tree .*)"\)$~    lage_c "git-kopf" "\1"~	N-083	Das Scheitern von git ls-tree bricht vor der Ausgabe ab: die erfassten Funde gehen verloren.
 NM-072	KN-8	s~^      LAGEC\+=\("git-kopf: (git cat-file .*)"\)$~      lage_c "git-kopf" "\1"~	N-084	Das Scheitern von git cat-file bricht vor der Ausgabe ab: die erfassten Funde gehen verloren.
+NM-073	KN-4	s~^  if \[ "\$N_HEADNC" -gt 0 \]; then$~  if [ "$N_HEADNC" -gt 0 ] \&\& [ ! -s "$ABLAGE/status" ]; then~	N-042,N-043,N-044	Rueckfall auf die Regel nur bei leerem git status: bei nicht sauberem Arbeitsbaum bleibt NICHT COMMITTET fuer einen Pfad aus HEAD ein Hinweis.
+NM-074	KN-4	s~if \[ -n "\$\{HSET\["\$p"\]\+x\}" \] [|][|] ~if ~	N-043	Ein Pfad, der in HEAD als Datei steht, gilt nicht als Pfad in HEAD (nur Verzeichnisse).
+NM-075	KN-4	s~ [|][|] \[ -n "\$\{HDIRSET\["\$p"\]\+x\}" \]; then HEADNCSET~; then HEADNCSET~	N-044	Ein Verzeichnis mit einer Datei aus HEAD gilt nicht als Pfad in HEAD (nur Dateien).
+NM-076	KN-4	s~^    if \[ -n "\$\{HSET\[.*; then HEADNCSET~    if true; then HEADNCSET~	N-031,N-032,N-033	Jede Meldung NICHT COMMITTET gilt als Pfad in HEAD: auch der Hinweis fuer eine neue Datei wird zur Lage C.
+NM-077	KN-6	s~^if \[ "\$HEADLISTE_RC" -ne 0 \]; then$~if false; then~	N-097	Ein Fehlschlag von git ls-tree -r HEAD wird nicht gemeldet.
+NM-078	KN-5	s~^    if \[ "\$skip" = 1 \] && \[ "\$zeile" != "\$TRENNZEILE" \]; then T_URTEIL=trenn; return 0; fi$~    :~	N-057,N-117	Die Zeile nach dem Tabellenkopf wird nicht gegen die Trennzeile gehalten: eine verformte Trennzeile bleibt unbemerkt.
+NM-079	KN-7	s~^if \[ -z "\$TMPZIEL" \]; then$~if false; then~	N-094	Ein nicht erreichbares Zielverzeichnis der Ablage wird vor mktemp -d nicht gemeldet.
+NM-080	KN-7	s~^  "\$WURZEL"/\*\) lage_c "ablage" "das Verzeichnis~  "$WURZEL"/NIE) lage_c "ablage" "das Verzeichnis~	N-076	Ein Zielverzeichnis der Ablage im Arbeitsbaum wird vor mktemp -d nicht gemeldet: mktemp legt die Ablage im Baum an.
+NM-081	KN-9	s~"GIT_NO_REPLACE_OBJECTS=1" "GIT_OPTIONAL_LOCKS=0" git "\$@"$~"GIT_OPTIONAL_LOCKS=0" git "$@"~	N-087	git_neutral setzt GIT_NO_REPLACE_OBJECTS nicht: ein Ersatzobjekt aendert die gelesene committete Liste.
+NM-082	KN-4	s~"GIT_NO_REPLACE_OBJECTS=1" "GIT_OPTIONAL_LOCKS=0" \\$~"GIT_OPTIONAL_LOCKS=0" \\~	N-098	Der Aufruf des Erzeugers setzt GIT_NO_REPLACE_OBJECTS nicht: ein Ersatzobjekt macht den git log des Erzeugers leer.
+NM-083	KN-7	s~^    \*\) lage_c "ablage" "TMPDIR \(~    NIE) lage_c "ablage" "TMPDIR (~	N-089,N-099	Die Pruefung auf einen absoluten Wert von TMPDIR entfaellt: ein relativer Ort (tmp, oder - als OLDPWD) wird aufgeloest statt gemeldet.

@@ -6,7 +6,7 @@
 # Anforderung R3-Q-001 (das DoD-Gate stuetzt sich auf die Kette). Grundlage: ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29
 # (Festlegung fuer G3), Zeilen zu D12 und "Faelle, Mutationen und Rueckgabewerte"; docs/12_Freigabe_Grundgeruest.md, Abschnitt 4,
 # G3, Festlegungen 3 und 5. Muster: scripts/prototyp-trennung-pruefen-selbsttest.sh, scripts/abnahme-abgleich-selbsttest.sh und
-# scripts/belege-pruefen-selbsttest.sh. Einheit G3.4.
+# scripts/belege-pruefen-selbsttest.sh. Einheit G3.4; Nacharbeiten N2.3 (ADR 0002, Abschnitt 5, Nachtrag und Fortschreibung vom 2026-11-03).
 #
 # AUFRUF
 #   bash scripts/nachweise-vollstaendig-selbsttest.sh [--mutationen] [--pruefer <pfad>]
@@ -40,7 +40,7 @@
 #   Mutante). Je Fall eine Kopie des Grundbaums (cp -a), die Aenderung, eine Kopie des gepruefen Skripts und ein Lauf. Neue Dateien
 #   eines Falls sind unversioniert, ausser der Fall ruft sauber auf (alles in einen Commit, git status leer). Attrappen des
 #   Erzeugers (KN-4, KN-5): ein Ersatz von scripts/nachweise-erzeugen.sh, der eine vorgegebene Tabelle ablegt, vorgegebene Zeilen auf
-#   die Fehlerausgabe schreibt und mit vorgegebenem Rueckgabewert endet. Ersatz-Werkzeuge im Suchpfad (git, grep, sort) simulieren
+#   die Fehlerausgabe schreibt und mit vorgegebenem Rueckgabewert endet. Ersatz-Werkzeuge im Suchpfad (git, grep, sort, mktemp) simulieren
 #   Ausfaelle (GP-N7).
 #
 # SOLL-ARTEN (Spalte 3 der Fallliste)
@@ -63,9 +63,9 @@
 #   werden nie wiederverwendet.
 #
 # DECKUNG (als eigener Abschnitt der Ausgabe, nicht in der Zaehlung der Faelle): jede Kennung KN und GN im Kopfkommentar des
-#   geprueften Skripts hat Faelle (KN-1 bis KN-6 und KN-9: mindestens einen mit Soll fund, lage-c oder lage-c+funde und einen mit
-#   Soll kein-fund; KN-7, KN-8 und GN: mindestens einen); jede Klasse, die ein Fall nennt, steht im Kopfkommentar. Der
-#   Kopfkommentar nennt die Kennungen einzeln, ohne Bereichsschreibweise.
+#   geprueften Skripts hat Faelle. Fuer jede Kennung KN ohne Ausnahme: mindestens ein Fall mit Soll fund, lage-c oder lage-c+funde
+#   und mindestens einer mit Soll kein-fund oder kein-fund+ausgabe; fuer jede Kennung GN mindestens ein Fall. Jede Klasse, die ein
+#   Fall nennt, steht im Kopfkommentar. Der Kopfkommentar nennt die Kennungen einzeln, ohne Bereichsschreibweise.
 #
 # MODUS --mutationen: Mutationsdatei scripts/nachweise-vollstaendig-mutationen.txt im Verzeichnis dieses Skripts
 #   Zeilenform: Kennung NM-nnn, Tabulator, Klasse (KN-Kennung), Tabulator, sed-Ausdruck (mit sed -E --sandbox auf eine Wegwerfkopie
@@ -80,7 +80,7 @@
 #
 # GRENZEN DES PRUEFMITTELS
 #   GP-N1  Der Fall "nicht lesbar" (N-075) ist als root nicht herstellbar; er wird gezaehlt und gemeldet, ohne Mutation.
-#   GP-N2  Die Faelle mit Attrappe des Erzeugers (N-033 bis N-040, N-052 bis N-056) messen die Schnittstelle (Rueckgabewert, Zeilen der
+#   GP-N2  Die Faelle mit Attrappe des Erzeugers (N-033 bis N-040, N-052 bis N-057) messen die Schnittstelle (Rueckgabewert, Zeilen der
 #          Fehlerausgabe, Form der Tabelle) gegen frei gewaehlte Antworten. Dass der echte Erzeuger sie so liefert, messen N-001 (Form
 #          der Tabelle), N-030 bis N-032 (Meldungen am Code des echten Erzeugers) und am echten Bestand "make nachweise".
 #   GP-N3  Faelle mit Soll fund oder kein-fund messen die Fehlerausgabe nur auf "leer"; der Wortlaut der Meldungen von Lage C ist nur an
@@ -89,20 +89,31 @@
 #          unbemerkt; die uebrigen Zweige prueft der Static Software Tester am Code.
 #   GP-N5  Die Verknuepfung (N-073) setzt ein Dateisystem mit symbolischen Verknuepfungen voraus; der Fall N-023 setzt git ab Version
 #          2.31 voraus (GIT_CONFIG_COUNT), sonst "nicht herstellbar".
-#   GP-N6  Die Faelle N-085 bis N-088 messen die Wirkung der Variablen des Aufrufers (GIT_DIR, GIT_WORK_TREE, GIT_INDEX_FILE,
+#   GP-N6  Die Faelle N-085, N-086 und N-088 messen die Wirkung der Variablen des Aufrufers (GIT_DIR, GIT_WORK_TREE, GIT_INDEX_FILE,
 #          Arbeitsverzeichnis, CDPATH), nicht die Liste der geloeschten Variablen. Ein Name, der aus der Liste im Skript faellt, ohne
-#          dass ein Fall ihn nennt, bleibt unbemerkt. BASH_ENV des Aufrufers wirkt vor der ersten Zeile des Skripts und ist nicht
-#          abwehrbar; sein Weg zu git und zum Erzeuger ist durch "env -i" geschlossen, aber ohne Fall.
-#   GP-N7  Die Ersatz-Werkzeuge der Faelle N-041 und N-078 bis N-084 simulieren einen Fehler von git, grep und sort; sie messen die Reaktion
-#          des Skripts, nicht einen echten Defekt. "export LC_ALL=C" und "unset CDPATH" sind nur ueber N-088 und die Sortierung
+#          dass ein Fall ihn nennt, bleibt unbemerkt. BASH_ENV, exportierte Funktionen, SHELLOPTS und BASHOPTS des Aufrufers wirken
+#          vor der ersten Zeile des Skripts und sind nicht abwehrbar (Grenze der Kette); ihr Weg zu git und zum Erzeuger ist durch
+#          "env -i" geschlossen, aber ohne Fall.
+#   GP-N7  Die Ersatz-Werkzeuge der Faelle N-041 bis N-044 und N-078 bis N-084 und N-097 (git, grep, sort) und der Faelle N-076, N-077,
+#          N-089, N-094, N-095 und N-099 (mktemp) simulieren einen Fehler, legen die Ablage im Baum an oder protokollieren den Aufruf; sie
+#          messen die Reaktion des Skripts, nicht einen echten Defekt. "export LC_ALL=C" und "unset CDPATH" sind nur ueber N-088 und die Sortierung
 #          (N-007) mittelbar gemessen.
+#   GP-N8  Die Zeile "export GIT_NO_REPLACE_OBJECTS=1" im Kopf des Skripts hat keine beobachtbare Wirkung auf das Urteil (alle
+#          git-Aufrufe des Skripts und der Aufruf des Erzeugers laufen unter "env -i" mit eigener Zuweisung): sie bleibt als
+#          Verteidigung in der Tiefe, ohne Fall und ohne Mutation (wie "export LC_ALL=C"). Gemessen sind die Zuweisung in git_neutral
+#          (N-087, NM-081) und die Zuweisung am Aufruf des Erzeugers (N-098, NM-082): ohne sie machte ein Ersatzobjekt auf HEAD den
+#          git log des Erzeugers leer, und das Urteil wechselte (Lage C nicht-committet).
+#   GP-N9  Die Eintraege der HEAD-Liste (git ls-tree -r -z --name-only HEAD) werden nicht gegen einen zweiten Lesepfad gezaehlt (anders als
+#          die Sollmenge): ein Scheitern von git ist Lage C git-kopf (N-097), eine stille Verkuerzung bei Rueckgabewert 0 ist nicht belegt
+#          und ohne Fall. Der Fall "cd scheitert an der von mktemp gelieferten Ablage" (der trap raeumt sie ab) ist als root nicht
+#          herstellbar und ohne Fall. Ein Fehler von sha256sum in baum_voll wird weitergereicht, ist aber ohne Fall.
 #
 set -uo pipefail
 
 # -----------------------------------------------------------------------------
 # 0. Umfeld des Pruefmittels selbst: die git-Variablen des Aufrufers loeschen, Spracheinstellung C
 # -----------------------------------------------------------------------------
-unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_COMMON_DIR GIT_NAMESPACE GIT_CEILING_DIRECTORIES GIT_DISCOVERY_ACROSS_FILESYSTEM GIT_SHALLOW_FILE GIT_GLOB_PATHSPECS GIT_NOGLOB_PATHSPECS GIT_LITERAL_PATHSPECS GIT_ICASE_PATHSPECS 2>/dev/null || true
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_COMMON_DIR GIT_NAMESPACE GIT_CEILING_DIRECTORIES GIT_DISCOVERY_ACROSS_FILESYSTEM GIT_SHALLOW_FILE GIT_GLOB_PATHSPECS GIT_NOGLOB_PATHSPECS GIT_LITERAL_PATHSPECS GIT_ICASE_PATHSPECS GIT_NO_REPLACE_OBJECTS 2>/dev/null || true
 unset "${!GIT_TRACE@}" 2>/dev/null || true
 export LC_ALL=C
 
@@ -401,6 +412,50 @@ EOS
   fi
   env_zusatz "PATH=$KASTEN"
 }
+mktemp_ersatz() { # mktemp_ersatz fehler | im-baum | protokoll : Suchpfad aus allen Werkzeugen; mktemp scheitert, legt die Ablage im Baum an oder protokolliert seinen Aufruf
+  local echt
+  echt=$(command -v mktemp) || herstellung_fehler "mktemp nicht aufloesbar"
+  kasten $KASTEN_VOLL
+  case "$1" in
+    fehler)
+      kasten_ersatz mktemp <<'EOS'
+#!/bin/sh
+echo "mktemp: simulierter Fehler" >&2
+exit 1
+EOS
+      ;;
+    im-baum)
+      kasten_ersatz mktemp <<EOS
+#!/bin/sh
+mkdir -p "$BAUM/ablage-im-baum" || exit 1
+echo "$BAUM/ablage-im-baum"
+EOS
+      ;;
+    protokoll)
+      kasten_ersatz mktemp <<EOS
+#!/bin/sh
+echo aufruf >> "$FALL/mktemp-aufrufe.txt"
+exec $echt "\$@"
+EOS
+      ;;
+    *) herstellung_fehler "mktemp_ersatz: unbekannte Art $1" ;;
+  esac
+  env_zusatz "PATH=$KASTEN"
+}
+nach_kein_mktemp_reste() { # wie nach_kein_mktemp, dazu: im Verzeichnis RESTE_DIR (der Ort, den ein relatives TMPDIR meinte) liegt nichts
+  local f n=0
+  nach_kein_mktemp
+  for f in "$RESTE_DIR"/* "$RESTE_DIR"/.[!.]* "$RESTE_DIR"/..?*; do if [ -e "$f" ] || [ -L "$f" ]; then n=$((n + 1)); fi; done
+  IST="$IST; Reste in $RESTE_DIR: $n"
+  if [ "$n" -ne 0 ]; then ERG=GEFALLEN; DETAIL+=("im Verzeichnis, das ein relatives TMPDIR meinte, liegen Reste"); fi
+}
+nach_kein_mktemp() { # nach dem Lauf: der Ersatz-mktemp hat keinen Aufruf protokolliert (der Ort der Ablage wird vor mktemp -d geprueft)
+  if [ -e "$FALL/mktemp-aufrufe.txt" ]; then
+    ERG=GEFALLEN; IST="$IST; mktemp aufgerufen"; DETAIL+=("mktemp wurde aufgerufen, bevor der Ort der Ablage geprueft war")
+  else
+    IST="$IST; kein Aufruf von mktemp"
+  fi
+}
 
 kasten() { # kasten <werkzeug>... : setzt KASTEN auf ein Verzeichnis aus Verknuepfungen auf genau diese Werkzeuge
   local box="$FALL/kasten" t p
@@ -414,7 +469,9 @@ kasten() { # kasten <werkzeug>... : setzt KASTEN auf ein Verzeichnis aus Verknue
 }
 kasten_ersatz() { # kasten_ersatz <name> : ersetzt das Werkzeug <name> im Kasten durch das Skript auf der Standardeingabe
   local name="${1:?}"
-  rm -f "${KASTEN:?}/${name}"
+  rm -f "${KASTEN:?}/${name}" || herstellung_fehler "Ersatz $name: altes Werkzeug nicht entfernbar"
+  # nie durch eine Datei oder Verknuepfung hindurch schreiben (Lehre aus der Beschaedigung von /usr/bin/mktemp am 2026-11-03)
+  if [ -e "$KASTEN/$name" ] || [ -L "$KASTEN/$name" ]; then herstellung_fehler "Ersatz $name: am Zielpfad liegt noch eine Datei oder Verknuepfung"; fi
   cat > "$KASTEN/$name" || herstellung_fehler "Ersatz $name"
   chmod +x "$KASTEN/$name" || herstellung_fehler "chmod $name"
 }
@@ -424,6 +481,10 @@ ohne_werkzeug() { # ohne_werkzeug <w> : Suchpfad mit allen Werkzeugen der Liste 
   kasten $liste
   env_zusatz "PATH=$KASTEN"
   lc "werkzeug:$1"
+}
+baum_ohne_skript() { # Zustand des Baums ohne das gepruefte Skript (es wird erst nach der Herstellung des Falls in den Baum kopiert)
+  baum_voll "$BAUM" "$BAUM" | grep -v ' scripts/nachweise-vollstaendig\.sh$'
+  return "${PIPESTATUS[0]}"
 }
 fremdes_repo() { # fremdes_repo : legt $FALL/fremd an (eigenes Repository mit einer Datei)
   mkdir -p "$FALL/fremd" && gitg -C "$FALL/fremd" init -q && printf 'x\n' > "$FALL/fremd/x.txt" && gitg -C "$FALL/fremd" add -A \
@@ -619,17 +680,19 @@ bewerte_lagec() { # bewerte_lagec <aus> <fehler> <rc> : Lage C vor dem Urteil
   if [ "$ERG" = GEFALLEN ]; then DETAIL+=("Fehlerausgabe: $(stderr_kopf "$err")"); fi
 }
 baum_voll() { # baum_voll <wurzel> <verzeichnis> : jeder Eintrag unterhalb: Datei (Pfad, SHA-256), Verzeichnis (Pfad), Verknuepfung (Pfad, Ziel)
-  local wz="$1" d="$2" p
+  local wz="$1" d="$2" p h
   for p in "$d"/* "$d"/.[!.]* "$d"/..?*; do
     if [ -L "$p" ]; then
       printf 'L %s %s\n' "${p#"$wz"/}" "$(readlink "$p")"
     elif [ -d "$p" ]; then
       printf 'D %s\n' "${p#"$wz"/}"
-      baum_voll "$wz" "$p"
+      baum_voll "$wz" "$p" || return 1
     elif [ -f "$p" ]; then
-      printf 'F %s %s\n' "$(sha256sum < "$p" | cut -c1-64)" "${p#"$wz"/}"
+      h=$(sha256sum < "$p") || return 1
+      printf 'F %s %s\n' "${h:0:64}" "${p#"$wz"/}"
     fi
   done
+  return 0
 }
 
 # Kennungen KN und GN aus dem Kopfkommentar des gepruefen Skripts (einzeln): eine je Zeile, sortiert, einmalig
@@ -669,7 +732,7 @@ code_text() { grep -vE '^[[:space:]]*(#|$)' "$PRUEFER"; }
 #F|N-030|KN-4|fund|Erzeuger|Zeile fuer eine nicht vorhandene Datei: der Erzeuger meldet FEHLT, Fund KN-4; die Tabelle hat keine Zeile dafuer, die Zahl im Kopf zaehlt sie
 #F|N-031|KN-4|kein-fund+ausgabe|Erzeuger|unversionierte Datei mit Zeile: NICHT COMMITTET ist ein Hinweis mit Zahl und kein Fund
 #F|N-032|KN-4|kein-fund+ausgabe|Erzeuger|NICHT COMMITTET fuer eine Verzeichniszeile mit einer Datei der Sollmenge darunter zaehlt als Hinweis
-#F|N-033|KN-4|fund|Erzeuger|Attrappe: Rueckgabewert 1 mit FEHLT und NICHT COMMITTET: ein Fund KN-4 und ein Hinweis
+#F|N-033|KN-4|fund|Erzeuger|Attrappe: Rueckgabewert 1 mit FEHLT und NICHT COMMITTET (fuer eine neue Datei, die nicht in HEAD steht): ein Fund KN-4 und ein Hinweis
 #F|N-034|KN-4|lage-c|Erzeuger|Attrappe: Rueckgabewert 1 ohne Meldungszeile ist Lage C
 #F|N-035|KN-4|lage-c|Erzeuger|Attrappe: Rueckgabewert 127 ist Lage C
 #F|N-036|KN-4|lage-c|Erzeuger|Attrappe: Rueckgabewert 2 ist Lage C
@@ -678,12 +741,17 @@ code_text() { grep -vE '^[[:space:]]*(#|$)' "$PRUEFER"; }
 #F|N-039|KN-4|lage-c|Erzeuger|Attrappe: eine Zeile der Fehlerausgabe, die das Skript nicht kennt, ist Lage C
 #F|N-040|KN-4,GN-2|kein-fund+ausgabe|Erzeuger|Attrappe: Rueckgabewert 0, Tabelle mit falschem Verweis, altem Stand und leerer Beschreibung: kein Fund (Grenze GN-2)
 #F|N-041|KN-4,KN-9|lage-c+funde|Erzeuger|sauberer Stand, git log scheitert (Ersatz-git): der Erzeuger meldet NICHT COMMITTET fuer Pfade der Sollmenge, bei leerem git status unmoeglich: Lage C nicht-committet, die Zaehlzeilen stehen in derselben Ausgabe
+#F|N-042|KN-4,KN-8,KN-9|lage-c+funde|Erzeuger|Arbeitsbaum nicht sauber (eine neue Datei ohne Zeile), git log scheitert (Ersatz-git): der Erzeuger meldet NICHT COMMITTET fuer Pfade aus HEAD, gleich ob git status leer ist: Lage C nicht-committet, der Fund KN-1 steht in derselben Ausgabe
+#F|N-043|KN-4,KN-8|lage-c+funde|Erzeuger|Arbeitsbaum nicht sauber, git log scheitert allein fuer README.md (eine Datei aus HEAD): Lage C nicht-committet, der Fund steht in derselben Ausgabe
+#F|N-044|KN-4,KN-8|lage-c+funde|Erzeuger|Arbeitsbaum nicht sauber, git log scheitert allein fuer docs/sub (ein Verzeichnis mit einer Datei aus HEAD): Lage C nicht-committet, der Fund steht in derselben Ausgabe
+#F|N-098|KN-4,KN-9|kein-fund+ausgabe|Erzeuger|sauberer Stand, ein Ersatzobjekt auf HEAD unter refs/replace macht fuer git ohne GIT_NO_REPLACE_OBJECTS den git log des Erzeugers leer (Pfade aus HEAD ohne Commit): mit der Zuweisung am Aufruf des Erzeugers kein Fund, Rueckgabewert 0
 #F|N-050|KN-5|fund|Tabelle|der Kopfblock mit dem Pfad des Erzeugers ist keine Artefaktzeile: ohne Zeile fuer den Erzeuger ist dieser ein Fund KN-1
 #F|N-052|KN-5|lage-c|Tabelle|Attrappe: der Pfad einer Zeile ohne Rueckwaertsakzente ist Lage C
 #F|N-053|KN-5|lage-c|Tabelle|Attrappe: eine Datei ohne Tabellenkopf ist Lage C
 #F|N-054|KN-5|kein-fund+ausgabe|Tabelle|Attrappe: eine Zeile mit Pfad nach dem Ende der Tabelle gehoert nicht zur Tabelle
 #F|N-055|KN-5|lage-c|Tabelle|Attrappe: dem Kopfblock fehlt die Zeile "| **Artefakte** | n |" (hier "| **Anzahl Artefakte** | n |"): Lage C
 #F|N-056|KN-5|lage-c|Tabelle|Attrappe: die Zahl der Artefakte im Kopf (9) ist nicht die Zahl der Tabellenzeilen (7) plus der Meldungen FEHLT: (0): Lage C
+#F|N-057|KN-5|lage-c|Tabelle|Attrappe: die Zeile nach dem Tabellenkopf hat vier statt fuenf Spalten (verformte Trennzeile) bei der frischen Liste: Lage C tabelle
 #F|N-060|KN-6|lage-c|Umfeld|ein Argument
 #F|N-061|KN-6|lage-c|Werkzeuge|bash fehlt im Suchpfad
 #F|N-062|KN-6|lage-c|Werkzeuge|git fehlt im Suchpfad
@@ -700,19 +768,25 @@ code_text() { grep -vE '^[[:space:]]*(#|$)' "$PRUEFER"; }
 #F|N-073|KN-6|lage-c|Erzeuger|der Erzeuger ist eine symbolische Verknuepfung
 #F|N-074|KN-6|lage-c|Erzeuger|der Erzeuger ist ein Verzeichnis
 #F|N-075|KN-6|lage-c|Erzeuger|der Erzeuger ist nicht lesbar
-#F|N-076|KN-6,KN-7|lage-c|Ablage|die Ablage liegt im Arbeitsbaum
-#F|N-077|KN-6|lage-c|Ablage|mktemp -d scheitert
+#F|N-076|KN-6,KN-7|lage-c|Ablage|TMPDIR liegt im Arbeitsbaum: Lage C ablage, ohne dass mktemp aufgerufen wird (Ersatz-mktemp protokolliert seinen Aufruf ausserhalb des Baums)
+#F|N-077|KN-6|lage-c|Ablage|mktemp -d scheitert (Ersatz-mktemp, TMPDIR in Ordnung)
 #F|N-078|KN-6|lage-c|git|git ls-files scheitert
+#F|N-089|KN-6,KN-7|lage-c|Ablage|TMPDIR ist relativ (tmp, mit Verzeichnis tmp im Baum): Lage C ablage vor jedem cd, ohne Aufruf von mktemp, keine Reste
+#F|N-099|KN-6,KN-7|lage-c|Ablage|TMPDIR ist - und OLDPWD liegt im Arbeitsbaum (cd - ginge dorthin; Verzeichnis - im Baum): Lage C ablage, ohne Aufruf von mktemp, keine Reste
+#F|N-094|KN-6,KN-7|lage-c|Ablage|TMPDIR besteht nicht: Lage C ablage, ohne dass mktemp aufgerufen wird
+#F|N-095|KN-6,KN-7|lage-c|Ablage|mktemp legt die Ablage im Arbeitsbaum an (Ersatz-mktemp), TMPDIR zeigt ausserhalb: die Pruefung nach dem Anlegen meldet Lage C ablage
 #F|N-079|KN-6,KN-8|lage-c+funde|Liste|die Zahl der gelesenen Eintraege der Liste weicht von der gezaehlten ab: Lage C in derselben Ausgabe
 #F|N-080|KN-6,KN-8|lage-c+funde|sort|sort endet mit einem Fehler: Lage C, die Funde stehen ungeordnet in derselben Ausgabe
 #F|N-081|KN-6,KN-8|lage-c+funde|sort|sort liefert nur die erste Zeile: Lage C, die Funde stehen in derselben Ausgabe
 #F|N-082|KN-6,KN-8,KN-9|lage-c+funde|git|git status scheitert: Lage C, die Funde stehen in derselben Ausgabe, die Zeile KN-9 sagt "nicht beurteilt"
 #F|N-083|KN-6,KN-8,KN-9|lage-c+funde|git|git ls-tree scheitert bei sauberem Stand: Lage C, die Funde stehen in derselben Ausgabe
 #F|N-084|KN-6,KN-8,KN-9|lage-c+funde|git|git cat-file scheitert bei sauberem Stand: Lage C, die Funde stehen in derselben Ausgabe
+#F|N-097|KN-6,KN-8|lage-c+funde|git|git ls-tree -r HEAD scheitert (Ersatz-git, allein bei -r): Lage C git-kopf, die Funde stehen in derselben Ausgabe
 #F|N-085|KN-6|fund|Umfeld|GIT_DIR, GIT_WORK_TREE und GIT_INDEX_FILE des Aufrufers aendern das Urteil nicht
 #F|N-086|KN-6|kein-fund+ausgabe|Umfeld|Arbeitsverzeichnis in einem fremden Repository aendert das Urteil nicht
 #F|N-088|KN-6|kein-fund+ausgabe|Umfeld|CDPATH des Aufrufers aendert die Wurzel bei relativem Aufruf nicht
 #F|N-093|KN-6|statisch|Werkzeuge|die Pruefung der bash-Version steht vor der ersten Erklaerung eines assoziativen Feldes
+#F|N-096|KN-7|kein-fund+ausgabe|Schreibfrei|Grundbaum ohne Fund: nach dem Lauf sind der Baum, docs/NACHWEISE.md und das Git-Verzeichnis unveraendert und die Ablage in TMPDIR ist entfernt
 #F|N-090|KN-7|schreibfrei|Schreibfrei|der Baum ist nach dem Lauf wie davor, auch docs/NACHWEISE.md und das Git-Verzeichnis
 #F|N-091|KN-7|statisch|Schreibfrei|ausserhalb von Kommentarzeilen steht kein Here-String (Bash legt dafuer ab 64 KiB, vor Version 5.1 immer, eine Wegwerfdatei an)
 #F|N-092|KN-7|fund|Ablage|die Ablage in TMPDIR ist nach dem Lauf entfernt
@@ -725,6 +799,8 @@ code_text() { grep -vE '^[[:space:]]*(#|$)' "$PRUEFER"; }
 #F|N-114|KN-9|fund|committete Liste|sauberer Stand, docs/NACHWEISE.md nicht in HEAD: Fund KN-9
 #F|N-115|KN-9|fund|committete Liste|sauberer Stand, die committete Datei hat keine Tabelle: Fund KN-9
 #F|N-116|KN-9|fund|committete Liste|sauberer Stand, dem Kopfblock der committeten Liste fehlt die Zeile "| **Artefakte** | n |": Fund KN-9 mit docs/NACHWEISE.md
+#F|N-087|KN-9|kein-fund+ausgabe|committete Liste|sauberer Stand, ein Ersatzobjekt unter refs/replace aendert fuer git ohne GIT_NO_REPLACE_OBJECTS den Inhalt von docs/NACHWEISE.md in HEAD (eine Zeile weniger): KN-9 gleich, Rueckgabewert 0
+#F|N-117|KN-5,KN-9|fund|committete Liste|sauberer Stand, die Trennzeile der committeten Liste ist verformt: Fund KN-9 mit docs/NACHWEISE.md
 #F|N-120|GN-1|fund|Grenze GN-1|ein Pfad mit senkrechtem Strich laesst sich im Erzeuger nicht aufnehmen: Fund KN-1 (Fehlalarm)
 #F|N-121|GN-1|kein-fund+ausgabe|Grenze GN-1|ein Rueckwaertsakzent im Pfad wird gelesen: erster und letzter Akzent der Spalte begrenzen den Pfad
 #F|N-299|KN-7|arbeitsbaum|Arbeitsbaum|der Arbeitsbaum ist nach dem ganzen Lauf wie davor (letzter Fall der Liste)
@@ -764,9 +840,10 @@ f_N030() { liste "${GRUND_PFADE[@]}" docs/fehlt.md; erwarte KN-4 docs/fehlt.md; 
 f_N031() { datei docs/lose.md 'x'; liste "${GRUND_PFADE[@]}" docs/lose.md; zaehlung 8 8 8 9 1; kn9 offen 2; }
 f_N032() { datei docs/neuverz/f.md 'x'; liste "${GRUND_PFADE[@]}" docs/neuverz; zaehlung 8 8 8 9 1; kn9 offen 2; }
 f_N033() {
-  tabelle_text 8 "${GRUND_PFADE[@]}" > "$FALL/tab.md"
-  erzeuger_attrappe 1 "$FALL/tab.md" "FEHLT: docs/x.md" "NICHT COMMITTET: docs/a.md" $'Nachweisverzeichnis erzeugt, aber unvollst\xc3\xa4ndig: mindestens ein Artefakt fehlt oder ist nicht committet.'
-  erwarte KN-4 docs/x.md; zaehlung 7 7 8 8 1; kn9 offen 1
+  datei docs/neu.md 'x'
+  tabelle_text 9 "${GRUND_PFADE[@]}" docs/neu.md > "$FALL/tab.md"
+  erzeuger_attrappe 1 "$FALL/tab.md" "FEHLT: docs/x.md" "NICHT COMMITTET: docs/neu.md" $'Nachweisverzeichnis erzeugt, aber unvollst\xc3\xa4ndig: mindestens ein Artefakt fehlt oder ist nicht committet.'
+  erwarte KN-4 docs/x.md; zaehlung 8 8 9 9 1; kn9 offen 2
 }
 f_N034() { tabelle_text 7 "${GRUND_PFADE[@]}" > "$FALL/tab.md"; erzeuger_attrappe 1 "$FALL/tab.md"; lc erzeuger-ohne-meldung; }
 f_N035() { tabelle_text 7 "${GRUND_PFADE[@]}" > "$FALL/tab.md"; erzeuger_attrappe 127 "$FALL/tab.md"; lc erzeuger-rueckgabewert; lc_mit "127"; }
@@ -776,6 +853,9 @@ f_N038() { erzeuger_attrappe 0 -; lc tabelle; lc_mit "kein Ziel"; }
 f_N039() { tabelle_text 7 "${GRUND_PFADE[@]}" > "$FALL/tab.md"; erzeuger_attrappe 0 "$FALL/tab.md" "Warnung: unbekannte Meldung"; lc erzeuger-meldung; lc_mit "Warnung: unbekannte Meldung"; }
 f_N040() { tabelle_text 7 "${GRUND_PFADE[@]}" > "$FALL/tab.md"; erzeuger_attrappe 0 "$FALL/tab.md"; zaehlung 7 7 7 8 0; kn9 offen 1; }
 f_N041() { git_ersatz log; zaehlung 7 7 7 8 7; kn9 gleich 7 7; lc nicht-committet; lc_mit "NICHT COMMITTET fuer 7 Pfad(e)"; }
+f_N042() { git_ersatz log; datei docs/lose.md 'x'; erwarte KN-1 docs/lose.md; zaehlung 7 7 7 9 7; kn9 offen 1; lc nicht-committet; lc_mit "NICHT COMMITTET fuer 7 Pfad(e)"; }
+f_N043() { git_ersatz README.md; datei docs/lose.md 'x'; erwarte KN-1 docs/lose.md; zaehlung 7 7 7 9 1; kn9 offen 1; lc nicht-committet; lc_mit "NICHT COMMITTET fuer 1 Pfad(e)"; }
+f_N044() { git_ersatz docs/sub; datei docs/lose.md 'x'; erwarte KN-1 docs/lose.md; zaehlung 7 7 7 9 1; kn9 offen 1; lc nicht-committet; lc_mit "NICHT COMMITTET fuer 1 Pfad(e)"; }
 # --- KN-5 ---
 f_N050() { liste .gitignore README.md docs/a.md docs/b.md docs/sub backend/src/paket; erwarte KN-1 scripts/nachweise-erzeugen.sh; }
 f_N052() { local t; t=$(tabelle_text 1 README.md); t="${t//\`/}"; printf '%s\n' "$t" > "$FALL/tab.md"; erzeuger_attrappe 0 "$FALL/tab.md"; lc tabelle; lc_mit "Tabellenzeile 1"; }
@@ -783,6 +863,7 @@ f_N053() { printf '# Nachweisverzeichnis\n\nText ohne Tabelle\n' > "$FALL/tab.md
 f_N054() { { tabelle_text 7 "${GRUND_PFADE[@]}"; printf '| Artefakt X | `docs/fremd.md` | [`abc`](x) | 1999-01-01 |  |\n'; } > "$FALL/tab.md"; erzeuger_attrappe 0 "$FALL/tab.md"; zaehlung 7 7 7 8 0; kn9 offen 1; }
 f_N055() { tabelle_text 7 "${GRUND_PFADE[@]}" | sed 's/^| \*\*Artefakte\*\* |/| **Anzahl Artefakte** |/' > "$FALL/tab.md" || herstellung_fehler "N-055"; erzeuger_attrappe 0 "$FALL/tab.md"; lc tabelle; lc_mit "keine lesbare Zeile"; }
 f_N056() { tabelle_text 9 "${GRUND_PFADE[@]}" > "$FALL/tab.md"; erzeuger_attrappe 0 "$FALL/tab.md"; lc tabelle; lc_mit "Zahl der Artefakte im Kopf der frischen Liste (9)"; }
+f_N057() { tabelle_text 7 "${GRUND_PFADE[@]}" | sed 's/^|---|---|---|---|---|$/|---|---|---|---|/' > "$FALL/tab.md" || herstellung_fehler "N-057"; erzeuger_attrappe 0 "$FALL/tab.md"; lc tabelle; lc_mit "Trennzeile"; }
 # --- KN-6 ---
 f_N060() { ARGS=(x); lc aufruf; }
 f_N061() { ohne_werkzeug bash; }
@@ -800,8 +881,12 @@ f_N072() { rm -f "$BAUM/scripts/nachweise-erzeugen.sh"; lc erzeuger; lc_mit "feh
 f_N073() { rm -f "$BAUM/scripts/nachweise-erzeugen.sh"; ln -s "$ERZEUGER_ECHT" "$BAUM/scripts/nachweise-erzeugen.sh" || herstellung_fehler "Verknuepfung"; lc erzeuger-verknuepfung; }
 f_N074() { rm -f "$BAUM/scripts/nachweise-erzeugen.sh"; mkdir "$BAUM/scripts/nachweise-erzeugen.sh" || herstellung_fehler "Verzeichnis"; lc erzeuger; lc_mit "keine regulaere Datei"; }
 f_N075() { als_root_nicht; chmod 000 "$BAUM/scripts/nachweise-erzeugen.sh" || herstellung_fehler "chmod"; lc erzeuger; lc_mit "nicht lesbar"; }
-f_N076() { mkdir "$BAUM/tmp" || herstellung_fehler "tmp"; env_zusatz "TMPDIR=$BAUM/tmp"; lc ablage; lc_mit "liegt im Arbeitsbaum"; }
-f_N077() { env_zusatz "TMPDIR=$FALL/gibtsnicht"; lc ablage; lc_mit "mktemp -d schlug fehl"; }
+f_N076() { mkdir "$BAUM/tmp" || herstellung_fehler "tmp"; mktemp_ersatz protokoll; env_zusatz "TMPDIR=$BAUM/tmp"; lc ablage; lc_mit "liegt im Arbeitsbaum"; lc_mit "mktemp wurde nicht aufgerufen"; nach_lauf nach_kein_mktemp; }
+f_N077() { mktemp_ersatz fehler; lc ablage; lc_mit "mktemp -d schlug fehl"; }
+f_N089() { mkdir "$BAUM/tmp" || herstellung_fehler "tmp"; mktemp_ersatz protokoll; env_zusatz "TMPDIR=tmp"; RESTE_DIR="$BAUM/tmp"; lc ablage; lc_mit "ist nicht absolut"; lc_mit "mktemp wurde nicht aufgerufen"; nach_lauf nach_kein_mktemp_reste; }
+f_N099() { mkdir "$BAUM/-" || herstellung_fehler "Verzeichnis -"; mktemp_ersatz protokoll; env_zusatz "TMPDIR=-"; env_zusatz "OLDPWD=$BAUM"; RESTE_DIR="$BAUM/-"; lc ablage; lc_mit "ist nicht absolut"; lc_mit "mktemp wurde nicht aufgerufen"; nach_lauf nach_kein_mktemp_reste; }
+f_N094() { mktemp_ersatz protokoll; env_zusatz "TMPDIR=$FALL/gibtsnicht"; lc ablage; lc_mit "ist nicht erreichbar; mktemp wurde nicht aufgerufen"; nach_lauf nach_kein_mktemp; }
+f_N095() { mktemp_ersatz im-baum; lc ablage; lc_mit "die Ablage liegt im Arbeitsbaum"; }
 f_N078() { git_ersatz ls-files; lc git-liste; }
 f_N079() { grep_ersatz; lc liste; lc_mit "999 Eintraege"; }
 f_N080() { sort_ersatz fehler; datei docs/p.md 'x'; datei docs/q.md 'x'; erwarte KN-1 docs/p.md; erwarte KN-1 docs/q.md; lc werkzeug:sort; lc_mit "endete mit einem Fehler"; }
@@ -809,6 +894,7 @@ f_N081() { sort_ersatz erste; datei docs/p.md 'x'; datei docs/q.md 'x'; erwarte 
 f_N082() { git_ersatz status; datei docs/p.md 'x'; erwarte KN-1 docs/p.md; zaehlung 7 7 7 9 0; ausgabe_mit "KN-9: nicht beurteilt -- git status scheitert (Lage C)"; lc git-status; lc_mit "Rueckgabewert 128"; }
 f_N083() { git_ersatz ls-tree; datei docs/p.md 'x'; sauber; erwarte KN-1 docs/p.md; zaehlung 7 7 7 9 0; ausgabe_mit "KN-9: nicht beurteilt -- git ls-tree scheitert (Lage C)"; lc git-kopf; lc_mit "Rueckgabewert 128"; }
 f_N084() { git_ersatz cat-file; datei docs/p.md 'x'; sauber; erwarte KN-1 docs/p.md; zaehlung 7 7 7 9 0; ausgabe_mit "KN-9: nicht beurteilt -- git cat-file scheitert (Lage C)"; lc git-kopf; lc_mit "Rueckgabewert 128"; }
+f_N097() { git_ersatz -r; datei docs/p.md 'x'; erwarte KN-1 docs/p.md; zaehlung 7 7 7 9 0; kn9 offen 1; lc git-kopf; lc_mit "git ls-tree -r HEAD endet mit Rueckgabewert 128"; }
 f_N085() {
   fremdes_repo
   env_zusatz "GIT_DIR=$FALL/fremd/.git"; env_zusatz "GIT_WORK_TREE=$FALL/fremd"; env_zusatz "GIT_INDEX_FILE=$FALL/fremd/.git/index"
@@ -825,6 +911,20 @@ f_N093() {
 }
 # --- KN-7 ---
 f_N090() { datei docs/lose.md 'x'; }
+f_N096() {
+  mkdir "$FALL/ablage" || herstellung_fehler "ablage"
+  env_zusatz "TMPDIR=$FALL/ablage"
+  VOR_N096=$(baum_ohne_skript) || herstellung_fehler "Zustand des Baums vorher"
+  grundzaehlung; nach_lauf nach_N096
+}
+nach_N096() {
+  local nach f n=0
+  nach=$(baum_ohne_skript) || herstellung_fehler "Zustand des Baums nachher"
+  if [ "$VOR_N096" = "$nach" ]; then IST="$IST; Baum (mit docs/NACHWEISE.md und Git-Verzeichnis) vorher gleich nachher"; else ERG=GEFALLEN; IST="$IST; Baum nach dem Lauf veraendert"; DETAIL+=("der Baum, docs/NACHWEISE.md oder das Git-Verzeichnis hat sich im Lauf geaendert"); fi
+  for f in "$FALL/ablage"/* "$FALL/ablage"/.[!.]* "$FALL/ablage"/..?*; do if [ -e "$f" ] || [ -L "$f" ]; then n=$((n + 1)); fi; done
+  IST="$IST; Ablage nach dem Lauf: $n Eintraege"
+  if [ "$n" -ne 0 ]; then ERG=GEFALLEN; DETAIL+=("die Ablage ist nach dem Lauf nicht entfernt"); fi
+}
 f_N091() {
   local treffer probe
   STAT_SOLL="ausserhalb von Kommentarzeilen steht kein Here-String (Bash legt dafuer ab 64 KiB, vor Version 5.1 immer, eine Wegwerfdatei an)"
@@ -860,6 +960,24 @@ f_N113() { committet_liste 7 "${GRUND_PFADE[@]}" docs/sub/c.md; sauber; datei RE
 f_N114() { gitg -C "$BAUM" rm -q docs/NACHWEISE.md || herstellung_fehler "git rm"; sauber; erwarte KN-9 docs/NACHWEISE.md; }
 f_N115() { printf 'Kein Verzeichnis.\n' > "$BAUM/docs/NACHWEISE.md"; sauber; erwarte KN-9 docs/NACHWEISE.md; }
 f_N116() { tabelle_text 7 "${GRUND_PFADE[@]}" | sed '/^| \*\*Artefakte\*\* |/d' > "$BAUM/docs/NACHWEISE.md" || herstellung_fehler "N-116"; sauber; erwarte KN-9 docs/NACHWEISE.md; ausgabe_mit "KN-9: Fund -- die committete docs/NACHWEISE.md hat keine lesbare Tabelle der Artefakte oder keine lesbare Zahl der Artefakte"; }
+f_N087() {
+  local blob neu
+  blob=$(gitg -C "$BAUM" rev-parse HEAD:docs/NACHWEISE.md) || herstellung_fehler "Blob der committeten Liste"
+  neu=$(gitg -C "$BAUM" cat-file blob "$blob" | grep -vF '`README.md`' | gitg -C "$BAUM" hash-object -w --stdin) || herstellung_fehler "Ersatzblob"
+  gitg -C "$BAUM" replace "$blob" "$neu" || herstellung_fehler "git replace"
+  if gitg -C "$BAUM" cat-file blob HEAD:docs/NACHWEISE.md | grep -qF '`README.md`'; then herstellung_fehler "das Ersatzobjekt aendert den Inhalt von HEAD:docs/NACHWEISE.md fuer git nicht"; fi
+  grundzaehlung
+}
+f_N098() {
+  local leer neu kopf
+  leer=$(gitg -C "$BAUM" hash-object -t tree /dev/null) || herstellung_fehler "leerer Baum"
+  neu=$(gitg -C "$BAUM" commit-tree "$leer" -m "Ersatz") || herstellung_fehler "Ersatz-Commit"
+  kopf=$(gitg -C "$BAUM" rev-parse HEAD) || herstellung_fehler "HEAD"
+  gitg -C "$BAUM" replace "$kopf" "$neu" || herstellung_fehler "git replace"
+  if [ -n "$(cd "$BAUM" && gitg log -1 --format=%H -- README.md)" ]; then herstellung_fehler "das Ersatzobjekt macht den git log fuer README.md nicht leer"; fi
+  grundzaehlung
+}
+f_N117() { tabelle_text 7 "${GRUND_PFADE[@]}" | sed 's/^|---|---|---|---|---|$/|---|---|---|---|/' > "$BAUM/docs/NACHWEISE.md" || herstellung_fehler "N-117"; sauber; erwarte KN-9 docs/NACHWEISE.md; }
 # --- GN ---
 f_N120() { datei 'docs/a|b.md' 'x'; erwarte KN-1 'docs/a|b.md'; }
 f_N121() { datei 'docs/x`y.md' 'x'; liste "${GRUND_PFADE[@]}" '@  "Artefakt|docs/x\`y.md|Beschreibung"'; zaehlung 8 8 8 9 1; kn9 offen 2; }
@@ -1022,7 +1140,7 @@ fallliste_lesen() {
 # =============================================================================
 deckung_pruefen() {
   DECK_ABW=0
-  local k cl grp n f cls fehl anz num
+  local k cl grp n f cls fehl anz
   local -A IM_KOPF=() KL_ANZ=() KL_ERK=() KL_KEIN=()
   while IFS= read -r k; do
     [ -n "$k" ] && IM_KOPF[$k]=1
@@ -1052,12 +1170,9 @@ deckung_pruefen() {
   while IFS= read -r k; do
     [ -n "$k" ] || continue
     if [ "${KL_ANZ[$k]:-0}" -eq 0 ]; then fehl="$fehl $k"; DECK_ABW=$((DECK_ABW + 1)); fi
-    if [ "${k:0:2}" = "KN" ]; then
-      num="${k:3:1}"
-      if { [ "$num" -le 6 ] || [ "$num" -eq 9 ]; } && [ "${KL_ANZ[$k]:-0}" -gt 0 ]; then
-        if [ "${KL_ERK[$k]:-0}" -eq 0 ]; then echo "$PM: Deckung ABWEICHUNG: $k ohne Fall, der den Mangel erkennt (Soll fund, lage-c oder lage-c+funde)"; DECK_ABW=$((DECK_ABW + 1)); fi
-        if [ "${KL_KEIN[$k]:-0}" -eq 0 ]; then echo "$PM: Deckung ABWEICHUNG: $k ohne Fall mit Soll kein Fund"; DECK_ABW=$((DECK_ABW + 1)); fi
-      fi
+    if [ "${k:0:2}" = "KN" ] && [ "${KL_ANZ[$k]:-0}" -gt 0 ]; then
+      if [ "${KL_ERK[$k]:-0}" -eq 0 ]; then echo "$PM: Deckung ABWEICHUNG: $k ohne Fall, der den Mangel erkennt (Soll fund, lage-c oder lage-c+funde)"; DECK_ABW=$((DECK_ABW + 1)); fi
+      if [ "${KL_KEIN[$k]:-0}" -eq 0 ]; then echo "$PM: Deckung ABWEICHUNG: $k ohne Fall mit Soll kein-fund oder kein-fund+ausgabe"; DECK_ABW=$((DECK_ABW + 1)); fi
     fi
   done < <(printf '%s\n' "${!IM_KOPF[@]}" | sort)
   if [ -n "$fehl" ]; then echo "$PM: Deckung ABWEICHUNG: Kennungen im Kopfkommentar ohne Fall:$fehl"; fi
@@ -1202,7 +1317,7 @@ hauptablauf() {
   zeit0=$(date +%s)
   SCHNAPP_VORHER=$(schnappschuss "$ARBEITSBAUM") || lage_c_pm "Zustand des Arbeitsbaums nicht erhebbar."
   fallliste_lesen
-  echo "$PM: Kopf -- Arbeitsbaum $ARBEITSBAUM, Commit $ARB_COMMIT, Skript $PRUEFER sha256 $PRUEFER_SHA, Erzeuger sha256 $ERZ_SHA, Mutationsdatei $MUT_SHA, Anforderung R3-Q-001, Einheit G3.4"
+  echo "$PM: Kopf -- Arbeitsbaum $ARBEITSBAUM, Commit $ARB_COMMIT, Skript $PRUEFER sha256 $PRUEFER_SHA, Erzeuger sha256 $ERZ_SHA, Mutationsdatei $MUT_SHA, Anforderung R3-Q-001, Einheit G3.4 und N2.3"
   grundbaum_bauen || lage_c_pm "Grundbaum nicht herstellbar (Defekt des Pruefmittels oder der Umgebung)."
   echo "$PM: Modus $MODUS; Grundbau in $GRUND"
   if [ "$MODUS" = mutationen ]; then
