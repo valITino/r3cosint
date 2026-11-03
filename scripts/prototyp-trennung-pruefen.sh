@@ -6,7 +6,8 @@
 # Anforderung R3-Q-001 (das DoD-Gate stuetzt sich auf die Kette). Grundlage: Projektauftrag 5.6 ("ohne Importe in beide
 # Richtungen"); ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (Festlegung fuer G3), Zeilen zu D10, und Abschnitt 6 (Zeile D10,
 # Objekttabelle: Gegenstand ist "prototype/ vorhanden"); docs/12_Freigabe_Grundgeruest.md, Abschnitt 4, G3, Festlegung 2.
-# Muster: scripts/belege-pruefen.sh (D20) und scripts/abnahme-abgleich.sh (D7). Einheit G3.3.
+# Muster: scripts/belege-pruefen.sh (D20) und scripts/abnahme-abgleich.sh (D7). Einheit G3.3; nachgefuehrt in Einheit N2.2 (Festlegung:
+# ADR 0002, Abschnitt 5, Nachtrag vom 2026-11-03, und Fortschreibung vom 2026-11-03).
 #
 # ZWECK
 #   Das Gate .claude/hooks/block-prototype-import.sh (PreToolUse, R3-Q-010) sieht nur, was gerade geschrieben wird. D10 prueft den
@@ -23,18 +24,27 @@
 #   2  Umfeld: die git-Variablen des Aufrufers werden geloescht (GIT_DIR, GIT_WORK_TREE, GIT_INDEX_FILE und weitere), ebenso
 #      CDPATH vor dem ersten cd; GIT_NO_REPLACE_OBJECTS=1, LC_ALL=C. Jeder git-Aufruf und jeder Aufruf des Gates laeuft unter
 #      "env -i" mit festen Variablen (PATH des Aufrufers, leeres HOME, bei git GIT_CONFIG_NOSYSTEM=1 und GIT_CONFIG_GLOBAL=/dev/null).
-#   3  Ablage: mktemp -d ausserhalb des Arbeitsbaums (TMPDIR, Home und Ereignisse des Gates); ein trap raeumt in jedem Ausgang ab.
+#   3  Ablage: zuerst wird das Zielverzeichnis von mktemp (TMPDIR, leer oder ungesetzt /tmp) geprueft: ein relativer Wert (erstes Zeichen
+#      nicht "/") ist Lage C ablage vor jedem cd; sonst wird es mit cd und pwd -P aufgeloest; ist es nicht
+#      erreichbar oder liegt es im Arbeitsbaum, ist das Lage C ablage, ohne dass mktemp aufgerufen wird. Dann mktemp -d (TMPDIR, Home
+#      und Ereignisse des Gates) und die Pruefung der Ablage nach dem Anlegen; ein trap raeumt in jedem Ausgang ab.
 #   4  Git-Arbeitsbaum: die Wurzel des Skripts ist die oberste Ebene eines Git-Arbeitsbaums.
 #   5  Gate: .claude/hooks/block-prototype-import.sh ist eine regulaere, lesbare Datei; auf dem Weg liegt keine Verknuepfung.
 #   6  Kontrollprobe (KD-4) mit vier Ereignissen gegen das Gate, das urteilen wird: je Richtung eines, das sperren muss, und eines,
 #      das durchlaufen muss. Weicht eines ab, ist das Lage C ("Kontrollprobe: n von 4"); kein Urteil ueber den Bestand folgt.
-#   7  Auswahl: git ls-files -z --cached --others --exclude-standard -- prototype backend frontend deploy (geschlossene Liste der
-#      vier Wurzeln) in eine Datei der Ablage, Rueckgabewert geprueft.
-#   8  Je Eintrag: Verknuepfung und Untermodul sind ein Fund (KD-7); eine Nicht-Datei (fehlt auf der Platte, Fifo und Aehnliches)
-#      wird nie geoeffnet, nur genannt; eine leere und eine binaere Datei (NUL-Byte, GD-4) gehen nicht an das Gate und werden gezaehlt
-#      und genannt; jede Textdatei geht mit einem Ereignis {"tool_name":"Write","tool_input":{"file_path":<absoluter Pfad>,
-#      "content":<Inhalt>}} (jq --rawfile) an das Gate: unter "env -i" mit PATH, leerem HOME, TMPDIR in der Ablage,
-#      CLAUDE_PROJECT_DIR (die Wurzel) und LC_ALL=C, unter timeout -k 1 20 je Aufruf, im Verzeichnis der Wurzel.
+#   7  Auswahl: git ls-files -z --cached --others --exclude-standard --deduplicate -- prototype backend frontend deploy (geschlossene
+#      Liste der vier Wurzeln) in eine Datei der Ablage, Rueckgabewert geprueft. --deduplicate fasst die Stufen eines Pfads im Index
+#      (Merge-Konflikt) zu einem Eintrag zusammen; kennt git die Option nicht (vor 2.31), endet git ls-files ungleich 0: Lage C git-liste.
+#   8  Je Eintrag, in dieser Reihenfolge: ein Pfad mit einem Steuerzeichen (Byte 1 bis 31 oder 127) ist ein Fund (KD-7, Art
+#      "Steuerzeichen"), die Datei geht nicht an das Gate; Verknuepfung und Untermodul sind ein Fund (KD-7); eine Nicht-Datei (fehlt auf der
+#      Platte, Fifo und Aehnliches) wird nie geoeffnet, nur genannt; eine leere Datei geht nicht an das Gate und wird gezaehlt und genannt;
+#      jede andere Datei wird ganz auf ein NUL-Byte gelesen (tr und wc, jeder Rueckgabewert geprueft, ein Fehler ist Lage C, Kennung datei):
+#      (a) Endung der geschlossenen Liste .png, .jpg, .jpeg, .gif, .ico, .webp, .woff, .woff2 (Kleinschreibung, mit Punkt) und NUL-Byte:
+#      binaer, nicht an das Gate, gezaehlt und genannt (GD-4); (b) jede andere Datei mit NUL-Byte (auch UTF-16): Fund KD-7, Art
+#      "NUL-Byte", nicht an das Gate; (c) alles andere ist Text, auch eine Datei der Liste ohne NUL-Byte. Jede Textdatei geht mit einem
+#      Ereignis {"tool_name":"Write","tool_input":{"file_path":<absoluter Pfad>,"content":<Inhalt>}} (jq --rawfile) an das Gate: unter
+#      "env -i" mit PATH, leerem HOME, TMPDIR in der Ablage, CLAUDE_PROJECT_DIR (die Wurzel) und LC_ALL=C, unter timeout -k 1 20 je
+#      Aufruf, im Verzeichnis der Wurzel.
 #   9  Antwort des Gates je Textdatei: Rueckgabewert 0 ohne Ausgabe ist kein Fund; Rueckgabewert 2 mit einer Zeile der Fehlerausgabe,
 #      die mit "BLOCKIERT (Projektauftrag 5.6): Richtung 1" oder "...: Richtung 2" beginnt, ist ein Fund; JEDE andere Antwort (auch
 #      ein Rueckgabewert 2 ohne diese Marke, 1, 124, 137, eine leere Antwort, ein Rueckgabewert 0 mit Ausgabe) ist Lage C mit
@@ -48,10 +58,10 @@
 #   KD-2  Richtung 2: eine Datei unter prototype/ loest die Sperre "Richtung 2" aus. Fund wie KD-1, Art "Richtung 2".
 #   KD-3  Auswahl: geprueft wird, was git ls-files unter den vier Wurzeln nennt, auch unversionierte, nicht ignorierte Dateien;
 #         ignorierte Dateien, Dateien ausserhalb der vier Wurzeln und Prosa nach den Ausnahmen des Gates sind nicht Gegenstand
-#         (GD-6, GD-5, GD-2). Namen mit Leerzeichen, Zeilenumbruch und Umlauten werden richtig gelesen (NUL-getrennt, Steuerzeichen
-#         in der Ausgabe als Folge geschrieben); eine globale Ausschlussliste des Aufrufers aendert die Auswahl nicht; ein Lesefehler
-#         an der Liste wirkt nicht wie ihr Ende (die gelesenen Eintraege werden gegen die von grep -z gezaehlten gehalten, sonst Lage C,
-#         Kennung liste).
+#         (GD-6, GD-5, GD-2). Namen mit Leerzeichen und Umlauten werden richtig gelesen (NUL-getrennt); ein Pfad mit mehreren Stufen im
+#         Index (Merge-Konflikt) steht einmal in der Auswahl, wird einmal gezaehlt und hoechstens einmal gemeldet (--deduplicate); eine
+#         globale Ausschlussliste des Aufrufers aendert die Auswahl nicht; ein Lesefehler an der Liste wirkt nicht wie ihr Ende (die
+#         gelesenen Eintraege werden gegen die von grep -z gezaehlten gehalten, sonst Lage C, Kennung liste).
 #   KD-4  Kontrollprobe: ein Gate, das immer 0 liefert, das nur eine Richtung sperrt, das die Richtungen vertauscht, das etwas
 #         Unbeteiligtes sperrt oder bei einem Durchlauf Text ausgibt, besteht die Kontrollprobe nicht; Lage C, Kennung kontrollprobe.
 #   KD-5  Fund gegen Pruefmittel: jede Antwort des Gates ausser Sperre mit Marke und Rueckgabewert 0 ohne Ausgabe ist Lage C mit
@@ -59,17 +69,26 @@
 #         Ausgabe, Lage C geht vor (Rueckgabewert 3).
 #   KD-6  Umfeld: ein Werkzeug der geschlossenen Liste fehlt, ein Argument, kein Git-Arbeitsbaum um die Wurzel (auch: die Wurzel ist
 #         nicht die oberste Ebene), das Gate fehlt, ist nicht lesbar oder eine Verknuepfung, die Ablage ist nicht herstellbar oder
-#         liegt im Arbeitsbaum, git ls-files scheitert, eine Datei ist nicht lesbar, das Ereignis fuer das Gate ist nicht herstellbar
+#         liegt im Arbeitsbaum (auch: das Zielverzeichnis dafuer ist relativ, nicht erreichbar oder liegt im Arbeitsbaum), git ls-files
+#         scheitert, eine Datei ist nicht lesbar, das Ereignis fuer das Gate ist nicht herstellbar
 #         (jq endet ungleich 0; Kennung ereignis). Das Umfeld des Aufrufers (git-Variablen,
 #         CLAUDE_PROJECT_DIR, BASH_ENV, TMPDIR, globale git-Konfiguration, Arbeitsverzeichnis, CDPATH) aendert das Urteil des Gates
 #         und von git nicht ("env -i"; CDPATH loescht das Skript vor dem ersten cd, sonst lenkte es bei relativem Aufruf, wie make ihn
-#         macht, "cd scripts/.." um und schriebe den Zielpfad auf die Standardausgabe); die eigene Shell des Skripts liest BASH_ENV
-#         und exportierte Funktionen vor seiner ersten Zeile (GP-D6).
-#   KD-7  Nicht-Text: eine Verknuepfung oder ein Untermodul (auch ein verschachteltes Repository) unter einer Wurzel ist ein Fund
-#         (Art "Verknuepfung" beziehungsweise "Untermodul"); eine leere und eine binaere Datei gehen nicht an das Gate und werden
-#         gezaehlt und genannt; eine Nicht-Datei wird einzeln mit Pfad genannt und nie geoeffnet (ein Fifo wuerde den Lauf haengen).
+#         macht, "cd scripts/.." um: der Zielpfad gelangte in die Befehlsersetzung der Wurzel, Folge Lage C git-arbeitsbaum, nicht auf
+#         die Standardausgabe des Skripts); die eigene Shell des Skripts liest BASH_ENV, exportierte Funktionen, SHELLOPTS und BASHOPTS
+#         vor seiner ersten Zeile (GP-D6).
+#   KD-7  Nicht-Text: ein Pfad mit einem Steuerzeichen (Byte 1 bis 31 oder 127, Zeichenklasse cntrl unter LC_ALL=C) ist ein Fund (Art
+#         "Steuerzeichen", je Pfad eine Fundzeile, vor jeder anderen Einordnung; das Gate kuerzt abschliessende Zeilenumbrueche des
+#         Pfads, die Datei geht deshalb nicht an das Gate); eine Verknuepfung oder ein Untermodul (auch ein verschachteltes Repository)
+#         unter einer Wurzel ist ein Fund (Art "Verknuepfung" beziehungsweise "Untermodul"); eine Datei mit NUL-Byte an beliebiger
+#         Stelle, deren Name nicht auf eine Endung der Liste in Schritt 8 endet, ist ein Fund (Art "NUL-Byte", auch UTF-16); eine leere
+#         und eine binaere Datei (Endung der Liste und NUL-Byte) gehen nicht an das Gate und werden gezaehlt und genannt; eine Datei mit
+#         Endung der Liste ohne NUL-Byte ist Text und geht an das Gate; eine Nicht-Datei wird einzeln mit Pfad genannt und nie
+#         geoeffnet (ein Fifo wuerde den Lauf haengen).
 #   KD-8  Schreibfrei: das Skript schreibt nichts in den Arbeitsbaum (Kettengrundsatz, ADR 0002, Abschnitt 6); alle Dateien liegen
-#         in der Ablage, und die Ablage ist nach dem Lauf entfernt.
+#         in der Ablage, und die Ablage ist nach dem Lauf entfernt. Auch fuer die Dauer des Laufs: liegt das Zielverzeichnis von mktemp
+#         (TMPDIR, sonst /tmp) im Arbeitsbaum, relativ oder nicht erreichbar, ist das Lage C ablage, und mktemp wird nicht aufgerufen;
+#         die Ablage wird auch nach dem Anlegen geprueft, und der trap raeumt den gelieferten Pfad ab, auch wenn seine Aufloesung scheitert.
 #   KD-9  Rueckgabewerte, Ausgabe, Vorrang: 0 kein Fund, 2 mindestens ein Fund, 3 Lage C; Lage C geht einem Fund vor; die Ausgabe
 #         traegt keine Zeit und keine Zufallswerte; "Befunde: n" zaehlt die Fundzeilen; das Gesamtbudget ist wirksam.
 #
@@ -93,13 +112,9 @@
 #         Gate nicht. Das ist der Fall hinter der Objektbedingung aus ADR 0002, 6.2.2. Die Frage kommt in der Festlegung fuer G2
 #         vor dem Bau von deploy/ zur Wiedervorlage: Fortschreibung von ADR 0004 am Gate oder eigene Regel in D10.
 #   GD-2  Prosa: Dateien, die das Gate selbst ausnimmt (docs/, .claude/, *.md, *.txt, *.adoc, *.rst), sind unter den Wurzeln kein Fund.
-#         Das gilt auch fuer einen Namen, der auf eine solche Endung und danach auf einen oder mehrere Zeilenumbrueche endet (das Gate
-#         kuerzt abschliessende Zeilenumbrueche des Pfads).
 #   GD-3  Verknuepfungen ausserhalb der vier Wurzeln, ueber die ein Importpfad fuehrt, sind nicht Gegenstand.
-#   GD-4  Binaere und leere Dateien gehen nicht an das Gate; ein Muster darin bleibt unbemerkt (UTF-16 gilt als binaer). Binaer heisst:
-#         grep -I sieht ein NUL-Byte im ersten Lesepuffer (gemessen 96 KiB) oder vor dem Ende der ersten Zeile; ein NUL-Byte erst danach
-#         geht als Text an das Gate und endet dort in Fund oder Lage C, solange bash die Befehlsersetzung mit NUL-Byte meldet (gemessen
-#         mit bash 5.2; die Meldung stammt von bash, nicht vom Gate).
+#   GD-4  Eine Datei mit Endung der Liste (Schritt 8) und NUL-Byte geht nicht an das Gate; ein Muster darin bleibt unbemerkt.
+#         Leere Dateien wie bisher. Die Liste ist geschlossen; eine weitere Endung ist eine Fortschreibung dieses Kopfkommentars mit Fall.
 #   GD-5  Pfade ausserhalb der vier Wurzeln (scripts/, .github/, Makefile, Wurzeldateien) sind nicht Gegenstand.
 #   GD-6  Ignorierte Dateien (.gitignore, .git/info/exclude, core.excludesFile in .git/config) sind nicht Gegenstand; die globale
 #         und die Systemkonfiguration von git gelten nicht.
@@ -116,14 +131,15 @@
 #
 # RUECKGABEWERTE
 #   0  kein Fund (die Kontrollprobe hat 4 von 4 bestanden, jede Textdatei hat das Gate ohne Sperre und ohne Ausgabe passiert)
-#   2  mindestens ein Fund (Richtung 1, Richtung 2, Verknuepfung, Untermodul), keine Lage C
+#   2  mindestens ein Fund (Richtung 1, Richtung 2, Verknuepfung, Untermodul, Steuerzeichen, NUL-Byte), keine Lage C
 #   3  Lage C (siehe oben); ein Fund daneben bleibt in der Ausgabe stehen; das Makefile stellt 3 als Lage C mit
 #      FEHLT=prototyp-trennung-pruefmittel weiter, jeden anderen Wert ungleich 0 als A_FAIL
 #
 # AUSGABE (Standardausgabe, ohne Zeiten)
 #   "Kontrollprobe: n von 4"; "Geprueft: n Textdateien (prototype a, backend b, frontend c, deploy d); ungeprueft: x leer, y binaer,
 #   z Nicht-Dateien"; je leere, binaere und Nicht-Datei eine Zeile "Leer:", "Binaer:" beziehungsweise "Nicht-Datei:" mit Pfad;
-#   "=== Funde" mit je einer Zeile "Pfad TAB Art TAB Text" (Art: Richtung 1, Richtung 2, Verknuepfung, Untermodul; Text: erste
+#   "=== Funde" mit je einer Zeile "Pfad TAB Art TAB Text" (Art: Richtung 1, Richtung 2, Verknuepfung, Untermodul, Steuerzeichen,
+#   NUL-Byte; Text: erste
 #   Meldezeile des Gates); "---"; ein Hinweis auf die Grenzen; "Befunde: n". Fehlerausgabe: Lage C ("LAGE C -- <Kennung>: ...").
 #   Bei einer Lage C vor dem Urteil (Schritte 1 bis 7) fehlen "Geprueft:", "=== Funde" und "Befunde:".
 #
@@ -133,8 +149,9 @@
 #   Durchlassen. Jeder Teilschritt mit Rueckgabewert wird geprueft; ein Fehler ist nie "kein Fund".
 #
 # PFLEGE
-#   Die Liste der vier Wurzeln ist geschlossen (Dreiersatz-Muster von D9): eine weitere Bauwurzel verlangt eine Fortschreibung dieses
-#   Kopfkommentars, Faelle und eine Mutation im Pruefmittel. Aendert sich der Meldetext des Gates, ist das eine Fortschreibung
+#   Die Liste der vier Wurzeln ist geschlossen (Dreiersatz-Muster von D9), ebenso die Liste der Endungen in Schritt 8: eine weitere
+#   Bauwurzel oder Endung verlangt eine Fortschreibung dieses Kopfkommentars, Faelle und eine Mutation im Pruefmittel. Aendert sich
+#   der Meldetext des Gates, ist das eine Fortschreibung
 #   dieser Schnittstelle (siehe oben). Eine neue Klasse oder Grenze in diesem Kommentar verlangt Faelle (und fuer eine Klasse KD
 #   eine Mutation) im Pruefmittel scripts/prototyp-trennung-pruefen-selbsttest.sh.
 
@@ -187,7 +204,7 @@ esac
 unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_NAMESPACE GIT_CEILING_DIRECTORIES GIT_SHALLOW_FILE GIT_DISCOVERY_ACROSS_FILESYSTEM GIT_GLOB_PATHSPECS GIT_NOGLOB_PATHSPECS GIT_LITERAL_PATHSPECS GIT_ICASE_PATHSPECS 2>/dev/null || true
 unset "${!GIT_TRACE@}" 2>/dev/null || true
 export GIT_NO_REPLACE_OBJECTS=1
-# KD-6: ein CDPATH des Aufrufers lenkt "cd scripts/.." bei relativem Aufruf um und schreibt den Zielpfad auf die Standardausgabe
+# KD-6: ein CDPATH des Aufrufers lenkt "cd scripts/.." bei relativem Aufruf um; der Zielpfad gelangte in die Befehlsersetzung der Wurzel
 unset CDPATH
 
 # Die Wurzel ist das Verzeichnis ueber dem scripts/ dieses Skripts, nicht das Arbeitsverzeichnis des Aufrufers
@@ -196,13 +213,26 @@ case "$QUELLE" in */*) QUELLVERZ="${QUELLE%/*}" ;; *) QUELLVERZ="." ;; esac
 WURZEL="$(cd "$QUELLVERZ/.." 2>/dev/null && pwd -P)" || WURZEL=""
 [ -n "$WURZEL" ] || lage_c "git-arbeitsbaum" "das Verzeichnis ueber dem Skript ist nicht erreichbar ($QUELLVERZ/..)."
 
-# Schritt 3: Ablage ausserhalb des Arbeitsbaums (KD-8)
+# Schritt 3: Ablage ausserhalb des Arbeitsbaums (KD-8). Zuerst wird das Zielverzeichnis von mktemp (TMPDIR, leer oder ungesetzt /tmp)
+# aufgeloest und geprueft, bevor mktemp aufgerufen wird: im Arbeitsbaum entsteht nichts, auch nicht fuer die Dauer des Laufs.
+ZIEL="${TMPDIR:-/tmp}"
+# Ein relativer Wert haengt vom Arbeitsverzeichnis des Aufrufers ab (und "-" liest cd als Option): Lage C vor jedem cd, ohne mktemp
+case "$ZIEL" in
+  /*) ;;
+  *) lage_c "ablage" "TMPDIR ist relativ ('$ZIEL'); mktemp wurde nicht aufgerufen." "TMPDIR als absoluten Pfad ausserhalb des Arbeitsbaums waehlen" ;;
+esac
+ZIEL="$(cd "$ZIEL" 2>/dev/null && pwd -P)" || ZIEL=""
+[ -n "$ZIEL" ] || lage_c "ablage" "das Zielverzeichnis der Ablage (TMPDIR, sonst /tmp) ist nicht erreichbar; mktemp wurde nicht aufgerufen." "das temporaere Verzeichnis (TMPDIR) auf Bestand und Rechte pruefen"
+case "$ZIEL/" in
+  "$WURZEL"/*) lage_c "ablage" "das Zielverzeichnis der Ablage ($ZIEL) liegt im Arbeitsbaum ($WURZEL); mktemp wurde nicht aufgerufen, das Skript schreibt nichts in den Arbeitsbaum (Kettengrundsatz)." "TMPDIR ausserhalb des Arbeitsbaums waehlen" ;;
+esac
 ABLAGE="$(mktemp -d)" || ABLAGE=""
 if [ -z "$ABLAGE" ] || [ ! -d "$ABLAGE" ]; then
   ABLAGE=""
   lage_c "ablage" "mktemp -d schlug fehl; die Ablage fuer Ereignisse und Antworten des Gates ist nicht herstellbar." "das temporaere Verzeichnis (TMPDIR) auf Platz und Rechte pruefen"
 fi
-ABLAGE="$(cd "$ABLAGE" 2>/dev/null && pwd -P)" || lage_c "ablage" "die Ablage ist nicht erreichbar."
+# Der gelieferte Pfad bleibt in ABLAGE, bis die Aufloesung gelingt: scheitert sie, raeumt der trap den gelieferten Pfad ab
+if ABLAGE_AUFGELOEST="$(cd "$ABLAGE" 2>/dev/null && pwd -P)"; then ABLAGE="$ABLAGE_AUFGELOEST"; else lage_c "ablage" "die Ablage ist nicht erreichbar."; fi
 case "$ABLAGE/" in
   "$WURZEL"/*) lage_c "ablage" "die Ablage liegt im Arbeitsbaum ($WURZEL); das Skript schreibt nichts in den Arbeitsbaum (Kettengrundsatz)." "TMPDIR ausserhalb des Arbeitsbaums waehlen" ;;
 esac
@@ -315,7 +345,7 @@ if [ "$PROBE_OK" -ne 4 ]; then
 fi
 
 # Schritt 7: Auswahl (KD-3)
-git_neutral ls-files -z --cached --others --exclude-standard -- "${BAUWURZELN[@]}" > "$ABLAGE/liste" 2> "$ABLAGE/liste.err"
+git_neutral ls-files -z --cached --others --exclude-standard --deduplicate -- "${BAUWURZELN[@]}" > "$ABLAGE/liste" 2> "$ABLAGE/liste.err"
 LISTE_RC=$?
 if [ "$LISTE_RC" -ne 0 ]; then
   lage_c "git-liste" "git ls-files endet mit Rueckgabewert $LISTE_RC: $(kopfzeile "$ABLAGE/liste.err")"
@@ -352,6 +382,11 @@ zaehlen() { # zaehlen <pfad> : eine geprueft Textdatei, je Wurzel
 while IFS= read -r -d '' f; do
   N_GELESEN=$((N_GELESEN + 1))
   if [ "$SECONDS" -ge "$BUDGET_S" ]; then BUDGET_UEBERSCHRITTEN=1; break; fi
+  case "$f" in
+    *[[:cntrl:]]*)
+      fund "$f" "Steuerzeichen" "Pfad mit einem Steuerzeichen (Byte 1 bis 31 oder 127); die Datei geht nicht an das Gate, das abschliessende Zeilenumbrueche des Pfads kuerzt; am Gegenstand umbenennen."
+      continue ;;
+  esac
   if [ -L "$f" ]; then
     fund "$f" "Verknuepfung" "symbolische Verknuepfung unter einer Bauwurzel; das Gate loest sie nicht auf (GP-5), ein Importpfad ueber sie bliebe ungeprueft."
     continue
@@ -364,10 +399,23 @@ while IFS= read -r -d '' f; do
   if [ ! -f "$f" ]; then anz "$f"; NICHTDATEI+=("$ANZ (weder Datei noch Verknuepfung noch Verzeichnis)"); continue; fi
   if [ ! -r "$f" ]; then lagec_datei "$f" "datei" "nicht lesbar"; continue; fi
   if [ ! -s "$f" ]; then anz "$f"; LEER+=("$ANZ"); continue; fi
-  grep -Iq '' -- "$f" 2> "$ABLAGE/grep.err"
-  GREP_RC=$?
-  if [ "$GREP_RC" -eq 1 ]; then anz "$f"; BINAER+=("$ANZ"); continue; fi
-  if [ "$GREP_RC" -ne 0 ]; then lagec_datei "$f" "datei" "grep endet mit Rueckgabewert $GREP_RC: $(kopfzeile "$ABLAGE/grep.err")"; continue; fi
+  # GD-4 und KD-7: die ganze Datei wird auf ein NUL-Byte gelesen (tr zaehlt, wc zaehlt die Zeichen; beide Rueckgabewerte unter pipefail)
+  NUL_ZAHL="$(tr -cd '\000' 2> "$ABLAGE/tr.err" < "$f" | wc -c 2>> "$ABLAGE/tr.err")"
+  NUL_RC=$?
+  if [ "$NUL_RC" -ne 0 ]; then lagec_datei "$f" "datei" "tr oder wc endet mit Rueckgabewert $NUL_RC: $(kopfzeile "$ABLAGE/tr.err")"; continue; fi
+  case "$NUL_ZAHL" in
+    ""|*[!0-9]*) lagec_datei "$f" "datei" "die Zahl der NUL-Bytes ist nicht lesbar ('$NUL_ZAHL')"; continue ;;
+  esac
+  LISTENENDUNG=0
+  case "$f" in
+    *.png|*.jpg|*.jpeg|*.gif|*.ico|*.webp|*.woff|*.woff2) LISTENENDUNG=1 ;;
+  esac
+  if [ "$LISTENENDUNG" = 1 ] && [ "$NUL_ZAHL" -gt 0 ]; then
+    anz "$f"; BINAER+=("$ANZ"); continue
+  elif [ "$NUL_ZAHL" -gt 0 ]; then
+    fund "$f" "NUL-Byte" "Datei mit NUL-Byte ohne Endung der Liste der Binaerdateien (auch UTF-16); sie geht nicht an das Gate, ein Muster darin bliebe unbemerkt."
+    continue
+  fi
   if ! ereignis_bauen "$f" "$f" "$ABLAGE/ereignis.json"; then
     lagec_datei "$f" "ereignis" "das Ereignis ist nicht herstellbar (jq endet ungleich 0: $(kopfzeile "$ABLAGE/jq.err"))"
     continue
