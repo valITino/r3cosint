@@ -127,6 +127,10 @@
 #   geprueft, erkannt, nicht erkannt, wirkungslos; Mutationsdeckung (jede Klasse KS hat eine Mutation, deren Mindestsatz einen Fall
 #   dieser Klasse enthaelt; jede Familie eine eigene); Vergleich des Arbeitsbaums vor und nach.
 #
+# Fortschreibung N3.4 (2026-11-04, DT-N3-01): Die Gegenstandsdeckung bildet die Familien der Faelle aus den Erwartungen der KS-1-Faelle, unabhaengig
+#   vom Ergebnis des Falls; eine aus der Schleife entfernte Familie wird so als "im Fall, aber nicht in der Schleife" genannt. Das Urteil bleibt:
+#   eine fehlende oder zusaetzliche Familie ist eine Abweichung (Rueckgabewert 2).
+#
 # Obergrenze der Laufzeit (Vorgabe des Nachtrags, in der Arbeitsumgebung): Normalmodus 15 Minuten, Mutationsmodus 60 Minuten; die
 #   gemessenen Werte stehen im gebauten Stand der Einheit.
 #
@@ -785,23 +789,24 @@ familien_aus_makefile() { sed -nE 's/^[[:space:]]*for familie in ([a-z_ -]+); do
 ANZ_B=0; ANZ_G=0; ANZ_H=0; GEFALLEN=(); NICHT_HERSTELLBAR=()
 faelle_laufen() { # faelle_laufen : alle Faelle gegen MAKEFILE_QUELLE
   local id
-  ANZ_B=0; ANZ_G=0; ANZ_H=0; GEFALLEN=(); NICHT_HERSTELLBAR=(); FAM_GEDECKT=""
+  ANZ_B=0; ANZ_G=0; ANZ_H=0; GEFALLEN=(); NICHT_HERSTELLBAR=(); FAM_ERKLAERT=""
   for id in "${KENNUNGEN[@]}"; do
     fall_lauf "$id"
+    case "${K_KLASSEN[$id]}" in *KS-1*) [ "$FALL_ERG" = nh ] || FAM_ERKLAERT="$FAM_ERKLAERT $FAM_BELEGT" ;; esac
     case "$FALL_ERG" in
-      pass) ANZ_B=$((ANZ_B + 1)); case "${K_KLASSEN[$id]}" in *KS-1*) FAM_GEDECKT="$FAM_GEDECKT $FAM_BELEGT" ;; esac ;;
+      pass) ANZ_B=$((ANZ_B + 1)); ;;
       nh) ANZ_H=$((ANZ_H + 1)); NICHT_HERSTELLBAR+=("$id: ${MELDUNGEN[0]}") ;;
       fail) ANZ_G=$((ANZ_G + 1)); GEFALLEN+=("$id"); printf '%s: GEFALLEN\n' "$id"; printf '    %s\n' "${MELDUNGEN[@]}" ;;
     esac
   done
 }
-gegenstandsdeckung() { # Familien des Makefile gegen die Familien der bestandenen Faelle
-  local soll_fam ist_fam f
+gegenstandsdeckung() { # Familien des Makefile gegen die Familien der KS-1-Faelle (erklaert: jeder KS-1-Fall ausser "nicht herstellbar", auch gefallene; DT-N3-01, ST-N32-09)
+  local soll_fam erkl_fam f
   soll_fam=$(familien_aus_makefile | tr ' ' '\n' | sort -u)
-  ist_fam=$(printf '%s\n' $FAM_GEDECKT | sort -u)
+  erkl_fam=$(printf '%s\n' $FAM_ERKLAERT | sort -u)
   [ -n "$soll_fam" ] || { DECK_ABW+=("Familienliste im Rezept nicht lesbar"); return; }
-  for f in $soll_fam; do case " $(echo $ist_fam) " in *" $f "*) ;; *) DECK_ABW+=("Familie $f im Rezept ohne bestandenen Fall in KS-1") ;; esac; done
-  for f in $ist_fam; do case " $(echo $soll_fam) " in *" $f "*) ;; *) DECK_ABW+=("Familie $f im Fall, aber nicht in der Schleife des Rezepts") ;; esac; done
+  for f in $soll_fam; do case " $(echo $erkl_fam) " in *" $f "*) ;; *) DECK_ABW+=("Familie $f im Rezept ohne Fall in KS-1") ;; esac; done
+  for f in $erkl_fam; do case " $(echo $soll_fam) " in *" $f "*) ;; *) DECK_ABW+=("Familie $f im Fall, aber nicht in der Schleife des Rezepts") ;; esac; done
 }
 
 zeit0=$(date +%s)
