@@ -130,26 +130,8 @@ jobs:
           echo "$v"
           case "$v" in "uv 0.11.32"*) ;; *) echo "erwartet uv 0.11.32" >&2; exit 1 ;; esac
 
-      - name: gitleaks 8.21.2 ueber den Hook bereitstellen
-        run: |
-          set -euo pipefail
-          CLAUDE_PROJECT_DIR="$GITHUB_WORKSPACE" bash "$GITHUB_WORKSPACE/.claude/hooks/session-start-gitleaks.sh"
-          echo "Hook: Rueckgabewert 0"
-
-      - name: gitleaks 8.21.2 pruefen
-        run: |
-          set -euo pipefail
-          soll="50b742abd7daad8bbddb6301f3017efb680632d9a5b3b4d8f137b3aac250e359"
-          p="$(command -v gitleaks)" || { echo "gitleaks fehlt (Lage C)" >&2; exit 1; }
-          echo "gitleaks: $p"
-          v="$(gitleaks version)"
-          echo "Fassung: $v"
-          real="$(readlink -f "$p")"
-          ist="$(sha256sum "$real" | cut -d' ' -f1)"
-          echo "SHA-256 von $real: $ist"
-          case "$v" in *8.21.2*) ;; *) echo "Fassung ist nicht 8.21.2 (vorinstalliert oder anders bereitgestellt): rot mit Meldung" >&2; exit 1 ;; esac
-          [ "$ist" = "$soll" ] || { echo "Summe weicht von der Konstante aus N3.2 ab: rot mit Meldung" >&2; exit 1; }
-
+      # Gegenprobe (b2), Wegwerf-Zweig, nie zu mergen: die zwei Schritte zu gitleaks entfallen,
+      # D11 muss Lage C FEHLT=gitleaks neben D9 melden.
       - name: Archivstand melden
         run: |
           set -uo pipefail
