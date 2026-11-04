@@ -194,7 +194,7 @@ jobs:
           case "$v" in "uv 0.11.32"*) ;; *) echo "erwartet uv 0.11.32" >&2; exit 1 ;; esac
 
       # nur fuer die Messung G4.1, entfaellt in G4.2
-      - name: "MESSUNG G4.1 (3) Fassungen, die uv sieht"
+      - name: "MESSUNG G4.1 (3b) Fassungen, die uv sieht"
         run: |
           set -uo pipefail
           uv python list --only-installed 2>&1 || true
@@ -275,8 +275,41 @@ jobs:
           echo "::$TOKEN::"
           echo "::notice::MESSUNG G4.1 (9) nach Wiedereinschalten"
 
+      # nur fuer die Messung G4.1, entfaellt in G4.2
+      - name: "MESSUNG G4.1 (11) Stapelbau ohne bake"
+        run: |
+          set -uo pipefail
+          py="sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1"
+          TOKEN="$(curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/python:pull" | jq -r '.token // empty')" || TOKEN=""
+          echo "--- HEAD Manifest library/python (vor-bau)"
+          curl -sI -H "Authorization: Bearer $TOKEN" \
+            -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json" \
+            "https://registry-1.docker.io/v2/library/python/manifests/$py" > "$RUNNER_TEMP/hub-vor-bau.txt" || echo "curl: Rueckgabewert $?"
+          head -n 1 "$RUNNER_TEMP/hub-vor-bau.txt" || true
+          grep -i -E '^(ratelimit-limit|ratelimit-remaining|docker-ratelimit-source):' "$RUNNER_TEMP/hub-vor-bau.txt" || echo "keine Kopfzeilen zur Ratenbegrenzung"
+          export R3COSINT_TEST_GEHEIMNISSE="$HOME/.config/r3cosint/test"
+          t0="$(date +%s)"
+          COMPOSE_BAKE=false docker compose -f deploy/compose.test.yml build 2>&1
+          rc=$?
+          t1="$(date +%s)"
+          echo "docker compose build (COMPOSE_BAKE=false): Rueckgabewert $rc, $((t1 - t0)) s"
+          echo "--- HEAD Manifest library/python (nach-bau)"
+          curl -sI -H "Authorization: Bearer $TOKEN" \
+            -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json" \
+            "https://registry-1.docker.io/v2/library/python/manifests/$py" > "$RUNNER_TEMP/hub-nach-bau.txt" || echo "curl: Rueckgabewert $?"
+          head -n 1 "$RUNNER_TEMP/hub-nach-bau.txt" || true
+          grep -i -E '^(ratelimit-limit|ratelimit-remaining|docker-ratelimit-source):' "$RUNNER_TEMP/hub-nach-bau.txt" || echo "keine Kopfzeilen zur Ratenbegrenzung"
+          docker image ls || true
+
       - name: make dod
         timeout-minutes: 20
+        env:
+          # Compose v2.38.2 des Runners uebergibt den Bau an buildx bake; bake
+          # verlangt fuer build.network: host das Entitlement network.host, das
+          # Compose nicht setzt (Lauf 1: "additional privileges requested").
+          # COMPOSE_BAKE=false laesst Compose ueber den BuildKit-Client des
+          # Docker-Treibers bauen. deploy/ und der Aufruf bleiben unveraendert.
+          COMPOSE_BAKE: "false"
         run: |
           # Ohne -e: die Wiedereinschaltzeile und das Urteil muessen auf jedem Weg folgen.
           set -uo pipefail
