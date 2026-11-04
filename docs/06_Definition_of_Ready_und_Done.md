@@ -655,6 +655,11 @@ aussprechen, dass die Kette in solchen Sitzungen nur angemahnt und nicht
 erzwungen wird —, entscheidet der Auftraggeber (ADR 0002, **O-23**); umgesetzt
 ist am 2026-09-02 der erste Weg (Entscheidpunkt E-H), die Freigabe steht aus.
 
+Nachtrag vom 2026-11-04 (Einheit G4): Neben dieser Zusicherung der Arbeitsumgebung
+besteht der Lauf auf der Gegenseite (`.github/workflows/kette-gegenseite.yml`,
+rot bis R3-C-004 wegen D9); die Pflichtprüfung im Regelwerk von main stellt der
+Auftraggeber nach R3-C-004 ein (ADR 0002, Abschnitt 8, O-12).
+
 **Nur Rückgabewert 2 blockiert.** Rückgabewert 1 ist ein nicht blockierender
 Fehler; ein Gate, das mit `exit 1` endet, ist wirkungslos, ohne dass das
 auffällt (3.4).
@@ -759,6 +764,13 @@ beim menschlichen Review.
 **nicht** und wird durch sie nicht weicher: Eine terminierte Lage C ist für die
 Kette unverändert Lage C und ergibt Rückgabewert 2. Die Ausnahme lebt
 ausschliesslich im Gate der Arbeitsumgebung.
+
+Nachtrag vom 2026-11-04 (Einheit G4): Der Lauf auf der Gegenseite besteht seit
+G4 als Arbeitsablauf `.github/workflows/kette-gegenseite.yml`; er ruft `make dod`
+ohne die Liste der terminierten Lagen auf und ist bis R3-C-004 wegen D9 rot,
+gewollt. Die Pflichtprüfung im Regelwerk von main stellt der Auftraggeber nach
+R3-C-004 ein (ADR 0002, Abschnitt 5, Nachtrag "Festlegung für G4", und
+Abschnitt 8, O-12).
 
 ### Zählung und Eskalation
 

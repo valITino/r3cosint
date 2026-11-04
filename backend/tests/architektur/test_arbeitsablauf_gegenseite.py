@@ -5,7 +5,7 @@ Netz und ohne Runner (ADR 0002, Abschnitt 5, Nachtrag "Festlegung fuer G4", Zeil
 des Arbeitsablaufs selbst"). Die Nummern 01 bis 08 in den Testnamen sind die acht
 Zusicherungen dieser Zeile (Festlegung); die Nummern 00 und 09 ff. sind Zusaetze (Auftrag
 G4.2 und Nachbesserung): 09 Zeitgrenzen, 10 COMPOSE_BAKE und Abschaltung der Befehle,
-11 kein if, 12 Urteilsform des Schritts make dod, 13 Umgebung und Ausfuehrungsform,
+11 kein if, 12 Urteilsform des Schritts make dod (einschliesslich set -uo pipefail), 13 Umgebung und Ausfuehrungsform,
 14 keine Ausdruecke in run, 15 weitere Rohtextverbote, 16 Einzigkeit, 17 Kopie-Variable.
 Alle Pfade folgen der Lage dieser Datei, nicht dem Arbeitsverzeichnis.
 
@@ -290,7 +290,11 @@ ENV_PRAEFIX = "env -u GITHUB_ENV -u GITHUB_PATH -u GITHUB_OUTPUT -u GITHUB_STATE
 
 
 def test_r3_q_001_12_urteilsform_des_schritts_make_dod() -> None:
-    """Zusatz (Zeile "Aufruf und Urteil"): der Rueckgabewert von make dod ist das Urteil."""
+    """Zusatz (Zeile "Aufruf und Urteil"): der Rueckgabewert von make dod ist das Urteil.
+
+    Zusatz zu 12 (DT-G4-01): vor dem Aufruf steht set -uo pipefail und keine Zeile
+    set ... +o pipefail; ohne pipefail liefert die Pipeline den Rueckgabewert von tee.
+    """
     bloecke = []
     for block in _run_bloecke(_lade(GEGENSEITE)):
         zeilen = [z.strip() for z in block.splitlines() if z.strip()]
@@ -309,6 +313,13 @@ def test_r3_q_001_12_urteilsform_des_schritts_make_dod() -> None:
     assert aufruf.endswith("|| rc=$?"), f"Aufruf endet nicht auf '|| rc=$?': {aufruf!r}"
     i = zeilen.index(aufruf)
     assert "rc=0" in zeilen[:i], "rc=0 steht nicht vor dem Aufruf"
+    assert "set -uo pipefail" in zeilen[:i], (
+        "set -uo pipefail steht nicht vor dem Aufruf"
+    )
+    for z in zeilen[:i]:
+        assert not (z.startswith("set ") and "+o pipefail" in z), (
+            f"Zeile vor dem Aufruf hebt pipefail auf: {z!r}"
+        )
     assert any(z.startswith('echo "::stop-commands::') for z in zeilen[:i]), (
         "::stop-commands:: steht nicht vor dem Aufruf"
     )
