@@ -6,7 +6,8 @@
 # Anforderung R3-Q-001 (das DoD-Gate stuetzt sich auf die Kette). Grundlage: Projektauftrag 6.6 (das Nachweisverzeichnis nimmt die
 # Artefakte des Projekts auf); ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (Festlegung fuer G3), Zeilen zu D12, und Abschnitt 6
 # (Zeile D12: der Schritt schreibt nicht in den Arbeitsbaum); docs/12_Freigabe_Grundgeruest.md, Abschnitt 4, G3, Festlegung 3.
-# Muster: scripts/belege-pruefen.sh (D20), scripts/abnahme-abgleich.sh (D7) und scripts/prototyp-trennung-pruefen.sh (D10). Einheit G3.4; Nacharbeiten N2.3 (ADR 0002, Abschnitt 5, Nachtrag und Fortschreibung vom 2026-11-03).
+# Muster: scripts/belege-pruefen.sh (D20), scripts/abnahme-abgleich.sh (D7) und scripts/prototyp-trennung-pruefen.sh (D10). Einheit G3.4; Nacharbeiten N2.3 (ADR 0002, Abschnitt 5, Nachtrag und Fortschreibung vom 2026-11-03);
+# nachgefuehrt in Einheit N3.3 (2026-11-04): Lage C git-kopf genau einmal (N-083, NM-084), GP-N9 unter den Grenzen des Pruefmittels (ST-N23-10).
 #
 # ZWECK
 #   Das Nachweisverzeichnis docs/NACHWEISE.md wird von scripts/nachweise-erzeugen.sh erzeugt; die Artefaktliste steht im Erzeuger. D12
@@ -115,11 +116,13 @@
 #   GN-3  Eine Verzeichniszeile deckt jede Datei darunter, auch eine neue (Durchlass, nach der Festlegung gewollt: kleinere Liste).
 #   GN-4  Ignorierte Dateien (.gitignore, .git/info/exclude) gehoeren nicht zu S (Durchlass); die globale und die Systemkonfiguration
 #         von git gelten nicht.
-#   Grenze des Pruefmittels GP-N9 (im Kopf des Selbsttests): die Eintraege der HEAD-Liste (git ls-tree -r -z --name-only HEAD) werden nicht
-#         gegen einen zweiten Lesepfad gezaehlt; ein Scheitern von git ist Lage C git-kopf, eine stille Verkuerzung bei Rueckgabewert 0 ist
-#         nicht belegt. Kein zweiter Lesepfad gebaut.
 #   GN-5  KN-9 urteilt nur am sauberen Stand (Kopf des Pull Requests, Klon des Pruefers, Lauf auf der Gegenseite); vor dem Commit einer
 #         Einheit ist die committete Liste zwangslaeufig einen Commit alt, dort steht "nicht beurteilt" (Durchlass vor dem Commit).
+#
+# GRENZEN DES PRUEFMITTELS (benannt; Wortlaut und Fall im Kopf des Selbsttests, Einheit N3.3, ST-N23-10)
+#   GP-N9  Die Eintraege der HEAD-Liste (git ls-tree -r -z --name-only HEAD) werden nicht gegen einen zweiten Lesepfad gezaehlt; ein
+#          Scheitern von git ist Lage C git-kopf (genau eine Zeile, auch wenn beide Aufrufe von ls-tree scheitern: N-083, N-097), eine
+#          stille Verkuerzung bei Rueckgabewert 0 ist nicht belegt. Kein zweiter Lesepfad gebaut.
 #
 # RUECKGABEWERTE
 #   0  kein Fund
@@ -455,7 +458,7 @@ else
   git_neutral ls-tree -z HEAD -- "$LISTE_REL" > "$ABLAGE/lstree" 2> "$ABLAGE/lstree.err"
   LSTREE_RC=$?
   if [ "$LSTREE_RC" -ne 0 ]; then
-    LAGEC+=("git-kopf: git ls-tree HEAD endet mit Rueckgabewert $LSTREE_RC: $(kopfzeile "$ABLAGE/lstree.err")")
+    if [ "$HEADLISTE_RC" -eq 0 ]; then LAGEC+=("git-kopf: git ls-tree HEAD endet mit Rueckgabewert $LSTREE_RC: $(kopfzeile "$ABLAGE/lstree.err")"); fi
     KN9="KN-9: nicht beurteilt -- git ls-tree scheitert (Lage C)"
   elif [ ! -s "$ABLAGE/lstree" ]; then
     fund "KN-9" "$LISTE_REL"

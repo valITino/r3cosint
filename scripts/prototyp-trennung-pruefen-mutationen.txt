@@ -1,7 +1,7 @@
 # =============================================================================
 # scripts/prototyp-trennung-pruefen-mutationen.txt -- Mutationsdatei zu scripts/prototyp-trennung-pruefen-selbsttest.sh (D10)
 # =============================================================================
-# Einheit G3.3. Jede Zeile ist eine Mutation des gepruefen Skripts scripts/prototyp-trennung-pruefen.sh. Der Modus --mutationen des
+# Einheit G3.3. Jede Zeile ist eine Mutation des geprueften Skripts scripts/prototyp-trennung-pruefen.sh. Der Modus --mutationen des
 # Selbsttests wendet den sed-Ausdruck (sed -E --sandbox) auf eine Wegwerfkopie an und laesst nur die Faelle des Mindestsatzes gegen die
 # Mutante laufen; erkannt ist sie, wenn jeder dieser Faelle faellt.
 # Zeilenform: Kennung DM-nnn, Tabulator, Klasse (KD-Kennung), Tabulator, sed-Ausdruck, Tabulator, Mindestsatz (Fallkennungen D-nnn
@@ -10,14 +10,16 @@
 # meldet der Modus als WIRKUNGSLOS). Nicht mutiert werden: die Zweige (KD-6), deren Faelle als root nicht herstellbar sind (D-088,
 # D-097), und die Grenzen GD und GP (ihre Faelle messen den Durchlass, nicht eine Aenderung des Skripts).
 # Nachgefuehrt in Einheit N2.2: DM-065 und DM-066 (grep -I) sind mit GD-4 neu entfallen und werden nicht wiederverwendet; neu DM-087 bis DM-101.
+# Nachgefuehrt in Einheit N3.3 (2026-11-04, ST-N22-06): DM-010, DM-011 und DM-091 sind auf den Anfang der Codezeile "git_neutral ls-files" verankert
+# (^ im Muster); die Mutante weicht vom Skript in genau dieser einen Zeile ab, nicht mehr in einer Kommentarzeile, die dieselbe Option nennt.
 # Ohne Wirkung und deshalb ohne Mutation: das Loeschen der git-Variablen und GIT_NO_REPLACE_OBJECTS im Skript (die git-Aufrufe laufen
 # unter "env -i", beides ist doppelt gesichert) sowie CLAUDE_PROJECT_DIR im Aufruf des Gates (das Arbeitsverzeichnis ist die Wurzel).
 DM-001	KD-1	s~^        "\$MARKE_R1"\*\) G_KLASSE=fund1;~        "${MARKE_R1}ZZ"*) G_KLASSE=fund1;~	D-002	Die Sperre der Richtung 1 wird nicht als Fund erkannt (die Marke passt nie).
 DM-002	KD-2	s~^        "\$MARKE_R2"\*\) G_KLASSE=fund2;~        "${MARKE_R2}ZZ"*) G_KLASSE=fund2;~	D-010	Die Sperre der Richtung 2 wird nicht als Fund erkannt (die Marke passt nie).
 DM-003	KD-1	s~^MARKE_R1='BLOCKIERT \(Projektauftrag 5\.6\): Richtung 1'$~MARKE_R1='BLOCKIERT (Projektauftrag 5.6): Richtung 3'~	D-001,D-002	Die Marke der Richtung 1 weicht vom Meldetext des Gates ab: Kontrollprobe und Funde fallen.
 DM-004	KD-2	s~^MARKE_R2='BLOCKIERT \(Projektauftrag 5\.6\): Richtung 2'$~MARKE_R2='BLOCKIERT (Projektauftrag 5.6): Richtung 3'~	D-001,D-010	Die Marke der Richtung 2 weicht vom Meldetext des Gates ab: Kontrollprobe und Funde fallen.
-DM-010	KD-3	s~ --cached --others --exclude-standard --deduplicate -- ~ --cached --exclude-standard --deduplicate -- ~	D-020	Unversionierte Dateien gehoeren nicht zur Auswahl.
-DM-011	KD-3	s~ --cached --others --exclude-standard --deduplicate -- ~ --cached --others --deduplicate -- ~	D-021	Ignorierte Dateien gehoeren zur Auswahl.
+DM-010	KD-3	s~^git_neutral ls-files -z --cached --others --exclude-standard --deduplicate -- ~git_neutral ls-files -z --cached --exclude-standard --deduplicate -- ~	D-020	Unversionierte Dateien gehoeren nicht zur Auswahl.
+DM-011	KD-3	s~^git_neutral ls-files -z --cached --others --exclude-standard --deduplicate -- ~git_neutral ls-files -z --cached --others --deduplicate -- ~	D-021	Ignorierte Dateien gehoeren zur Auswahl.
 DM-012	KD-3	s~^BAUWURZELN=\(prototype backend frontend deploy\)$~BAUWURZELN=(prototype backend frontend)~	D-005	deploy fehlt in der Liste der vier Wurzeln.
 DM-013	KD-3	s~^BAUWURZELN=\(prototype backend frontend deploy\)$~BAUWURZELN=(prototype backend deploy)~	D-004	frontend fehlt in der Liste der vier Wurzeln.
 DM-014	KD-3	s~^BAUWURZELN=\(prototype backend frontend deploy\)$~BAUWURZELN=(prototype frontend deploy)~	D-002	backend fehlt in der Liste der vier Wurzeln.
@@ -68,7 +70,7 @@ DM-086	KD-6	s~^unset CDPATH$~:~	D-112	Ein CDPATH des Aufrufers wird nicht geloes
 DM-087	KD-8	s~^  "\$WURZEL"/\*\) lage_c "ablage" "das Zielverzeichnis .*$~  "$WURZEL"/*) : ;;~	D-127	Die Pruefung des Zielverzeichnisses im Arbeitsbaum vor dem Anlegen entfaellt: mktemp wird aufgerufen und legt die Ablage im Arbeitsbaum an.
 DM-088	KD-6	s~^\[ -n "\$ZIEL" \] \|\| lage_c "ablage" .*$~:~	D-095	Die Pruefung, ob das Zielverzeichnis erreichbar ist, entfaellt vor dem Anlegen: mktemp wird aufgerufen und scheitert erst dort.
 DM-090	KD-7	s~tr -cd '\\000' 2>~tr -cd '\\n' 2>~	D-102	Gezaehlt werden Zeilenumbrueche statt NUL-Bytes: eine Datei aus einem Zeilenumbruch gilt als Datei mit NUL-Byte.
-DM-091	KD-3	s~ --exclude-standard --deduplicate -- ~ --exclude-standard -- ~	D-125,D-126	Die Option --deduplicate entfaellt: ein Pfad mit drei Stufen im Index wird dreimal gelesen, gezaehlt und gemeldet.
+DM-091	KD-3	s~^git_neutral ls-files -z --cached --others --exclude-standard --deduplicate -- ~git_neutral ls-files -z --cached --others --exclude-standard -- ~	D-125,D-126	Die Option --deduplicate entfaellt: ein Pfad mit drei Stufen im Index wird dreimal gelesen, gezaehlt und gemeldet.
 DM-092	KD-7	s~^    \*\[\[:cntrl:\]\]\*\)$~    *[[:cntrl:]]ZZ*)~	D-113,D-114,D-115	Die Pruefung auf Steuerzeichen im Pfad entfaellt: der Name mit abschliessendem Zeilenumbruch geht ueber die Kuerzung des Gates als Prosa durch.
 DM-093	KD-7	s~^  NUL_ZAHL=\"\$\(tr .*$~  NUL_ZAHL=0~	D-101,D-117,D-118	Die Pruefung auf NUL-Bytes entfaellt: jede Datei gilt als Text und geht an das Gate.
 DM-094	KD-7	s~2> "\$ABLAGE/tr\.err" < "\$f" \|~2> "$ABLAGE/tr.err" < <(head -c 65536 "$f") \|~	D-117	Gelesen wird nur der erste Puffer (64 KiB): ein NUL-Byte danach bleibt unbemerkt.

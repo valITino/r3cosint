@@ -6,7 +6,8 @@
 # Anforderung R3-Q-001 (das DoD-Gate stuetzt sich auf die Kette). Grundlage: ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29
 # (Festlegung fuer G3), Zeilen zu D12 und "Faelle, Mutationen und Rueckgabewerte"; docs/12_Freigabe_Grundgeruest.md, Abschnitt 4,
 # G3, Festlegungen 3 und 5. Muster: scripts/prototyp-trennung-pruefen-selbsttest.sh, scripts/abnahme-abgleich-selbsttest.sh und
-# scripts/belege-pruefen-selbsttest.sh. Einheit G3.4; Nacharbeiten N2.3 (ADR 0002, Abschnitt 5, Nachtrag und Fortschreibung vom 2026-11-03).
+# scripts/belege-pruefen-selbsttest.sh. Einheit G3.4; Nacharbeiten N2.3 (ADR 0002, Abschnitt 5, Nachtrag und Fortschreibung vom 2026-11-03);
+# nachgefuehrt in Einheit N3.3 (2026-11-04): N-083 verlangt die Zeile git-kopf genau einmal (lc_genau), Zeichenfolge "geprueften" statt "gepruefen" (DT-N2-02).
 #
 # AUFRUF
 #   bash scripts/nachweise-vollstaendig-selbsttest.sh [--mutationen] [--pruefer <pfad>]
@@ -37,7 +38,7 @@
 #   des echten Erzeugers mit sieben Zeilen (sechs Dateien, davon zwei Verzeichniszeilen: docs/sub und backend/src/paket, und der
 #   Erzeuger selbst); docs/NACHWEISE.md hat der Erzeuger des Baums erzeugt; alles ist committet, git status ist leer. Das gepruefte
 #   Skript liegt im Baum unter scripts/nachweise-vollstaendig.sh und ist ueber .git/info/exclude ausgenommen (es wechselt je
-#   Mutante). Je Fall eine Kopie des Grundbaums (cp -a), die Aenderung, eine Kopie des gepruefen Skripts und ein Lauf. Neue Dateien
+#   Mutante). Je Fall eine Kopie des Grundbaums (cp -a), die Aenderung, eine Kopie des geprueften Skripts und ein Lauf. Neue Dateien
 #   eines Falls sind unversioniert, ausser der Fall ruft sauber auf (alles in einen Commit, git status leer). Attrappen des
 #   Erzeugers (KN-4, KN-5): ein Ersatz von scripts/nachweise-erzeugen.sh, der eine vorgegebene Tabelle ablegt, vorgegebene Zeilen auf
 #   die Fehlerausgabe schreibt und mit vorgegebenem Rueckgabewert endet. Ersatz-Werkzeuge im Suchpfad (git, grep, sort, mktemp) simulieren
@@ -301,6 +302,7 @@ ausgabe_ohne() { AUSGABE_OHNE+=("$1"); }
 lc() { LC_KENNUNG="$1"; }
 lc_mit() { LC_MIT+=("$1"); }
 lc_nicht() { LC_NICHT+=("$1"); }
+lc_genau() { LC_GENAU="$1"; } # lc_genau <n> : die Zeile "LAGE C -- <Kennung>:" steht in der Fehlerausgabe genau n-mal (nur bei lage-c+funde)
 nicht_herstellbar() { NH_GRUND="$1"; }
 env_zusatz() { ENV_ZUSATZ+=("$1"); }
 env_zusatz2() { ENV_ZUSATZ2+=("$1"); }
@@ -309,7 +311,7 @@ skript_sed() { SKRIPT_SED="$1"; }
 nach_lauf() { NACH_FN="$1"; }
 als_root_nicht() { if [ "$(id -u)" = 0 ]; then nicht_herstellbar "als root nicht herstellbar (GP-N1)"; fi; }
 
-# Zaehlzeilen der Ausgabe des gepruefen Skripts (Wortlaut siehe dessen Kopfkommentar)
+# Zaehlzeilen der Ausgabe des geprueften Skripts (Wortlaut siehe dessen Kopfkommentar)
 zaehlung() { # zaehlung <tabellenzeilen> <pfade> <artefakte laut kopf> <sollmenge> <nicht committet>
   ausgabe_mit "Tabelle: $1 Zeilen, $2 Pfade, Artefakte laut Kopf $3"
   ausgabe_mit "Sollmenge: $4 Dateien (ohne .gitkeep und docs/NACHWEISE.md)"
@@ -500,6 +502,7 @@ fall_zuruecksetzen() {
   LC_KENNUNG=""
   LC_NICHT=()
   LC_MIT=()
+  LC_GENAU=""
   NH_GRUND=""
   CWD_WAHL=""
   AUFRUF_REL=""
@@ -548,7 +551,7 @@ grundbaum_bauen() {
 }
 
 # =============================================================================
-# 9. Lauf des gepruefen Skripts und Bewertung
+# 9. Lauf des geprueften Skripts und Bewertung
 # =============================================================================
 lauf_pruefer() { # lauf_pruefer <cwd> <aus> <fehler> [VAR=WERT...] : setzt LAUF_RC; das Skript liegt am Ort $SKRIPT_ORT des Baums
   local cwd="$1" out="$2" err="$3" skript="$BAUM/$SKRIPT_ORT"
@@ -648,6 +651,10 @@ bewerte_lagec_funde() { # bewerte_lagec_funde <aus> <fehler> <rc> : Rueckgabewer
   for n in "${LC_NICHT[@]+"${LC_NICHT[@]}"}"; do
     if grep -qF -- "$n" "$err"; then ERG=GEFALLEN; DETAIL+=("Fehlerausgabe nennt '$n'"); fi
   done
+  if [ -n "$LC_GENAU" ]; then
+    n=$(grep -cF -- "LAGE C -- $LC_KENNUNG:" "$err")
+    if [ "$n" != "$LC_GENAU" ]; then ERG=GEFALLEN; DETAIL+=("Fehlerausgabe nennt 'LAGE C -- $LC_KENNUNG:' $n-mal statt $LC_GENAU-mal"); fi
+  fi
   vergleiche_funde
   if [ "$ERG" = GEFALLEN ]; then DETAIL+=("Fehlerausgabe: $(stderr_kopf "$err")"); fi
 }
@@ -695,7 +702,7 @@ baum_voll() { # baum_voll <wurzel> <verzeichnis> : jeder Eintrag unterhalb: Date
   return 0
 }
 
-# Kennungen KN und GN aus dem Kopfkommentar des gepruefen Skripts (einzeln): eine je Zeile, sortiert, einmalig
+# Kennungen KN und GN aus dem Kopfkommentar des geprueften Skripts (einzeln): eine je Zeile, sortiert, einmalig
 kopf_kennungen() {
   local zeile n=0
   while IFS= read -r zeile || [ -n "$zeile" ]; do
@@ -704,7 +711,7 @@ kopf_kennungen() {
     case "$zeile" in '#'*) printf '%s\n' "$zeile" ;; '') ;; *) break ;; esac
   done < "$PRUEFER" | grep -oE '\b(KN-[0-9]|GN-[0-9])\b' | sort -u
 }
-# Text des gepruefen Skripts ohne Kommentarzeilen und ohne Leerzeilen
+# Text des geprueften Skripts ohne Kommentarzeilen und ohne Leerzeilen
 code_text() { grep -vE '^[[:space:]]*(#|$)' "$PRUEFER"; }
 
 # =============================================================================
@@ -779,7 +786,7 @@ code_text() { grep -vE '^[[:space:]]*(#|$)' "$PRUEFER"; }
 #F|N-080|KN-6,KN-8|lage-c+funde|sort|sort endet mit einem Fehler: Lage C, die Funde stehen ungeordnet in derselben Ausgabe
 #F|N-081|KN-6,KN-8|lage-c+funde|sort|sort liefert nur die erste Zeile: Lage C, die Funde stehen in derselben Ausgabe
 #F|N-082|KN-6,KN-8,KN-9|lage-c+funde|git|git status scheitert: Lage C, die Funde stehen in derselben Ausgabe, die Zeile KN-9 sagt "nicht beurteilt"
-#F|N-083|KN-6,KN-8,KN-9|lage-c+funde|git|git ls-tree scheitert bei sauberem Stand: Lage C, die Funde stehen in derselben Ausgabe
+#F|N-083|KN-6,KN-8,KN-9|lage-c+funde|git|git ls-tree scheitert bei sauberem Stand (beide Aufrufe, auch -r): Lage C git-kopf genau einmal, die Funde stehen in derselben Ausgabe
 #F|N-084|KN-6,KN-8,KN-9|lage-c+funde|git|git cat-file scheitert bei sauberem Stand: Lage C, die Funde stehen in derselben Ausgabe
 #F|N-097|KN-6,KN-8|lage-c+funde|git|git ls-tree -r HEAD scheitert (Ersatz-git, allein bei -r): Lage C git-kopf, die Funde stehen in derselben Ausgabe
 #F|N-085|KN-6|fund|Umfeld|GIT_DIR, GIT_WORK_TREE und GIT_INDEX_FILE des Aufrufers aendern das Urteil nicht
@@ -892,9 +899,9 @@ f_N079() { grep_ersatz; lc liste; lc_mit "999 Eintraege"; }
 f_N080() { sort_ersatz fehler; datei docs/p.md 'x'; datei docs/q.md 'x'; erwarte KN-1 docs/p.md; erwarte KN-1 docs/q.md; lc werkzeug:sort; lc_mit "endete mit einem Fehler"; }
 f_N081() { sort_ersatz erste; datei docs/p.md 'x'; datei docs/q.md 'x'; erwarte KN-1 docs/p.md; erwarte KN-1 docs/q.md; lc werkzeug:sort; lc_mit "lieferte 1 Zeilen statt der erfassten 2"; }
 f_N082() { git_ersatz status; datei docs/p.md 'x'; erwarte KN-1 docs/p.md; zaehlung 7 7 7 9 0; ausgabe_mit "KN-9: nicht beurteilt -- git status scheitert (Lage C)"; lc git-status; lc_mit "Rueckgabewert 128"; }
-f_N083() { git_ersatz ls-tree; datei docs/p.md 'x'; sauber; erwarte KN-1 docs/p.md; zaehlung 7 7 7 9 0; ausgabe_mit "KN-9: nicht beurteilt -- git ls-tree scheitert (Lage C)"; lc git-kopf; lc_mit "Rueckgabewert 128"; }
+f_N083() { git_ersatz ls-tree; datei docs/p.md 'x'; sauber; erwarte KN-1 docs/p.md; zaehlung 7 7 7 9 0; ausgabe_mit "KN-9: nicht beurteilt -- git ls-tree scheitert (Lage C)"; lc git-kopf; lc_mit "Rueckgabewert 128"; lc_genau 1; }
 f_N084() { git_ersatz cat-file; datei docs/p.md 'x'; sauber; erwarte KN-1 docs/p.md; zaehlung 7 7 7 9 0; ausgabe_mit "KN-9: nicht beurteilt -- git cat-file scheitert (Lage C)"; lc git-kopf; lc_mit "Rueckgabewert 128"; }
-f_N097() { git_ersatz -r; datei docs/p.md 'x'; erwarte KN-1 docs/p.md; zaehlung 7 7 7 9 0; kn9 offen 1; lc git-kopf; lc_mit "git ls-tree -r HEAD endet mit Rueckgabewert 128"; }
+f_N097() { git_ersatz -r; datei docs/p.md 'x'; erwarte KN-1 docs/p.md; zaehlung 7 7 7 9 0; kn9 offen 1; lc git-kopf; lc_mit "git ls-tree -r HEAD endet mit Rueckgabewert 128"; lc_genau 1; }
 f_N085() {
   fremdes_repo
   env_zusatz "GIT_DIR=$FALL/fremd/.git"; env_zusatz "GIT_WORK_TREE=$FALL/fremd"; env_zusatz "GIT_INDEX_FILE=$FALL/fremd/.git/index"
@@ -1016,10 +1023,10 @@ fall_ausfuehren() { # fall_ausfuehren <kennung>
     ERG="NICHT_HERSTELLBAR"; IST="nicht herstellbar: $NH_GRUND"
   else
     if [ "$soll" != statisch ] && [ "$soll" != arbeitsbaum ]; then
-      mkdir -p "${BAUM}/${SKRIPT_ORT%/*}" && cp "$PRUEFER" "$BAUM/$SKRIPT_ORT" || herstellung_fehler "Kopie des gepruefen Skripts nach $SKRIPT_ORT"
+      mkdir -p "${BAUM}/${SKRIPT_ORT%/*}" && cp "$PRUEFER" "$BAUM/$SKRIPT_ORT" || herstellung_fehler "Kopie des geprueften Skripts nach $SKRIPT_ORT"
       if [ -n "$SKRIPT_SED" ]; then
-        sed -E --sandbox -e "$SKRIPT_SED" "$PRUEFER" > "$BAUM/$SKRIPT_ORT" || herstellung_fehler "Abwandlung des gepruefen Skripts"
-        if cmp -s "$PRUEFER" "$BAUM/$SKRIPT_ORT"; then herstellung_fehler "die Abwandlung des gepruefen Skripts aendert nichts (Anker fehlt)"; fi
+        sed -E --sandbox -e "$SKRIPT_SED" "$PRUEFER" > "$BAUM/$SKRIPT_ORT" || herstellung_fehler "Abwandlung des geprueften Skripts"
+        if cmp -s "$PRUEFER" "$BAUM/$SKRIPT_ORT"; then herstellung_fehler "die Abwandlung des geprueften Skripts aendert nichts (Anker fehlt)"; fi
       fi
     fi
     cwd="${CWD_WAHL:-$BAUM}"
@@ -1160,9 +1167,9 @@ deckung_pruefen() {
     n=0
     for k in "${!IM_KOPF[@]}"; do if [ "${k:0:2}" = "$grp" ]; then n=$((n + 1)); fi; done
     if [ "$n" -gt 0 ]; then
-      echo "$PM: Deckung: Gruppe $grp: $n Kennungen im Kopfkommentar des gepruefen Skripts"
+      echo "$PM: Deckung: Gruppe $grp: $n Kennungen im Kopfkommentar des geprueften Skripts"
     else
-      echo "$PM: Deckung ABWEICHUNG: Gruppe $grp ohne Kennung im Kopfkommentar des gepruefen Skripts"
+      echo "$PM: Deckung ABWEICHUNG: Gruppe $grp ohne Kennung im Kopfkommentar des geprueften Skripts"
       DECK_ABW=$((DECK_ABW + 1))
     fi
   done
@@ -1183,7 +1190,7 @@ deckung_pruefen() {
     if [ -z "${IM_KOPF[$cl]+x}" ]; then fehl="$fehl $cl"; anz=$((anz + 1)); fi
   done < <(printf '%s\n' "${!KL_ANZ[@]}" | sort)
   if [ "$anz" -gt 0 ]; then
-    echo "$PM: Deckung ABWEICHUNG: $anz Klassen, die Faelle nennen, stehen nicht im Kopfkommentar des gepruefen Skripts:$fehl"
+    echo "$PM: Deckung ABWEICHUNG: $anz Klassen, die Faelle nennen, stehen nicht im Kopfkommentar des geprueften Skripts:$fehl"
     DECK_ABW=$((DECK_ABW + anz))
   fi
   if [ "$DECK_ABW" -eq 0 ]; then

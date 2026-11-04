@@ -1832,7 +1832,36 @@ geheimnisse:
 			# Lauf 2: ein Merge-Commit mit unlesbarem Baum faellt nur mit -m auf (gemessen 2026-10-28).
 			git_err=$$(mktemp)
 			if [ -n "$$git_err" ] && $(D11_UMFELD) git -C . log -p -U0 --full-history --all --text --no-textconv --no-color --root -m > /dev/null 2> "$$git_err" && [ ! -s "$$git_err" ]; then
-				$(GITLEAKS) detect --redact --exit-code 1 --ignore-gitleaks-allow --config scripts/gitleaks.toml --log-opts="--full-history --all --text --no-textconv --no-color --root -m" || fehlgeschlagen=1
+				# Plausibilitaet des Historienlaufs (N3.2, ADR 0002, Abschnitt 5, Nachtrag vom 2026-11-04; Vorschlag des
+				# Dynamic Software Testers, DT-G1-05): Unter einer Mutante meldete gitleaks "0 commits scanned" mit Rueckgabewert 0.
+				# gitleaks schreibt seine Meldungen auf die Fehlerausgabe; nur die Fehlerausgabe von Lauf 2 geht deshalb zusaetzlich
+				# in eine Datei der Wegwerf-Ablage (tee) und bleibt auf stderr sichtbar, die Standardausgabe bleibt unveraendert auf
+				# stdout (SD-N32-02: eine Zeile auf stdout, etwa aus einem Fund oder einem Ersatz, darf die Zahl nicht vortaeuschen).
+				# Genau eine Zeile mit der Zahl der gelesenen Commits muss vorliegen und die Zahl muss groesser 0 sein; fehlt sie, sind
+				# es mehrere oder ist die Zahl 0, ist das Lage C (FEHLT=gitleaks-historie), auch bei Rueckgabewert 0 (SD-N32-01).
+				# SCHNITTSTELLE zu gitleaks 8.21.2, gemessen am echten Binary am 2026-11-04: die Zeile lautet
+				# "<Uhrzeit> INF <N> commits scanned." (mit ANSI-Farbcodes um Uhrzeit und INF, auch ohne Terminal; --no-color gilt
+				# nur fuer die ausfuehrliche Ausgabe); das Muster unten verlangt die Zeile ganz, Farbcodes stoeren nicht. Unter -m
+				# zaehlt gitleaks nicht gleich git rev-list --count --all (gemessen); verlangt wird allein "groesser 0". Die Probe
+				# oben (git log, stderr, FEHLT=git-log) betrifft git, nicht gitleaks.
+				hist_aus=$$(mktemp)
+				if [ -z "$$hist_aus" ] || [ ! -f "$$hist_aus" ]; then
+					echo "[D11 geheimnisse] LAGE C: mktemp schlug fehl; die Ausgabe von Lauf 2 kann nicht festgehalten und die Zahl der gelesenen Commits nicht beurteilt werden." >&2
+					[ -n "$$fehlt" ] || fehlt="gitleaks-historie"
+					hat_lage_c=1
+					hist_aus=/dev/null
+				fi
+				{ $(GITLEAKS) detect --redact --exit-code 1 --ignore-gitleaks-allow --config scripts/gitleaks.toml --log-opts="--full-history --all --text --no-textconv --no-color --root -m" 2>&1 1>&3 | tee "$$hist_aus" >&2; } 3>&1 || fehlgeschlagen=1
+				if [ "$$hist_aus" != /dev/null ]; then
+					hist_n=$$(sed -nE '/^[^ ]*[AP]M[^ ]* [^ ]*INF[^ ]* [0-9]{1,9} commits scanned\.$$/p' "$$hist_aus" | wc -l)
+					hist_zahl=$$(sed -nE 's/^[^ ]*[AP]M[^ ]* [^ ]*INF[^ ]* ([0-9]{1,9}) commits scanned\.$$/\1/p' "$$hist_aus" | head -n 1)
+					if [ "$$hist_n" -ne 1 ] || [ "$$hist_zahl" -eq 0 ]; then
+						echo "[D11 geheimnisse] LAGE C: gitleaks meldet keine eindeutige Zahl gelesener Commits (Zeile 'N commits scanned.' fehlt, steht mehrfach oder N ist 0); der Historienlauf hat nichts belegt gelesen, 'bestanden' waere nicht belegt." >&2
+						[ -n "$$fehlt" ] || fehlt="gitleaks-historie"
+						hat_lage_c=1
+					fi
+					rm -f "$$hist_aus"
+				fi
 			else
 				echo "[D11 geheimnisse] LAGE C: git log schreibt auf stderr oder endet ungleich 0; gitleaks liest die Historie dann unvollstaendig oder gar nicht, 'bestanden' waere nicht belegt. Lauf 2 entfaellt:" >&2
 				[ -n "$$git_err" ] && head -n 3 "$$git_err" | sed 's/^/    /' >&2
