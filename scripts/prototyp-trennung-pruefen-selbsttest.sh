@@ -7,6 +7,7 @@
 # (Festlegung fuer G3), Zeilen zu D10 und "Faelle, Mutationen und Rueckgabewerte"; docs/12_Freigabe_Grundgeruest.md, Abschnitt 4,
 # G3, Festlegungen 2 und 5. Muster: scripts/belege-pruefen-selbsttest.sh und scripts/abnahme-abgleich-selbsttest.sh. Einheit G3.3;
 # nachgefuehrt in Einheit N2.2 (Festlegung: ADR 0002, Abschnitt 5, Nachtrag vom 2026-11-03, und Fortschreibung vom 2026-11-03).
+# nachgefuehrt in Einheit N3.3 (2026-11-04): Zeichenfolge "geprueften" statt "gepruefen" (DT-N2-02).
 #
 # AUFRUF
 #   bash scripts/prototyp-trennung-pruefen-selbsttest.sh [--mutationen] [--pruefer <pfad>]
@@ -430,7 +431,7 @@ grundbaum_bauen() {
 }
 
 # =============================================================================
-# 9. Lauf des gepruefen Skripts und Bewertung
+# 9. Lauf des geprueften Skripts und Bewertung
 # =============================================================================
 lauf_pruefer() { # lauf_pruefer <cwd> <aus> <fehler> [VAR=WERT...] : setzt LAUF_RC; das Skript liegt am Ort $SKRIPT_ORT des Baums
   local cwd="$1" out="$2" err="$3" skript="$BAUM/$SKRIPT_ORT"
@@ -588,7 +589,7 @@ baum_voll() { # baum_voll <wurzel> <verzeichnis> : jeder Eintrag unterhalb: Date
   done
 }
 
-# Kennungen KD und GD aus dem Kopfkommentar des gepruefen Skripts (einzeln): eine je Zeile, sortiert, einmalig
+# Kennungen KD und GD aus dem Kopfkommentar des geprueften Skripts (einzeln): eine je Zeile, sortiert, einmalig
 kopf_kennungen() {
   local zeile n=0
   while IFS= read -r zeile || [ -n "$zeile" ]; do
@@ -597,7 +598,7 @@ kopf_kennungen() {
     case "$zeile" in '#'*) printf '%s\n' "$zeile" ;; '') ;; *) break ;; esac
   done < "$PRUEFER" | grep -oE '\b(KD-[0-9]|GD-[0-9])\b' | sort -u
 }
-# Text des gepruefen Skripts ohne Kommentarzeilen und ohne Leerzeilen
+# Text des geprueften Skripts ohne Kommentarzeilen und ohne Leerzeilen
 code_text() { grep -vE '^[[:space:]]*(#|$)' "$PRUEFER"; }
 
 # =============================================================================
@@ -1031,10 +1032,10 @@ fall_ausfuehren() { # fall_ausfuehren <kennung>
     ERG="NICHT_HERSTELLBAR"; IST="nicht herstellbar: $NH_GRUND"
   else
     if [ "$soll" != statisch ] && [ "$soll" != arbeitsbaum ]; then
-      mkdir -p "${BAUM}/${SKRIPT_ORT%/*}" && cp "$PRUEFER" "$BAUM/$SKRIPT_ORT" || herstellung_fehler "Kopie des gepruefen Skripts nach $SKRIPT_ORT"
+      mkdir -p "${BAUM}/${SKRIPT_ORT%/*}" && cp "$PRUEFER" "$BAUM/$SKRIPT_ORT" || herstellung_fehler "Kopie des geprueften Skripts nach $SKRIPT_ORT"
       if [ -n "$SKRIPT_SED" ]; then
-        sed -E --sandbox -e "$SKRIPT_SED" "$PRUEFER" > "$BAUM/$SKRIPT_ORT" || herstellung_fehler "Abwandlung des gepruefen Skripts"
-        if cmp -s "$PRUEFER" "$BAUM/$SKRIPT_ORT"; then herstellung_fehler "die Abwandlung des gepruefen Skripts aendert nichts (Anker fehlt)"; fi
+        sed -E --sandbox -e "$SKRIPT_SED" "$PRUEFER" > "$BAUM/$SKRIPT_ORT" || herstellung_fehler "Abwandlung des geprueften Skripts"
+        if cmp -s "$PRUEFER" "$BAUM/$SKRIPT_ORT"; then herstellung_fehler "die Abwandlung des geprueften Skripts aendert nichts (Anker fehlt)"; fi
       fi
     fi
     cwd="${CWD_WAHL:-$BAUM}"
@@ -1175,9 +1176,9 @@ deckung_pruefen() {
     n=0
     for k in "${!IM_KOPF[@]}"; do if [ "${k:0:2}" = "$grp" ]; then n=$((n + 1)); fi; done
     if [ "$n" -gt 0 ]; then
-      echo "$PM: Deckung: Gruppe $grp: $n Kennungen im Kopfkommentar des gepruefen Skripts"
+      echo "$PM: Deckung: Gruppe $grp: $n Kennungen im Kopfkommentar des geprueften Skripts"
     else
-      echo "$PM: Deckung ABWEICHUNG: Gruppe $grp ohne Kennung im Kopfkommentar des gepruefen Skripts"
+      echo "$PM: Deckung ABWEICHUNG: Gruppe $grp ohne Kennung im Kopfkommentar des geprueften Skripts"
       DECK_ABW=$((DECK_ABW + 1))
     fi
   done
@@ -1198,7 +1199,7 @@ deckung_pruefen() {
     if [ -z "${IM_KOPF[$cl]+x}" ]; then fehl="$fehl $cl"; anz=$((anz + 1)); fi
   done < <(printf '%s\n' "${!KL_ANZ[@]}" | sort)
   if [ "$anz" -gt 0 ]; then
-    echo "$PM: Deckung ABWEICHUNG: $anz Klassen, die Faelle nennen, stehen nicht im Kopfkommentar des gepruefen Skripts:$fehl"
+    echo "$PM: Deckung ABWEICHUNG: $anz Klassen, die Faelle nennen, stehen nicht im Kopfkommentar des geprueften Skripts:$fehl"
     DECK_ABW=$((DECK_ABW + anz))
   fi
   if [ "$DECK_ABW" -eq 0 ]; then
