@@ -925,6 +925,9 @@ bau:
 			docker compose -f deploy/compose.test.yml config --quiet || fehlgeschlagen=1
 			docker compose -f deploy/compose.test.yml build || fehlgeschlagen=1
 		fi
+	else
+		# Ohne Compose-Datei entfaellt der Stapelbau; die Meldung macht das sichtbar.
+		echo "[D1 bau] deploy/compose.test.yml fehlt -- kein Stapelbau."
 	fi
 	$(call KLASSIFIZIEREN,D1,bau,weder backend/pyproject.toml noch frontend/package.json noch deploy/compose.test.yml vorhanden. Nichts zu bauen.)
 
