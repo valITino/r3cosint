@@ -1,0 +1,9 @@
+# Form der ausserhalb erwarteten Dateien (Stapel Produktion). Kein Wert.
+#
+# Verzeichnis:  ${R3COSINT_PRODUKTION_GEHEIMNISSE}; das Repository setzt die
+#               Variable nirgends, ohne sie scheitert jeder Aufruf von compose
+# Datei:        datenbank_passwort
+#               eine Zeile, Base64 aus 32 Zufallsbytes, ohne Leerzeichen
+# Erzeugung:    ausserhalb dieses Repositorys, durch den Betrieb (R3-F-019);
+#               in Test/Schulung gibt es dafuer weder Ort noch Ziel
+# Einhaengung:  allein in den Dienst datenbank als /run/secrets/datenbank_passwort

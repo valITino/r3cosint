@@ -1,0 +1,100 @@
+# Stapel produktion (5.16, ADR 0002, Abschnitt 5, Nachtrag vom 2026-11-04, G2).
+# Eigenes Netz ohne Weg nach aussen, eigene Datentraeger, eigene
+# Konfiguration, eigener Geheimnisort. Keine gemeinsame Datei mit dem anderen
+# Stapel ausser Dockerfile und Baukontext. Kein ports: die Pruefung laeuft
+# ueber docker compose exec.
+name: r3cosint-produktion
+
+services:
+  datenbank:
+    # PostgreSQL, Tag 18 = 18.6, Debian 13 (trixie), Digest des Manifest-Index.
+    # Plattform-Digest linux/amd64: sha256:f4b419e350fd98d4a8429603295208976dea4c8fb8326d818d346d3e29f1db6f
+    image: docker.io/library/postgres@sha256:3a4264520e121176619f54ff867d12774bc81e95e7b84db58d63bccdb6144b81
+    env_file:
+      - konfiguration/produktion/umgebung.env
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/datenbank_passwort
+    secrets:
+      - datenbank_passwort
+    volumes:
+      - datenbank-daten:/var/lib/postgresql
+    networks:
+      - intern
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    cap_drop:
+      - ALL
+    # Gemessenes Minimum (G2.2, Weglassen je Faehigkeit, Start und Gesundheit):
+    # Der Entrypoint laeuft als root. CHOWN ordnet den Datenordner dem Benutzer
+    # postgres zu (ohne sie scheitert der Start), SETGID und SETUID erlauben den
+    # Wechsel per gosu (ohne eine von beiden scheitert der Start). DAC_OVERRIDE
+    # entfaellt: root ist Eigentuemer der Geheimnisdatei (0600) und liest sie so.
+    # Grenze: Die Messung erfolgte mit einem Host-Benutzer der UID 0, der die
+    # Geheimnisdatei anlegte; ein anderer Host-Benutzer als Eigentuemer der Datei
+    # braeuchte eine Pruefung oder DAC_OVERRIDE.
+    # FOWNER entfaellt: ohne sie meldet der Entrypoint nur eine Warnung zu chmod
+    # auf /var/run/postgresql, der Start gelingt.
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: local
+    mem_limit: 1g
+    pids_limit: 256
+    cpus: 2
+
+  anwendung:
+    build:
+      context: ../backend
+      dockerfile: ../deploy/images/anwendung/Dockerfile
+      # Weg zur Paketquelle beim Bau in dieser Umgebung (Messung G2.1): der
+      # Proxy der Sitzung liegt auf der Rueckschleife des Rechners, daher Netz
+      # host nur fuer den Bauschritt. Die Proxy-Variablen sind Bau-Argumente
+      # mit leerer Voreinstellung und stehen nie als ENV im Image. NO_PROXY
+      # fehlt bewusst: NO_PROXY der Sitzung nennt pypi.org und
+      # files.pythonhosted.org, uv umginge den Proxy und der Bau scheiterte
+      # mit UnknownIssuer.
+      # Netz host fuer den Bauschritt und die Proxy-Bau-Argumente sind ein Preis
+      # der Entwicklungsumgebung. Ob und wie der Stapel Produktion gebaut wird,
+      # entscheidet die Betriebsumgebung (Betriebsdokumentation R3-F-019); in
+      # Test/Schulung wird er nie gebaut oder gestartet.
+      network: host
+      args:
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        HTTP_PROXY: ${HTTP_PROXY:-}
+    env_file:
+      - konfiguration/produktion/anwendung.env
+    networks:
+      - intern
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: local
+    mem_limit: 512m
+    pids_limit: 128
+    cpus: 1
+
+networks:
+  intern:
+    name: r3cosint-produktion-intern
+    internal: true
+
+volumes:
+  datenbank-daten:
+    name: r3cosint-produktion-datenbank-daten
+
+secrets:
+  datenbank_passwort:
+    file: ${R3COSINT_PRODUKTION_GEHEIMNISSE:?}/datenbank_passwort
