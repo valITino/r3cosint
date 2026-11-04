@@ -247,7 +247,7 @@ $(error Dieses Makefile braucht GNU Make ab 3.82 wegen .ONESHELL. Gefunden: $(MA
 endif
 endif
 
-.PHONY: belege bau format-pruefen linter typen architekturvertraege test abdeckung abnahme abhaengigkeiten rueckkanal prototyp-trennung geheimnisse nachweise dod
+.PHONY: belege bau stapel-test-vorbereiten format-pruefen linter typen architekturvertraege test abdeckung abnahme abhaengigkeiten rueckkanal prototyp-trennung geheimnisse nachweise dod
 
 # Berichtigung (Full-Review 2026-08-30): Die fruehere Fassung dieses
 # Kommentars behauptete, die eigene Kopie der Variable verhindere, dass
@@ -912,11 +912,71 @@ bau:
 			echo "Docker-Dienst starten (z. B. sudo systemctl start docker, oder Docker Desktop starten)." >&2
 			[ -n "$$fehlt" ] || fehlt="docker-daemon"
 			hat_lage_c=1
+		elif ! docker compose version >/dev/null 2>&1; then
+			echo "[D1 bau] LAGE C: deploy/compose.test.yml existiert, aber das Plugin 'docker compose' fehlt." >&2
+			echo "Beschaffen: Docker Compose Plugin (https://docs.docker.com/compose/install/)." >&2
+			[ -n "$$fehlt" ] || fehlt="docker-compose"
+			hat_lage_c=1
 		else
+			# Der Pfad der Geheimnisse wird nur gesetzt, wenn er fehlt; den
+			# Ort legt das Ziel stapel-test-vorbereiten an. Ohne up, down
+			# und pull: der Start geschieht allein am Abnahmekriterium.
+			if [ -z "$${R3COSINT_TEST_GEHEIMNISSE:-}" ]; then export R3COSINT_TEST_GEHEIMNISSE="$${HOME:-}/.config/r3cosint/test"; fi
+			docker compose -f deploy/compose.test.yml config --quiet || fehlgeschlagen=1
 			docker compose -f deploy/compose.test.yml build || fehlgeschlagen=1
 		fi
 	fi
 	$(call KLASSIFIZIEREN,D1,bau,weder backend/pyproject.toml noch frontend/package.json noch deploy/compose.test.yml vorhanden. Nichts zu bauen.)
+
+# =============================================================================
+# Vorbereitung des Stapels Test/Schulung (O-10 b, 5.16) -- nicht in der Kette
+# =============================================================================
+# Legt den Ort der Zugangsdaten ausserhalb des Arbeitsbaums an: Verzeichnis
+# mit Modus 0700 und die Datei datenbank_passwort (32 Byte aus /dev/urandom,
+# Base64). Fehlendes wird angelegt, Vorhandenes nie ueberschrieben. Liegt der
+# aufgeloeste Pfad im Arbeitsbaum, endet das Ziel ungleich 0.
+# Ein vorhandenes Verzeichnis muss den Modus 0700, eine vorhandene Datei den
+# Modus 0600 tragen; bei Abweichung endet das Ziel ungleich 0, ohne etwas zu aendern.
+stapel-test-vorbereiten:
+	set -uo pipefail
+	cd "$(PROJ)" || { echo "[stapel-test-vorbereiten] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
+	verz="$${R3COSINT_TEST_GEHEIMNISSE:-}"
+	if [ -z "$$verz" ]; then
+		if [ -z "$${HOME:-}" ]; then echo "[stapel-test-vorbereiten] Weder R3COSINT_TEST_GEHEIMNISSE noch HOME gesetzt." >&2; exit 1; fi
+		verz="$$HOME/.config/r3cosint/test"
+	fi
+	aufgeloest="$$(realpath -m -- "$$verz")" || { echo "[stapel-test-vorbereiten] Pfad nicht aufloesbar: $$verz" >&2; exit 1; }
+	wurzel="$$(realpath -- "$(PROJ)")" || exit 1
+	case "$$aufgeloest" in
+		"$$wurzel"|"$$wurzel"/*)
+			echo "[stapel-test-vorbereiten] Der Pfad $$aufgeloest liegt im Arbeitsbaum $$wurzel. Zugangsdaten gehoeren ausserhalb (O-10 b)." >&2
+			exit 1 ;;
+	esac
+	umask 077
+	if [ -d "$$aufgeloest" ]; then
+		modus="$$(stat -c %a -- "$$aufgeloest")" || { echo "[stapel-test-vorbereiten] Modus nicht lesbar: $$aufgeloest" >&2; exit 1; }
+		if [ "$$modus" != "700" ]; then echo "[stapel-test-vorbereiten] Verzeichnis $$aufgeloest hat den Modus $$modus, verlangt ist 700. Nichts veraendert." >&2; exit 1; fi
+	fi
+	if [ ! -d "$$aufgeloest" ]; then
+		mkdir -p -- "$$aufgeloest" && chmod 0700 -- "$$aufgeloest" || { echo "[stapel-test-vorbereiten] Verzeichnis nicht anlegbar: $$aufgeloest" >&2; exit 1; }
+		echo "[stapel-test-vorbereiten] Verzeichnis angelegt: $$aufgeloest"
+	fi
+	datei="$$aufgeloest/datenbank_passwort"
+	if [ -e "$$datei" ]; then
+		modus="$$(stat -c %a -- "$$datei")" || { echo "[stapel-test-vorbereiten] Modus nicht lesbar: $$datei" >&2; exit 1; }
+		if [ "$$modus" != "600" ]; then echo "[stapel-test-vorbereiten] Datei $$datei hat den Modus $$modus, verlangt ist 600. Nichts veraendert." >&2; exit 1; fi
+		echo "[stapel-test-vorbereiten] Datei vorhanden, nicht veraendert: $$datei"
+	else
+		# Erst der Wert, dann die Datei: scheitert die Erzeugung, entsteht keine leere Datei.
+		wert="$$(head -c 32 /dev/urandom | base64)"
+		if [ -n "$$wert" ] && ( set -C; printf '%s\n' "$$wert" > "$$datei" ); then
+			chmod 0600 -- "$$datei"
+			echo "[stapel-test-vorbereiten] Datei angelegt: $$datei"
+		else
+			echo "[stapel-test-vorbereiten] Datei nicht anlegbar: $$datei" >&2
+			exit 1
+		fi
+	fi
 
 # =============================================================================
 # D2 — Formatierung

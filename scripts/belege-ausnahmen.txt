@@ -117,3 +117,6 @@ docs/uebergaben/2026-08-25_eingangskanal-repariert.md|.claude/hooks/session-star
 docs/vorlagen/2026-10-22_prozess-schnitt/anhang-b-r3coscrum-kopplung-devops-engineer.md|.claude/hooks/session-start-eingang.sh	Hook, mit dem Prozess-Schnitt PS-4 (2026-10-26) entfernt; Entwurf der Einheit vom 2026-10-22, angenommen mit dem Merge des Pull Requests #29, bleibt woertlich und beschreibt den Hook vor seiner Entfernung.
 # (4) Datei im Nachbarordner r3coscrum, Beleg eines vergangenen Standes
 docs/uebergaben/2026-08-25_eingangskanal-repariert.md|r3coscrum/.github/workflows/eingang.yml	Beleg eines vergangenen Standes (Uebergabe vom 2026-08-25): Der Arbeitsablauf gehoert zum frueheren Methodik-Repository und wird mit dem Pull Request in r3coscrum (Prozess-Schnitt PS-4, 2026-10-26) entfernt; lesbar im Archivzweig archiv/r3coscrum. Uebergaben werden nicht geaendert.
+
+# --- Namensaenderung vor der Festlegung von G2 (G2.2) ---------------------------
+docs/uebergaben/2026-08-30_makefile-dod-abbruch-nach-3-4.md|deploy/images/Dockerfile	Datierte Uebergabe, Name vor der Festlegung von G2: das Dockerfile entsteht als deploy/images/anwendung/Dockerfile (ADR 0002, Abschnitt 5, Nachtrag vom 2026-11-04, Zeile D20; Entscheid des Koordinators). Der Pfad deploy/images/Dockerfile darf nicht entstehen: Existierte er, waere die Ausnahme veraltet (Befund).

@@ -1,0 +1,11 @@
+# Positivliste des Baukontexts backend/ (ADR 0002, Abschnitt 5, Nachtrag vom 2026-11-04, G2):
+# zugelassen sind allein pyproject.toml, uv.lock, .python-version und src/.
+# Alles andere, auch tests/ und importvertraege.toml, bleibt ausserhalb des Baus.
+*
+!pyproject.toml
+!uv.lock
+!.python-version
+!src/
+# Bytecode und Zwischenspeicher aus dem Arbeitsbaum gehören nicht in das Image.
+**/__pycache__
+**/*.pyc

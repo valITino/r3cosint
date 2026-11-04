@@ -1,0 +1,10 @@
+# Form der ausserhalb des Arbeitsbaums erwarteten Dateien (Stapel Test/Schulung).
+# Dieses Beispiel enthaelt keinen Wert.
+#
+# Verzeichnis:  ${R3COSINT_TEST_GEHEIMNISSE}, ohne Setzen
+#               ${HOME}/.config/r3cosint/test (Modus 0700)
+# Datei:        datenbank_passwort
+#               eine Zeile, Base64 aus 32 Zufallsbytes, ohne Leerzeichen
+# Erzeugung:    make stapel-test-vorbereiten (legt fehlende Teile an,
+#               ueberschreibt nie, bricht ab, wenn der Pfad im Arbeitsbaum liegt)
+# Einhaengung:  allein in den Dienst datenbank als /run/secrets/datenbank_passwort
