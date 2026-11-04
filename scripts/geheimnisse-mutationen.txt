@@ -1,0 +1,79 @@
+# scripts/geheimnisse-mutationen.txt -- Mutationen fuer den Modus --mutationen des Pruefmittels
+# scripts/geheimnisse-selbsttest.sh (Kettenschritt D11, Rezept geheimnisse im Makefile)
+#
+# Anforderung R3-Q-001. Grundlage: ADR 0002, Abschnitt 5, Nachtrag vom 2026-11-04 (Festlegung fuer N3), Zeile "Mutationen und
+# Mindestsaetze"; Muster: scripts/nachweise-vollstaendig-mutationen.txt und scripts/prototyp-trennung-pruefen-mutationen.txt. Einheit N3.2.
+#
+# FORM: je Zeile fuenf Felder, getrennt durch genau vier Tabulatoren; nur ASCII (keine Umlaute):
+#   Kennung SM-nnn <TAB> Klasse (KS-Kennung) <TAB> sed-Ausdruck <TAB> Mindestsatz <TAB> Grund
+#   - Kennung: dauerhaft, nie wiederverwendet. Klasse: die Fehlerklasse, die die Mutation treffen soll.
+#   - sed-Ausdruck: wird mit sed -E --sandbox (e, r und w sind verboten) auf eine Wegwerfkopie des Makefile angewandt (nicht auf das
+#     Pruefmittel); er darf keinen Tabulator enthalten und haftet an einer Codezeile des Rezepts, nicht an Kommentarzeilen. Als
+#     Begrenzer dient die Tilde. "$$" im Muster ist die Schreibweise des Makefile fuer ein Dollarzeichen der Shell.
+#   - Mindestsatz: Fallkennungen durch Komma; erkannt ist die Mutation, wenn jeder dieser Faelle gegen die Mutante faellt.
+#   - Grund: ein Satz, was die Mutation aendert. Fuer eine Familie der Selbstpruefung beginnt er mit "Familie <name>:" (Gegenstandsdeckung).
+# Ausnahme von der Regel "eine Zeile": SM-020, SM-021, SM-029 und SM-051 treffen gewollt mehrere Zeilen (SM-020, SM-021 und SM-029 beide Laeufe,
+# SM-051 jede Stelle des Namens der Lage C gitleaks-historie); je Mutation steht im Feld Grund der Satz dazu. Die uebrigen aendern eine Zeile.
+# Jede Mutante muss auf dem Geruest noch genau eine Marke liefern (sonst ist sie wirkungslos: Defekt der Mutation).
+# Ohne Mutation bleiben (gleichwertig oder unerreichbar, siehe GS-5 und GP-S1 im Pruefmittel): die Systemkonfiguration von git
+# (GIT_CONFIG_NOSYSTEM ist ueber das Umfeld der Aufrufe von gitleaks gemessen, SM-037) und das Teilmuster je Pfad der Familie bau-dateien
+# (je Teilmuster ein Fall, eine Mutation fuer die ganze Familie, SM-010).
+SM-001	KS-1	s~^(\s*venv\) muster=).*$~\1'zzz_nie' ;;~	S-001,S-010	Familie venv: das Muster trifft nie.
+SM-002	KS-1	s~^(\s*lib-python\) muster=).*$~\1'zzz_nie' ;;~	S-001,S-010	Familie lib-python: das Muster trifft nie.
+SM-003	KS-1	s~^(\s*dist-info\) muster=).*$~\1'zzz_nie' ;;~	S-001,S-010	Familie dist-info: das Muster trifft nie.
+SM-004	KS-1	s~^(\s*node_modules\) muster=).*$~\1'zzz_nie' ;;~	S-002	Familie node_modules: das Muster trifft nie.
+SM-005	KS-1	s~^(\s*gitleaks-toml\) muster=).*$~\1'zzz_nie' ;;~	S-002,S-030	Familie gitleaks-toml: das Muster trifft nie.
+SM-006	KS-1	s~^(\s*vendor-go\) muster=).*$~\1'zzz_nie' ;;~	S-002	Familie vendor-go: das Muster trifft nie.
+SM-007	KS-1	s~^(\s*bower\) muster=).*$~\1'zzz_nie' ;;~	S-002	Familie bower: das Muster trifft nie.
+SM-008	KS-1	s~^(\s*vendor-ruby\) muster=).*$~\1'zzz_nie' ;;~	S-002	Familie vendor-ruby: das Muster trifft nie.
+SM-009	KS-1	s~^(\s*endung-ohne-punkt\) muster=).*$~\1'zzz_nie' ;;~	S-003	Familie endung-ohne-punkt: das Muster trifft nie.
+SM-010	KS-1	s~^(\s*bau-dateien\) muster=).*$~\1'zzz_nie' ;;~	S-004,S-005,S-006	Familie bau-dateien: das Muster (alle Teilmuster) trifft nie.
+SM-011	KS-1	/^\s*\[ "\$\$familie" = endung-ohne-punkt \] && gross=$/d	S-003	Die Familie endung-ohne-punkt wird unter -i geprueft: a.Wsuo bleibt unbemerkt, weil w vor suo dann auch W ausschliesst.
+SM-012	KS-1	s~^(\s*)gross=i$~\1gross=~	S-010	Keine Familie wird unter -i geprueft: ENV/LIB, Lib/Python3.11 und DIST-INFO bleiben unbemerkt.
+SM-013	KS-1	s~^(\s*)gross=i$~\1gross=i; [ "$$familie" = venv ] \&\& gross=~	S-010	Familie venv: ohne -i (das Vorbild hat (?i)).
+SM-014	KS-1	s~^(\s*)gross=i$~\1gross=i; [ "$$familie" = lib-python ] \&\& gross=~	S-010	Familie lib-python: ohne -i (das Vorbild hat (?i)).
+SM-015	KS-1	s~^(\s*)gross=i$~\1gross=i; [ "$$familie" = dist-info ] \&\& gross=~	S-010	Familie dist-info: ohne -i (das Vorbild hat (?i)).
+SM-016	KS-1	s~(grep -zvxF -e )'scripts/gitleaks\.toml'~\1'zzz_nie'~	S-008,S-050	Die Ausnahme scripts/gitleaks.toml entfaellt: die Selbstpruefung meldet die Konfiguration selbst.
+SM-018	KS-3	s~^(\s*)if \[ "\$\$konfig_summe" != "\$\(GITLEAKS_KONFIG_SHA256\)" \]; then$~\1if false; then~	S-033	Die Bindung von scripts/gitleaks.toml an ihre Summe entfaellt.
+SM-019	KS-3	s~^override (GITLEAKS_KONFIG_SHA256 :=)~\1~	S-036	Der Sollwert der Summe ist ohne override: eine Zuweisung auf der Befehlszeile ersetzt ihn.
+SM-022	KS-3	s~^(\s*)if \[ -e \.gitleaksignore \] \|\| \[ -L \.gitleaksignore \]; then$~\1if false; then~	S-032	Die Pruefung auf .gitleaksignore entfaellt.
+SM-023	KS-3	/^geheimnisse:/,/KLASSIFIZIEREN,D11,/s~^(\s*)elif ! command -v sha256sum >/dev/null 2>&1; then$~\1elif false; then~	S-035	Ein fehlendes sha256sum ist keine Lage C.
+SM-024	KS-3	/^geheimnisse:/,/KLASSIFIZIEREN,D11,/s~^(\s*)elif \[ ! -f scripts/gitleaks\.toml \] \|\| \[ ! -r scripts/gitleaks\.toml \]; then$~\1elif false; then~	S-034	Eine fehlende scripts/gitleaks.toml ist keine Lage C.
+SM-025	KS-2	s~^(\s*)\$\(GITLEAKS\) detect --no-git .*$~\1true~	S-020,S-072	Lauf 1 (Arbeitsbaum) entfaellt.
+SM-027	KS-2	s~^(\s*\$\(GITLEAKS\) detect --no-git .*) \|\| fehlgeschlagen=1$~\1~	S-020	Ein Fund in Lauf 1 laesst den Schritt nicht fehlschlagen.
+SM-030	KS-2	s~^(D11_UMFELD := .*) GIT_NO_REPLACE_OBJECTS=1$~\1~	S-028,S-042	GIT_NO_REPLACE_OBJECTS entfaellt: ein Ersatzobjekt blendet den Historienlauf.
+SM-036	KS-4	s~^(D11_UMFELD := .*) HOME="\$\$d11_home"~\1 HOME="$$HOME"~	S-042	Das HOME der Aufrufe ist das des Aufrufers statt eines leeren Verzeichnisses.
+SM-037	KS-4	s~^(D11_UMFELD := .*) GIT_CONFIG_NOSYSTEM=1~\1~	S-042	GIT_CONFIG_NOSYSTEM entfaellt.
+SM-038	KS-4	s~^(D11_UMFELD := .*) GIT_ATTR_NOSYSTEM=1~\1~	S-042	GIT_ATTR_NOSYSTEM entfaellt.
+SM-039	KS-4	s~^(D11_UMFELD := )env -i ~\1env ~	S-040,S-042	Die Aufrufe laufen ohne env -i: GIT_DIR und die uebrigen Variablen des Aufrufers wirken.
+SM-040	KS-4	/^geheimnisse:/,/KLASSIFIZIEREN,D11,/s~^(\s*)cd "\$\(PROJ\)" \|\| .*$~\1:~	S-043	Das Rezept wechselt nicht in das Verzeichnis des Makefile: das Arbeitsverzeichnis des Aufrufers gilt.
+SM-041	KS-5	s~^(\s*)if ! command -v gitleaks >/dev/null 2>&1; then$~\1if false; then~	S-051	Ein fehlendes gitleaks ist keine Lage C.
+SM-042	KS-5	/^geheimnisse:/,/KLASSIFIZIEREN,D11,/s~^(\s*)if ! command -v git >/dev/null 2>&1; then$~\1if false; then~	S-052	Ein fehlendes git ist keine Lage C git.
+SM-043	KS-5	/^geheimnisse:/,/KLASSIFIZIEREN,D11,/s~^(\s*)elif ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then$~\1elif false; then~	S-053	Ein fehlender Git-Arbeitsbaum ist keine Lage C.
+SM-044	KS-5	s~^(\s*if \[ -n "\$\$git_err" \]) && \$\(D11_UMFELD\) git -C \. log .*; then$~\1; then~	S-054,S-056	Die Probe von git log entfaellt.
+SM-045	KS-5	/^\s*if \[ -n "\$\$git_err" \] && /s~ --root -m > /dev/null~ --root > /dev/null~	S-056	Die Probe von git log ohne -m: ein Merge-Commit mit fehlendem Baum faellt nicht auf.
+SM-046	KS-5	s~^(\s*)if \[ -z "\$\$d11_home" \] \|\| \[ ! -d "\$\$d11_home" \]; then$~\1if false; then~	S-055	Ein Fehlschlag von mktemp fuer das leere HOME wird nicht gemeldet.
+SM-051	KS-6	s~fehlt="gitleaks-historie"~fehlt="anders"~g	S-060	Der Name der Lage C weicht an allen Stellen ab (gewollt mehrere Zeilen).
+SM-052	KS-7	s~^(\s*\$\(GITLEAKS\) detect --no-git .*) \|\| fehlgeschlagen=1$~\1 || exit 1~	S-071	Ein Fund in Lauf 1 beendet den Schritt: Lauf 2 laeuft nicht mehr.
+SM-053	KS-8	/^geheimnisse:/,/KLASSIFIZIEREN,D11,/s~^(\s*hat_objekt=1; hat_lage_c=0; fehlgeschlagen=0; fehlt="")$~\1; : > spur-der-mutation~	S-020,S-050	Das Rezept schreibt eine Datei in den Arbeitsbaum.
+SM-054	KS-8	s~^(\s*)rm -rf "\$\$selbst_dir"$~\1:~	S-020,S-050	Die Ablage der Selbstpruefung bleibt nach dem Lauf liegen.
+SM-055	KS-8	s~^(\s*)rm -f "\$\$hist_aus"$~\1:~	S-020,S-050	Die festgehaltene Ausgabe von Lauf 2 bleibt nach dem Lauf liegen.
+SM-056	KS-8	s~^(\s*)\[ -n "\$\$d11_home" \] && rm -rf "\$\$d11_home"$~\1:~	S-020,S-050	Das leere HOME bleibt nach dem Lauf liegen.
+SM-017	KS-1	/^\s*if \[ "\$\$grep_rc" -eq 0 \]; then$/,/^\s*elif /s~^(\s*)selbst_ok=0; fehlgeschlagen=1$~\1selbst_ok=0~	S-001,S-004	Ein Treffer der Selbstpruefung (nur der Zweig des Treffers) laesst den Schritt nicht fehlschlagen.
+SM-047	KS-6	s~^(\s*)if \[ "\$\$hist_n" -ne 1 \] \|\| \[ "\$\$hist_zahl" -eq 0 \]; then$~\1if false; then~	S-060,S-061,S-062,S-063,S-070	Die Plausibilitaetspruefung des Historienlaufs entfaellt.
+SM-048	KS-6	s~ \|\| \[ "\$\$hist_zahl" -eq 0 \]; then$~; then~	S-060,S-070	Die Zahl 0 gilt als plausibel; nur die Zeilenzahl ungleich eins ist Lage C.
+SM-049	KS-6	s~if \[ "\$\$hist_n" -ne 1 \] \|\| ~if ~	S-061,S-062	Die fehlende Zeile gilt als plausibel; nur die Zahl 0 wird geprueft.
+SM-050	KS-6	s~ 2>&1 1>&3 \| tee~ \| tee~	S-050	Nur die Standardausgabe von Lauf 2 wird festgehalten: die Zeile auf der Fehlerausgabe fehlt immer.
+SM-057	KS-6	s~ 2>&1 1>&3 \| tee "\$\$hist_aus" >&2; \} 3>&1~ 2>\&1 \| tee "$$hist_aus"; }~	S-062	Beide Kanaele von Lauf 2 gehen in die Datei: eine Zeile auf der Standardausgabe taeuscht die Zahl vor.
+SM-058	KS-6	s~\[ "\$\$hist_n" -ne 1 \]~[ "$$hist_n" -lt 1 ]~	S-063	Mehrere passende Zeilen gelten als plausibel; nur die fehlende Zeile ist Lage C.
+SM-059	KS-5	s~^(\s*)if \[ -z "\$\$hist_aus" \] \|\| \[ ! -f "\$\$hist_aus" \]; then$~\1if false; then~	S-064	Ein Fehlschlag von mktemp fuer die Ausgabe von Lauf 2 wird nicht gemeldet.
+SM-020	KS-3	/^\s*(\{ )?\$\(GITLEAKS\) detect /s~ --config scripts/gitleaks\.toml~~	S-030	Beide Laeufe ohne --config: eine .gitleaks.toml im Baum bestimmt die Regeln (gewollt mehrere Zeilen).
+SM-021	KS-3	/^\s*(\{ )?\$\(GITLEAKS\) detect /s~ --config scripts/gitleaks\.toml~~;s~^(D11_UMFELD := )env -i ~\1env ~	S-031	Beide Laeufe ohne --config und ohne env -i: GITLEAKS_CONFIG des Aufrufers bestimmt die Regeln (gewollt mehrere Zeilen).
+SM-026	KS-2	s~^(\s*)\{ \$\(GITLEAKS\) detect --redact --exit-code 1 --ignore-gitleaks-allow --config scripts/gitleaks\.toml --log-opts=.*$~\1true~	S-021,S-071	Lauf 2 (Historie) entfaellt.
+SM-028	KS-2	s~(>&2; \} 3>&1) \|\| fehlgeschlagen=1$~\1~	S-021	Ein Fund in Lauf 2 laesst den Schritt nicht fehlschlagen.
+SM-029	KS-2	/^\s*(\{ )?\$\(GITLEAKS\) detect /s~ --ignore-gitleaks-allow~~	S-027	Die Inline-Marke zum Unterdruecken gilt in beiden Laeufen (gewollt mehrere Zeilen).
+SM-031	KS-2	/^\s*\{ \$\(GITLEAKS\) detect /s~ --text --no-textconv~ --no-textconv~	S-024	Lauf 2 ohne --text: "* -diff" blendet die Historie.
+SM-032	KS-2	/^\s*\{ \$\(GITLEAKS\) detect /s~ --no-textconv --no-color~ --no-color~	S-025	Lauf 2 ohne --no-textconv: ein textconv-Treiber blendet die Historie.
+SM-033	KS-2	/^\s*\{ \$\(GITLEAKS\) detect /s~ --no-color --root~ --root~	S-026	Lauf 2 ohne --no-color: color.ui=always blendet die Historie.
+SM-034	KS-2	/^\s*\{ \$\(GITLEAKS\) detect /s~ --root -m"~ -m"~	S-023	Lauf 2 ohne --root: log.showRoot=false blendet den Wurzel-Commit.
+SM-035	KS-2	/^\s*\{ \$\(GITLEAKS\) detect /s~ --root -m"~ --root"~	S-022	Lauf 2 ohne -m: ein Fund nur in einer Merge-Aufloesung bleibt unbemerkt.
