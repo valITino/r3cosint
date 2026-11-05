@@ -6,7 +6,8 @@ des Arbeitsablaufs selbst"). Die Nummern 01 bis 08 in den Testnamen sind die ach
 Zusicherungen dieser Zeile (Festlegung); die Nummern 00 und 09 ff. sind Zusaetze (Auftrag
 G4.2 und Nachbesserung): 09 Zeitgrenzen, 10 COMPOSE_BAKE und Abschaltung der Befehle,
 11 kein if, 12 Urteilsform des Schritts make dod (einschliesslich set -uo pipefail), 13 Umgebung und Ausfuehrungsform,
-14 keine Ausdruecke in run, 15 weitere Rohtextverbote, 16 Einzigkeit, 17 Kopie-Variable.
+14 keine Ausdruecke in run, 15 weitere Rohtextverbote, 16 Einzigkeit, 17 Kopie-Variable,
+18 Laden des Images des Dienstes datenbank ueber den Digest (S1.1, E-S1-03 a).
 Alle Pfade folgen der Lage dieser Datei, nicht dem Arbeitsverzeichnis.
 
 Pruefort: Voreinstellung ist .github/workflows/ der Repository-Wurzel. Fuer die
@@ -396,3 +397,103 @@ def test_r3_q_001_17_keine_env_ebene_setzt_die_kopie_variable() -> None:
         assert "R3COSINT_WORKFLOWS_VERZEICHNIS" not in text, (
             f"{datei.name} nennt die Variable"
         )
+
+
+COMPOSE_TEST = WURZEL / "deploy" / "compose.test.yml"
+DIGEST_ZEILE = re.compile(
+    r"^\s*image:\s*docker\.io/library/postgres@sha256:([0-9a-f]{64})\s*$", re.MULTILINE
+)
+BILD_BEFEHL = re.compile(r"\bdocker\s+(pull|create|run)\s+(?:-\S+\s+)*(\S+)")
+UV_BILD = re.compile(r'^"?ghcr\.io/astral-sh/uv@sha256:[0-9a-f]{64}\)?"?$')
+
+
+def test_r3_q_001_18_genau_ein_schritt_laedt_das_image_der_datenbank_ueber_den_digest() -> (
+    None
+):
+    """Zusatz (S1.1, E-S1-03 a): ein Schritt vor make dod laedt allein das Image des Dienstes datenbank.
+
+    Der Digest steht allein in deploy/compose.test.yml (eine Quelle); der Schritt liest ihn
+    aus der Zeile image: und laedt nur dieses Image mit docker pull ueber den Digest, danach
+    docker image inspect. Sonst wird ausser dem uv-Image des Schritts "uv aus dem Image"
+    nichts geladen, erzeugt oder gestartet. Grenze: der Test fuehrt den Schritt nicht aus.
+    """
+    treffer = DIGEST_ZEILE.findall(COMPOSE_TEST.read_text(encoding="utf-8"))
+    assert len(treffer) == 1, (
+        f"{COMPOSE_TEST.name} nennt den Digest des Dienstes datenbank {len(treffer)} mal, erwartet 1"
+    )
+    digest = treffer[0]
+    doc = _lade(GEGENSEITE)
+    schritte = [s for _, s in _alle_schritte(doc)]
+    laden = [
+        (i, s)
+        for i, s in enumerate(schritte)
+        if isinstance(s.get("run"), str) and re.search(r"\bdocker\s+pull\b", s["run"])
+    ]
+    assert len(laden) == 1, (
+        f"{len(laden)} Schritte rufen docker pull auf, erwartet genau 1"
+    )
+    i_laden, schritt = laden[0]
+    assert (
+        schritt.get("name") == "Image des Dienstes datenbank ueber den Digest laden"
+    ), f"Name des Schritts ist {schritt.get('name')!r}"
+    i_dod = schritte.index(_make_dod_schritte(doc)[0])
+    assert i_laden < i_dod, "der Schritt, der das Image laedt, steht nicht vor make dod"
+    assert i_laden == i_dod - 1, (
+        "zwischen dem Laden und make dod steht ein weiterer Schritt"
+    )
+    run = schritt["run"]
+    zeilen = [z.strip() for z in run.splitlines() if z.strip()]
+    assert zeilen[0] == "set -euo pipefail", f"erste Zeile ist {zeilen[0]!r}"
+    grenze = schritt.get("timeout-minutes")
+    assert grenze == 10 and not isinstance(grenze, bool), (
+        f"timeout-minutes am Ladeschritt ist {grenze!r}, erwartet 10"
+    )
+    i_stop = next(
+        (i for i, z in enumerate(zeilen) if z.startswith('echo "::stop-commands::')), -1
+    )
+    assert 0 <= i_stop < zeilen.index('docker pull "$bild"'), (
+        "::stop-commands:: steht nicht vor docker pull"
+    )
+    assert "trap 'echo \"::$TOKEN::\"' EXIT" in zeilen, (
+        "Wiedereinschalten in der EXIT-Falle fehlt"
+    )
+    lesezeilen = [z for z in zeilen if z.startswith('digest="$(sed -n ')]
+    assert len(lesezeilen) == 1 and lesezeilen[0].endswith(
+        ' deploy/compose.test.yml)"'
+    ), f"der Digest wird nicht aus deploy/compose.test.yml gelesen: {lesezeilen}"
+    assert r"docker\.io\/library\/postgres@sha256:" in run, (
+        "die Lesart des Digests nennt das Image nicht"
+    )
+    assert 'bild="docker.io/library/postgres@sha256:$digest"' in zeilen, (
+        "das Image wird nicht aus dem gelesenen Digest gebildet"
+    )
+    assert 'docker pull "$bild"' in zeilen, "docker pull ueber $bild fehlt"
+    assert zeilen.index('docker pull "$bild"') < zeilen.index(
+        'docker image inspect "$bild" >/dev/null'
+    ), "docker image inspect steht nicht hinter docker pull"
+    # Steht ein Digest im Wortlaut im Arbeitsablauf, muss er dem der Compose-Datei gleichen.
+    text = GEGENSEITE.read_text(encoding="utf-8")
+    woertlich = re.findall(r"postgres@sha256:([0-9a-f]+)", text)
+    assert all(w == digest for w in woertlich), (
+        f"Digest im Arbeitsablauf weicht von {COMPOSE_TEST.name} ab: {woertlich}"
+    )
+    # Sonst wird nichts geladen: jedes Image in docker pull, create und run steht auf einem
+    # Digest und ist entweder das uv-Image des Schritts "uv aus dem Image" oder das Datenbank-Image.
+    gesehen: list[str] = []
+    for block in _run_bloecke(doc):
+        for befehl, bild in BILD_BEFEHL.findall(block):
+            gesehen.append(f"{befehl} {bild}")
+            if befehl == "pull":
+                assert bild == '"$bild"', f"docker pull laedt {bild!r}"
+            else:
+                assert befehl == "create" and UV_BILD.match(bild), (
+                    f"docker {befehl} {bild!r} ausser dem uv-Image"
+                )
+    assert sorted(g.split()[0] for g in gesehen) == ["create", "pull"], (
+        f"geladene oder erzeugte Images: {gesehen}"
+    )
+    for block in _run_bloecke(doc):
+        assert not re.search(
+            r"\bdocker\s+(image\s+)?(load|import|build|compose\s+pull)\b", block
+        ), "ein Schritt laedt, importiert oder baut ein Image"
+        assert not re.search(r"postgres:", block), "ein Schritt nennt ein Image mit Tag"

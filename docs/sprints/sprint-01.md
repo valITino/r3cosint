@@ -6,7 +6,7 @@
 | **Entscheidet** | Auftraggeber (S-01), durch den Merge des Pull Requests der Einheiten D21 und S1 |
 | **Vorbereitet** | 2026-11-05, Einheit S1: Scrum Master (dieses Artefakt, Zusammenführung), Product Owner (Sprint Backlog, Ready-Prüfung), Software Architect (Festlegung `docs/adr/0007-datenzugriff-und-protokollschema.md`, Zerlegung), Requirements Engineer (Walkthrough `docs/sprints/sprint-01-walkthrough.md`). Textprüfung: siehe Übergabe `docs/uebergaben/2026-11-05_d21-etappe-1-sprint-1.md` (zwei Static Software Tester auf getrennten Modellfeldern; die Prüfung läuft nach der Abfassung dieses Artefakts) |
 | **Weisung** | 2026-11-05, zweiter Formweg, Wortlaut: "Habe #51 gemerged, mach weiter mit Etappe 1" (Angabe des Koordinators, Fremdbeleg; Lesart des Koordinators in der Übergabe) |
-| **Status** | vorgelegt am 2026-11-05; Annahme durch den Merge des Pull Requests der Einheiten D21 und S1 ohne Kommentar; die Erklärung in Abschnitt 8 füllt Claude Code nicht aus |
+| **Status** | angenommen am 2026-11-05 (Merge des Pull Requests #52, Merge-Commit `729fa34109c4e097d02d07ad9cd8ac06e2f67b72`); vorgelegt war die Vorlage am 2026-11-05 mit dem Pull Request der Einheiten D21 und S1; Abschnitt 8 am 2026-11-05 in Einheit D22 vom Protocol Master nach dem Merge übertragen |
 
 ## 1. Was diese Vorlage ist
 
@@ -170,15 +170,15 @@ D17 ist nach der Lesart dieser Vorlage nicht berührt, soweit 4.4 umgesetzt und 
 
 ### 6.1 Ereignisplan
 
-Sprintbeginn ist der Merge des Pull Requests der Einheiten D21 und S1 (Tag 0). Sprintende ist zwei Wochen danach (Tag 14) oder die Abnahme der letzten Baueinheit, je nachdem, was zuerst eintritt. Einheiten, die am Sprintende nicht abgenommen sind, gehen in die Planung von Sprint 2 zurück; ein halbfertiger Zustand wird nicht als erledigt geführt (3.3). Konkrete Daten ergeben sich aus dem Zeitpunkt des Merges; sie stehen bis dahin nicht fest.
+Sprintbeginn (Tag 0) ist der Merge des Pull Requests #52 der Einheiten D21 und S1 am 2026-11-05 um 15:53:04 UTC. Sprintende (Tag 14) ist der 2026-11-19 oder die Abnahme der letzten Baueinheit, je nachdem, was zuerst eintritt. Einheiten, die am Sprintende nicht abgenommen sind, gehen in die Planung von Sprint 2 zurück; ein halbfertiger Zustand wird nicht als erledigt geführt (3.3). Die Daten stehen nach den Angaben des Koordinators (Fremdbeleg).
 
 | Ereignis | Form (Formweg) | Timebox (6.8) | Zeitpunkt |
 |---|---|---|---|
-| Sprint Planning | diese Vorlage; Annahme durch den Merge | höchstens 4 h Prüfzeit des Auftraggebers | vorgelegt 2026-11-05; Sprintbeginn = Merge (Tag 0) |
-| Daily Scrum | Abschnitt je Baueinheit in der Übergabe (fertig, offen, entschieden, Hindernis) | 15 min Prüfzeit je Eintrag | mit jeder Baueinheit, S1.1 bis S1.5 |
+| Sprint Planning | diese Vorlage; Annahme durch den Merge | höchstens 4 h Prüfzeit des Auftraggebers | vorgelegt 2026-11-05, angenommen mit dem Merge #52 am 2026-11-05 15:53:04 UTC (Tag 0) |
+| Daily Scrum | Abschnitt je Baueinheit in der Übergabe (fertig, offen, entschieden, Hindernis) | 15 min Prüfzeit je Eintrag | mit jeder Baueinheit, S1.1 bis S1.5; S1.1 begonnen am 2026-11-05 |
 | Abnahme je Baueinheit | Merge des Pull Requests der Einheit (erster Formweg) | im Rahmen des Sprint Review | je Einheit, Pause bis zum Merge |
-| Sprint Review | Merge des Pull Requests der letzten Baueinheit des Sprints (S1.5) | höchstens 2 h Prüfzeit | spätestens Tag 14 |
-| Retrospektive | Abschnitt "Retrospektive Sprint 1" in der Übergabe, mit Massnahmen (je ein Verantwortlicher, ein Termin) und Vergleich von geschätztem und tatsächlichem Prüfaufwand | höchstens 1,5 h Prüfzeit | nach dem Review, spätestens Tag 14 |
+| Sprint Review | Merge des Pull Requests der letzten Baueinheit des Sprints (S1.5) | höchstens 2 h Prüfzeit | spätestens am 2026-11-19 (Tag 14) |
+| Retrospektive | Abschnitt "Retrospektive Sprint 1" in der Übergabe, mit Massnahmen (je ein Verantwortlicher, ein Termin) und Vergleich von geschätztem und tatsächlichem Prüfaufwand | höchstens 1,5 h Prüfzeit | nach dem Review, spätestens am 2026-11-19 (Tag 14) |
 
 **Wartezeiten auf menschliches Review liegen auf dem kritischen Pfad** (6.8) und werden als eigene Positionen ausgewiesen: Sechs Merges (Pull Request der Einheiten D21 und S1 sowie fünf Baueinheiten) stehen in strenger Reihenfolge, weil keine Einheit neben einer anderen läuft; jede Wartezeit auf einen Merge ist eine Position der Übergabe, nicht Teil der Bauzeit.
 
@@ -191,11 +191,12 @@ Sprintbeginn ist der Merge des Pull Requests der Einheiten D21 und S1 (Tag 0). S
 | H-3 | Docker-Daemon ist nach jedem Neustart der Maschine neu zu starten; Docker Hub begrenzt anonyme Abrufe (M-G21-01: Vorladen der drei Images im Setup-Skript, Vorlage ohne Entscheid) | DevOps Engineer; Dynamic Software Tester | 2026-11-05 | offen | Entscheid des Auftraggebers zur Vorlage M-G21-01; bis dahin Daemon je Sitzung starten | offen |
 | H-4 | Die drei Wegwerf-Zweige bestehen weiter; der Push-Weg der Sitzung wurde beim Löschen mit HTTP 403 abgewiesen | Auftraggeber | 2026-11-05 | offen, Bitte im Pull Request von D17 | Löschen durch den Auftraggeber | offen |
 | H-5 | Wartezeiten auf Merges liegen auf dem kritischen Pfad; sechs Merges in Reihe | Auftraggeber; Scrum Master | 2026-11-05 | läuft | Wartezeit je Merge als Position in der Übergabe | Tag 14 |
-| H-6 | E-S1-03 ändert den abgenommenen Arbeitsablauf der Gegenseite (G4); Abrufgrenze M-G21-01 trifft auch den Runner | DevOps Engineer; SecDevOps Engineer | 2026-11-05 | zur Entscheidung (E-S1-03) | im Pull Request von S1.1 ausdrücklich nennen; Nachführung von `backend/tests/architektur/test_arbeitsablauf_gegenseite.py` | mit S1.1 |
-| H-7 | Widerspruch zwischen Product Owner (R3-F-005 ready mit Vorbehalt) und Requirements Engineer (W1-83 blockiert) | Product Owner; Requirements Engineer | 2026-11-05 | nicht aufgelöst | Entscheid des Auftraggebers (E-S1-21) | mit der Annahme |
-| H-8 | Einträge der Spuren in S1.2 vor dem Bestand (Ermittlungsspur-Eintragstypen erst mit S1.4); Kennung der Commits von S1.1 (Vorschlag des Software Architects: R3-F-008) vom Product Owner noch zu bestätigen | Product Owner; Software Architect | 2026-11-05 | aufgelöst am 2026-11-05 (ADR 0007, Nachbesserung) bis auf die Bestätigung der Commit-Kennung durch den Product Owner (offen) | Aufgelöst: In S1.2 schreibt die Testfixture einen synthetischen Fall unmittelbar in die Tabelle fall (samt Fallschlüssel), der Kettenkopf entsteht über spur.service.ketten_anlegen, alle vier Eintragstypen von Sprint 1 stehen ab Revision 0003 im Vorrat, und die Abnahmetests von R3-F-008 und R3-F-012 schreiben fall_eroeffnet in die Arbeitsspur und entitaet in die Ermittlungsspur mit synthetischer Nutzlast gleicher Form; echte Einträge kommen ab S1.3 aus fall und ab S1.4 aus kanon. Offen: Bestätigung der Commit-Kennung von S1.1 durch den Product Owner | 2026-11-05 (ohne die Commit-Kennung: vor S1.1) |
+| H-6 | E-S1-03 ändert den abgenommenen Arbeitsablauf der Gegenseite (G4); Abrufgrenze M-G21-01 trifft auch den Runner | DevOps Engineer; SecDevOps Engineer | 2026-11-05 | E-S1-03 entschieden (a) mit dem Merge #52 am 2026-11-05; Umsetzung offen | Umsetzung in S1.1; im Pull Request von S1.1 ausdrücklich nennen; Nachführung von `backend/tests/architektur/test_arbeitsablauf_gegenseite.py` | mit S1.1 |
+| H-7 | Widerspruch zwischen Product Owner (R3-F-005 ready mit Vorbehalt) und Requirements Engineer (W1-83 blockiert) | Product Owner; Requirements Engineer | 2026-11-05 | aufgelöst am 2026-11-05: E-S1-21 entschieden (a) mit dem Merge #52 (Werkzeug und Abfrage Texte fester Form, Grenze GS-6) | keiner | 2026-11-05 |
+| H-8 | Einträge der Spuren in S1.2 vor dem Bestand (Ermittlungsspur-Eintragstypen erst mit S1.4); Kennung der Commits von S1.1 (Vorschlag des Software Architects: R3-F-008) vom Product Owner noch zu bestätigen | Product Owner; Software Architect | 2026-11-05 | aufgelöst am 2026-11-05 (ADR 0007, Nachbesserung; Commit-Kennung R3-F-008 vom Product Owner in D22 bestätigt, Backlog Nachführung Nr. 60) | Aufgelöst: In S1.2 schreibt die Testfixture einen synthetischen Fall unmittelbar in die Tabelle fall (samt Fallschlüssel), der Kettenkopf entsteht über spur.service.ketten_anlegen, alle vier Eintragstypen von Sprint 1 stehen ab Revision 0003 im Vorrat, und die Abnahmetests von R3-F-008 und R3-F-012 schreiben fall_eroeffnet in die Arbeitsspur und entitaet in die Ermittlungsspur mit synthetischer Nutzlast gleicher Form; echte Einträge kommen ab S1.3 aus fall und ab S1.4 aus kanon. | 2026-11-05 |
 | H-9 | Berührung von D17 in S1.3 (Rechtsregime-Vorrat auf R1 und R2 beschränkt, E-S1-09; Startwerte): GRC-Stellungnahme vorgesehen, formale Geltung von D17 nicht entschieden; Walkthrough-Befunde W1-02, W1-11, W1-32, W1-33 am präskriptiven Teil entscheidet die GRC-Rolle mit dem Auftraggeber (6.6) | Security Specialist GRC; Auftraggeber | 2026-11-05 | offen | Klärung in der Annahme (E-S1-09) und vor S1.3 | vor S1.3 |
 | H-10 | Begriff im Schema: ADR 0007 führte Tabelle und Spalte aufbewahrungsklasse; Glossar und GRC-Prüfung sagen "in Arbeitsprodukten Fallkategorie verwenden" (Synonym; W1-08, GRC-Hinweis H-5) | Software Architect; Requirements Engineer | 2026-11-05 | aufgelöst am 2026-11-05 (ADR 0007, Nachbesserung) | Aufgelöst: Der Bezeichner heisst jetzt fallkategorie nach dem Glossar (ADR 0007, Entscheide 9 und 22 und Teil B, Nachbesserung H-8 und H-10; Regel in Entscheid 28, Bezeichner nach ADR 0002, A13); Backlog-Eintrag R3-F-001 und Glossar sagen auch Aufbewahrungsklasse (Synonym, im ADR vermerkt) | 2026-11-05 |
+| H-11 | Bestätigung des Bestands der serverseitigen Regeln von GitHub für main durch den Auftraggeber nicht belegt (Einordnung aus E-R5-12 b) | Auftraggeber | 2026-11-05 | offen; im Pull Request der Einheiten D21 und S1 als offen genannt | Bestätigung oder Einrichtung durch den Auftraggeber | offen |
 
 ## 7. Entscheidungspunkte
 
@@ -237,11 +238,11 @@ Zur Berührung des präskriptiven Teils (E-S1-09, W1-02, W1-11, W1-32, W1-33): K
 
 ## 8. Annahmeerklärung
 
-*Nicht ausgefüllt. Claude Code füllt diesen Abschnitt nicht aus; die Entscheidung liegt beim Auftraggeber. Die Folgeeinheit trägt den Entscheid aus dem Merge ein (ADR 0002, Abschnitt 10; Backlog, Punkt 29).*
+*Ausgefüllt am 2026-11-05 durch den Protocol Master im Auftrag des Koordinators nach dem Merge des Pull Requests #52 (erster Formweg; Protokollvermerk unten). Der Stand davor ("Nicht ausgefüllt") liegt in git im Stand des Pull Requests #52 (Kopf `41cdddc412683ae73b86650d3f99385168e51c9f`).*
 
 ### Entscheid (E-S1-16)
 
-- [ ] **Angenommen.** Sprint 1 beginnt mit dem Merge; die erste Baueinheit ist S1.1.
+- [x] **Angenommen.** Sprint 1 beginnt mit dem Merge; die erste Baueinheit ist S1.1.
 - [ ] **Angenommen mit Auflagen.** Die Auflagen unten werden vor oder mit der genannten Einheit umgesetzt.
 - [ ] **Nicht angenommen.** Nachbesserung gemäss Auflagen, danach erneute Vorlage.
 
@@ -249,29 +250,33 @@ Zur Berührung des präskriptiven Teils (E-S1-09, W1-02, W1-11, W1-32, W1-33): K
 
 | Nr. | Auflage | Frist oder Bedingung |
 |---|---|---|
-| | | |
+| — | Keine Auflagen. | — |
 
 ### Entscheide je Punkt
 
 | Punkt | Entscheid |
 |---|---|
-| E-S1-01 bis E-S1-15 (ADR 0007) | |
-| E-S1-17 bis E-S1-22 | |
+| E-S1-01 bis E-S1-15 (ADR 0007) | Je nach Empfehlung, mit dem Merge ohne Kommentar: E-S1-01 (a), E-S1-02 (c), E-S1-03 (a), E-S1-04 (b), E-S1-05 (b), E-S1-06 (b), E-S1-07 (a), E-S1-08 (a), E-S1-09 (a), E-S1-10 (a), E-S1-11 (a), E-S1-12 (a), E-S1-13 (a), E-S1-14 (a), E-S1-15 (a) |
+| E-S1-17 bis E-S1-22 | Je nach Empfehlung, mit dem Merge ohne Kommentar: E-S1-17 (a), E-S1-18 (a), E-S1-19 (a), E-S1-20 (a), E-S1-21 (a), E-S1-22 (a); E-S1-16 (a) ist der Entscheid oben |
 
 ### Erklärung
 
-> Ich habe die Vorlage `docs/sprints/sprint-01.md` im Stand des Pull Requests der Einheiten D21 und S1 geprüft.
+> Ich habe die Vorlage `docs/sprints/sprint-01.md` im Stand des Pull Requests der Einheiten D21 und S1 (Pull Request #52, Kopf `41cdddc412683ae73b86650d3f99385168e51c9f`) geprüft.
 > Der Entscheid oben gilt.
 
 | | |
 |---|---|
-| **Auftraggeber (S-01)** | |
+| **Auftraggeber (S-01)** | Erteilt durch den Merge des Pull Requests #52 am 2026-11-05, 15:53:04 UTC (Merge-Commit `729fa34109c4e097d02d07ad9cd8ac06e2f67b72`), durch das Konto des Repository-Eigentümers; eingetragen durch den Protocol Master, Einheit D22. Ohne Kommentar, ohne Review; der Wortlaut der Erklärung oben ist der in der Vorlage vorformulierte und nicht vom Auftraggeber geschrieben; Name nach offenem Entscheid E-11 nicht im Repository geführt |
+
+**Protokollvermerk zur Form:** Die Annahme wurde durch den Merge des Pull Requests #52 erteilt (erster Formweg); sein Text sagt, dass der Merge die Annahme von Sprint-Ziel, Sprint Backlog und Zerlegung nach dieser Vorlage bedeutet, mit den Empfehlungen je Entscheidpunkt, sofern kein Kommentar und keine Weisung anderes sagt; ein abweichender Kommentar lag nicht vor. Die Angaben zum Merge sind den Tatsachen des Koordinators vom 2026-11-05 entnommen (GitHub-Schnittstelle und git) — Fremdbeleg, von dieser Rolle nicht nachgemessen. Einzelheiten: ADR 0002, Abschnitt 10, Unterabschnitt "Annahme von Sprint 1 der Etappe 1 ... und Bestätigung von D21 — Merge des Pull Requests #52 — erteilt am 2026-11-05, eingetragen am 2026-11-05".
 
 ### Formweg
 
 Erster Formweg: Merge des Pull Requests der Einheiten D21 und S1; sein Text sagt, dass der Merge die Annahme von Sprint-Ziel, Sprint Backlog und Zerlegung nach dieser Vorlage bedeutet, mit den Empfehlungen je Entscheidpunkt, sofern kein Kommentar und keine Weisung anderes sagt. Zweiter Formweg: Anweisung an die nächste Sitzung im exakten Wortlaut des Entscheids; die Sitzung überträgt ihn hierher. Massgeblich ist der committete Stand; Urheber und Zeitpunkt belegt die Commit-Historie.
 
 ## 9. Nach der Annahme
+
+**Stand 2026-11-05:** Die Annahme ist am 2026-11-05 um 15:53:04 UTC mit dem Merge des Pull Requests #52 erfolgt (erster Formweg, ohne Kommentar). Die erste Baueinheit S1.1 hat am 2026-11-05 begonnen, auf die Weisung des Auftraggebers vom 2026-11-05, Wortlaut: "Kannst du jegliche Sachen abschliessen und alles sauber und korrekt machen und dann direkt auch weitermachen. Habe auch schon gemergt" (zweiter Formweg; Angabe des Koordinators, Fremdbeleg). Lesart des Koordinators (nicht Wortlaut): Der Pull Request von S1.1 trägt die Bestätigung von D22; sein Merge ist die Abnahme von S1.1 und die Bestätigung von D22.
 
 1. Die erste Sitzung nach dem Merge trägt die Annahme ein: Protocol Master in ADR 0002, Abschnitt 10 und in Abschnitt 8 dieses Dokuments; Product Owner im Backlog (Nachführungen, Punkt 29, Vermerk "Vorbehalt entfällt" in den sechs Einträgen); Software Architect in ADR 0007 (Status nach den Entscheiden E-S1-01 bis E-S1-15 und ADR 0002, Abschnitt 4.3 mit den Verträgen 8 bis 10); Koordinator in CLAUDE.md.
 2. **Erste Baueinheit** nach der Zerlegung: S1.1 (Datenzugriff und Teststufe). Jede Baueinheit beginnt mit der Erfassung der Codebasis (3.1) und dem Schnitt durch den Software Architect, wird von Static und Dynamic Software Tester auf einem anderen Modellfeld verifiziert (3.4) und durch den Merge ihres Pull Requests abgenommen. Pause je Pull Request bis zum Merge; ohne weitere Weisung je Einheit nach der Weisung vom 2026-11-05.

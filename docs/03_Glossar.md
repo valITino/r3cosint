@@ -5,7 +5,7 @@
 | **Arbeitsprodukt nach** | Projektauftrag 6.3 |
 | **Verantwortlich** | Requirements Engineer; ein benannter Verantwortlicher ist noch zu bestimmen |
 | **Lebensdauer** | langlebig |
-| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19. Nachgeführt 2026-09-21 mit dem Backlog-Eintrag R3-Q-010: Gate und Hook aufgenommen, beim Eintrag Freigabe-Gate die Homonym-Warnung um die Abgrenzung zum Gate ergänzt — beide Begriffe werden in Arbeitsprodukten und Regeln seit dem 2026-08-19 verwendet, standen aber nicht im Glossar, und "Gate" bezeichnete darin zwei verschiedene Sachen (R3 der Definition of Ready, Homonyme vermeiden). Nachgeführt 2026-09-23 mit dem Backlog-Eintrag R3-Q-011: Einschleusung, Fremder Inhalt und Harness aufgenommen — alle drei Begriffe tragen den Eintrag; "fremde Inhalte" wurde bisher für den Harness (CLAUDE.md, Abschnitt "Nicht verhandelbar") und für das Produkt (R3-F-017) ohne Abgrenzung gebraucht, und "Harness" selbst stand trotz Verwendung im Projektauftrag (5.15) und in CLAUDE.md nicht im Glossar (R3 der Definition of Ready). Nachgeführt 2026-10-28 mit der Einheit G0: Grundgerüst aufgenommen — der Begriff wird im Projektauftrag (3.1), im Architekturentscheid und in der Freigabe des Grundgerüsts verwendet, stand aber nicht im Glossar; `docs/12_Freigabe_Grundgeruest.md` führt die Aufnahme in Abschnitt 1 als Restpunkt und weist sie in Abschnitt 4 (G0, Rollen) dem Requirements Engineer zu (R3 der Definition of Ready). Nachgeführt 2026-11-05 mit der Einheit S1 (Walkthrough vor Sprint 1, `docs/sprints/sprint-01-walkthrough.md`): Aufgabe, Datenpunkt, Fallkategorie, Fallverantwortlicher, Kettenprüfung, Klardaten, Löschweg, Protokolleintrag, Prüffrist, Rechtsregime und Verkettung aufgenommen (neuer Abschnitt D), bei Aufbewahrungsklasse das Synonym Fallkategorie vermerkt (4.4, Punkt 3b: genau ein Feld), bei Grabstein-Eintrag die Kurzform; Sprint 1 braucht die Begriffe als Bezeichner (ADR 0002, A13). Rechtsregime trägt [rechtlich] und ist am 2026-11-05 durch die GRC-Rolle geprüft (Einheit S1); offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5). Unter "Zu ergänzen" Nr. 4 bis 6 neu. 64 Einträge |
+| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19. Nachgeführt 2026-09-21 mit dem Backlog-Eintrag R3-Q-010: Gate und Hook aufgenommen, beim Eintrag Freigabe-Gate die Homonym-Warnung um die Abgrenzung zum Gate ergänzt — beide Begriffe werden in Arbeitsprodukten und Regeln seit dem 2026-08-19 verwendet, standen aber nicht im Glossar, und "Gate" bezeichnete darin zwei verschiedene Sachen (R3 der Definition of Ready, Homonyme vermeiden). Nachgeführt 2026-09-23 mit dem Backlog-Eintrag R3-Q-011: Einschleusung, Fremder Inhalt und Harness aufgenommen — alle drei Begriffe tragen den Eintrag; "fremde Inhalte" wurde bisher für den Harness (CLAUDE.md, Abschnitt "Nicht verhandelbar") und für das Produkt (R3-F-017) ohne Abgrenzung gebraucht, und "Harness" selbst stand trotz Verwendung im Projektauftrag (5.15) und in CLAUDE.md nicht im Glossar (R3 der Definition of Ready). Nachgeführt 2026-10-28 mit der Einheit G0: Grundgerüst aufgenommen — der Begriff wird im Projektauftrag (3.1), im Architekturentscheid und in der Freigabe des Grundgerüsts verwendet, stand aber nicht im Glossar; `docs/12_Freigabe_Grundgeruest.md` führt die Aufnahme in Abschnitt 1 als Restpunkt und weist sie in Abschnitt 4 (G0, Rollen) dem Requirements Engineer zu (R3 der Definition of Ready). Nachgeführt 2026-11-05 mit der Einheit S1 (Walkthrough vor Sprint 1, `docs/sprints/sprint-01-walkthrough.md`): Aufgabe, Datenpunkt, Fallkategorie, Fallverantwortlicher, Kettenprüfung, Klardaten, Löschweg, Protokolleintrag, Prüffrist, Rechtsregime und Verkettung aufgenommen (neuer Abschnitt D), bei Aufbewahrungsklasse das Synonym Fallkategorie vermerkt (4.4, Punkt 3b: genau ein Feld), bei Grabstein-Eintrag die Kurzform; Sprint 1 braucht die Begriffe als Bezeichner (ADR 0002, A13). Rechtsregime trägt [rechtlich] und ist am 2026-11-05 durch die GRC-Rolle geprüft (Einheit S1); offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5). Unter "Zu ergänzen" Nr. 4 bis 6 neu. 64 Einträge. Nachgeführt 2026-11-05 mit der Einheit D22 (nach der Annahme von Sprint 1 und ADR 0007 durch den Merge des Pull Requests #52): Eintragstyp und Kettenkopf aufgenommen (ADR 0007, Entscheid 28, Restpunkt des Software Architects); Rechtsregime nach Hinweis H-3 der GRC-Rolle neu gefasst (R1 oder R2 als Regime des Falls, R3 bis R5 als Rahmen, Eigenschaft der Bearbeitung beziehungsweise Phase nach dem Betriebszweck; 4.4, Tabelle; ADR 0007, E-S1-09), die Neufassung geprüft durch die GRC-Rolle am 2026-11-05 (Einheit D22), offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5); bei Fallkategorie die Fundstellen der Sätze zu Kurzkennzeichnung und Archivwürdigkeit nachgetragen (H-4); beim Fall Rechtsregime und Fallkategorie statt Aufbewahrungsklasse, mit Vermerk zum Synonym (H-5); "Zu ergänzen" Nr. 5 nachgeführt (H-6). 66 Einträge |
 
 **Die Verwendung dieses Glossars ist für alle Arbeitsprodukte und für die
 Oberflächentexte verpflichtend** (6.3). Synonyme sind gekennzeichnet, Homonyme
@@ -117,6 +117,21 @@ verwenden. *Abzugrenzen von:* Fremder Inhalt (siehe dort) — fremder Inhalt ist
 der Träger, die Einschleusung der eingebettete Text; nicht jeder fremde Inhalt
 enthält eine.
 
+**Eintragstyp** — Die Art eines Protokolleintrags, aus einem geschlossenen
+Vorrat je Spur. Der Vorrat steht als Prüfbedingung im Schema der Spurtabellen;
+ein Eintrag mit einem Typ ausserhalb des Vorrats wird abgewiesen (ADR 0007,
+Entscheide 13 und 14). In Sprint 1 umfasst der Vorrat für die Arbeitsspur
+fall_eroeffnet und fall_geschlossen (R3-F-001), für die Ermittlungsspur
+entitaet und beziehung (R3-F-003, R3-F-005). Weitere Typen kommen je mit dem
+Backlog-Eintrag, der sie erzeugt, als Erweiterung der Prüfbedingung, nie im
+Voraus als Platzhalter (ADR 0007, Entscheide 11 und 14). Je Eintragstyp gilt
+ein geschlossenes Schema der Nutzlast (ADR 0007, Entscheid 17). Bezeichner
+eintragstyp (ADR 0007, Entscheid 28). Grundlage der beiden Spuren: 5.3.
+*Abzugrenzen von:* der Kennzeichnung als Quellenaussage oder Schlussfolgerung
+des Modells, die jeder Protokolleintrag zusätzlich trägt (ADR 0007,
+Entscheid 13) — der Eintragstyp sagt, welcher Vorgang festgehalten ist, die
+Kennzeichnung, woher die Aussage stammt.
+
 **Entität** — Ein Objekt im kanonischen Datenbestand: Person, Firma, IP-Adresse,
 Domain, Wallet, Vermögenswert und so weiter. Trägt immer einen Herkunftsnachweis
 und eine Klassifizierungsstufe.
@@ -136,8 +151,12 @@ Exporte liegen ausserhalb des Systems und werden von keiner Löschung erreicht
 ## F
 
 **Fall** — Ein Verfahren oder Vorgang mit Aktenzeichen, ermittelnder Person,
-Rechtsgrundlage und Aufbewahrungsklasse. **Ohne eröffneten Fall ist kein
-einziges Werkzeug aufrufbar** (5.4, Fallbindung).
+Rechtsgrundlage, Rechtsregime und Fallkategorie (R3-F-001; 4.4, "Warum die
+Aufteilung an der Spitze wichtig ist"). Der Backlog-Eintrag R3-F-001 nennt
+statt der Fallkategorie die Aufbewahrungsklasse; nach 4.4, Punkt 3b, ist die
+Fallkategorie das eine Feld, Aufbewahrungsklasse ist Synonym (siehe dort),
+Bezeichner fallkategorie (ADR 0007, Entscheid 22). **Ohne eröffneten Fall ist
+kein einziges Werkzeug aufrufbar** (5.4, Fallbindung).
 
 **Fallbindung** — Verfahrensgarantie: jede Abfrage ist zwingend einem Verfahren
 und einer Person zugeordnet (5.4).
@@ -150,9 +169,12 @@ Konfiguration, keine Konstante im Code (4.4, Punkt 4); die Startwerte in 4.4,
 Punkt 3, sind betriebliche Voreinstellungen zur Bestätigung durch die
 Kantonspolizei Bern. Ändert sich die rechtliche Würdigung, ändert sich die
 Prüffrist mit, und das ist protokolliert (4.4, Punkt 3b). Eine Kurzkennzeichnung
-in Listen wird aus der Kategorie abgeleitet und angezeigt, nie eingegeben. Die
+in Listen wird aus der Kategorie abgeleitet und angezeigt, nie eingegeben (4.4,
+Punkt 3b, "Falls eine kurze Kennzeichnung in Listen gewünscht ist"). Die
 Archivwürdigkeit wird nicht mit der Kategorie bei der Eröffnung entschieden,
-sondern am Prüftermin. Verantwortung im Modulschnitt: Modul fall (ADR 0002,
+sondern am Prüftermin (4.4, Punkt 3b, "Die Archivierungsfrage bleibt davon
+getrennt"; Zustand Archiviert in der Tabelle des Zustandsmodells, 4.4,
+Punkt 2). Verantwortung im Modulschnitt: Modul fall (ADR 0002,
 Abschnitt 4.1). *Synonym:* Aufbewahrungsklasse (siehe dort), in
 Arbeitsprodukten nicht mehr verwenden.
 
@@ -285,6 +307,21 @@ Gate (siehe dort) — jedes Gate ist ein Hook, nicht jeder Hook ist ein Gate.
 des Systems. Alle Quellergebnisse werden in ein einheitliches Modell überführt:
 FollowTheMoney, STIX 2.1, W3C PROV (5.1).
 
+**Kettenkopf** — Je Spur und Fall die eine Zeile, die Position und Prüfsumme
+des letzten Protokolleintrags der Kette festhält. Sie wird für beide Spuren
+eines Falls mit Position 0 und dem Anfangswert der Kette angelegt (ADR 0007,
+Entscheide 13 und 16). Das Anfügen eines Eintrags sperrt die Zeile und rückt
+sie um genau eine Position vor; gleichzeitiges Anfügen wird damit
+nacheinander ausgeführt, Entfernen der Zeile ist für jede Rolle abgewiesen
+(ADR 0007, Entscheid 13). Der Kettenkopf macht erkennbar, dass am Ende der
+Kette ein Eintrag entfernt wurde; die Verkettung allein zeigt das nicht, weil
+dem letzten Eintrag kein Nachfolger folgt (ADR 0007, Grenze GS-3; Walkthrough
+vor Sprint 1, W1-34). Wer Kette und Kettenkopf übereinstimmend umschreibt,
+wird damit nicht erkannt (ADR 0007, Grenze GS-2). Bezeichner kettenkopf
+(ADR 0007, Entscheid 28). *Abzugrenzen von:* Verkettung und Kettenprüfung
+(siehe dort) — die Verkettung bindet jeden Eintrag an seinen Vorgänger, der
+Kettenkopf hält das Ende der Kette fest, die Kettenprüfung prüft beides.
+
 **Kettenprüfung** — Die maschinelle Prüfung der Unversehrtheit beider
 Protokollspuren. Jeder Eintrag trägt die SHA-256-Prüfsumme seines Vorgängers;
 wird nachträglich etwas geändert oder entfernt, auch an der Arbeitsspur, bricht
@@ -402,20 +439,37 @@ gegen den Vorwurf, eine Maschine habe Tatsachen erfunden (5.3).
 **Recherche** — Das Abfragen offen zugänglicher Quellen. Reine Recherche, keine
 verdeckte Ermittlung (5.11). *Abzugrenzen von:* Ermittlung als Oberbegriff.
 
-**[rechtlich] Rechtsregime** — Der Erlass, nach dem sich die Datenbearbeitung
-eines Falls richtet, in der Prioritätsordnung nach 4.4: R1 StPO (Daten
-innerhalb eines hängigen Strafverfahrens), R2 PolG/BE (polizeiliche
-Datenbearbeitung ausserhalb eines hängigen Verfahrens), R3 KDSG mit
-Datenschutzverordnung und Direktionsverordnung über Informationssicherheit und
-Datenschutz (subsidiär), R4 Einführungsverordnung zur EU-Datenschutzrichtlinie
-2016/680, R5 Archivierungsgesetz und -verordnung des Kantons Bern. Das revDSG
-des Bundes ist für kantonale Organe grundsätzlich nicht direkt anwendbar und
-wird nicht als Grundlage herangezogen (4.4, Tabelle). Ein Fall trägt sein
-Regime ab der Eröffnung, weil sich ohne dieses Feld später nicht sagen lässt,
-welche Löschregel für ihn gilt (4.4). Die konkrete Einschlägigkeit erarbeitet
-die GRC-Rolle (4.4). *Homonym-Warnung:* Die Ränge heissen R1 bis R5, nie 1a,
-1b, 2 (siehe Klassifizierung). Aufgenommen am 2026-11-05 mit Inhalt allein aus
-4.4; geprüft durch die GRC-Rolle am 2026-11-05 (Einheit S1): Wiedergabe von 4.4 ohne Zusatz; die Einschlägigkeit im Einzelfall bleibt Gegenstand der Konformitätsanalyse.
+**[rechtlich] Rechtsregime** — Die Angabe eines Falls, nach welchem Rang der
+Prioritätsordnung aus 4.4 sich seine Datenbearbeitung richtet. Regime eines
+Falls ist genau einer von zwei Rängen: R1 StPO (Daten innerhalb eines hängigen
+Strafverfahrens) oder R2 PolG/BE (polizeiliche Datenbearbeitung ausserhalb
+eines hängigen Verfahrens) (4.4, Tabelle und Absatz "Warum die Aufteilung an
+der Spitze wichtig ist"; ADR 0007, E-S1-09, entschieden (a) mit dem Merge des
+Pull Requests #52). Die übrigen Ränge der Prioritätsordnung sind kein Regime
+eines Falls: R3 KDSG mit Datenschutzverordnung und Direktionsverordnung über
+Informationssicherheit und Datenschutz ist der subsidiäre allgemeine
+kantonale Rahmen, R4 Einführungsverordnung zur EU-Datenschutzrichtlinie
+2016/680 eine Eigenschaft der Bearbeitung (Schengen-relevante Bearbeitung),
+R5 Archivierungsgesetz und -verordnung des Kantons Bern die Phase nach dem
+Ende des Betriebszwecks (Archivierung oder Vernichtung) (4.4, Tabelle; ADR
+0007, E-S1-09). Eine Erweiterung des Vorrats ist eine Fortschreibung mit
+Stellungnahme der GRC-Rolle (ADR 0007, E-S1-09). Das revDSG des Bundes ist für
+kantonale Organe grundsätzlich nicht direkt anwendbar und wird nicht als
+Grundlage herangezogen (4.4, Tabelle). Ein Fall trägt sein Regime ab der
+Eröffnung, weil sich ohne dieses Feld später nicht sagen lässt, welche
+Löschregel für ihn gilt (4.4). Die konkrete Einschlägigkeit erarbeitet die
+GRC-Rolle (4.4). *Homonym-Warnung:* Die Ränge heissen R1 bis R5, nie 1a, 1b, 2
+(siehe Klassifizierung). *Abzugrenzen von:* Rechtsgrundlage als weitere Angabe
+des Falls; die Abgrenzung ist nicht bestimmt (Walkthrough vor Sprint 1, W1-09;
+"Zu ergänzen" Nr. 5). Aufgenommen am 2026-11-05 mit Inhalt allein aus 4.4;
+diese erste Fassung geprüft durch die GRC-Rolle am 2026-11-05 (Einheit S1):
+Wiedergabe von 4.4 ohne Zusatz; die Einschlägigkeit im Einzelfall bleibt
+Gegenstand der Konformitätsanalyse. Neu gefasst am 2026-11-05 (Einheit D22)
+nach dem Hinweis H-3 der GRC-Rolle (Einzahl "der Erlass" bei mehreren
+geltenden Rängen) und nach ADR 0007, E-S1-09; die Neufassung geprüft durch die
+GRC-Rolle am 2026-11-05 (Einheit D22): Wiedergabe von 4.4 und ADR 0007,
+E-S1-09, ohne Zusatz; die Einschlägigkeit im Einzelfall bleibt Gegenstand der
+Konformitätsanalyse.
 
 **Rohantwort** — Die unveränderte, wie empfangen aufgezeichnete Antwort einer
 externen Quelle oder des Sprachmodells. Sie wird mit Prüfsumme im Fallbestand
@@ -524,5 +578,5 @@ Wendung.
 | 2 | Fachbegriffe aus dem Dezernatsalltag, die hier noch fehlen | Ermittelnde (S-03) |
 | 3 | Bestätigung, dass "Schutzstufe" als Synonym und nicht als eigener Begriff geführt wird | Auftraggeber |
 | 4 | Aktenzeichen und Fallnummer (4.4, Grabstein-Eintrag): Bestimmung beider Begriffe und ob sie dasselbe bezeichnen (Walkthrough vor Sprint 1, W1-09, W1-21) | Auftraggeber (S-01) |
-| 5 | Rechtsgrundlage als Angabe des Falls und ihre Abgrenzung zum Rechtsregime (W1-09); die Prüfung des Eintrags Rechtsregime ist erledigt (2026-11-05, GRC-Rolle, Einheit S1) | GRC-Rolle mit Auftraggeber |
+| 5 | Rechtsgrundlage als Angabe des Falls und ihre Abgrenzung zum Rechtsregime (W1-09); die Prüfung der ersten Fassung des Eintrags Rechtsregime ist erledigt (2026-11-05, GRC-Rolle, Einheit S1), die Prüfung der Neufassung aus der Einheit D22 ist erledigt (2026-11-05, GRC-Rolle, Einheit D22); offen bleibt die Abgrenzung | GRC-Rolle mit Auftraggeber |
 | 6 | Ermittelnde Person und ihr Verhältnis zur Rolle Fallverantwortlicher (W1-07); Ablageort (R3-F-020, R3-F-024) | Auftraggeber (S-01); Ablageort Software Architect |

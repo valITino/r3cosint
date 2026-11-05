@@ -23,6 +23,9 @@ dependencies = [
     "fastapi>=0.159.1,<0.163",
     "pydantic>=2.14.1,<3",
     "uvicorn>=0.54.0,<0.55",
+    "sqlalchemy[asyncio]>=2.1.6,<3",
+    "alembic>=1.20.1,<2",
+    "asyncpg>=0.32.0,<0.33",
 ]
 
 [dependency-groups]
@@ -31,6 +34,7 @@ dev = [
     "mypy>=2.4.0,<3",
     "pytest>=9.1.1,<10",
     "pytest-cov>=7.1.0,<8",
+    "anyio>=4.15.1,<5",
     "import-linter>=2.15,<3",
     "pip-audit>=2.10.1,<3",
     "httpx>=0.28.1,<0.29",
@@ -59,6 +63,10 @@ select = ["F", "E4", "E7", "E9", "B", "S", "ASYNC", "DTZ", "T20", "BLE", "TID", 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "INP001"]
 "src/r3cosint/ausgang/**" = ["TID251"]
+# Benannte Ausnahme je Datei (ADR 0007, Abschnitt "Teststufen"): die Sitzungsfixture ruft docker
+# als Liste ohne Shell auf (S603), mit dem Programmnamen aus dem PATH (S607); der Digest des
+# Images ist gegen das Muster sha256 plus 64 Hexzeichen geprüft, kein Aufruf trägt fremden Text.
+"tests/conftest.py" = ["S603", "S607"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "urllib.request".msg = "Ausgehende Verbindungen nur in r3cosint.ausgang (Vertrag 2, ADR 0002, 4.3)."
