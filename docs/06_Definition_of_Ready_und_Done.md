@@ -658,7 +658,10 @@ ist am 2026-09-02 der erste Weg (Entscheidpunkt E-H), die Freigabe steht aus.
 Nachtrag vom 2026-11-04 (Einheit G4): Neben dieser Zusicherung der Arbeitsumgebung
 besteht der Lauf auf der Gegenseite (`.github/workflows/kette-gegenseite.yml`,
 rot bis R3-C-004 wegen D9); die Pflichtprüfung im Regelwerk von main stellt der
-Auftraggeber nach R3-C-004 ein (ADR 0002, Abschnitt 8, O-12).
+Auftraggeber nach R3-C-004 ein (ADR 0002, Abschnitt 8, O-12). Der Lauf ist mit
+dem Merge des Pull Requests #47 am 2026-11-05 abgenommen (Merge-Commit
+`374bffb84afa70e1872cde6f091469cc7128aefe`); die Pflichtprüfung bleibt beim
+Auftraggeber nach R3-C-004.
 
 **Nur Rückgabewert 2 blockiert.** Rückgabewert 1 ist ein nicht blockierender
 Fehler; ein Gate, das mit `exit 1` endet, ist wirkungslos, ohne dass das
@@ -770,7 +773,9 @@ G4 als Arbeitsablauf `.github/workflows/kette-gegenseite.yml`; er ruft `make dod
 ohne die Liste der terminierten Lagen auf und ist bis R3-C-004 wegen D9 rot,
 gewollt. Die Pflichtprüfung im Regelwerk von main stellt der Auftraggeber nach
 R3-C-004 ein (ADR 0002, Abschnitt 5, Nachtrag "Festlegung für G4", und
-Abschnitt 8, O-12).
+Abschnitt 8, O-12). Der Lauf ist mit dem Merge des Pull Requests #47 am
+2026-11-05 abgenommen (Merge-Commit `374bffb84afa70e1872cde6f091469cc7128aefe`);
+die Pflichtprüfung bleibt beim Auftraggeber nach R3-C-004.
 
 ### Zählung und Eskalation
 
