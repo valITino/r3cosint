@@ -1,7 +1,7 @@
 ---
 name: dynamic-software-tester
 description: "Testet die laufende Anwendung mit End-to-End- und Regressionstests, sobald ein Inkrement gebaut ist und abgenommen werden soll."
-tools: Read, Grep, Glob, Edit, Write, Bash, Skill
+tools: Read, Grep, Glob, Edit, Write, Bash
 model: opus
 maxTurns: 30
 skills:

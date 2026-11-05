@@ -1,7 +1,7 @@
 ---
 name: it-supporter
 description: "Analysiert einen gemeldeten Laufzeitfehler im Diagnosebereich und behebt ihn, soweit möglich, direkt."
-tools: Read, Grep, Glob, Edit, Write, Bash, Skill
+tools: Read, Grep, Glob, Edit, Write, Bash
 model: sonnet
 maxTurns: 30
 skills:

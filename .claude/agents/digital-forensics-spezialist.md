@@ -1,7 +1,7 @@
 ---
 name: digital-forensics-spezialist
 description: "Prüft Herkunft, Integrität und Nachvollziehbarkeit jedes Datenpunkts, sobald Protokollspur, Herkunftsnachweis, Graph oder Export entworfen oder geändert werden."
-tools: Read, Grep, Glob, Edit, Write, Bash, Skill
+tools: Read, Grep, Glob, Edit, Write, Bash
 model: opus
 maxTurns: 30
 skills:
