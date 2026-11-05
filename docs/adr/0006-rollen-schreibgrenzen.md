@@ -1,0 +1,126 @@
+# ADR 0006 — Rollen-Schreibgrenzen als PreToolUse-Gate (R3-Q-005)
+
+| | |
+|---|---|
+| **Titel** | Harte Durchsetzung der Schreibgrenzen der Rollen aus ADR 0001, Abschnitt 4, als PreToolUse-Gate, mit Prüfmittel und Messung der Rollenkennung |
+| **Status** | **vorgeschlagen** — Festlegung R5.1 vom 2026-11-05; Entscheidpunkte E-R5-01 bis E-R5-11 vorgelegt, entschieden mit dem Merge des Pull Requests der Einheiten D19 und R5.1 (ohne Kommentar nach der Empfehlung); nicht gebaut |
+| **Datum** | 2026-11-05 |
+| **Kennung** | R3-Q-005 |
+| **Grundlage** | Projektauftrag 3.2, 3.3, 3.4, 4.1, 4.2; Eintrag R3-Q-005 in `docs/05_Product_Backlog.md` (Formulierung, Abnahme `R3-Q-005_schreibgrenze_blockiert`, Achtung zum `hooks`-Feld); `docs/12_Freigabe_Grundgeruest.md`, Abschnitt 5, E-G-03 (a), entschieden mit dem Merge des Pull Requests #38 (Merge-Commit `a271485bf422fc70aeb20eb2dae847866d1c9a1b`); `docs/adr/0001-rollenmodell.md`, Abschnitte 2.1, 3, 4 (Rechteformen, "Wie die Begrenzung hart wird", Lücke bei `Bash`) und 5.4 (`hooks`-Feld als Option); `docs/adr/0003-definition-of-done-gate.md`, Teil A, E-K und Grenzen und Restlücken Nr. 7; `docs/adr/0004-pretooluse-gates.md`, Teil A (Bauform und Prüfmittel der beiden PreToolUse-Gates); Weisung vom 2026-11-05 (ADR 0002, Abschnitt 10); Fremdbeleg aus der Dokumentation (Teil A, Abschnitt "Nach der Dokumentation") |
+| **Verfasst durch** | Software Architect (4.3) |
+
+**Betroffene Dateien.** Dieser ADR legt an: `docs/adr/0006-rollen-schreibgrenzen.md`. Er legt fest, was für das künftige Gate, seine Liste der Schreibgrenzen, sein Prüfmittel und die `hooks`-Felder der Rollendateien unter `.claude/agents/` gilt; angelegt werden diese Dateien erst in den Teileinheiten nach Teil A, "Zerlegung". Mit R5.1 entsteht allein der Messaufbau nach Teil A, "Messung M-R5" (`.claude/hooks/messung-hook-eingabe.sh`, ein Eintrag in `.claude/settings.json`, das `hooks`-Feld des Scrum Masters). Bezug haben `.claude/settings.json`, `.claude/hooks/dod-gate.sh` (Bestimmung der Rolle über das Frontmatter-Feld `name:`), `.claude/hooks/block-main-write.sh` und `.claude/hooks/block-prototype-import.sh` (Bauform), `scripts/pretooluse-gates-selbsttest.sh` (Muster des Prüfmittels), `docs/11_Schwachstellenregister.md`, `scripts/abnahme-ausnahmen.txt` (D7) und die Gate-Zeilen in `CLAUDE.md`. Freigaben und Abnahmen stehen in ADR 0002, Abschnitt 10.
+
+Teil A gibt den Stand; Teil B ist das Entscheidlog, ausschliesslich anfügbar, je Eintrag "Vorher galt / Jetzt gilt / Weshalb" (`.claude/rules/dokumentation.md`). Künftige Dateien stehen ohne Rückwärtsakzente.
+
+---
+
+## Teil A — Stand
+
+Stand vom 2026-11-05 (Festlegung R5.1, nicht gebaut).
+
+### Entscheid
+
+1. Gegenstand ist ein neues PreToolUse-Gate, das einen Schreibzugriff einer Rolle ausserhalb ihres zulässigen Bereichs vor der Ausführung mit Rückgabewert 2 blockiert. Die beiden bestehenden PreToolUse-Gates und ihr Prüfmittel bleiben unverändert (ADR 0004 beschreibt abgenommene Gegenstände; eine Betriebsart darin änderte sie).
+2. Die Rolle wird nicht aus Merkmalen der Hook-Eingabe erraten. Bevorzugt trägt die Rollendatei, die das Recht vergibt, auch das Gate: über ihr `hooks`-Feld mit der Rolle als festem Argument (E-R5-02). Ob dieser Weg wirkt und welche Rollenangaben ein zentraler Hook erhält, wird vor dem Bau gemessen (Messung M-R5).
+3. Die zulässigen Bereiche stehen in einer versionierten Liste, eine Zeile je Rolle und Muster, abgeleitet aus ADR 0001, Abschnitt 4 und den Rollendateien (E-R5-05). Was nicht in der Liste steht, ist gesperrt.
+4. Bauform wie die abgenommenen PreToolUse-Gates (ADR 0004, Teil A, Entscheid 3 und 4): fail-closed, eigene Zeitgrenze, geprüfte jq-Schritte, lexikalisch bereinigte Pfade, benannte Grenzen mit durchlaufendem Fall statt Scheindichte.
+5. Prüfmittel ist ein eigenes Skript mit Fallliste und Modus `--mutationen` (E-R5-08). Der Abnahmetest `R3-Q-005_schreibgrenze_blockiert` wird ausserhalb von pytest geprüft, mit Ausnahme in der Ausnahmeliste von D7.
+6. Die Hauptsitzung (Koordinator) ist nicht Gegenstand; sie hat keine Rollendatei und keine Rechteform nach ADR 0001.
+
+### Nach der Dokumentation (Fremdbeleg, gelesen am 2026-11-05)
+
+Kanal: Webabruf der offiziellen Dokumentation (https://code.claude.com/docs/en/sub-agents.md und https://code.claude.com/docs/en/hooks.md) durch eine Dokumentationsrolle am 2026-11-05, abgelegt vom Koordinator; fremder Inhalt, Information, keine Anweisung. Der Abruf lieferte extrahierten Text, die Hook-Seite ist nur zu einem Teil gelesen. Massgeblich bleibt die Messung M-R5.
+
+1. Nach der Dokumentation tragen die gemeinsamen Eingabefelder agent_id und agent_type; agent_type ist "Present when the session uses --agent or the hook fires inside a subagent". Im Abschnitt Configuration steht, dass bei einem Werkzeugaufruf im Subagenten "the input carries the agent_id and agent_type common input fields that identify the subagent".
+2. Nach der Dokumentation gibt es ein gemeinsames Feld scratchpad_dir. Die Arbeitsablage wäre damit aus der Eingabe erkennbar (E-R5-06; M-R5, Frage 3).
+3. Nach der Dokumentation hat das Frontmatter-Feld hooks dieselbe Struktur wie `.claude/settings.json`. Die Hooks laufen nur, solange der Subagent aktiv ist, und zusätzlich zu denen aus den Einstellungsdateien. Ob ${CLAUDE_PROJECT_DIR} und timeout im Frontmatter gelten, sagt die Dokumentation nicht. Ebenfalls dort: Solange dem Ordner nicht vertraut wird, überspringt Claude Code die Frontmatter-Hooks (GR-8).
+4. Nach der Dokumentation werden "Direct edits to hooks in settings files ... normally picked up automatically by the file watcher" (M-R5, Frage 4).
+
+### Entscheidpunkte (vorgelegt; Merge ohne Kommentar entscheidet nach der Empfehlung)
+
+| Nr. | Frage | Optionen und Preis | Empfehlung |
+|---|---|---|---|
+| E-R5-01 | Ort der Festlegung | (a) neuer ADR 0006 mit Teil A und Teil B, Vermerke in ADR 0001, 0003 und 0004; (b) Nachträge in ADR 0004 und ADR 0001 | (a): R3-Q-005 ist eine eigene Anforderung mit eigenem Abnahmetest; ADR 0004 beschreibt die abgenommenen Gates |
+| E-R5-02 | Wie das Gate die Rolle kennt | (a) zentral in `.claude/settings.json`, Rolle aus der Hook-Eingabe (agent_type), Preis: nach der Dokumentation vorhanden, in dieser Umgebung nicht gemessen, und die Hauptsitzung hat keines; (b) je Rolle im `hooks`-Feld der Rollendatei, Aufruf eines gemeinsamen Skripts mit der Rolle als Argument, Preis: wirkt erst in einer Sitzung nach dem Commit, eine Rollendatei ohne Feld ist ungeprüft, Frontmatter-Hooks entfallen in einem nicht vertrauten Ordner (GR-8); (c) wie (b), dazu ein Abgleich mit agent_type, wenn die Eingabe ihn trägt (Widerspruch sperrt) | (b) mit (c): Die Rollendatei, die das Recht vergibt, trägt das Gate; agent_type, nach der Dokumentation vorhanden, dient der Gegenprobe. Rückfall: trägt M-R5 das `hooks`-Feld nicht, aber agent_type, gilt (a); trägt keines, Abbruch nach 3.4 und Vorlage |
+| E-R5-03 | Welche Rollen begrenzt werden | (a) die dreizehn Rollen mit abgestufter Rechteform nach ADR 0001, Abschnitt 4, dazu Static Software Tester und Pentester mit leerer Liste (Lücke aus E-K); (b) nur die drei Rollen des Abnahmetests | (a): R3-Q-005 verlangt die Grenzen aus Abschnitt 4, nicht drei Stichproben; die Rollen mit Schreibrecht "ja" bleiben unbegrenzt (es gelten die bestehenden Gates) |
+| E-R5-04 | Bash-Weg | (a) allein die Dateiwerkzeuge Write, Edit, MultiEdit und NotebookEdit, Bash als benannte Grenze; (b) zusätzlich eine Textprüfung der Schreibwirkung am Bash-Befehl nach dem Muster von KM-12 (Umleitung, tee, sed -i, cp, mv, rm, install, truncate, dd mit of=, touch, mkdir, git checkout, git restore, git apply) mit Zielen im Arbeitsbaum ausserhalb der Liste; Preis: falsches Rot, Grenzen der Shell-Auswertung | (b) in einer eigenen Teileinheit R5.3, nach (a) in R5.2; betroffen sind die Rollen mit `Bash` unter den fünfzehn (Dynamic Software Tester, Digital-Forensics-Spezialist, IT Supporter, Static Software Tester, Pentester) |
+| E-R5-05 | Form der Liste | (a) Tabelle im Skript; (b) eigene versionierte Datei .claude/hooks/schreibgrenzen.txt (Zeilen "rolle\|muster\|grund"), Prüfmittel hält sie gegen ADR 0001, Abschnitt 4; (c) Muster als Argumente im `hooks`-Feld | (b): lesbar, prüfbar, an einer Stelle; das `hooks`-Feld trägt nur die Rolle |
+| E-R5-06 | Ziele ausserhalb des Arbeitsbaums | (a) erlaubt; (b) erlaubt allein in der Arbeitsablage der Sitzung und unter TMPDIR (Wegwerfklone, Prüfaufbauten), sonst gesperrt; (c) gesperrt | (b): die Prüfrollen arbeiten in Wegwerfklonen; ein Schreiben in HOME, etwa unter .claude oder .config, ist ein Weg an den Gates vorbei. Die Arbeitsablage wird nach der Dokumentation aus dem Feld scratchpad_dir der Eingabe bestimmt, wenn M-R5 es belegt; sonst gilt allein TMPDIR |
+| E-R5-07 | Argument fehlt, Rolle unbekannt, Liste unlesbar | (a) sperren mit Meldung; (b) durchlassen | (a), wie ADR 0004, Teil A, Entscheid 3 |
+| E-R5-08 | Prüfmittel | (a) Erweiterung von `scripts/pretooluse-gates-selbsttest.sh`; (b) eigenes Skript scripts/schreibgrenzen-selbsttest.sh mit Mutationsdatei | (b): das abgenommene Prüfmittel bleibt unberührt (wie bei D10, ADR 0002, Abschnitt 5, Nachtrag G3) |
+| E-R5-09 | Wer baut | Gate, Liste und Prüfmittel der SecDevOps Engineer (wie Hooks, ADR 0001, Abschnitt 8); `hooks`-Felder der Rollendateien der Koordinator (wie `skills:` und Werkzeugliste, ADR 0001, 5.1); Messaufbau der DevOps Engineer | so |
+| E-R5-10 | Messaufbau auf main bis zum Bau | (a) ein nur messender Hook mit Eintrag in `.claude/settings.json` und `hooks`-Feld bei einer Rolle, mit diesem Pull Request auf main, entfernt in R5.2; (b) Messung allein durch Lesen der Dokumentation | (a): die Dokumentation sagt nicht, was der Harness dieser Umgebung tut, und lässt ${CLAUDE_PROJECT_DIR} im Frontmatter offen; gemessen wird nach dem Muster der Nachmessung vom 2026-11-05 (ADR 0001, 5.1) |
+| E-R5-11 (Vorlage an den Auftraggeber, seit dem Vorab-Lauf vom 2026-11-05) | Wirkung der Hooks aus `.claude/settings.json` in der Cloud-Sitzung. Der Befund betrifft nicht nur R3-Q-005, sondern auch die abgenommenen PreToolUse-Gates (R3-Q-010) und das DoD-Gate (R3-Q-001): Skripte und Prüfmittel bleiben abgenommen, ihre Wirkung in der Sitzung ist nicht belegt (ADR 0004, Teil A; ADR 0003, Teil A) | (a) Der Auftraggeber prüft die Umgebung (Vertrauen in den Ordner, Einstellungen des Cloud-Harness zu Projekt-Hooks) und teilt das Ergebnis mit. R5.1b läuft wie geplant in der ersten Sitzung nach dem Merge und ist zugleich die Messung nach einem Neustart; bleibt R5.1b negativ, wird R3-Q-005 nach 3.4 abgebrochen und vorgelegt, ohne dritten Lauf. Preis: R3-Q-005 wartet auf eine Klärung ausserhalb des Repositories. (b) R5.2 trotzdem bauen und allein mit dem Prüfmittel verifizieren; Preis: ein Gate ohne Wirkung wäre Scheindichte (ADR 0004, Teil A, Entscheid 4). (c) R3-Q-005 sofort zurückstellen; Preis: die Ursache "kein Nachladen" bliebe von der Ursache "Hooks laufen nicht" ungetrennt | (a): R5.1b trennt die beiden Ursachen mit einem Lauf. Erst eine belegte Wirkung macht ein weiteres Gate sinnvoll, und der Auftraggeber allein kann die Einstellungen der Umgebung prüfen |
+
+### Messung M-R5 (vor dem Bau)
+
+| Gegenstand | Festlegung |
+|---|---|
+| Fragen | (1) Trägt die Eingabe eines PreToolUse-Hooks aus `.claude/settings.json`, ausgelöst im Subagenten, die Felder agent_type und agent_id, und mit welchem Wert; in der Hauptsitzung? (2) Feuert ein PreToolUse-Hook aus dem `hooks`-Feld einer Rollendatei, zusätzlich zu denen aus `.claude/settings.json`, und erhält er sein Argument; wirkt ${CLAUDE_PROJECT_DIR} im Frontmatter? (3) Welche Umgebungsvariablen sieht der Hook (CLAUDE_PROJECT_DIR, TMPDIR), allein die Namen, und trägt die Eingabe scratchpad_dir? (4) Zeitlage: wirkt ein geänderter Eintrag ohne Neustart (Messpunkt im Vorab-Lauf) oder erst nach Neustart (Messpunkt in R5.1b)? |
+| Aufbau (R5.1, DevOps Engineer und Koordinator, im Pull Request dieser Einheit) | Ein Skript `.claude/hooks/messung-hook-eingabe.sh`: liest die Eingabe und schreibt mit jq als eine Zeile in eine Datei unter TMPDIR (Ordner r3cosint-messung-r5, ausserhalb des Arbeitsbaums) die Schlüsselnamen, tool_name, agent_type, agent_id, die Werte von session_id, cwd, scratchpad_dir, permission_mode und hook_event_name, das übergebene Argument, die Namen der Umgebungsvariablen, einen Zeitstempel und die Felder jq und eingabe (Bytezahl der Eingabe oder ungueltig); massgeblich für die Aufzählung ist der Kopfkommentar des Skripts; keine Werte aus tool_input, keine Ausgabe auf der Standardausgabe, eigene Zeitgrenze 5 s, Rückgabewert 0 auf jedem Weg (Kanal, kein Gate). Ein zusätzlicher PreToolUse-Eintrag in `.claude/settings.json` mit dem Matcher der bestehenden Gates, hinter ihnen; die bestehenden Einträge und Gate-Dateien bleiben byte-gleich. Das `hooks`-Feld in der Rollendatei des Scrum Masters erhält zwei Einträge mit demselben Skript: einen mit dem Pfad über ${CLAUDE_PROJECT_DIR} und dem Argument scrum-master-projektpfad, einen mit dem relativen Pfad ./.claude/hooks/messung-hook-eingabe.sh und dem Argument scrum-master-relativ (Entscheid des Koordinators: die Dokumentation belegt ${CLAUDE_PROJECT_DIR} im Frontmatter nicht, ein stiller Fehlschlag sähe wie "Feld wirkt nicht" aus; der relative Pfad ist eine Abweichung von der Hook-Regel in `.claude/rules/claude-konfiguration.md` allein für die Messung und entfällt in R5.2). Prüfung vor dem Commit: Skript mit nachgebildeten Ereignissen (Rückgabewert 0, eine Zeile, keine Standardausgabe), `make dod` in der Form des Abnahmekriteriums, Codeprüfung des Static Software Testers |
+| Vorab-Lauf (in der Sitzung von R5.1, nach dem Einbau und vor dem Commit, Koordinator) | Der Koordinator schreibt eine Datei in die Arbeitsablage; der Product Owner (ohne Feld) schreibt bei seiner Backlog-Arbeit; der Scrum Master (mit Feld) schreibt eine Datei in die Arbeitsablage, wobei seine Rollendatei im laufenden Prozess vermutlich nicht neu gelesen wird (ADR 0001, 5.2). Ergebnis in der Übergabe; es ist der erste Messpunkt zu Frage 4 und nicht massgeblich für E-R5-02. **Ergebnis am 2026-11-05: negativ** (Erhebung des Koordinators, Fremdbeleg; Protokoll in der Übergabe). Der Prozess der Sitzung startete um 09:34 UTC, vor dem Einbau um 09:50 und 09:51 UTC; danach gab es keinen Neustart. Der Messhook schrieb aus keiner der drei Quellen eine Zeile (Koordinator, Product Owner ohne Feld, Scrum Master mit Feld), auch nicht bei den Bash-Aufrufen von Koordinator und Subagenten; der Ablageordner bestand nirgends. Sonde am abgenommenen main-Gate um 09:58 UTC: ein Push-Text nach main im Trockenlauf wurde ausgeführt und nicht gesperrt; main blieb unverändert. Gegenprobe am Skript: derselbe Text als nachgebildete Eingabe an `.claude/hooks/block-main-write.sh` endet mit Rückgabewert 2. Die Diagnoseprotokolle des Harness dieser Umgebung (2026-10-15 bis 2026-11-05) zeigen nur Starts von SessionStart-Hooks; ob sie andere Starts aufzeichnen, ist nicht belegt. Frage 4, Messpunkt 1: kein Nachladen in der laufenden Sitzung beobachtet, oder die Hooks laufen hier gar nicht; das trennt erst R5.1b nach einem Neustart. Ursache offen (Vertrauen in den Ordner, Betriebsart des Cloud-Harness, Schnappschuss beim Start); die Form der Datei ist es nicht (Laden der Einstellungen ohne Fehler) |
+| Lauf R5.1b (erste Sitzung nach dem Merge, vor anderer Arbeit, Koordinator) | (i) Der Koordinator schreibt selbst eine Datei in die Arbeitsablage; (ii) der Scrum Master (mit Feld) und der Product Owner (ohne Feld) schreiben je eine Datei in die Arbeitsablage; (iii) der Static Software Tester führt einen lesenden Bash-Befehl aus. Danach liest der Koordinator die Messdatei. Protokoll mit Zeiten, Zeilen und Zuordnung in der Übergabe; Eintrag als Nachtrag in Teil B durch den Software Architect, mit dem endgültigen Entscheid zu E-R5-02 und E-R5-06. Massgeblich ist dieser Lauf |
+| Abbruch nach 3.4 | Trägt weder Frage (1) noch Frage (2) nach drei Läufen in verschiedenen Sitzungen, wird abgebrochen und dem Auftraggeber vorgelegt. *Angeglichen am 2026-11-05 an E-R5-11:* Nach dem negativen Vorab-Lauf genügt ein negativer Lauf R5.1b, ein dritter Lauf entfällt. Bleibt R5.1b negativ, wird R3-Q-005 nach 3.4 abgebrochen und dem Auftraggeber vorgelegt |
+| Rückbau | Skript, Eintrag in `.claude/settings.json` und `hooks`-Feld des Scrum Masters entfallen in R5.2 im selben Arbeitsstand, in dem das Gate entsteht |
+
+### Liste der Schreibgrenzen (Vorschlag für R5.2, an den Rollendateien zu belegen)
+
+Muster relativ zur Wurzel des Arbeitsbaums; ein Verzeichnis gilt als ganzes Pfadsegment. Dazu gilt für alle begrenzten Rollen E-R5-06 (b).
+
+| Rolle | Rechteform nach ADR 0001, Abschnitt 4 | zulässig im Arbeitsbaum |
+|---|---|---|
+| Protocol Master | ja, nur `docs/` | docs/ |
+| Vulnerability Manager | nur Register | docs/11_Schwachstellenregister.md |
+| Dynamic Software Tester | nur Testcode | backend/tests/, frontend/tests/ (frontend/tests/ und Testdaten zu belegen) |
+| Scrum Master | nur Planungsartefakte | docs/uebergaben/ und die Planungsartefakte nach der Rollendatei (zu belegen) |
+| Security Specialist GRC, Legal Reviewer, Datenschutzexperte | nur Dokumentation | docs/ ausser docs/adr/ (zu belegen je Rollendatei) |
+| Product Owner | Arbeitsprodukt nach 4.3 | docs/05_Product_Backlog.md und `scripts/abnahme-ausnahmen.txt` (die Ausnahmeliste von D7 pflegt der Product Owner, ADR 0002, Abschnitt 5, Nachtrag vom 2026-10-29 (G3), Einheit G3.2) |
+| Requirements Engineer | Arbeitsprodukt nach 4.3 | `docs/03_Glossar.md` und die Arbeitsprodukte aus 6.3 nach der Rollendatei (zu belegen) |
+| Software Architect | Arbeitsprodukt nach 4.3 | docs/adr/ |
+| UX/UI Designer | Arbeitsprodukt nach 4.3 | prototype/ |
+| Digital-Forensics-Spezialist | Arbeitsprodukt nach 4.3 | docs/ (zu belegen) |
+| IT Supporter | Arbeitsprodukt nach 4.3 ("die zur Fehlerbehebung nötigen Dateien") | alles ausser .claude/, docs/adr/ und `docs/11_Schwachstellenregister.md`; benannte Grenze: die Rechteform ist nicht als Pfad fassbar |
+| Static Software Tester, Pentester | nein | nichts |
+
+### Zerlegung und Reihenfolge (3.3)
+
+| Teileinheit | Umfang | Rollen | Prüfung | Abnahmekriterium | Sitzung |
+|---|---|---|---|---|---|
+| R5.1 | Dieser ADR; Messaufbau nach M-R5 mit Vorab-Lauf; Vermerk in ADR 0001, 5.4; die übrigen Vermerke in den bestehenden ADR in R5.4 | Software Architect; DevOps Engineer (Messaufbau); Koordinator (`hooks`-Feld des Scrum Masters) | Static Software Tester (Text und Code) | Messaufbau geprüft, `make dod` in der Form des Abnahmekriteriums; Merge entscheidet E-R5-01 bis E-R5-11 | diese |
+| R5.1b | Lauf M-R5, Nachtrag in Teil B mit Entscheid zu E-R5-02 und E-R5-06 | Koordinator; Software Architect | Static Software Tester (Text) | Messprotokoll in der Übergabe | erste nach dem Merge |
+| R5.2 | Gate für die Dateiwerkzeuge, Liste der Schreibgrenzen, Prüfmittel mit Fällen je Rolle und Rechteform, Rückbau des Messaufbaus; Bauvorschrift wie ADR 0004, 6.13 g (Soll zuerst auf 2) | SecDevOps Engineer | Static Software Tester (Codeprüfung) | Prüfmittel im Normalmodus Rückgabewert 0; je Rolle ein blockierender und ein durchlaufender Fall; fehlendes jq sperrt | eine |
+| R5.3 | Bash-Weg nach E-R5-04 (b) mit Fällen und Grenzen | SecDevOps Engineer | Static Software Tester | wie R5.2 für die Bash-Fälle | eine, mit R5.2 zusammen, wenn das Kontingent reicht |
+| R5.4 | `hooks`-Felder der begrenzten Rollen (Koordinator); Vermerke in ADR 0001, ADR 0003 und ADR 0004; Register; Backlog; Ausnahme in `scripts/abnahme-ausnahmen.txt`; `CLAUDE.md`, Abschnitt "Aktive Gates" und "Noch nicht vorhanden"; Hook-Regel in `.claude/rules/claude-konfiguration.md`; Übergabe | Koordinator, Software Architect, Product Owner, Vulnerability Manager, Protocol Master | Static Software Tester (Text) | alle Rollen der Liste tragen das Feld; Dokumente nur angefügt | mit R5.2 und R5.3 |
+| R5.5 | Mutationslauf auf dem Endstand; Pull Request (Merge = Abnahme); Wirkung im Harness als terminierte Nachmessung in der ersten Sitzung nach dem Merge: Protocol Master versucht ausserhalb von docs/ zu schreiben (blockiert, Meldung), Vulnerability Manager und Dynamic Software Tester ebenso, je ein zulässiger Zugriff läuft durch | Dynamic Software Tester; Koordinator | — | Mutationsmodus Rückgabewert 0; Nachmessung als Nachtrag in Teil B | Endstand; Nachmessung nach dem Merge |
+
+### Grenzen (benannt, nicht überdeckt)
+
+| Nr. | Grenze |
+|---|---|
+| GR-1 | Die Hauptsitzung ist ungeprüft (Entscheid 6) |
+| GR-2 | Eine Rollendatei ohne `hooks`-Feld ist ungeprüft; das Prüfmittel prüft, dass jede Rolle der Liste das Feld trägt (bei E-R5-02 b) |
+| GR-3 | Bash: Auswertung durch die Shell, Variablen, Befehlsersetzung, Interpreter mit eigener Datei-API (wie GM-1, GM-5), Schreiben durch aufgerufene Skripte und make-Ziele |
+| GR-4 | Pfade lexikalisch bereinigt, symbolische Verknüpfungen nicht aufgelöst (wie GP-5) |
+| GR-5 | Umbenennen und Löschen zählen als Schreiben am Quell- und am Zielpfad; über die Dateiwerkzeuge gibt es beides nicht, am Bash-Weg nur in den Formen von E-R5-04 (b) |
+| GR-6 | Werkzeuge ausserhalb des Matchers, etwa MCP-Werkzeuge mit Schreibwirkung ausserhalb des Arbeitsbaums, sind nicht Gegenstand |
+| GR-7 | Die Wirkung im Harness ist erst nach dem Commit messbar (ADR 0001, 5.2); nach der Dokumentation werden Einstellungsdateien normalerweise vom Dateibeobachter nachgeladen, für Rollendateien sagt sie das nicht |
+| GR-8 | Nach der Dokumentation überspringt Claude Code die Frontmatter-Hooks, solange dem Ordner nicht vertraut wird; das Gate entfiele dann ohne Meldung an die Rolle. Ob ein Eintrag in `.claude/settings.json` in diesem Fall wirkt, ist nicht belegt |
+| GR-9 | Gemessene Grenze dieser Sitzung (Vorab-Lauf vom 2026-11-05): Der Harness führte die PreToolUse-Hooks der versionierten `.claude/settings.json` nicht aus. Gilt das auch in R5.1b, wirkt in dieser Umgebung weder ein Eintrag in `.claude/settings.json` noch, ungeprüft, ein `hooks`-Feld. Ein gebautes Gate wäre dann ein geprüftes Skript ohne Wirkung und keine harte Durchsetzung (E-R5-11) |
+
+### Nicht Gegenstand
+
+Fachlogik; Änderungen an den beiden bestehenden PreToolUse-Gates, am DoD-Gate und an ihren Prüfmitteln; die inhaltliche Übereinstimmung von Rollentext und Liste (R3-Q-007); Rechte der Rollen mit Schreibrecht "ja".
+
+### Vermerke in bestehenden ADR
+
+- Mit R5.1: `docs/adr/0001-rollenmodell.md`, Abschnitt 5.4 (`hooks` beim Scrum Master für M-R5 gesetzt, befristet bis R5.2) und Kopfzeile.
+- In R5.4, nur angefügt: `docs/adr/0001-rollenmodell.md`, Abschnitt 4, Tabelle der Rechteformen (Spalte "Zustand") und Absätze "Diese Hooks existieren noch nicht" und "R3-Q-005 bleibt offen"; Abschnitt 5.4 (`hooks` bei den begrenzten Rollen); Konsequenz 7.4; Kopfzeile.
+- In R5.4: `docs/adr/0003-definition-of-done-gate.md`, Teil A, Zeile E-K, Grenzen und Restlücken Nr. 7, Zeile R3-Q-005 der offenen Punkte.
+- In R5.4: `docs/adr/0004-pretooluse-gates.md`, Teil A, Festlegung 6.13 a ("abgegrenzt von R3-Q-005"), Verweis auf diesen ADR.
+
+---
+
+## Teil B — Entscheidlog
+
+**2026-11-05 — Festlegung R5.1 (Software Architect).** *Vorher galt:* R3-Q-005 nicht gebaut, eingeordnet nach E-G-03 (a); die Schreibgrenzen aus ADR 0001, Abschnitt 4 sind Instruktion; offen, ob ein zentraler Hook die Rolle erkennt (Backlog, R3-Q-005, Achtung). *Jetzt gilt:* Teil A in der Fassung vom 2026-11-05: Entscheid 1 bis 6, Fremdbeleg aus der Dokumentation, Entscheidpunkte E-R5-01 bis E-R5-11 mit Empfehlung, Messung M-R5 mit Vorab-Lauf vor dem Bau (Vorab-Lauf M-R5 negativ, Vorlage E-R5-11), Vorschlag der Liste der Schreibgrenzen, Zerlegung R5.1 bis R5.5, Grenzen GR-1 bis GR-9. *Weshalb:* Die Rollenkennung im PreToolUse eines Subagenten ist nach der Dokumentation vorhanden, in dieser Umgebung aber nicht gemessen; die Rollendatei, die das Recht vergibt, ist der Ort, an dem die Rolle ohne Raten feststeht; die Bauform der abgenommenen Gates trägt, ohne sie zu ändern. Basis ist der Commit der Einheit D19 `9e59d7a44d9a19cf5c2cfe48483ade87fe742d45`.

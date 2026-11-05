@@ -23,6 +23,17 @@
             "statusMessage": "Prüft Schreibzugriff auf main (3.2 c)"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/messung-hook-eingabe.sh\"",
+            "timeout": 10,
+            "statusMessage": "Messung M-R5: Hook-Eingabe (R3-Q-005, ADR 0006; Kanal, kein Gate)"
+          }
+        ]
       }
     ],
     "SessionStart": [
