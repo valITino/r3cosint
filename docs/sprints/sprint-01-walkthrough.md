@@ -239,3 +239,43 @@ in Sprint 1 gezogen wird, entscheidet der Product Owner in seiner Ready-Prüfung
 die Einschätzungen in der Übersicht sind Hinweise dazu. Der Massstab der vier
 Glieder ist ein Vorschlag zur Bestätigung durch den Auftraggeber; ein Befund
 nach diesem Massstab ist kein Verstoss gegen eine gesetzte Regel.
+
+## Nachtrag vom 2026-11-05 (Einheit D22)
+
+Verfasser-Rolle: Requirements Engineer. Anlass: Annahme von Sprint 1 durch den
+Merge des Pull Requests #52 am 2026-11-05 (Merge-Commit
+`729fa34109c4e097d02d07ad9cd8ac06e2f67b72`), mit dem die Entscheidpunkte
+E-S1-01 bis E-S1-22 je nach der Empfehlung entschieden sind (Angabe des
+Koordinators, Fremdbeleg). Die Befunde W1-01 bis W1-96 und die Übersicht
+bleiben im Stand der Einheit S1; dieser Nachtrag ändert keinen Befund und
+schlägt keine Lösung vor.
+
+**Vermerk zu W1-64.** E-S1-08 (ADR 0007, Entscheidpunkte; Spalte kennzeichnung
+in Entscheid 13) ist mit dem Merge #52 nach (a) entschieden: zwei Werte;
+quellenaussage heisst "erhoben oder festgestellt" (von einer Quelle, einer
+Person oder dem System), schlussfolgerung "vom Modell gefolgert". Das ist die
+Lesart des Software Architects für Protokolleinträge ohne Aussage, wie sie
+W1-64 nennt. Der Befund W1-64 bleibt stehen: Der Wortlaut des Backlog-Eintrags
+R3-F-010 ist unverändert, und eine Korrektur des Eintrags kommt als eigener
+Backlog-Eintrag über den Product Owner (B4).
+
+**Befund W1-97** (Prüfung der Annahme in E-S1-10 als Restpunkt vor S1.3).
+
+| Kennung | Testname | Glied oder Kriterium | Befund | Schwere |
+|---|---|---|---|---|
+| W1-97 | R3-F-001_fall_traegt_regime | R4, R3 | E-S1-10 (a), entschieden mit dem Merge #52, macht das Aktenzeichen unter den nicht gelöschten Fällen eindeutig und stützt sich auf die Annahme, Teilverfahren trügen eigene Aktenzeichen. Der Eintrag R3-F-001 trägt diese Annahme nicht: Story und Kriterium nennen das Aktenzeichen nur als Angabe bei der Eröffnung, weder Eindeutigkeit noch Teilverfahren kommen vor, und das Kriterium benennt keine Abweisung einer Eröffnung wegen eines bestehenden Aktenzeichens. 4.4 nennt das Aktenzeichen nicht; der Begriff ist nicht bestimmt (W1-09, Glossar "Zu ergänzen" Nr. 4). Nicht benannt ist damit, ob dasselbe Aktenzeichen in mehr als einem nicht gelöschten Fall vorkommen darf, etwa bei Teilverfahren, bei einem Fall, der unter R2 eröffnet ist und in ein Strafverfahren nach R1 übergeht, oder bei einer Wiederaufnahme (4.4, Löschsperre) eines abgeschlossenen, also nicht gelöschten Falls. | Nachbesserung |
+
+Schwere nach der Lesart oben: Das Kriterium lässt sich mit und ohne
+Eindeutigkeit als ehrlicher Test formulieren und grün zeigen; offen ist eine
+Annahme (R4), keine zweite Lesart, von der abhängt, ob der Test grün werden
+kann. Mit W1-97 zählt R3-F-001 zehn Befunde der Schwere Nachbesserung, die
+Befundliste 97 Befunde (7 blockiert, 66 Nachbesserung, 24 Hinweis), davon im
+Sprint Backlog 1 blockierend, 42 Nachbesserung, 16 Hinweis.
+
+**Vermerk zu W1-83.** E-S1-21 ist mit dem Merge #52 nach (a) entschieden:
+Werkzeug und Abfrage sind in Sprint 1 Texte fester Form, geprüft wird
+Vollständigkeit, nicht Echtheit (ADR 0007, Entscheid 25 und Grenze GS-6;
+`docs/sprints/sprint-01.md`, Hindernis H-7). W1-83 bleibt damit als
+Festlegung des Software Architects gefasst, nicht als Änderung des
+Backlog-Eintrags R3-F-005; der Wortlaut des Kriteriums ist unverändert, und
+der Befund bleibt in der Liste stehen.

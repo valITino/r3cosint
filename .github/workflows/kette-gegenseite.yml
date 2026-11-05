@@ -40,6 +40,21 @@
 #          eine spaetere Fassung ohne diesen Schalter machte D1 rot, am
 #          Protokoll erkennbar.
 #
+# Schritt "Image des Dienstes datenbank ueber den Digest laden" (S1.1, ADR 0007,
+# Entscheid E-S1-03 a): Die Datenbankstufe der Kette (D5, D6, D7) startet einen
+# Wegwerf-Container aus dem Digest, den deploy/compose.test.yml fuer den Dienst
+# datenbank nennt (docker run --pull=never, kein Nachladen zur Testzeit). Das
+# Image muss dafuer vor make dod lokal vorliegen; sonst meldete die Wache im
+# Makefile Lage C (FEHLT=image-datenbank) und die Gegenseite pruefte die
+# Anfuegbarkeit der Spuren nicht. Der Schritt liest den Digest aus derselben
+# Zeile wie die Wache (eine Quelle, kein zweiter Wert hier), laedt allein dieses
+# Image ueber den Digest und prueft es danach mit docker image inspect. Kein Tag,
+# kein anderes Image, keine Anmeldung. Die Abrufgrenze GA-03 trifft auch diesen
+# Schritt (E-S1-03: Docker Hub begrenzt anonyme Abrufe je Austritts-Adresse).
+# Der Schritt hat eine eigene Zeitgrenze (10 Minuten; Auftrag 30, make dod 20) und haelt
+# die Workflow-Befehle an (stop-commands, Wiedereinschalten in der EXIT-Falle), weil
+# Fehlertexte der Registry fremder Text im Protokoll sind.
+#
 # Die Pflichtpruefung im Regelwerk von main stellt der Auftraggeber erst nach
 # R3-C-004 ein, unter dem Anzeigenamen "make dod (ohne Liste der terminierten
 # Lagen)"; der Name des Auftrags bleibt deshalb stabil.
@@ -159,6 +174,28 @@ jobs:
             echo "Archivstand fehlt; D20 meldet Lage C"
           fi
           exit 0
+
+      - name: Image des Dienstes datenbank ueber den Digest laden
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          # Fehlertexte der Registry sind fremder Text im Protokoll: Workflow-Befehle sind
+          # angehalten (wie beim Schritt der Kette); das Wiedereinschalten steht in der EXIT-Falle.
+          TOKEN="$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+          echo "::stop-commands::$TOKEN"
+          trap 'echo "::$TOKEN::"' EXIT
+          # Eine Quelle: die Zeile image: des Dienstes datenbank in deploy/compose.test.yml
+          # (dieselbe Lesart wie die Wache der Datenbankstufe im Makefile).
+          digest="$(sed -n 's/^[[:space:]]*image:[[:space:]]*docker\.io\/library\/postgres@sha256:\([0-9a-f]\{64\}\)[[:space:]]*$/\1/p' deploy/compose.test.yml)"
+          case "$digest" in
+            *[!0-9a-f]*|"") echo "deploy/compose.test.yml nennt den Digest des Dienstes datenbank nicht genau einmal" >&2; exit 1 ;;
+          esac
+          [ "${#digest}" -eq 64 ] || { echo "Digest hat nicht 64 Zeichen" >&2; exit 1; }
+          bild="docker.io/library/postgres@sha256:$digest"
+          echo "Image: $bild"
+          docker pull "$bild"
+          docker image inspect "$bild" >/dev/null
+          echo "Image liegt lokal vor"
 
       - name: make dod
         timeout-minutes: 20

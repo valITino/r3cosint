@@ -4,6 +4,11 @@
 # ausgenommene Paket fehlt in der Liste (ein ignore_imports ohne Treffer ist ein Fehler).
 # tests/architektur/test_vertragsquellen.py gleicht die Listen mit dem Paketbaum ab; der
 # Abgleich der Wurzelpakete im Rezept von D18 deckt ein oberstes Paket neben r3cosint ab.
+# Vertrag 10 (ADR 0007, Verträge, Zeile 10; Einheit S1.1) zählt alle 14 obersten Pakete ohne
+# Ausnahme als Quellen: asyncpg und alembic importiert unter r3cosint kein Modul unmittelbar;
+# die Datenbank erreicht der Code über SQLAlchemy, Alembic läuft in backend/migrationen, das
+# kein Paket von r3cosint ist (dort gilt der Architekturtest "Revisionen importieren nichts
+# aus r3cosint"). Mittelbare Importe über sqlalchemy bleiben erlaubt.
 # Die Verträge 4 und 5 (Schreibverträge) entstehen mit der ersten Spur- beziehungsweise
 # Bestandstabelle und gelten bis dahin nicht als bestanden.
 
@@ -133,3 +138,28 @@ source_modules = [
 forbidden_modules = [
     "prototype",
 ]
+
+[[tool.importlinter.contracts]]
+name = "Vertrag 10: Treiber nur hinter der Zugriffsschicht"
+type = "forbidden"
+source_modules = [
+    "r3cosint.core",
+    "r3cosint.kanon",
+    "r3cosint.spur",
+    "r3cosint.fall",
+    "r3cosint.zugriff",
+    "r3cosint.freigabe",
+    "r3cosint.beschaffung",
+    "r3cosint.ausgang",
+    "r3cosint.fremd",
+    "r3cosint.llm",
+    "r3cosint.graph",
+    "r3cosint.export",
+    "r3cosint.api",
+    "r3cosint.mcpsrv",
+]
+forbidden_modules = [
+    "asyncpg",
+    "alembic",
+]
+allow_indirect_imports = true

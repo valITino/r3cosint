@@ -645,6 +645,71 @@ UV := $(UV_UMFELD) uv
 UMFELD_PROBE = $(UV) run --project backend --locked python -c 'import sys,shutil,os; p=shutil.which(sys.argv[1]); sys.exit(0 if p and os.path.realpath(p).startswith(os.path.realpath(sys.prefix)+os.sep) else 1)'
 
 # -----------------------------------------------------------------------------
+# S1.1 -- Wache der Datenbankstufe vor D5, D6 und D7 (ADR 0007, Abschnitt
+# "Teststufen", Absatz "Kette"; Entscheid E-S1-02 c)
+# -----------------------------------------------------------------------------
+# Besteht backend/tests/integration (Erkennungsmerkmal der Datenbankstufe), startet
+# die Sitzungsfixture in backend/tests/conftest.py einen Wegwerf-Container aus dem
+# Digest des Dienstes datenbank. Fehlt dafuer ein Mittel, ist das ein fehlendes
+# Pruefmittel und damit Lage C (Kettengrundsatz: Gegenstand da, Pruefmittel fehlt),
+# kein A_FAIL aus der Fixture. Die Funktion db_wache gibt 0 zurueck, wenn die Stufe
+# laufen kann oder nicht besteht; sonst 1, eine Meldung und, falls noch leer, FEHLT=:
+#   docker                   das Programm fehlt im PATH
+#   docker-daemon            "docker info" scheitert
+#   deploy/compose.test.yml  Datei fehlt oder die Zeile "image: docker.io/library/postgres@sha256:<64 Hex>"
+#                            fehlt oder ist nicht eindeutig (eine Quelle fuer den Digest, kein zweiter
+#                            Wert im Makefile)
+#   image-datenbank          das Image dieses Digests liegt lokal nicht vor
+# Die Pruefungen von docker laufen unter $(UV_UMFELD) (env -i): das ist die Umgebung, in der
+# pytest und damit die Fixture laufen. DOCKER_HOST, DOCKER_CONTEXT und DOCKER_CONFIG des
+# Aufrufers erreichen die Fixture nicht; massgeblich ist der Standard-Socket, soweit HOME ihn
+# nicht umlenkt: HOME wird durchgereicht, ein currentContext in $HOME/.docker/config.json lenkte
+# Wache und Fixture gleichermassen. Die Wache prueft
+# denselben Weg und kann deshalb nicht gruen sein, wo die Fixture rot wuerde.
+# Das Image wird nie geladen: weder von der Wache noch von der Fixture (docker run
+# --pull=never); der Beschaffungsweg steht in der Meldung (Grenze M-G21-01: Docker Hub
+# begrenzt anonyme Abrufe je Austritts-Adresse, HTTP 429).
+# Bei D7 gilt die Wache fuer den Lauf mit pytest -m abnahme, weil die Abnahmetests die
+# Datenbank brauchen. Ohne Daemon ist D7 Lage C, der Abgleich entfaellt wie bei fehlendem
+# pytest: ein Gesammeltsein ohne Lauf der Tests waere kein Urteil, das D7 tragen soll.
+define DB_WACHE_FUNKTION
+	db_wache() {
+		[ -d backend/tests/integration ] || return 0
+		if ! command -v docker >/dev/null 2>&1; then
+			echo "$$1 LAGE C: backend/tests/integration existiert, aber 'docker' ist nicht installiert (die Datenbankstufe startet eine Instanz)." >&2
+			echo "Beschaffen: Docker Engine (https://docs.docker.com/engine/install/)." >&2
+			[ -n "$$fehlt" ] || fehlt="docker"
+			return 1
+		fi
+		if ! $(UV_UMFELD) docker info >/dev/null 2>&1; then
+			echo "$$1 LAGE C: backend/tests/integration existiert, aber der Docker-Daemon ist nicht erreichbar (Standard-Socket, ohne DOCKER_HOST des Aufrufers)." >&2
+			echo "Docker-Dienst starten (z. B. sudo systemctl start docker, oder Docker Desktop starten)." >&2
+			[ -n "$$fehlt" ] || fehlt="docker-daemon"
+			return 1
+		fi
+		wache_digest=""
+		if [ -f deploy/compose.test.yml ]; then
+			wache_digest=$$(sed -n 's/^[[:space:]]*image:[[:space:]]*docker\.io\/library\/postgres@sha256:\([0-9a-f]\{64\}\)[[:space:]]*$$/\1/p' deploy/compose.test.yml 2>/dev/null)
+		fi
+		case "$$wache_digest" in
+			*[!0-9a-f]*|"") wache_digest="" ;;
+		esac
+		if [ "$${#wache_digest}" -ne 64 ]; then
+			echo "$$1 LAGE C: backend/tests/integration existiert, aber deploy/compose.test.yml fehlt oder nennt den Digest des Dienstes datenbank nicht genau einmal (Zeile 'image: docker.io/library/postgres@sha256:<64 Hex>')." >&2
+			[ -n "$$fehlt" ] || fehlt="deploy/compose.test.yml"
+			return 1
+		fi
+		if ! $(UV_UMFELD) docker image inspect "docker.io/library/postgres@sha256:$$wache_digest" >/dev/null 2>&1; then
+			echo "$$1 LAGE C: backend/tests/integration existiert, aber das Image docker.io/library/postgres@sha256:$$wache_digest liegt lokal nicht vor." >&2
+			echo "Beschaffen: docker pull docker.io/library/postgres@sha256:$$wache_digest (nur ueber den Digest, kein Tag; Docker Hub begrenzt anonyme Abrufe, M-G21-01; in der Arbeitsumgebung der Sitzung nur mit Erlaubnis des Auftraggebers)." >&2
+			[ -n "$$fehlt" ] || fehlt="image-datenbank"
+			return 1
+		fi
+		return 0
+	}
+endef
+
+# -----------------------------------------------------------------------------
 # Lage-Marke — aus Variablen zusammengesetzt, nicht als Literal im Quelltext.
 # -----------------------------------------------------------------------------
 # Frueher stand der vollstaendige Text "::LAGE ... ::" viermal woertlich im
@@ -873,7 +938,11 @@ bau:
 			# "--directory"), das Argument "backend/src" bleibt deshalb relativ zur
 			# Repository-Wurzel gueltig, wie es die Tabelle in ADR 0002, Abschnitt
 			# 6 woertlich vorgibt.
-			$(UV) sync --project backend --locked && $(UV) run --project backend --locked python -m compileall -q backend/src || fehlgeschlagen=1
+			# S1.1 (ADR 0007, Entscheid 5): backend/migrationen wird mitgeuebersetzt, sobald es besteht;
+			# ein nicht bestehender Pfad macht compileall rot und bleibt deshalb ungenannt.
+			kompilierpfade="backend/src"
+			[ -d backend/migrationen ] && kompilierpfade="$$kompilierpfade backend/migrationen"
+			$(UV) sync --project backend --locked && $(UV) run --project backend --locked python -m compileall -q $$kompilierpfade || fehlgeschlagen=1
 		fi
 	fi
 	if [ -f frontend/package.json ]; then
@@ -1115,7 +1184,11 @@ typen:
 			# Wurzel liest mypy [tool.mypy] aus backend/pyproject.toml nicht; ohne die Angabe endete
 			# eine unannotierte Funktion mit Rueckgabewert 0 (gemessen 2026-10-28), der strenge
 			# Modus bliebe ohne Wirkung.
-			$(UV) run --project backend --locked mypy --config-file backend/pyproject.toml backend/src backend/tests || fehlgeschlagen=1
+			# S1.1 (ADR 0007, Entscheid 5): backend/migrationen als weiterer Pfad, sobald er besteht
+			# (ein nicht bestehender Pfad macht mypy rot).
+			mypy_pfade="backend/src backend/tests"
+			[ -d backend/migrationen ] && mypy_pfade="$$mypy_pfade backend/migrationen"
+			$(UV) run --project backend --locked mypy --config-file backend/pyproject.toml $$mypy_pfade || fehlgeschlagen=1
 		fi
 	fi
 	if [ -f frontend/package.json ]; then
@@ -1250,6 +1323,7 @@ test:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D5 test] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
 	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
+	$(DB_WACHE_FUNKTION)
 	if [ -f backend/pyproject.toml ]; then
 		hat_objekt=1
 		if ! command -v uv >/dev/null 2>&1; then
@@ -1260,6 +1334,9 @@ test:
 			echo "[D5 test] LAGE C: backend/pyproject.toml existiert, aber 'pytest' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
 			echo "Beschaffen: pytest in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
 			[ -n "$$fehlt" ] || fehlt="pytest"
+			hat_lage_c=1
+		elif ! db_wache "[D5 test]"; then
+			# S1.1: Wache der Datenbankstufe, Begruendung bei DB_WACHE_FUNKTION; FEHLT= setzt die Funktion.
 			hat_lage_c=1
 		else
 			# G1 (ADR 0002, Abschnitt 6, Zeile D5): -c nennt die Konfiguration, der Pfad den
@@ -1315,6 +1392,7 @@ abdeckung:
 	set -uo pipefail
 	cd "$(PROJ)" || { echo "[D6 abdeckung] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
 	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
+	$(DB_WACHE_FUNKTION)
 	if [ -f backend/pyproject.toml ]; then
 		hat_objekt=1
 		if ! command -v uv >/dev/null 2>&1; then
@@ -1329,6 +1407,9 @@ abdeckung:
 			echo "[D6 abdeckung] LAGE C: backend/pyproject.toml existiert, aber 'pytest-cov' ist nicht installiert (uv run python -c 'import pytest_cov' schlaegt fehl)." >&2
 			echo "Beschaffen: pytest-cov als Abhaengigkeit von backend/ eintragen und 'uv sync' erneut ausfuehren." >&2
 			fehlt="pytest-cov"
+			hat_lage_c=1
+		elif ! db_wache "[D6 abdeckung]"; then
+			# S1.1: Wache der Datenbankstufe, Begruendung bei DB_WACHE_FUNKTION; FEHLT= setzt die Funktion.
 			hat_lage_c=1
 		else
 			# E2 (zusaetzlich): COVERAGE_FILE zeigt auf eine Wegwerfdatei, damit
@@ -1389,6 +1470,7 @@ abnahme:
 	cd "$(PROJ)" || { echo "[D7 abnahme] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
 	hat_objekt=1; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	sammeldatei=""
+	$(DB_WACHE_FUNKTION)
 	if [ ! -f scripts/abnahme-abgleich.sh ]; then
 		echo "[D7 abnahme] LAGE C: scripts/abnahme-abgleich.sh existiert nicht." >&2
 		echo "Der Abgleich Backlog gegen Testkennungen (Projektauftrag 6.6) kann deshalb nicht laufen; 'bestanden' waere hier nicht belegt." >&2
@@ -1404,6 +1486,9 @@ abnahme:
 				echo "[D7 abnahme] LAGE C: backend/pyproject.toml existiert, aber 'pytest' ist keine gesperrte Abhaengigkeit von backend/ (B1: ein gleichnamiges Programm im PATH zaehlt nicht)." >&2
 				echo "Beschaffen: pytest in backend/pyproject.toml eintragen und 'uv lock' erneut ausfuehren." >&2
 				[ -n "$$fehlt" ] || fehlt="pytest"
+				hat_lage_c=1
+			elif ! db_wache "[D7 abnahme]"; then
+				# S1.1: Wache der Datenbankstufe, Begruendung bei DB_WACHE_FUNKTION; FEHLT= setzt die Funktion.
 				hat_lage_c=1
 			else
 				# Erster Teil (G1, Grund wie D5): -c nennt die Konfiguration, der Pfad den

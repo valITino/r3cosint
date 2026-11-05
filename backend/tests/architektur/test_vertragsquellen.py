@@ -25,6 +25,7 @@ VERTRAG_3 = "Vertrag 3 (R3-F-018), ausserhalb llm: kein Modellendpunkt"
 VERTRAG_3_LLM = "Vertrag 3 (R3-F-018), in llm: keine Herstellerbibliothek"
 VERTRAG_6 = "Vertrag 6: api wird von keinem anderen Modul importiert"
 VERTRAG_7 = "Vertrag 7: Produktionscode importiert prototype nicht"
+VERTRAG_10 = "Vertrag 10: Treiber nur hinter der Zugriffsschicht"
 
 # Verbotsliste von Vertrag 2 (ADR 0002, Abschnitt 5, Nachtrag G1, Zeile "Vertrag 2"),
 # einschliesslich httpx2 und httpcore2 (Vermerk "nach dem Bau").
@@ -135,3 +136,23 @@ def test_vertrag_7_verbietet_prototype_dem_ganzen_produktionscode() -> None:
     vertrag = _vertrag(VERTRAG_7)
     assert vertrag["source_modules"] == ["r3cosint"]
     assert vertrag["forbidden_modules"] == ["prototype"]
+
+
+def test_R3_F_008_vertrag_10_nennt_alle_14_obersten_pakete_als_quellen_ohne_ausnahme() -> (
+    None
+):
+    vertrag = _vertrag(VERTRAG_10)
+    quellen = vertrag["source_modules"]
+    assert len(quellen) == len(set(quellen)), "ein Paket steht doppelt in den Quellen"
+    assert set(quellen) == _oberste_pakete()
+    assert len(quellen) == 14
+
+
+def test_R3_F_008_vertrag_10_verbietet_asyncpg_und_alembic_und_laesst_mittelbare_importe_zu() -> (
+    None
+):
+    vertrag = _vertrag(VERTRAG_10)
+    assert vertrag["type"] == "forbidden"
+    assert vertrag["forbidden_modules"] == ["asyncpg", "alembic"]
+    # sqlalchemy lädt asyncpg über den Dialekt; ein mittelbarer Import ist gewollt.
+    assert vertrag["allow_indirect_imports"] is True
