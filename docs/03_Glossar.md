@@ -5,7 +5,7 @@
 | **Arbeitsprodukt nach** | Projektauftrag 6.3 |
 | **Verantwortlich** | Requirements Engineer; ein benannter Verantwortlicher ist noch zu bestimmen |
 | **Lebensdauer** | langlebig |
-| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19. Nachgeführt 2026-09-21 mit dem Backlog-Eintrag R3-Q-010: Gate und Hook aufgenommen, beim Eintrag Freigabe-Gate die Homonym-Warnung um die Abgrenzung zum Gate ergänzt — beide Begriffe werden in Arbeitsprodukten und Regeln seit dem 2026-08-19 verwendet, standen aber nicht im Glossar, und "Gate" bezeichnete darin zwei verschiedene Sachen (R3 der Definition of Ready, Homonyme vermeiden). Nachgeführt 2026-09-23 mit dem Backlog-Eintrag R3-Q-011: Einschleusung, Fremder Inhalt und Harness aufgenommen — alle drei Begriffe tragen den Eintrag; "fremde Inhalte" wurde bisher für den Harness (CLAUDE.md, Abschnitt "Nicht verhandelbar") und für das Produkt (R3-F-017) ohne Abgrenzung gebraucht, und "Harness" selbst stand trotz Verwendung im Projektauftrag (5.15) und in CLAUDE.md nicht im Glossar (R3 der Definition of Ready). Nachgeführt 2026-10-28 mit der Einheit G0: Grundgerüst aufgenommen — der Begriff wird im Projektauftrag (3.1), im Architekturentscheid und in der Freigabe des Grundgerüsts verwendet, stand aber nicht im Glossar; `docs/12_Freigabe_Grundgeruest.md` führt die Aufnahme in Abschnitt 1 als Restpunkt und weist sie in Abschnitt 4 (G0, Rollen) dem Requirements Engineer zu (R3 der Definition of Ready) |
+| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19. Nachgeführt 2026-09-21 mit dem Backlog-Eintrag R3-Q-010: Gate und Hook aufgenommen, beim Eintrag Freigabe-Gate die Homonym-Warnung um die Abgrenzung zum Gate ergänzt — beide Begriffe werden in Arbeitsprodukten und Regeln seit dem 2026-08-19 verwendet, standen aber nicht im Glossar, und "Gate" bezeichnete darin zwei verschiedene Sachen (R3 der Definition of Ready, Homonyme vermeiden). Nachgeführt 2026-09-23 mit dem Backlog-Eintrag R3-Q-011: Einschleusung, Fremder Inhalt und Harness aufgenommen — alle drei Begriffe tragen den Eintrag; "fremde Inhalte" wurde bisher für den Harness (CLAUDE.md, Abschnitt "Nicht verhandelbar") und für das Produkt (R3-F-017) ohne Abgrenzung gebraucht, und "Harness" selbst stand trotz Verwendung im Projektauftrag (5.15) und in CLAUDE.md nicht im Glossar (R3 der Definition of Ready). Nachgeführt 2026-10-28 mit der Einheit G0: Grundgerüst aufgenommen — der Begriff wird im Projektauftrag (3.1), im Architekturentscheid und in der Freigabe des Grundgerüsts verwendet, stand aber nicht im Glossar; `docs/12_Freigabe_Grundgeruest.md` führt die Aufnahme in Abschnitt 1 als Restpunkt und weist sie in Abschnitt 4 (G0, Rollen) dem Requirements Engineer zu (R3 der Definition of Ready). Nachgeführt 2026-11-05 mit der Einheit S1 (Walkthrough vor Sprint 1, `docs/sprints/sprint-01-walkthrough.md`): Aufgabe, Datenpunkt, Fallkategorie, Fallverantwortlicher, Kettenprüfung, Klardaten, Löschweg, Protokolleintrag, Prüffrist, Rechtsregime und Verkettung aufgenommen (neuer Abschnitt D), bei Aufbewahrungsklasse das Synonym Fallkategorie vermerkt (4.4, Punkt 3b: genau ein Feld), bei Grabstein-Eintrag die Kurzform; Sprint 1 braucht die Begriffe als Bezeichner (ADR 0002, A13). Rechtsregime trägt [rechtlich] und ist am 2026-11-05 durch die GRC-Rolle geprüft (Einheit S1); offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5). Unter "Zu ergänzen" Nr. 4 bis 6 neu. 64 Einträge |
 
 **Die Verwendung dieses Glossars ist für alle Arbeitsprodukte und für die
 Oberflächentexte verpflichtend** (6.3). Synonyme sind gekennzeichnet, Homonyme
@@ -49,7 +49,20 @@ Daraus übernommene Werte tragen die Herkunftsangabe auf das Asservat.
 
 **Aufbewahrungsklasse** — Konfigurierbare Fallkategorie, an der die Prüffrist
 hängt. Sie löst **nie** eine Löschung aus, sondern eine Aufgabe an den
-Fallverantwortlichen (4.4).
+Fallverantwortlichen (4.4). *Synonym zu:* Fallkategorie (siehe dort) — 4.4,
+Punkt 3b, entscheidet "genau ein Feld, nicht zwei" und nennt es Fallkategorie;
+"Aufbewahrungsklasse" stammt aus dem Konzeptdokument. In Arbeitsprodukten und
+Bezeichnern Fallkategorie verwenden. *Nicht verwenden für:* die Klassen A und B
+der Demo, die als Eingabefeld entfallen (4.4, Punkt 3b).
+
+**Aufgabe** — Im Produkt: ein fallbezogener Arbeitsauftrag an eine Person.
+Aufgaben werden zugewiesen, übernommen und abgeschlossen (5.8). Eine erreichte
+Prüffrist löst eine Aufgabe an den Fallverantwortlichen aus, "sonst nichts" —
+**nie** eine Löschung (4.4, Zustand "Prüfung fällig"). *Homonym-Warnung:* nicht
+dasselbe wie die Aufgabe im Harness, unter der eine Arbeitseinheit mit dem
+Aufgabenwerkzeug geführt wird (CLAUDE.md, Abschnitt "Vor jeder Arbeitseinheit",
+Punkt 5). In Arbeitsprodukten zum Produkt meint "Aufgabe" immer die
+fallbezogene Aufgabe.
 
 **Ausgabeweg** — Ein in den Modulen `export` beziehungsweise `graph`
 registrierter Erzeuger, der Werte des kanonischen Datenbestands in genau ein
@@ -76,6 +89,14 @@ Produktivbetrieb erfüllt sein müssen. Punkt 7 kann nur der Auftraggeber abhake
 **Beweismittelformat** — Exportformat, das für die Beweisführung geeignet ist.
 CSV und XLSX sind ausdrücklich **kein** Beweismittelformat und werden im Export
 entsprechend gekennzeichnet (5.10).
+
+## D
+
+**Datenpunkt** — Ein Knoten oder eine Verbindung (Kante) im kanonischen
+Datenbestand. 5.4 fasst die Verfahrensgarantie "Herkunft an jedem Datenpunkt"
+als "Kein Knoten und keine Verbindung ohne Herkunftsnachweis" (R3-F-005). Ob
+einzelne Eigenschaften einer Entität eigene Datenpunkte sind, ist nicht
+festgelegt (Walkthrough vor Sprint 1, W1-86).
 
 ## E
 
@@ -120,6 +141,28 @@ einziges Werkzeug aufrufbar** (5.4, Fallbindung).
 
 **Fallbindung** — Verfahrensgarantie: jede Abfrage ist zwingend einem Verfahren
 und einer Person zugeordnet (5.4).
+
+**Fallkategorie** — Die fachliche Einordnung eines Falls, etwa Übertretung,
+Vergehen oder Verbrechen, die die ermittelnde Person bei der Falleröffnung
+wählt. Es gibt genau ein Feld; die Prüffrist wird daraus abgeleitet und nicht
+separat erfasst (4.4, Punkt 3b). Kategorien und Prüffristen sind
+Konfiguration, keine Konstante im Code (4.4, Punkt 4); die Startwerte in 4.4,
+Punkt 3, sind betriebliche Voreinstellungen zur Bestätigung durch die
+Kantonspolizei Bern. Ändert sich die rechtliche Würdigung, ändert sich die
+Prüffrist mit, und das ist protokolliert (4.4, Punkt 3b). Eine Kurzkennzeichnung
+in Listen wird aus der Kategorie abgeleitet und angezeigt, nie eingegeben. Die
+Archivwürdigkeit wird nicht mit der Kategorie bei der Eröffnung entschieden,
+sondern am Prüftermin. Verantwortung im Modulschnitt: Modul fall (ADR 0002,
+Abschnitt 4.1). *Synonym:* Aufbewahrungsklasse (siehe dort), in
+Arbeitsprodukten nicht mehr verwenden.
+
+**Fallverantwortlicher** — Eine der vier Rollen im Produkt (5.8): alles der
+Rolle Ermittler, zusätzlich Fall eröffnen und schliessen, Klassifizierung
+setzen, Freigaben erteilen, Export mit vollem Umfang. Empfänger der Aufgabe bei
+erreichter Prüffrist (4.4). Die übrigen Rollen sind Administrator, Ermittler und
+Leser; in der Stakeholderliste unter S-03. *Homonym-Warnung:* "Rolle" meint hier
+die Rolle im Produkt nach 5.8, nicht eine Rolle des Harness unter
+`.claude/agents/`.
 
 **Freigabe** — Die bewusste Bestätigung eines Menschen vor der Ausführung von
 Abfragen nach aussen. Steht mit Zeitpunkt und Person im Protokoll. Vorschlag und
@@ -178,7 +221,8 @@ Synonym für:* Freigabe.
 
 **Grabstein-Eintrag** — Was nach einer Löschung bleibt: Fallnummer,
 Löschzeitpunkt, freigebende Person, Rechtsgrundlage, Prüfsumme. Kein Inhalt.
-Hält die Protokollkette lückenlos (4.4).
+Hält die Protokollkette lückenlos (4.4). *Kurzform:* Grabstein (ADR 0002,
+Abschnitt 4.1, Modul fall; Bezeichner grabstein, ADR 0002, A13).
 
 **Grundgerüst** — Der lauffähige, aber fachlogikfreie Stand nach ADR 0002,
 Abschnitt 5, den Projektauftrag 3.1 für den allerersten Durchlauf verlangt:
@@ -241,6 +285,22 @@ Gate (siehe dort) — jedes Gate ist ein Hook, nicht jeder Hook ist ein Gate.
 des Systems. Alle Quellergebnisse werden in ein einheitliches Modell überführt:
 FollowTheMoney, STIX 2.1, W3C PROV (5.1).
 
+**Kettenprüfung** — Die maschinelle Prüfung der Unversehrtheit beider
+Protokollspuren. Jeder Eintrag trägt die SHA-256-Prüfsumme seines Vorgängers;
+wird nachträglich etwas geändert oder entfernt, auch an der Arbeitsspur, bricht
+die Kette und die Prüfung zeigt es an (5.3). Sie meldet für einen unversehrten
+Bestand "unversehrt" samt Anzahl verifizierter Einträge und für einen
+manipulierten Bestand die Position des ersten Bruchs (R3-F-012; ADR 0002, A2).
+*Homonym-Warnung:* nicht dasselbe wie die Befehlskette der Definition of Done
+("Kette", make dod) — jene prüft den Programmstand, diese den Protokollbestand.
+
+**Klardaten** — Werte aus Falldaten in lesbarer Form, etwa Namen, Adressen und
+Telefonnummern (5.3). Im Protokoll stehen keine Klardaten: Sie werden dort
+unkenntlich gemacht oder als Prüfsumme abgelegt, das Protokoll führt
+Prüfsummen und Verweise (5.3; ADR 0002, A2; R3-F-011). Welche Angaben eines
+Falls im Einzelnen dazugehören, ist nicht abschliessend festgelegt
+(Walkthrough vor Sprint 1, W1-43). *Synonym:* Klartextwerte (R3-F-011).
+
 **Klassifizierung** — Das Schutzstufenschema der Kantonspolizei Bern: nicht
 klassifiziert, 1a (Eingeschränkt), 1b (Ermittlungen), 2 (Geheim), sowie
 "verborgen" ohne Klassifizierungswirkung (5.8). Wirkt zusätzlich zur
@@ -266,6 +326,18 @@ ist (5.4).
 jeder Frist verhindert. Für laufende Rechtsmittel, Aufbewahrungsanordnungen und
 Wiederaufnahme (4.4).
 
+**Löschweg** — Der Weg, auf dem die ausgeführte Löschung eines Falls jeden Ort
+erreicht, an dem seine Daten liegen: Datenbestand, Graph, Anhänge und Asservate,
+Suchindex, Zwischenspeicher, Vorschaubilder, abgeleitete Auswertungen (4.4,
+Punkt 4). Ein Datensatz, der nur aus der Anzeige verschwindet, ist nicht
+gelöscht. Sicherungen werden nicht bearbeitet; sie werden über die Vernichtung
+des eigenen Schlüssels je Fall unlesbar (4.4, Punkt 5, Problem B). Nach der
+Löschung bleibt allein der Grabstein-Eintrag. Bereits ausgeführte Exporte liegen
+ausserhalb des Systems und werden von keinem Löschweg erreicht (4.4, Punkt 5,
+"Ehrliche Grenze"). Der Löschweg wird getestet und der Nachweis dokumentiert
+(Punkt 4 der Bereitschaftsliste). *Abzugrenzen von:* Ablauf einer Prüffrist —
+er löst nie eine Löschung aus, sondern eine Aufgabe (siehe Prüffrist).
+
 ## M
 
 **MCP-Server** — Ebene 1 der Architektur und der **einzige** Zugang zu den
@@ -290,6 +362,14 @@ sind erreichbar; jeder Versuch darüber hinaus wird abgewiesen und protokolliert
 ausschliesslich lokal. Claude Code hat technisch keinen Zugang; die Trennung
 läuft über getrennte Zugangsdaten, nicht über eine Regel (5.16).
 
+**Protokolleintrag** — Ein Eintrag in einer der beiden Protokollspuren,
+Ermittlungsspur oder Arbeitsspur (5.3). Ausschliesslich anfügbar; trägt die
+SHA-256-Prüfsumme seines Vorgängers. Namen, Adressen und Telefonnummern stehen
+darin nur unkenntlich gemacht oder als Prüfsumme: Er hält fest, **dass** etwas
+geschah, nicht **was** (5.3; 4.4, Punkt 5, Problem A). Protokollpflichtig sind
+unter anderem jede Löschung, Verlängerung, Sperre und Freigabe (4.4, Punkt 4).
+*Nicht:* eine Zeile eines System- oder Anwendungslogs (vgl. Arbeitsspur).
+
 **Prototyp** — Der klickbare Wegwerf-Prototyp mit synthetischen Daten. Sein Code
 wird nach der Freigabe nicht weiterverwendet (5.6). *Nicht verwenden als Synonym
 für:* erste Fassung des Produkts.
@@ -297,6 +377,17 @@ für:* erste Fassung des Produkts.
 **Prüfaufwand** — Der geschätzte Aufwand des Teams, ein Inkrement zu prüfen und
 freizugeben — **nicht** der Umsetzungsaufwand. Der Sprintumfang bemisst sich
 daran (6.8).
+
+**Prüffrist** — Die Frist bis zur Prüfung, ob ein abgeschlossener Fall weiter
+aufbewahrt, verlängert, archiviert oder zur Löschung freigegeben wird. Sie
+beginnt mit dem Fallabschluss, nie mit der Erstellung, und wird aus der
+Fallkategorie abgeleitet, nicht separat erfasst (4.4, Punkte 2 und 3b). Ihr
+Erreichen löst eine Aufgabe an den Fallverantwortlichen aus, **nie** eine
+Löschung (Zustand "Prüfung fällig"); eine Verlängerung setzt eine neue
+Prüffrist, die Begründung wird protokolliert (4.4, Punkt 2). Die Werte sind
+betriebliche Voreinstellungen, frei konfigurierbar und nirgends fest verdrahtet;
+Startwerte nach 4.4, Punkt 3, als Vorschlag zur Bestätigung. *Synonym in 4.4,
+Punkt 4:* Aufbewahrungsfrist.
 
 ## Q
 
@@ -310,6 +401,21 @@ gegen den Vorwurf, eine Maschine habe Tatsachen erfunden (5.3).
 
 **Recherche** — Das Abfragen offen zugänglicher Quellen. Reine Recherche, keine
 verdeckte Ermittlung (5.11). *Abzugrenzen von:* Ermittlung als Oberbegriff.
+
+**[rechtlich] Rechtsregime** — Der Erlass, nach dem sich die Datenbearbeitung
+eines Falls richtet, in der Prioritätsordnung nach 4.4: R1 StPO (Daten
+innerhalb eines hängigen Strafverfahrens), R2 PolG/BE (polizeiliche
+Datenbearbeitung ausserhalb eines hängigen Verfahrens), R3 KDSG mit
+Datenschutzverordnung und Direktionsverordnung über Informationssicherheit und
+Datenschutz (subsidiär), R4 Einführungsverordnung zur EU-Datenschutzrichtlinie
+2016/680, R5 Archivierungsgesetz und -verordnung des Kantons Bern. Das revDSG
+des Bundes ist für kantonale Organe grundsätzlich nicht direkt anwendbar und
+wird nicht als Grundlage herangezogen (4.4, Tabelle). Ein Fall trägt sein
+Regime ab der Eröffnung, weil sich ohne dieses Feld später nicht sagen lässt,
+welche Löschregel für ihn gilt (4.4). Die konkrete Einschlägigkeit erarbeitet
+die GRC-Rolle (4.4). *Homonym-Warnung:* Die Ränge heissen R1 bis R5, nie 1a,
+1b, 2 (siehe Klassifizierung). Aufgenommen am 2026-11-05 mit Inhalt allein aus
+4.4; geprüft durch die GRC-Rolle am 2026-11-05 (Einheit S1): Wiedergabe von 4.4 ohne Zusatz; die Einschlägigkeit im Einzelfall bleibt Gegenstand der Konformitätsanalyse.
 
 **Rohantwort** — Die unveränderte, wie empfangen aufgezeichnete Antwort einer
 externen Quelle oder des Sprachmodells. Sie wird mit Prüfsumme im Fallbestand
@@ -373,6 +479,13 @@ abschaltbar. *Nicht:* eine Einstellung.
 Klassifizierungsfunktion**, wirkt nicht auf Zugriffsrechte (5.8). Wird leicht für
 eine Schutzstufe gehalten und ist keine.
 
+**Verkettung** — Eigenschaft beider Protokollspuren: Jeder Eintrag trägt die
+SHA-256-Prüfsumme seines Vorgängers; wird nachträglich etwas geändert oder
+entfernt, auch an der Arbeitsspur, bricht die Kette. Man kann nicht das
+Ergebnis behalten und den Weg dorthin stillschweigend bereinigen. Protokolle
+sind ausschliesslich anfügbar, ein Bearbeiten ist nicht vorgesehen (5.3;
+R3-F-008). Geprüft wird die Verkettung mit der Kettenprüfung (siehe dort).
+
 **Vorschlagsschema** — Die verbindliche Beschreibung der zulässigen Form einer
 Modellantwort: erlaubte Felder, Feldtypen, zulässige Werkzeugnamen, zulässige
 Ziele, Obergrenze der Ausgabelänge. Das Sprachmodell liefert ausschliesslich
@@ -410,3 +523,6 @@ Wendung.
 | 1 | Benannter Verantwortlicher für das Glossar (6.3 verlangt einen) | Auftraggeber |
 | 2 | Fachbegriffe aus dem Dezernatsalltag, die hier noch fehlen | Ermittelnde (S-03) |
 | 3 | Bestätigung, dass "Schutzstufe" als Synonym und nicht als eigener Begriff geführt wird | Auftraggeber |
+| 4 | Aktenzeichen und Fallnummer (4.4, Grabstein-Eintrag): Bestimmung beider Begriffe und ob sie dasselbe bezeichnen (Walkthrough vor Sprint 1, W1-09, W1-21) | Auftraggeber (S-01) |
+| 5 | Rechtsgrundlage als Angabe des Falls und ihre Abgrenzung zum Rechtsregime (W1-09); die Prüfung des Eintrags Rechtsregime ist erledigt (2026-11-05, GRC-Rolle, Einheit S1) | GRC-Rolle mit Auftraggeber |
+| 6 | Ermittelnde Person und ihr Verhältnis zur Rolle Fallverantwortlicher (W1-07); Ablageort (R3-F-020, R3-F-024) | Auftraggeber (S-01); Ablageort Software Architect |
