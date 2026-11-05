@@ -1,0 +1,192 @@
+# Lauf der Kette auf der Gegenseite (O-12): ruft "make dod" auf einem von
+# GitHub gestellten Runner auf, ohne die Liste der terminierten Lagen und
+# ohne das Gate der Sitzung. Grundlage: docs/12_Freigabe_Grundgeruest.md,
+# Abschnitt 4, Block G4; ADR 0003, Teil B, 6.12.5 ("Der Lauf auf der Gegenseite
+# aus O-12 ruft dieselbe Kette ohne diese Liste auf; dort ist rot rot").
+# Festlegung: ADR 0002, Abschnitt 5, Nachtrag vom 2026-11-04 (G4). Die
+# Messung G4.1 auf einem Wegwerf-Zweig ist in der Uebergabe dokumentiert.
+#
+# Rot bis R3-C-004 ist gewollt: der Kettenschritt D9 (Kein Rueckkanal) meldet
+# Lage C (FEHLT=scripts/rueckkanal-pruefen.sh), und "make dod" endet dann mit
+# Rueckgabewert 2. Der Rueckgabewert ist das Urteil; er wird nicht umgedeutet.
+#
+# Rechte: allein Lesen der Inhalte (contents: read) auf oberster Ebene, kein
+# Recht je Auftrag. Keine Geheimnisse, keine Anmeldung bei einem Dienst. Einzige
+# Aktion: actions/checkout ueber die Pruefsumme wie in meilenstein-tag.yml. Der
+# Lauf schreibt nichts nach GitHub: kein Commit, kein Versionsschild, kein
+# Kommentar, kein Artefakt, keine Zusammenfassung, kein Zwischenspeicher.
+#
+# Grenzen:
+#   GA-01  Das Runner-Image ist nicht ueber eine Pruefsumme festgelegt; der
+#          erste Schritt gibt dessen Fassung aus.
+#   GA-02  Python 3.13 kommt aus dem Werkzeugzwischenspeicher des Runners; fehlt
+#          genau eine Fassung 3.13, endet der Lauf rot mit Meldung. Der Inhalt
+#          ist nicht ueber eine Pruefsumme festgelegt (Patchfassung je Image:
+#          3.13.18 in Lauf 1 und 2 der Messung, 3.13.17 in Lauf 3).
+#   GA-03  Docker Hub begrenzt anonyme Abrufe je Austritts-Adresse; der Bau
+#          kann daran scheitern (in der Messung G4.1 wurde die Grenze nicht
+#          beruehrt).
+#   GA-04  Was der Runner selbst an GitHub meldet, liegt bei GitHub und
+#          ausserhalb des Gegenstands.
+#   GA-05  Bei pull_request laeuft die Fassung von Arbeitsablauf, Makefile und
+#          Tests aus dem Pull Request selbst; vor dem Einstellen der
+#          Pflichtpruefung (nach R3-C-004) braucht es eine Vorbedingung
+#          (Pflicht-Review der Code Owner fuer .github/, Makefile, scripts/ und
+#          backend/tests/architektur/, oder ein Lauf aus fester Referenz).
+#   GA-06  Der Benutzer des Runners hat sudo ohne Kennwort, /usr/local/bin ist
+#          beschreibbar; die Pruefungen von uv und gitleaks belegen den Stand
+#          vor make dod, nicht waehrend des Laufs.
+#   GA-07  COMPOSE_BAKE=false gilt fuer die Compose-Fassung des Runner-Images;
+#          eine spaetere Fassung ohne diesen Schalter machte D1 rot, am
+#          Protokoll erkennbar.
+#
+# Die Pflichtpruefung im Regelwerk von main stellt der Auftraggeber erst nach
+# R3-C-004 ein, unter dem Anzeigenamen "make dod (ohne Liste der terminierten
+# Lagen)"; der Name des Auftrags bleibt deshalb stabil.
+
+name: "Kette auf der Gegenseite (O-12)"
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - main
+  push:
+    branches:
+      - "wegwerf/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  kette:
+    name: "make dod (ohne Liste der terminierten Lagen)"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Laufumgebung ausgeben
+        run: |
+          set -uo pipefail
+          echo "ImageOS=${ImageOS:-fehlt} ImageVersion=${ImageVersion:-fehlt} RUNNER_OS=${RUNNER_OS:-fehlt}"
+          echo "Kernel: $(uname -r)"
+          docker --version || true
+          docker compose version || true
+          git --version || true
+          make --version | head -n 1 || true
+
+      - name: Repository auschecken
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Python 3.13 aus dem Werkzeugzwischenspeicher bereitstellen
+        run: |
+          set -euo pipefail
+          verz=()
+          for d in "$RUNNER_TOOL_CACHE"/Python/3.13.*/x64; do
+            [ -d "$d" ] && verz+=("$d")
+          done
+          if [ "${#verz[@]}" -ne 1 ]; then
+            echo "Python 3.13: erwartet genau ein Verzeichnis 3.13.*/x64, gefunden ${#verz[@]}" >&2
+            exit 1
+          fi
+          echo "Python 3.13 aus ${verz[0]}"
+          echo "${verz[0]}/bin" >> "$GITHUB_PATH"
+
+      - name: Python 3.13 pruefen
+        run: |
+          set -euo pipefail
+          python3.13 --version
+          p="$(command -v python3.13)"
+          echo "python3.13: $p"
+          case "$p" in "$RUNNER_TOOL_CACHE"/*) ;; *) echo "python3.13 liegt nicht im Werkzeugzwischenspeicher" >&2; exit 1 ;; esac
+          python3 --version
+
+      - name: uv 0.11.32 aus dem Image bereitstellen
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/uv-bin"
+          c="$(docker create ghcr.io/astral-sh/uv@sha256:df4cae8f3a96d175e2e5f992e597550000edbe78fdc2594d5cd8de1a217f504c)"
+          docker cp "$c:/uv" "$RUNNER_TEMP/uv-bin/uv"
+          docker rm "$c" >/dev/null
+          chmod 0755 "$RUNNER_TEMP/uv-bin/uv"
+          echo "$RUNNER_TEMP/uv-bin" >> "$GITHUB_PATH"
+
+      - name: uv 0.11.32 pruefen
+        run: |
+          set -euo pipefail
+          p="$(command -v uv)"
+          echo "uv: $p"
+          [ "$p" = "$RUNNER_TEMP/uv-bin/uv" ] || { echo "uv liegt nicht unter $RUNNER_TEMP/uv-bin" >&2; exit 1; }
+          v="$(uv --version)"
+          echo "$v"
+          case "$v" in "uv 0.11.32"*) ;; *) echo "erwartet uv 0.11.32" >&2; exit 1 ;; esac
+
+      - name: gitleaks 8.21.2 ueber den Hook bereitstellen
+        run: |
+          set -euo pipefail
+          CLAUDE_PROJECT_DIR="$GITHUB_WORKSPACE" bash "$GITHUB_WORKSPACE/.claude/hooks/session-start-gitleaks.sh"
+          echo "Hook: Rueckgabewert 0"
+
+      - name: gitleaks 8.21.2 pruefen
+        run: |
+          set -euo pipefail
+          soll="50b742abd7daad8bbddb6301f3017efb680632d9a5b3b4d8f137b3aac250e359"
+          p="$(command -v gitleaks)" || { echo "gitleaks fehlt (Lage C)" >&2; exit 1; }
+          echo "gitleaks: $p"
+          v="$(gitleaks version)"
+          echo "Fassung: $v"
+          real="$(readlink -f "$p")"
+          ist="$(sha256sum "$real" | cut -d' ' -f1)"
+          echo "SHA-256 von $real: $ist"
+          case "$v" in *8.21.2*) ;; *) echo "Fassung ist nicht 8.21.2 (vorinstalliert oder anders bereitgestellt): rot mit Meldung" >&2; exit 1 ;; esac
+          [ "$ist" = "$soll" ] || { echo "Summe weicht von der Konstante aus N3.2 ab: rot mit Meldung" >&2; exit 1; }
+
+      - name: Archivstand melden
+        run: |
+          set -uo pipefail
+          if git cat-file -e 78bcef984583e665edb28f0f2e7ef8f1da0a87dc^{commit}; then
+            echo "Archivstand vorhanden"
+          else
+            echo "Archivstand fehlt; D20 meldet Lage C"
+          fi
+          exit 0
+
+      - name: make dod
+        timeout-minutes: 20
+        env:
+          # Compose v2.38.2 und buildx v0.38.1 des Runner-Images 20261101.360.1
+          # uebergeben den Bau an buildx bake; bake verlangt fuer build.network:
+          # host das Entitlement network.host, das Compose nicht setzt (Messung
+          # G4.1: "additional privileges requested"). In der Sitzung (Compose
+          # v5.6.0) tritt das nicht auf. COMPOSE_BAKE=false laesst Compose ueber
+          # den BuildKit-Client des Docker-Treibers bauen; deploy/ und der
+          # Aufruf von make bleiben unveraendert.
+          COMPOSE_BAKE: "false"
+        run: |
+          # Der Runner startet diesen Block mit -e. Die Pipeline wird deshalb
+          # ueber "|| rc=$?" aufgenommen, damit Wiedereinschalten und Urteil auf
+          # jedem Weg folgen; das Urteil bleibt der Rueckgabewert von make dod
+          # (unter pipefail ist $? dieser Wert, solange tee gelingt).
+          # Ohne die fuenf Dateibefehle des Runners (env -u) erreichen Daten und
+          # Werkzeuge der Kette weder die Zusammenfassung des Laufs noch die
+          # Umgebung spaeterer Schritte; gegen feindlichen Code mit sudo
+          # schuetzt das nicht (GA-06).
+          set -uo pipefail
+          TOKEN="$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+          echo "::stop-commands::$TOKEN"
+          t0="$(date +%s)"
+          rc=0
+          env -u GITHUB_ENV -u GITHUB_PATH -u GITHUB_OUTPUT -u GITHUB_STATE -u GITHUB_STEP_SUMMARY make dod 2>&1 | tee "$RUNNER_TEMP/dod.log" || rc=$?
+          echo "::$TOKEN::"
+          t1="$(date +%s)"
+          echo "make dod: Rueckgabewert $rc, $((t1 - t0)) s"
+          exit "$rc"

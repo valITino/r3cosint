@@ -71,6 +71,7 @@ docs/uebergaben/2026-08-30_dod-nachfuehrung-adr0002-abschnitt6-1.md|.git/refs/he
 # --- Zustandsbericht 2026-09-02: fremdes Repository ------------------------
 docs/10_Zustandsbericht_2026-09-02.md|882ef55e377dbf9a4dbe496bb41ac6ccd0e555cf	Commit des angebundenen fremden Repositories valITino/claude-skills-fullstack, Stand der Skill-Auswertung. Dieses Skript kennt nur Objekte des eigenen Objektspeichers samt Archivstand.
 docs/10_Zustandsbericht_2026-09-02.md|3d3c42e5aac5ba805825da76410c181273ba90b1	Gepinnter Commit der fremden GitHub-Action actions/checkout (v7.0.1), im Zustandsbericht als Negativbefund zitiert. Genau so verlangt es 6.6 -- ein Zweigname waere hier der Fehler.
+docs/adr/0002-architekturentscheid-ziel-stack.md|3d3c42e5aac5ba805825da76410c181273ba90b1	Gepinnter Commit der fremden GitHub-Action actions/checkout (v7.0.1), in ADR 0002, Abschnitt 5, Nachtrag vom 2026-11-04 (Festlegung fuer G4) als Pin der einzigen Aktion des Arbeitsablaufs der Gegenseite genannt; kein Commit dieses Repositories, deshalb nicht im eigenen Objektspeicher. Wertgebunden, weil die Zeilennummer mit jedem Nachtrag verrutscht (Eintrag des Koordinators, Einheit G4.1, 2026-11-04).
 docs/10_Zustandsbericht_2026-09-02.md|11d5960a326750d5838078e36cf38b85af677262	Gepinnter Commit der fremden GitHub-Action actions/checkout (v4.4.0), im Zustandsbericht als Negativbefund zitiert. Genau so verlangt es 6.6 -- ein Zweigname waere hier der Fehler.
 
 # --- Prozess-Schnitt PS-2 (2026-10-22): Abschnitte, die in ADR 0002 blieben ---
