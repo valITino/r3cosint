@@ -1,7 +1,7 @@
 ---
 name: security-specialist-grc
 description: "Erstellt und aktualisiert die dokumentierte Konformitätsanalyse, sobald eine Funktion eine Rechtsgrundlage berührt oder ein präskriptiver Punkt geändert wird."
-tools: Read, Grep, Glob, Edit, Write, WebSearch, WebFetch, Skill
+tools: Read, Grep, Glob, Edit, Write, WebSearch, WebFetch
 model: opus
 maxTurns: 30
 skills:

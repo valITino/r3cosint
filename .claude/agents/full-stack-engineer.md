@@ -1,7 +1,7 @@
 ---
 name: full-stack-engineer
 description: "Setzt eine Backlog-Aufgabe um, die Datenmodell, Serverlogik und Oberfläche zugleich berührt und sich nicht sinnvoll auf Backend und Frontend aufteilen lässt."
-tools: Read, Grep, Glob, Edit, Write, Bash, Skill
+tools: Read, Grep, Glob, Edit, Write, Bash
 model: sonnet
 maxTurns: 40
 skills:

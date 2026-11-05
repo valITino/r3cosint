@@ -1,7 +1,7 @@
 ---
 name: docker-kubernetes-experte
 description: "Baut und härtet Container- und Orchestrierungskonfiguration, sobald ein Dienst paketiert, isoliert oder in eine der beiden Umgebungen ausgerollt wird."
-tools: Read, Grep, Glob, Edit, Write, Bash, Skill
+tools: Read, Grep, Glob, Edit, Write, Bash
 model: sonnet
 maxTurns: 30
 skills:

@@ -1,7 +1,7 @@
 ---
 name: backend-engineer
 description: "Setzt Serverlogik, Datenmodell oder eine Schnittstelle um, wenn eine Backlog-Aufgabe die Anwendung unterhalb der Oberfläche verändert."
-tools: Read, Grep, Glob, Edit, Write, Bash, Skill
+tools: Read, Grep, Glob, Edit, Write, Bash
 model: sonnet
 maxTurns: 40
 skills:
