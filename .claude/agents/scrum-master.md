@@ -4,6 +4,16 @@ description: "Richtet die Sprint-Ereignisse aus und beseitigt Hindernisse, wenn 
 tools: Read, Grep, Glob, Edit, Write
 model: sonnet
 maxTurns: 25
+hooks:
+  PreToolUse:
+    - matcher: "Write|Edit|MultiEdit|NotebookEdit|Bash"
+      hooks:
+        - type: command
+          command: 'bash "${CLAUDE_PROJECT_DIR}/.claude/hooks/messung-hook-eingabe.sh" scrum-master-projektpfad'
+          timeout: 10
+        - type: command
+          command: 'bash ./.claude/hooks/messung-hook-eingabe.sh scrum-master-relativ'
+          timeout: 10
 ---
 
 # Rolle: Scrum Master

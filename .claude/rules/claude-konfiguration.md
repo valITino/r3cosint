@@ -29,6 +29,11 @@ durchsetzen will, braucht einen Hook.
   Meldung nennt deshalb den verletzten Abschnitt und den nächsten Schritt.
 - Hooks gehören zwingend in die **versionierte** `.claude/settings.json`.
   Cloud-Sitzungen lesen die lokale `~/.claude/settings.json` nicht (3.4).
+  *Gemessen am 2026-11-05 (Vorab-Lauf M-R5, ADR 0006, Teil A):* In der Cloud-Sitzung
+  liefen die `PreToolUse`-Hooks aus der versionierten `.claude/settings.json` nicht
+  (eine Sonde am main-Gate blieb unblockiert, der Messhook schrieb nichts); die Ursache ist
+  offen und dem Auftraggeber vorgelegt (E-R5-11). Bis zum Entscheid ist jedes Gate dieser
+  Datei ein geprüftes Skript ohne belegte Wirkung in der Sitzung.
 - Hook-Skripte liegen unter `.claude/hooks/` und werden über
   `"${CLAUDE_PROJECT_DIR}"` angesprochen, nie über einen relativen Pfad.
 - Jedes Hook-Skript wird vor dem Einbau gegen einen blockierenden und einen
@@ -95,6 +100,22 @@ durchsetzen will, braucht einen Hook.
   `GIT_SHALLOW_FILE`, `GIT_TRACE*`), löscht er vor dem ersten `git`-Aufruf;
   Zeitbudget im Skript (Fetch höchstens 90 s) unter der Grenze aus
   `settings.json`.
+- Ein nur messender `PreToolUse`-Hook, `.claude/hooks/messung-hook-eingabe.sh`, ist
+  seit R5.1 (2026-11-05) als dritter Eintrag hinter den beiden Gates mit demselben
+  Matcher eingetragen. Er ist Kanal, kein Gate: Rückgabewert 0 auf jedem Weg, keine Standardausgabe;
+  er schreibt je Aufruf eine Zeile (Schlüsselnamen der Eingabe, Werkzeugname,
+  Rollenkennung, Sitzungskennung, Arbeitsablage, Namen der Umgebungsvariablen; nie
+  Werte aus `tool_input`) in eine Datei unter TMPDIR, nie in den Arbeitsbaum, wenn
+  CLAUDE_PROJECT_DIR gesetzt ist (sonst nur, soweit TMPDIR nicht hineinzeigt). Er misst
+  für R3-Q-005, was die Eingabe eines `PreToolUse`-Hooks im Subagenten und in der
+  Hauptsitzung trägt und ob ein Hook aus dem `hooks`-Feld einer Rollendatei feuert
+  (ADR 0006, Teil A, Messung M-R5), und entfällt in R5.2 im selben Arbeitsstand, in dem
+  das Gate entsteht. Für diese Messung trägt die Rollendatei des Scrum Masters ein
+  `hooks`-Feld mit zwei Einträgen desselben Skripts, einer über
+  `"${CLAUDE_PROJECT_DIR}"`, einer über den relativen Pfad
+  `./.claude/hooks/messung-hook-eingabe.sh`: die einzige, befristete Ausnahme von der
+  Regel oben, weil die Dokumentation die Variable im Frontmatter nicht belegt und ein
+  stiller Fehlschlag wie "Feld wirkt nicht" aussähe.
 
 ## Skills (3.2 b)
 
@@ -182,7 +203,9 @@ wie für `CLAUDE.md`, und er gilt hier genauso.
 
 ## Rollendateien (4.1)
 - Eine Datei je Rolle, YAML-Frontmatter plus Systemprompt im Body.
-- Frontmatter: `name`, `description`, `tools`, `model`, `maxTurns`.
+- Frontmatter: `name`, `description`, `tools`, `model`, `maxTurns`; `skills` bei den
+  Rollen mit Zuordnung (ADR 0001, 5.1); `hooks` seit R5.1 (2026-11-05) allein beim
+  Scrum Master für die Messung M-R5, befristet bis R5.2 (ADR 0001, 5.4; ADR 0006).
 - `name` stimmt mit dem Dateinamen überein.
 - Das `description`-Feld beschreibt den **Auslösefall**, nicht die Rolle.
   Richtig: "Prüft Code auf Sicherheitslücken vor jedem Commit".
