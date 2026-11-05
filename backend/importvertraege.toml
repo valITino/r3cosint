@@ -9,8 +9,10 @@
 # die Datenbank erreicht der Code über SQLAlchemy, Alembic läuft in backend/migrationen, das
 # kein Paket von r3cosint ist (dort gilt der Architekturtest "Revisionen importieren nichts
 # aus r3cosint"). Mittelbare Importe über sqlalchemy bleiben erlaubt.
-# Die Verträge 4 und 5 (Schreibverträge) entstehen mit der ersten Spur- beziehungsweise
-# Bestandstabelle und gelten bis dahin nicht als bestanden.
+# Die Verträge 4 und 8 (Schreibverträge, ADR 0007, Verträge; Einheit S1.2) zählen die 13 obersten
+# Pakete ausser spur beziehungsweise fall als Quellen: nur dieses Paket darf seine Table-Objekte
+# und seinen Store importieren (fall.store kommt mit S1.3); Vertrag 9 ordnet die Schichten
+# kanon über fall über spur über core. Der Vertrag 5 (Bestand) entsteht mit S1.4.
 
 [tool.importlinter]
 root_packages = ["r3cosint"]
@@ -163,3 +165,60 @@ forbidden_modules = [
     "alembic",
 ]
 allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Vertrag 4 (R3-F-008): ausser spur schreibt kein Modul in die Spurtabellen"
+type = "forbidden"
+source_modules = [
+    "r3cosint.core",
+    "r3cosint.kanon",
+    "r3cosint.fall",
+    "r3cosint.zugriff",
+    "r3cosint.freigabe",
+    "r3cosint.beschaffung",
+    "r3cosint.ausgang",
+    "r3cosint.fremd",
+    "r3cosint.llm",
+    "r3cosint.graph",
+    "r3cosint.export",
+    "r3cosint.api",
+    "r3cosint.mcpsrv",
+]
+forbidden_modules = [
+    "r3cosint.spur.tables",
+    "r3cosint.spur.store",
+]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Vertrag 8 (R3-F-001): ausser fall schreibt kein Modul in die Falltabellen"
+type = "forbidden"
+source_modules = [
+    "r3cosint.core",
+    "r3cosint.kanon",
+    "r3cosint.spur",
+    "r3cosint.zugriff",
+    "r3cosint.freigabe",
+    "r3cosint.beschaffung",
+    "r3cosint.ausgang",
+    "r3cosint.fremd",
+    "r3cosint.llm",
+    "r3cosint.graph",
+    "r3cosint.export",
+    "r3cosint.api",
+    "r3cosint.mcpsrv",
+]
+forbidden_modules = [
+    "r3cosint.fall.tables",
+]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Vertrag 9 (R3-F-008): Schichtung"
+type = "layers"
+layers = [
+    "r3cosint.kanon",
+    "r3cosint.fall",
+    "r3cosint.spur",
+    "r3cosint.core",
+]

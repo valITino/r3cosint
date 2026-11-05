@@ -23,3 +23,17 @@ class KonfigurationsFehler(R3cosintFehler):
 
     def __str__(self) -> str:
         return f"{self.sache} Nächster Schritt: {self.naechster_schritt}"
+
+
+class EingabeFehler(R3cosintFehler):
+    """Eine Eingabe ist ungültig und wird vor jedem Schreiben abgewiesen (ADR 0007, Nr. 24 und 27).
+
+    sache: was ungültig ist, ohne den Wert der Eingabe (Werte können Personendaten tragen).
+    """
+
+    def __init__(self, sache: str) -> None:
+        super().__init__(sache)
+        self.sache = sache
+
+    def __str__(self) -> str:
+        return self.sache

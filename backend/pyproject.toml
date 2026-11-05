@@ -67,6 +67,10 @@ select = ["F", "E4", "E7", "E9", "B", "S", "ASYNC", "DTZ", "T20", "BLE", "TID", 
 # als Liste ohne Shell auf (S603), mit dem Programmnamen aus dem PATH (S607); der Digest des
 # Images ist gegen das Muster sha256 plus 64 Hexzeichen geprüft, kein Aufruf trägt fremden Text.
 "tests/conftest.py" = ["S603", "S607"]
+# Benannte Ausnahme (ADR 0007, Festlegung S1.2): die Tests der Spuren bauen ihre SQL-Texte aus festen
+# Tabellennamen (Werte der Enum Spur) und aus Kennungen, Prüfsummen und Zahlen, die der Test selbst
+# erzeugt; kein Text stammt von aussen (S608).
+"tests/integration/test_spur_*.py" = ["S608"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "urllib.request".msg = "Ausgehende Verbindungen nur in r3cosint.ausgang (Vertrag 2, ADR 0002, 4.3)."

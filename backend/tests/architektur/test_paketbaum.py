@@ -4,8 +4,9 @@ Geprüft wird der Baum, nicht das Verhalten: genau ein Wurzelpaket r3cosint, dar
 16 Pakete des Modulschnitts (freigabe als Elternpaket von vorschlag und ausfuehrung),
 jedes allein mit seiner Modulbeschreibung als Docstring, am Syntaxbaum geprüft. Ausnahmen
 sind api mit der ASGI-Anwendung ohne Route (Grundgerüst, Einheit G1) und core mit den fünf
-Modulen von Sprint 1 (Einheit S1.1, ADR 0007, Festlegung S1.1); der __init__ von core bleibt
-die Modulbeschreibung allein. Fachlogik in den übrigen Paketen entsteht erst mit ihrer Einheit.
+Modulen von Sprint 1 (Einheit S1.1, ADR 0007, Festlegung S1.1); spur mit fünf und fall mit einem
+Modul (Einheit S1.2, Festlegung S1.2); die __init__ von core, spur und fall bleiben die
+Modulbeschreibung allein. Fachlogik in den übrigen Paketen entsteht erst mit ihrer Einheit.
 """
 
 import ast
@@ -65,11 +66,15 @@ def _ist_docstring(knoten: ast.stmt) -> bool:
     )
 
 
+# Module von spur und fall (ADR 0007, Festlegung S1.2); ihre __init__ bleiben Modulbeschreibung.
+SPUR_MODULE = ("kette", "payload", "tables", "store", "service")
+FALL_MODULE = ("tables",)
+
 DATEIEN_OHNE_CODE = (
     WURZEL / "__init__.py",
     *(_init_datei(paket) for paket in PAKETE if paket != "api"),
 )
-MIT_CODE = ("api", "core")
+MIT_CODE = ("api", "core", "fall", "spur")
 
 
 def test_unter_src_steht_allein_das_wurzelpaket() -> None:
@@ -86,6 +91,8 @@ def test_wurzelpaket_enthaelt_genau_die_dateien_des_modulschnitts() -> None:
     erwartet = {"__init__.py", "py.typed"}
     erwartet |= {f"{paket.replace('.', '/')}/__init__.py" for paket in PAKETE}
     erwartet |= {f"core/{modul}.py" for modul in CORE_MODULE}
+    erwartet |= {f"spur/{modul}.py" for modul in SPUR_MODULE}
+    erwartet |= {f"fall/{modul}.py" for modul in FALL_MODULE}
     assert gefunden == erwartet
 
 
@@ -136,7 +143,9 @@ def test_R3_F_008_jedes_core_modul_beginnt_mit_einer_modulbeschreibung(
     assert _ist_docstring(koerper[0])
 
 
-def test_R3_F_008_nur_api_und_core_tragen_code_ausser_der_modulbeschreibung() -> None:
+def test_R3_F_008_nur_api_core_spur_und_fall_tragen_code_ausser_der_modulbeschreibung() -> (
+    None
+):
     mit_code = sorted(
         paket
         for paket in PAKETE
@@ -147,3 +156,19 @@ def test_R3_F_008_nur_api_und_core_tragen_code_ausser_der_modulbeschreibung() ->
         )
     )
     assert mit_code == sorted(MIT_CODE)
+
+
+@pytest.mark.parametrize(
+    ("paket", "module"), [("spur", SPUR_MODULE), ("fall", FALL_MODULE)]
+)
+def test_R3_F_008_spur_und_fall_enthalten_genau_die_module_der_festlegung_s1_2(
+    paket: str, module: tuple[str, ...]
+) -> None:
+    gefunden = sorted(
+        p.name for p in (WURZEL / paket).glob("*.py") if p.name != "__init__.py"
+    )
+    assert gefunden == sorted(f"{modul}.py" for modul in module)
+    for modul in module:
+        koerper = _syntaxbaum(WURZEL / paket / f"{modul}.py").body
+        assert koerper
+        assert _ist_docstring(koerper[0])

@@ -12,18 +12,54 @@ abbildet.
 import asyncio
 
 from alembic import context
-from sqlalchemy import MetaData
+from sqlalchemy import ForeignKeyConstraint, MetaData
 from sqlalchemy.engine import Connection
+from sqlalchemy.sql.schema import SchemaItem
 
 from r3cosint.core.datenbank import engine_erzeugen
 from r3cosint.core.fehler import KonfigurationsFehler
 from r3cosint.core.konfiguration import aus_umgebung
+from r3cosint.fall.tables import metadata as fall_metadata
+from r3cosint.spur.tables import metadata as spur_metadata
 
 SCHEMA = "r3cosint"
 
-# Die MetaData-Objekte aus spur.tables, fall.tables und kanon.tables kommen mit S1.2 bis
-# S1.4; in S1.1 gibt es keine Tabelle.
-target_metadata: list[MetaData] = []
+# Die MetaData-Objekte von fall und spur (S1.2); kanon.tables folgt mit S1.4.
+target_metadata: list[MetaData] = [fall_metadata, spur_metadata]
+
+
+def include_object(
+    objekt: SchemaItem,
+    name: str | None,
+    type_: str,
+    reflected: bool,
+    compare_to: SchemaItem | None,
+) -> bool:
+    """Nimmt gespiegelte Fremdschlüssel über Paketgrenzen aus dem Vergleich (E-S12-04, GS-17).
+
+    Ein Fremdschlüssel der Datenbank, dessen Tabelle und Ziel zu verschiedenen MetaData der Liste
+    target_metadata gehören, steht allein im SQL der Revision; die Table-Objekte erklären ihn nicht.
+    """
+    if (
+        type_ == "foreign_key_constraint"
+        and reflected
+        and compare_to is None
+        and isinstance(objekt, ForeignKeyConstraint)
+    ):
+        eigene = _metadata_je_tabelle()
+        von = eigene.get((objekt.table.schema, objekt.table.name))
+        nach = eigene.get((objekt.referred_table.schema, objekt.referred_table.name))
+        if von is not None and nach is not None and von is not nach:
+            return False
+    return True
+
+
+def _metadata_je_tabelle() -> dict[tuple[str | None, str], MetaData]:
+    return {
+        (tabelle.schema, tabelle.name): metadata
+        for metadata in target_metadata
+        for tabelle in metadata.tables.values()
+    }
 
 
 def include_name(name: str | None, type_: str, parent_names: object) -> bool:
@@ -40,6 +76,7 @@ def _revisionen_ausfuehren(verbindung: Connection) -> None:
         version_table_schema=SCHEMA,
         include_schemas=True,
         include_name=include_name,
+        include_object=include_object,
         compare_type=True,
     )
     with context.begin_transaction():
