@@ -26,6 +26,9 @@ VERTRAG_3_LLM = "Vertrag 3 (R3-F-018), in llm: keine Herstellerbibliothek"
 VERTRAG_6 = "Vertrag 6: api wird von keinem anderen Modul importiert"
 VERTRAG_7 = "Vertrag 7: Produktionscode importiert prototype nicht"
 VERTRAG_10 = "Vertrag 10: Treiber nur hinter der Zugriffsschicht"
+VERTRAG_4 = "Vertrag 4 (R3-F-008): ausser spur schreibt kein Modul in die Spurtabellen"
+VERTRAG_8 = "Vertrag 8 (R3-F-001): ausser fall schreibt kein Modul in die Falltabellen"
+VERTRAG_9 = "Vertrag 9 (R3-F-008): Schichtung"
 
 # Verbotsliste von Vertrag 2 (ADR 0002, Abschnitt 5, Nachtrag G1, Zeile "Vertrag 2"),
 # einschliesslich httpx2 und httpcore2 (Vermerk "nach dem Bau").
@@ -93,6 +96,8 @@ def test_die_obersten_pakete_sind_die_14_des_modulschnitts() -> None:
         (VERTRAG_2, "r3cosint.ausgang"),
         (VERTRAG_3, "r3cosint.llm"),
         (VERTRAG_6, "r3cosint.api"),
+        (VERTRAG_4, "r3cosint.spur"),
+        (VERTRAG_8, "r3cosint.fall"),
     ],
 )
 def test_quellen_und_ausnahme_ergeben_die_obersten_pakete(
@@ -156,3 +161,31 @@ def test_R3_F_008_vertrag_10_verbietet_asyncpg_und_alembic_und_laesst_mittelbare
     assert vertrag["forbidden_modules"] == ["asyncpg", "alembic"]
     # sqlalchemy lädt asyncpg über den Dialekt; ein mittelbarer Import ist gewollt.
     assert vertrag["allow_indirect_imports"] is True
+
+
+def test_R3_F_008_vertrag_4_verbietet_tables_und_store_von_spur() -> None:
+    vertrag = _vertrag(VERTRAG_4)
+    assert vertrag["type"] == "forbidden"
+    assert vertrag["forbidden_modules"] == [
+        "r3cosint.spur.tables",
+        "r3cosint.spur.store",
+    ]
+    assert vertrag["allow_indirect_imports"] is True
+
+
+def test_R3_F_001_vertrag_8_verbietet_allein_fall_tables() -> None:
+    vertrag = _vertrag(VERTRAG_8)
+    assert vertrag["type"] == "forbidden"
+    assert vertrag["forbidden_modules"] == ["r3cosint.fall.tables"]
+    assert vertrag["allow_indirect_imports"] is True
+
+
+def test_R3_F_008_vertrag_9_ordnet_die_schichten_kanon_fall_spur_core() -> None:
+    vertrag = _vertrag(VERTRAG_9)
+    assert vertrag["type"] == "layers"
+    assert vertrag["layers"] == [
+        "r3cosint.kanon",
+        "r3cosint.fall",
+        "r3cosint.spur",
+        "r3cosint.core",
+    ]

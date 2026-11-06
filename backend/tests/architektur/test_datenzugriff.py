@@ -45,12 +45,16 @@ def test_R3_F_008_revisionen_importieren_nichts_aus_r3cosint(datei: Path) -> Non
     assert fremd == []
 
 
-def test_R3_F_008_env_py_importiert_aus_r3cosint_allein_core() -> None:
+def test_R3_F_008_env_py_importiert_aus_r3cosint_allein_core_und_die_tables_von_fall_und_spur() -> (
+    None
+):
     aus_r3cosint = [
         m for m in _importierte_module(MIGRATIONEN / "env.py") if _ist_aus_r3cosint(m)
     ]
     assert aus_r3cosint  # env.py baut die Engine aus der Konfiguration von core
-    assert all(m.startswith("r3cosint.core.") for m in aus_r3cosint), aus_r3cosint
+    # Ab S1.2 auch die MetaData von fall und spur für den Vergleich (target_metadata).
+    erlaubt = ("r3cosint.core.", "r3cosint.fall.tables", "r3cosint.spur.tables")
+    assert all(m.startswith(erlaubt) for m in aus_r3cosint), aus_r3cosint
 
 
 def test_R3_F_008_unter_backend_src_gibt_es_keinen_aufruf_von_create_all() -> None:

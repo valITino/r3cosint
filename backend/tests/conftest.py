@@ -30,9 +30,12 @@ import shutil
 import subprocess
 import tempfile
 import time
-from collections.abc import AsyncIterator, Awaitable, Callable, Iterator
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterator, Sequence
+from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
+from uuid import UUID
 
 import pytest
 from alembic import command
@@ -42,7 +45,19 @@ from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine
 
 from r3cosint.core.datenbank import engine_erzeugen
 from r3cosint.core.fehler import KonfigurationsFehler
+from r3cosint.core.kennung import neue_kennung
 from r3cosint.core.konfiguration import Datenbankverbindung
+from r3cosint.spur.service import (
+    Eingabe,
+    Eintrag,
+    Entitaet,
+    FallEroeffnet,
+    Kennzeichnung,
+    Pseudonymisierer,
+    Spur,
+    anfuegen,
+    ketten_anlegen,
+)
 
 WURZEL = Path(__file__).resolve().parents[2]
 COMPOSE_DATEI = WURZEL / "deploy" / "compose.test.yml"
@@ -58,6 +73,7 @@ EIGENTUEMER = "r3cosint_eigentuemer"
 ANWENDUNG = "r3cosint_anwendung"
 HAUPTDATENBANK = "r3cosint_test"
 VORLAGE = "vorlage"
+VORLAGE_0002 = "vorlage_0002"
 SOCKET_PORT = 5432
 BEREITSCHAFT_FRIST_SEKUNDEN = 90
 
@@ -275,17 +291,17 @@ async def _sql_als_ganzes(verbindung: AsyncConnection, sql: str) -> None:
 
 
 async def _vorlage_aufbauen(instanz: PostgresInstanz) -> None:
-    """Datenbank vorlage: Grundeinrichtung als Superuser, dann 0001 bis Kopf als Eigentümer."""
+    """Datenbank vorlage_0002 (Grundeinrichtung, Revisionen bis 0002), daraus vorlage bis Kopf."""
     super_engine = engine_erzeugen(instanz.verbindung(SUPERUSER, HAUPTDATENBANK))
     try:
         async with super_engine.connect() as verbindung:
             verbindung = await verbindung.execution_options(
                 isolation_level="AUTOCOMMIT"
             )
-            await verbindung.execute(text(f"CREATE DATABASE {VORLAGE}"))
+            await verbindung.execute(text(f"CREATE DATABASE {VORLAGE_0002}"))
     finally:
         await super_engine.dispose()
-    vorlage_engine = engine_erzeugen(instanz.verbindung(SUPERUSER, VORLAGE))
+    vorlage_engine = engine_erzeugen(instanz.verbindung(SUPERUSER, VORLAGE_0002))
     try:
         async with vorlage_engine.connect() as verbindung:
             verbindung = await verbindung.execution_options(
@@ -315,7 +331,30 @@ async def _vorlage_aufbauen(instanz: PostgresInstanz) -> None:
     finally:
         await vorlage_engine.dispose()
     await alembic_ausfuehren(
+        instanz.verbindung(EIGENTUEMER, VORLAGE_0002), "upgrade", "0002"
+    )
+    super_engine = engine_erzeugen(instanz.verbindung(SUPERUSER, HAUPTDATENBANK))
+    try:
+        async with super_engine.connect() as verbindung:
+            verbindung = await verbindung.execution_options(
+                isolation_level="AUTOCOMMIT"
+            )
+            await verbindung.execute(
+                text(f"CREATE DATABASE {VORLAGE} TEMPLATE {VORLAGE_0002}")
+            )
+            await _rechte_der_datenbank(verbindung, VORLAGE)
+    finally:
+        await super_engine.dispose()
+    await alembic_ausfuehren(
         instanz.verbindung(EIGENTUEMER, VORLAGE), "upgrade", "head"
+    )
+
+
+async def _rechte_der_datenbank(verbindung: AsyncConnection, name: str) -> None:
+    """Die Zugriffsrechte einer Datenbank gehen nicht mit der Vorlage über."""
+    await verbindung.execute(text(f"REVOKE ALL ON DATABASE {name} FROM PUBLIC"))
+    await verbindung.execute(
+        text(f"GRANT CONNECT ON DATABASE {name} TO {EIGENTUEMER}, {ANWENDUNG}")
     )
 
 
@@ -535,24 +574,20 @@ class Testdatenbank:
         return self.instanz.verbindung(benutzer, self.name)
 
 
-@pytest.fixture
-async def datenbank(postgres_instanz: PostgresInstanz) -> AsyncIterator[Testdatenbank]:
-    """Je Test eine Datenbank aus der Vorlage (CREATE DATABASE ... TEMPLATE)."""
+async def _datenbank_aus_vorlage(
+    instanz: PostgresInstanz, vorlage: str
+) -> AsyncIterator[Testdatenbank]:
     name = f"t_{secrets.token_hex(6)}"
-    engine = engine_erzeugen(postgres_instanz.verbindung(SUPERUSER, HAUPTDATENBANK))
+    engine = engine_erzeugen(instanz.verbindung(SUPERUSER, HAUPTDATENBANK))
     try:
         async with engine.connect() as verbindung:
             verbindung = await verbindung.execution_options(
                 isolation_level="AUTOCOMMIT"
             )
-            await verbindung.execute(text(f"CREATE DATABASE {name} TEMPLATE {VORLAGE}"))
-            # Die Zugriffsrechte der Datenbank gehen nicht mit der Vorlage über.
-            await verbindung.execute(text(f"REVOKE ALL ON DATABASE {name} FROM PUBLIC"))
-            await verbindung.execute(
-                text(f"GRANT CONNECT ON DATABASE {name} TO {EIGENTUEMER}, {ANWENDUNG}")
-            )
+            await verbindung.execute(text(f"CREATE DATABASE {name} TEMPLATE {vorlage}"))
+            await _rechte_der_datenbank(verbindung, name)
         try:
-            yield Testdatenbank(instanz=postgres_instanz, name=name)
+            yield Testdatenbank(instanz=instanz, name=name)
         finally:
             async with engine.connect() as verbindung:
                 verbindung = await verbindung.execution_options(
@@ -563,6 +598,22 @@ async def datenbank(postgres_instanz: PostgresInstanz) -> AsyncIterator[Testdate
                 )
     finally:
         await engine.dispose()
+
+
+@pytest.fixture
+async def datenbank(postgres_instanz: PostgresInstanz) -> AsyncIterator[Testdatenbank]:
+    """Je Test eine Datenbank aus der Vorlage (CREATE DATABASE ... TEMPLATE), auf dem Kopf."""
+    async for datenbank in _datenbank_aus_vorlage(postgres_instanz, VORLAGE):
+        yield datenbank
+
+
+@pytest.fixture
+async def datenbank_bei_0002(
+    postgres_instanz: PostgresInstanz,
+) -> AsyncIterator[Testdatenbank]:
+    """Je Test eine Datenbank im Stand der Revision 0002 (für Läufe zwischen leer und 0002)."""
+    async for datenbank in _datenbank_aus_vorlage(postgres_instanz, VORLAGE_0002):
+        yield datenbank
 
 
 async def _verbindung(
@@ -592,3 +643,230 @@ async def verbindung_anwendung(
     """Verbindung der Rolle r3cosint_anwendung zur Datenbank dieses Tests."""
     async for verbindung in _verbindung(datenbank, ANWENDUNG):
         yield verbindung
+
+
+@dataclass(frozen=True)
+class FesteUhr:
+    """Uhr mit festem Zeitpunkt (R3-F-008); jetzt() liefert stets denselben Wert."""
+
+    zeitpunkt: datetime = datetime(2026, 1, 15, 8, 30, 0, 123456, tzinfo=UTC)
+
+    def jetzt(self) -> datetime:
+        """Liefert den festen Zeitpunkt, zeitbewusst, in UTC."""
+        return self.zeitpunkt
+
+
+@dataclass(frozen=True)
+class SynthetischerFall:
+    """Ein synthetischer Fall mit angelegten Ketten (S1.2; 5.15: alle Werte erfunden).
+
+    kennung: Kennung des Falls in der Tabelle fall.
+    schluessel: die 32 Zufallsbytes aus fall_schluessel.
+    pseudonymisierer: aus dem Schlüssel gebaut.
+    uhr: feste Uhr, mit der die Fixtures Einträge anfügen.
+    """
+
+    kennung: UUID
+    schluessel: bytes = field(repr=False)
+    pseudonymisierer: Pseudonymisierer
+    uhr: FesteUhr
+
+
+@asynccontextmanager
+async def _superuser(datenbank: Testdatenbank) -> AsyncIterator[AsyncConnection]:
+    """Verbindung des Superusers zur Datenbank des Tests; allein für manipulieren (SD-S12-07)."""
+    engine = engine_erzeugen(datenbank.verbindung(SUPERUSER))
+    try:
+        async with engine.connect() as verbindung:
+            yield verbindung
+    finally:
+        await engine.dispose()
+
+
+@pytest.fixture
+def fall_anlegen(
+    datenbank: Testdatenbank,
+) -> Callable[[], Awaitable[SynthetischerFall]]:
+    """Hilfe: legt in der Datenbank dieses Tests einen weiteren synthetischen Fall samt Ketten an."""
+
+    async def anlegen() -> SynthetischerFall:
+        uhr = FesteUhr()
+        kennung = neue_kennung()
+        schluessel = secrets.token_bytes(32)
+        async for eigentuemer in _verbindung(datenbank, EIGENTUEMER):
+            await eigentuemer.execute(
+                text(
+                    "INSERT INTO r3cosint.fall (kennung, aktenzeichen, ermittelnde_person, "
+                    "rechtsgrundlage, rechtsregime, fallkategorie, zustand, eroeffnet_am) "
+                    "VALUES (:kennung, :aktenzeichen, 'test.ermittlung', "
+                    "'synthetisch, ohne Rechtsgrundlage', 'R1', 'vergehen', 'aktiv', :eroeffnet)"
+                ),
+                {
+                    "kennung": kennung,
+                    "aktenzeichen": f"TEST-SYNTH-{secrets.token_hex(6)}",
+                    "eroeffnet": uhr.zeitpunkt,
+                },
+            )
+            await eigentuemer.execute(
+                text(
+                    "INSERT INTO r3cosint.fall_schluessel (fall_kennung, schluessel) "
+                    "VALUES (:kennung, :schluessel)"
+                ),
+                {"kennung": kennung, "schluessel": schluessel},
+            )
+            await eigentuemer.commit()
+        async for anwendung in _verbindung(datenbank, ANWENDUNG):
+            async with anwendung.begin():
+                await ketten_anlegen(anwendung, kennung)
+        return SynthetischerFall(
+            kennung=kennung,
+            schluessel=schluessel,
+            pseudonymisierer=Pseudonymisierer(schluessel),
+            uhr=uhr,
+        )
+
+    return anlegen
+
+
+@pytest.fixture
+async def fall_mit_ketten(
+    fall_anlegen: Callable[[], Awaitable[SynthetischerFall]],
+) -> SynthetischerFall:
+    """Legt einen synthetischen Fall samt beider Ketten in der Datenbank dieses Tests an.
+
+    Schreibt als Eigentümer unmittelbar in fall (Kennung neu, aktenzeichen "TEST-SYNTH-" mit
+    Zufallsteil, ermittelnde_person "test.ermittlung", rechtsgrundlage "synthetisch, ohne
+    Rechtsgrundlage", rechtsregime R1, fallkategorie vergehen, zustand aktiv, eroeffnet_am aus der
+    festen Uhr) und 32 Zufallsbytes (secrets.token_bytes) in fall_schluessel; committet; ruft dann
+    als Anwendung spur.service.ketten_anlegen in einer Transaktion auf.
+    """
+    return await fall_anlegen()
+
+
+@pytest.fixture
+def eintraege_schreiben(
+    datenbank: Testdatenbank,
+) -> Callable[[SynthetischerFall, Spur, int], Awaitable[list[Eintrag]]]:
+    """Hilfe: schreibt als Anwendung n Einträge einer Spur über spur.service.anfuegen.
+
+    Aufruf: await eintraege_schreiben(fall, spur, n). Je Aufruf eine Transaktion mit commit.
+    In der Arbeitsspur FallEroeffnet, in der Ermittlungsspur Entitaet mit erfundenen Werten
+    (5.15); Kennzeichnung quellenaussage; Rückgabe die angefügten Einträge in Reihenfolge.
+    """
+
+    async def schreiben(
+        fall: SynthetischerFall, spur: Spur, anzahl: int
+    ) -> list[Eintrag]:
+        eintraege: list[Eintrag] = []
+        async for anwendung in _verbindung(datenbank, ANWENDUNG):
+            async with anwendung.begin():
+                for nr in range(anzahl):
+                    eingabe: Eingabe
+                    if spur is Spur.ARBEITSSPUR:
+                        eingabe = FallEroeffnet(
+                            fall_kennung=fall.kennung,
+                            rechtsregime="R1",
+                            fallkategorie="vergehen",
+                            aktenzeichen=f"TEST-SYNTH-{nr}",
+                            rechtsgrundlage="synthetisch, ohne Rechtsgrundlage",
+                            ermittelnde_person="test.ermittlung",
+                            eroeffnet_am=fall.uhr.zeitpunkt,
+                        )
+                    else:
+                        eingabe = Entitaet(
+                            fall_kennung=fall.kennung,
+                            entitaet_kennung=neue_kennung(),
+                            ftm_kennung=f"synth-{nr}",
+                            ftm_schema="Person",
+                            herkunft_kennung=neue_kennung(),
+                            eigenschaften={"name": (f"Erfundene Person {nr}",)},
+                        )
+                    eintraege.append(
+                        await anfuegen(
+                            anwendung,
+                            spur=spur,
+                            fall_kennung=fall.kennung,
+                            person_kennung="test.ermittlung",
+                            kennzeichnung=Kennzeichnung.QUELLENAUSSAGE,
+                            eingabe=eingabe,
+                            pseudonymisierer=fall.pseudonymisierer,
+                            uhr=fall.uhr,
+                        )
+                    )
+        return eintraege
+
+    return schreiben
+
+
+_ANWEISUNG = re.compile(
+    r"^\s*(insert\s+into|update|delete\s+from)\s+r3cosint\."
+    r"(ermittlungsspur|arbeitsspur|kettenkopf)\b",
+    re.IGNORECASE,
+)
+_MANIPULIERTE_TABELLEN = ("ermittlungsspur", "arbeitsspur", "kettenkopf")
+
+
+@pytest.fixture
+def manipulieren(
+    datenbank: Testdatenbank,
+) -> Callable[..., Awaitable[str]]:
+    """Hilfe: manipuliert den Bestand als Superuser, einziger Weg eines Tests dorthin (SD-S12-07).
+
+    Aufruf: await manipulieren(sql, bedingungen_entfernen=("name", ...)). Öffnet eine Transaktion,
+    setzt allein SET LOCAL session_replication_role = replica (wirkt in
+    dieser Transaktion, danach origin; GS-2) und führt den Text aus. Angenommen werden allein
+    INSERT, UPDATE und DELETE auf r3cosint.ermittlungsspur, r3cosint.arbeitsspur und
+    r3cosint.kettenkopf, geprüft am Anfang jeder Anweisung; anderes weist die Hilfe vor jeder
+    Ausführung mit ValueError ab. Benannte Prüf- oder UNIQUE-Bedingungen dieser drei Tabellen
+    werden (nach Abgleich der Namen mit dem Katalog) in der Datenbank des Tests entfernt.
+    Rückgabe: der Wert von SHOW session_replication_role, den dieselbe Verbindung nach dem
+    Ende der Transaktion in einer neuen Transaktion liest (erwartet: origin).
+    """
+
+    async def ausfuehren(sql: str, *, bedingungen_entfernen: Sequence[str] = ()) -> str:
+        anweisungen = [teil for teil in sql.split(";") if teil.strip()]
+        for anweisung in anweisungen:
+            if _ANWEISUNG.match(anweisung) is None:
+                raise ValueError(
+                    "manipulieren nimmt allein INSERT, UPDATE und DELETE auf die Spuren "
+                    "und den Kettenkopf an"
+                )
+        async with _superuser(datenbank) as verbindung:
+            async with verbindung.begin():
+                await verbindung.execute(
+                    text("SET LOCAL session_replication_role = replica")
+                )
+                if bedingungen_entfernen:
+                    zeilen = await verbindung.execute(
+                        text(
+                            "SELECT c.conname, cl.relname FROM pg_constraint c "
+                            "JOIN pg_class cl ON cl.oid = c.conrelid "
+                            "JOIN pg_namespace n ON n.oid = cl.relnamespace "
+                            "WHERE n.nspname = 'r3cosint' AND cl.relname = ANY(:tabellen) "
+                            "AND c.contype IN ('c', 'u')"
+                        ),
+                        {"tabellen": list(_MANIPULIERTE_TABELLEN)},
+                    )
+                    vorhanden = {name: tabelle for name, tabelle in zeilen}
+                    for name in bedingungen_entfernen:
+                        if name not in vorhanden:
+                            raise ValueError("Bedingung unbekannt")
+                        await verbindung.execute(
+                            text(
+                                f'ALTER TABLE r3cosint."{vorhanden[name]}" '
+                                f'DROP CONSTRAINT "{name}"'
+                            )
+                        )
+                for anweisung in anweisungen:
+                    await verbindung.execute(text(anweisung))
+            async with verbindung.begin():
+                danach = await verbindung.execute(text("SHOW session_replication_role"))
+                return str(danach.scalar_one())
+
+    return ausfuehren
+
+
+@pytest.fixture
+def replikationsparameter() -> str:
+    """Name des Parameters, den allein manipulieren setzt; für die Tests, die seine Sperre prüfen."""
+    return "session_replication_role"

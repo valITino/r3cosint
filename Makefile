@@ -389,13 +389,14 @@ MAKEFILE_NAME := $(shell basename "$(MAKEFILE_ROH)")
 # Anwendungsfall oben bleibt also erhalten. "?=" liesse sich dagegen still
 # ueber eine Umgebungsvariable absenken (z. B. "env COV_FAIL_UNDER=0 make
 # abdeckung", ohne Sichtbarkeit auf der Befehlszeile). Betroffen waere die
-# 100-Prozent-Schwelle fuer spur, zugriff und freigabe -- die drei Module,
-# die CLAUDE.md unter "Nicht verhandelbar" fuehrt. Deshalb ":=".
+# 100-Prozent-Schwelle fuer spur, fall, zugriff und freigabe -- die Module,
+# die CLAUDE.md unter "Nicht verhandelbar" fuehrt, und fall. Deshalb ":=".
 COV_FAIL_UNDER := 80
 COV_FAIL_UNDER_KRITISCH := 100
 # Module aus ADR 0002, Abschnitt 4.1: spur (Protokoll), zugriff
-# (Klassifizierung), freigabe (Freigabesperre).
-KRITISCHE_MODULE := spur zugriff freigabe
+# (Klassifizierung), freigabe (Freigabesperre). Ab S1.2 (ADR 0007, E-S1-14 a)
+# auch fall (Fallbindung); kanon folgt mit S1.4 nach E-S1-14 a.
+KRITISCHE_MODULE := spur fall zugriff freigabe
 
 # E-08 (D3, Linter-Warnungen; D8, Abhaengigkeitsschwachstellen): ADR 0002
 # nennt fuer diese beiden Schwellen ausdruecklich KEINEN Zahlenwert, nur den
