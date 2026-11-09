@@ -117,3 +117,6 @@ docs/uebergaben/2026-08-25_eingangskanal-repariert.md|r3coscrum/.github/workflow
 
 # --- Namensaenderung vor der Festlegung von G2 (G2.2) ---------------------------
 docs/uebergaben/2026-08-30_makefile-dod-abbruch-nach-3-4.md|deploy/images/Dockerfile	Datierte Uebergabe, Name vor der Festlegung von G2: das Dockerfile entsteht als deploy/images/anwendung/Dockerfile (ADR 0002, Abschnitt 5, Nachtrag vom 2026-11-04, Zeile D20; Entscheid des Koordinators). Der Pfad deploy/images/Dockerfile darf nicht entstehen: Existierte er, waere die Ausnahme veraltet (Befund).
+
+# --- Abschnitte anderer Dokumente ---------------------------------------------
+docs/konformitaet/konformitaetsanalyse.md|11.3	Abschnitt 11.3 der Gegenpruefung docs/recht/gegenpruefung-konformitaetsanalyse.md (Nachpruefung des Legal Reviewers), nicht des Projektauftrags; Pruefung 5 kennt nur den Projektauftrag und eigene Ueberschriften. Einheit S1.3, Fund des Laufs auf der Gegenseite.
