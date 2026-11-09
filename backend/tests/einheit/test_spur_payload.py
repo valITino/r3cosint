@@ -109,7 +109,12 @@ def _alle_eingaben() -> list[Eingabe]:
             ermittelnde_person="test.ermittlung",
             eroeffnet_am=ZEIT,
         ),
-        FallGeschlossen(fall_kennung=K1, geschlossen_am=ZEIT, prueffrist_bis=ZEIT),
+        FallGeschlossen(
+            fall_kennung=K1,
+            geschlossen_am=ZEIT,
+            prueffrist_bis=ZEIT,
+            erste_pruefung_monate=84,
+        ),
         Entitaet(
             fall_kennung=K1,
             entitaet_kennung=K2,
@@ -167,12 +172,15 @@ def test_R3_F_011_nutzlast_fall_eroeffnet_traegt_pseudonyme_und_klartext_der_vor
     )
 
 
-def test_R3_F_011_nutzlast_fall_geschlossen_traegt_allein_kennung_und_zeiten() -> None:
+def test_R3_F_011_nutzlast_fall_geschlossen_traegt_allein_kennung_zeiten_und_monate() -> (
+    None
+):
     text = nutzlast_bilden(_alle_eingaben()[1], Pseudonymisierer(SCHLUESSEL))
     assert json.loads(text) == {
         "fall_kennung": str(K1),
         "geschlossen_am": "2026-01-15T08:30:00.123456Z",
         "prueffrist_bis": "2026-01-15T08:30:00.123456Z",
+        "erste_pruefung_monate": 84,
     }
 
 
@@ -271,11 +279,39 @@ def test_R3_F_008_nicht_zeichenketten_schluessel_werden_abgewiesen() -> None:
         kanonisch_serialisieren({1: "x"})  # type: ignore[dict-item]  # Schlüssel absichtlich int: der Fall selbst
 
 
+@pytest.mark.parametrize("monate", [0, -1, 2**53, "84", 84.0, True, None])
+def test_R3_F_001_fall_geschlossen_weist_ungueltige_erste_pruefung_monate_ab(
+    monate: object,
+) -> None:
+    with pytest.raises(ValidationError):
+        FallGeschlossen(
+            fall_kennung=K1,
+            geschlossen_am=ZEIT,
+            prueffrist_bis=ZEIT,
+            erste_pruefung_monate=monate,  # type: ignore[arg-type]  # ungültig: der Fall selbst
+        )
+
+
+@pytest.mark.parametrize("monate", [1, 84, 2**53 - 1])
+def test_R3_F_001_fall_geschlossen_nimmt_erste_pruefung_monate_in_den_grenzen_an(
+    monate: int,
+) -> None:
+    eingabe = FallGeschlossen(
+        fall_kennung=K1,
+        geschlossen_am=ZEIT,
+        prueffrist_bis=ZEIT,
+        erste_pruefung_monate=monate,
+    )
+    text = nutzlast_bilden(eingabe, Pseudonymisierer(SCHLUESSEL))
+    assert json.loads(text)["erste_pruefung_monate"] == monate
+
+
 def test_R3_F_008_unbekannte_felder_und_falsche_typen_werden_abgewiesen() -> None:
     gueltig: dict[str, Any] = {
         "fall_kennung": K1,
         "geschlossen_am": ZEIT,
         "prueffrist_bis": ZEIT,
+        "erste_pruefung_monate": 84,
     }
     FallGeschlossen(**gueltig)
     with pytest.raises(ValidationError):
@@ -336,6 +372,7 @@ def test_R3_F_008_zeit_ausserhalb_des_bereichs_in_der_nutzlast_wird_abgewiesen()
         fall_kennung=K1,
         geschlossen_am=datetime(1999, 12, 31, 23, 59, 59, 999999, tzinfo=UTC),
         prueffrist_bis=ZEIT,
+        erste_pruefung_monate=84,
     )
     with pytest.raises(ValueError, match="ausserhalb"):
         nutzlast_bilden(eingabe, Pseudonymisierer(SCHLUESSEL))

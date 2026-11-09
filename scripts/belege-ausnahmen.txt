@@ -38,10 +38,6 @@ docs/uebergaben/2026-08-20_befunde-vorpruefung.md|R3-C-020	Kennung, die es im Ba
 
 # --- Absichtlich noch nicht vorhandene Artefakte --------------------------
 docs/00_Projektauftrag.md|nachweise/abzug/	Wird erst bei der Abgabe erzeugt, auf ein besonderes Versionsschild hin (6.6). Vorher darf das Verzeichnis nicht bestehen.
-docs/05_Product_Backlog.md|docs/datenschutz/	Entsteht mit R3-C-012 (Bearbeitungsverzeichnis und Loeschnachweis).
-docs/archiv/05_Product_Backlog_bis_2026-10-22.md|docs/datenschutz/	Entsteht mit R3-C-012 (Bearbeitungsverzeichnis und Loeschnachweis); gilt ebenso fuer den eingefrorenen Stand unter docs/archiv/ (PS-3, 2026-10-26).
-docs/05_Product_Backlog.md|docs/konformitaet/	Entsteht mit R3-C-013 (dokumentierte Konformitaetsanalyse).
-docs/archiv/05_Product_Backlog_bis_2026-10-22.md|docs/konformitaet/	Entsteht mit R3-C-013 (dokumentierte Konformitaetsanalyse); gilt ebenso fuer den eingefrorenen Stand unter docs/archiv/ (PS-3, 2026-10-26).
 docs/adr/0002-architekturentscheid-ziel-stack.md|scripts/rueckkanal-pruefen.sh	Folgt mit R3-C-004. Bis dahin meldet D9 Lage C.
 docs/adr/0003-definition-of-done-gate.md|scripts/rueckkanal-pruefen.sh	Folgt mit R3-C-004. Bis dahin meldet D9 Lage C. Derselbe Gegenstand wie der Eintrag fuer ADR 0002; der Text aus ADR 0002, 6.12, steht seit dem Prozess-Schnitt PS-2 (2026-10-22) unveraendert in ADR 0003.
 docs/06_Definition_of_Ready_und_Done.md|scripts/rueckkanal-pruefen.sh	Folgt mit R3-C-004 (D9, ADR 0002, Abschnitt 6). Die Kriterienzeile D9 nennt es seit dem 2026-09-02 als das Pruefmittel, dessen Fehlen Lage C ausloest -- derselbe Gegenstand wie der Eintrag fuer ADR 0002.
@@ -121,3 +117,6 @@ docs/uebergaben/2026-08-25_eingangskanal-repariert.md|r3coscrum/.github/workflow
 
 # --- Namensaenderung vor der Festlegung von G2 (G2.2) ---------------------------
 docs/uebergaben/2026-08-30_makefile-dod-abbruch-nach-3-4.md|deploy/images/Dockerfile	Datierte Uebergabe, Name vor der Festlegung von G2: das Dockerfile entsteht als deploy/images/anwendung/Dockerfile (ADR 0002, Abschnitt 5, Nachtrag vom 2026-11-04, Zeile D20; Entscheid des Koordinators). Der Pfad deploy/images/Dockerfile darf nicht entstehen: Existierte er, waere die Ausnahme veraltet (Befund).
+
+# --- Abschnitte anderer Dokumente ---------------------------------------------
+docs/konformitaet/konformitaetsanalyse.md|11.3	Abschnitt 11.3 der Gegenpruefung docs/recht/gegenpruefung-konformitaetsanalyse.md (Nachpruefung des Legal Reviewers), nicht des Projektauftrags; Pruefung 5 kennt nur den Projektauftrag und eigene Ueberschriften. Einheit S1.3, Fund des Laufs auf der Gegenseite.

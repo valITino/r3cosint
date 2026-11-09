@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 pytestmark = pytest.mark.anyio
 
 MIGRATIONEN = Path(__file__).resolve().parents[2] / "migrationen"
-KOPF = "0003"
+KOPF = "0004"
 AlembicBefehl = Callable[[Datenbankverbindung, str, str | None], Awaitable[None]]
 
 
@@ -145,7 +145,7 @@ async def test_R3_F_008_migration_von_leer_bis_0002_zurueck_und_wieder_vor_bis_k
             await verbindung.rollback()
 
             await alembic_befehl(eigentuemer, "upgrade", "head")
-            assert await _version(verbindung) == ["0003"]
+            assert await _version(verbindung) == [KOPF]
             await verbindung.rollback()
             await _funktion_anlegen(verbindung, "wieder_vor")
             assert not await _ausfuehrbar(verbindung, "wieder_vor")
@@ -168,6 +168,10 @@ async def test_R3_F_008_downgrade_von_0003_endet_mit_der_meldung_version_und_tab
     verbindung_eigentuemer: AsyncConnection,
     alembic_befehl: AlembicBefehl,
 ) -> None:
+    eigentuemer = datenbank.verbindung("r3cosint_eigentuemer")
+    await verbindung_eigentuemer.rollback()
+    # Der Rückweg von 0004 besteht (Auslöser und Funktion); ab 0003 gibt es keinen.
+    await alembic_befehl(eigentuemer, "downgrade", "0003")
     vorher = await _tabellen(verbindung_eigentuemer)
     await verbindung_eigentuemer.rollback()
     with pytest.raises(
@@ -181,6 +185,37 @@ async def test_R3_F_008_downgrade_von_0003_endet_mit_der_meldung_version_und_tab
     assert await _version(verbindung_eigentuemer) == ["0003"]
     assert await _tabellen(verbindung_eigentuemer) == vorher
     assert {"arbeitsspur", "ermittlungsspur", "kettenkopf"} <= set(vorher)
+
+
+async def _ausloeser_und_funktion(verbindung: AsyncConnection) -> tuple[int, int]:
+    ergebnis = await verbindung.execute(
+        text(
+            "SELECT (SELECT count(*) FROM pg_trigger WHERE tgname = 'fall_uebergang'), "
+            "(SELECT count(*) FROM pg_proc WHERE proname = 'fall_uebergang_pruefen')"
+        )
+    )
+    zeile = ergebnis.one()
+    return int(zeile[0]), int(zeile[1])
+
+
+async def test_R3_F_001_revision_0004_hin_und_zurueck_legt_den_ausloeser_an_und_entfernt_ihn(
+    datenbank: "Testdatenbank",
+    verbindung_eigentuemer: AsyncConnection,
+    alembic_befehl: AlembicBefehl,
+) -> None:
+    eigentuemer = datenbank.verbindung("r3cosint_eigentuemer")
+    assert await _version(verbindung_eigentuemer) == ["0004"]
+    assert await _ausloeser_und_funktion(verbindung_eigentuemer) == (1, 1)
+    await verbindung_eigentuemer.rollback()
+
+    await alembic_befehl(eigentuemer, "downgrade", "0003")
+    assert await _version(verbindung_eigentuemer) == ["0003"]
+    assert await _ausloeser_und_funktion(verbindung_eigentuemer) == (0, 0)
+    await verbindung_eigentuemer.rollback()
+
+    await alembic_befehl(eigentuemer, "upgrade", "head")
+    assert await _version(verbindung_eigentuemer) == ["0004"]
+    assert await _ausloeser_und_funktion(verbindung_eigentuemer) == (1, 1)
 
 
 async def test_R3_F_008_ein_zweiter_lauf_bis_kopf_aendert_nichts(

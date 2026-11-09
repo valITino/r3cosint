@@ -173,10 +173,13 @@ def test_R3_F_008_vertrag_4_verbietet_tables_und_store_von_spur() -> None:
     assert vertrag["allow_indirect_imports"] is True
 
 
-def test_R3_F_001_vertrag_8_verbietet_allein_fall_tables() -> None:
+def test_R3_F_001_vertrag_8_verbietet_tables_und_store_von_fall() -> None:
     vertrag = _vertrag(VERTRAG_8)
     assert vertrag["type"] == "forbidden"
-    assert vertrag["forbidden_modules"] == ["r3cosint.fall.tables"]
+    assert vertrag["forbidden_modules"] == [
+        "r3cosint.fall.tables",
+        "r3cosint.fall.store",
+    ]
     assert vertrag["allow_indirect_imports"] is True
 
 
