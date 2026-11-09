@@ -5,7 +5,7 @@
 | **Arbeitsprodukt nach** | Projektauftrag 6.3 |
 | **Verantwortlich** | Requirements Engineer; ein benannter Verantwortlicher ist noch zu bestimmen |
 | **Lebensdauer** | langlebig |
-| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19. Nachgeführt 2026-09-21 mit dem Backlog-Eintrag R3-Q-010: Gate und Hook aufgenommen, beim Eintrag Freigabe-Gate die Homonym-Warnung um die Abgrenzung zum Gate ergänzt — beide Begriffe werden in Arbeitsprodukten und Regeln seit dem 2026-08-19 verwendet, standen aber nicht im Glossar, und "Gate" bezeichnete darin zwei verschiedene Sachen (R3 der Definition of Ready, Homonyme vermeiden). Nachgeführt 2026-09-23 mit dem Backlog-Eintrag R3-Q-011: Einschleusung, Fremder Inhalt und Harness aufgenommen — alle drei Begriffe tragen den Eintrag; "fremde Inhalte" wurde bisher für den Harness (CLAUDE.md, Abschnitt "Nicht verhandelbar") und für das Produkt (R3-F-017) ohne Abgrenzung gebraucht, und "Harness" selbst stand trotz Verwendung im Projektauftrag (5.15) und in CLAUDE.md nicht im Glossar (R3 der Definition of Ready). Nachgeführt 2026-10-28 mit der Einheit G0: Grundgerüst aufgenommen — der Begriff wird im Projektauftrag (3.1), im Architekturentscheid und in der Freigabe des Grundgerüsts verwendet, stand aber nicht im Glossar; `docs/12_Freigabe_Grundgeruest.md` führt die Aufnahme in Abschnitt 1 als Restpunkt und weist sie in Abschnitt 4 (G0, Rollen) dem Requirements Engineer zu (R3 der Definition of Ready). Nachgeführt 2026-11-05 mit der Einheit S1 (Walkthrough vor Sprint 1, `docs/sprints/sprint-01-walkthrough.md`): Aufgabe, Datenpunkt, Fallkategorie, Fallverantwortlicher, Kettenprüfung, Klardaten, Löschweg, Protokolleintrag, Prüffrist, Rechtsregime und Verkettung aufgenommen (neuer Abschnitt D), bei Aufbewahrungsklasse das Synonym Fallkategorie vermerkt (4.4, Punkt 3b: genau ein Feld), bei Grabstein-Eintrag die Kurzform; Sprint 1 braucht die Begriffe als Bezeichner (ADR 0002, A13). Rechtsregime trägt [rechtlich] und ist am 2026-11-05 durch die GRC-Rolle geprüft (Einheit S1); offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5). Unter "Zu ergänzen" Nr. 4 bis 6 neu. 64 Einträge. Nachgeführt 2026-11-05 mit der Einheit D22 (nach der Annahme von Sprint 1 und ADR 0007 durch den Merge des Pull Requests #52): Eintragstyp und Kettenkopf aufgenommen (ADR 0007, Entscheid 28, Restpunkt des Software Architects); Rechtsregime nach Hinweis H-3 der GRC-Rolle neu gefasst (R1 oder R2 als Regime des Falls, R3 bis R5 als Rahmen, Eigenschaft der Bearbeitung beziehungsweise Phase nach dem Betriebszweck; 4.4, Tabelle; ADR 0007, E-S1-09), die Neufassung geprüft durch die GRC-Rolle am 2026-11-05 (Einheit D22), offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5); bei Fallkategorie die Fundstellen der Sätze zu Kurzkennzeichnung und Archivwürdigkeit nachgetragen (H-4); beim Fall Rechtsregime und Fallkategorie statt Aufbewahrungsklasse, mit Vermerk zum Synonym (H-5); "Zu ergänzen" Nr. 5 nachgeführt (H-6). 66 Einträge. Nachgeführt 2026-11-09 vor der Einheit S1.3 (Walkthrough-Befund W1-97): Aktenzeichen als Vorschlag zur Bestätigung durch den Auftraggeber aufgenommen, mit der Abgrenzung zur Fallnummer im Eintrag (kein eigener Eintrag Fallnummer, weil 4.4 sie allein als Bestandteil des Grabstein-Eintrags nennt); "Zu ergänzen" Nr. 4 nachgeführt. 67 Einträge. Nachgeführt 2026-11-09 mit der Einheit D25 (nach dem Merge des Pull Requests #55, Merge-Commit `3cb896da222feefc0df124c8447a443f2dfab7ae`; Angabe des Koordinators, Fremdbeleg): beim Eintrag Aktenzeichen die Entscheide E-S13-02 (b) und E-S13-01 (a) vermerkt, die Kennzeichnung als unbestätigter Vorschlag bleibt; "Zu ergänzen" Nr. 4 nachgeführt, die Bestimmung beider Begriffe bleibt offen. 67 Einträge |
+| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19. Nachgeführt 2026-09-21 mit dem Backlog-Eintrag R3-Q-010: Gate und Hook aufgenommen, beim Eintrag Freigabe-Gate die Homonym-Warnung um die Abgrenzung zum Gate ergänzt — beide Begriffe werden in Arbeitsprodukten und Regeln seit dem 2026-08-19 verwendet, standen aber nicht im Glossar, und "Gate" bezeichnete darin zwei verschiedene Sachen (R3 der Definition of Ready, Homonyme vermeiden). Nachgeführt 2026-09-23 mit dem Backlog-Eintrag R3-Q-011: Einschleusung, Fremder Inhalt und Harness aufgenommen — alle drei Begriffe tragen den Eintrag; "fremde Inhalte" wurde bisher für den Harness (CLAUDE.md, Abschnitt "Nicht verhandelbar") und für das Produkt (R3-F-017) ohne Abgrenzung gebraucht, und "Harness" selbst stand trotz Verwendung im Projektauftrag (5.15) und in CLAUDE.md nicht im Glossar (R3 der Definition of Ready). Nachgeführt 2026-10-28 mit der Einheit G0: Grundgerüst aufgenommen — der Begriff wird im Projektauftrag (3.1), im Architekturentscheid und in der Freigabe des Grundgerüsts verwendet, stand aber nicht im Glossar; `docs/12_Freigabe_Grundgeruest.md` führt die Aufnahme in Abschnitt 1 als Restpunkt und weist sie in Abschnitt 4 (G0, Rollen) dem Requirements Engineer zu (R3 der Definition of Ready). Nachgeführt 2026-11-05 mit der Einheit S1 (Walkthrough vor Sprint 1, `docs/sprints/sprint-01-walkthrough.md`): Aufgabe, Datenpunkt, Fallkategorie, Fallverantwortlicher, Kettenprüfung, Klardaten, Löschweg, Protokolleintrag, Prüffrist, Rechtsregime und Verkettung aufgenommen (neuer Abschnitt D), bei Aufbewahrungsklasse das Synonym Fallkategorie vermerkt (4.4, Punkt 3b: genau ein Feld), bei Grabstein-Eintrag die Kurzform; Sprint 1 braucht die Begriffe als Bezeichner (ADR 0002, A13). Rechtsregime trägt [rechtlich] und ist am 2026-11-05 durch die GRC-Rolle geprüft (Einheit S1); offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5). Unter "Zu ergänzen" Nr. 4 bis 6 neu. 64 Einträge. Nachgeführt 2026-11-05 mit der Einheit D22 (nach der Annahme von Sprint 1 und ADR 0007 durch den Merge des Pull Requests #52): Eintragstyp und Kettenkopf aufgenommen (ADR 0007, Entscheid 28, Restpunkt des Software Architects); Rechtsregime nach Hinweis H-3 der GRC-Rolle neu gefasst (R1 oder R2 als Regime des Falls, R3 bis R5 als Rahmen, Eigenschaft der Bearbeitung beziehungsweise Phase nach dem Betriebszweck; 4.4, Tabelle; ADR 0007, E-S1-09), die Neufassung geprüft durch die GRC-Rolle am 2026-11-05 (Einheit D22), offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5); bei Fallkategorie die Fundstellen der Sätze zu Kurzkennzeichnung und Archivwürdigkeit nachgetragen (H-4); beim Fall Rechtsregime und Fallkategorie statt Aufbewahrungsklasse, mit Vermerk zum Synonym (H-5); "Zu ergänzen" Nr. 5 nachgeführt (H-6). 66 Einträge. Nachgeführt 2026-11-09 vor der Einheit S1.3 (Walkthrough-Befund W1-97): Aktenzeichen als Vorschlag zur Bestätigung durch den Auftraggeber aufgenommen, mit der Abgrenzung zur Fallnummer im Eintrag (kein eigener Eintrag Fallnummer, weil 4.4 sie allein als Bestandteil des Grabstein-Eintrags nennt); "Zu ergänzen" Nr. 4 nachgeführt. 67 Einträge. Nachgeführt 2026-11-09 mit der Einheit D25 (nach dem Merge des Pull Requests #55, Merge-Commit `3cb896da222feefc0df124c8447a443f2dfab7ae`; Angabe des Koordinators, Fremdbeleg): beim Eintrag Aktenzeichen die Entscheide E-S13-02 (b) und E-S13-01 (a) vermerkt, die Kennzeichnung als unbestätigter Vorschlag bleibt; "Zu ergänzen" Nr. 4 nachgeführt, die Bestimmung beider Begriffe bleibt offen. 67 Einträge. Nachgeführt 2026-11-09 vor der Einheit S1.4 (Walkthrough-Befunde W1-75, W1-81, W1-84, W1-86): bei Datenpunkt, Herkunftsnachweis und Entität je ein Vorschlag zur Ergänzung, gekennzeichnet und nicht bestätigt; kein neuer Eintrag. 67 Einträge |
 
 **Die Verwendung dieses Glossars ist für alle Arbeitsprodukte und für die
 Oberflächentexte verpflichtend** (6.3). Synonyme sind gekennzeichnet, Homonyme
@@ -130,7 +130,15 @@ entsprechend gekennzeichnet (5.10).
 Datenbestand. 5.4 fasst die Verfahrensgarantie "Herkunft an jedem Datenpunkt"
 als "Kein Knoten und keine Verbindung ohne Herkunftsnachweis" (R3-F-005). Ob
 einzelne Eigenschaften einer Entität eigene Datenpunkte sind, ist nicht
-festgelegt (Walkthrough vor Sprint 1, W1-86).
+festgelegt (Walkthrough vor Sprint 1, W1-86). *Vorschlag zur Ergänzung
+(2026-11-09, vor der Einheit S1.4; zur Bestätigung im Pull Request der
+Einheiten D25 und S1.4), nicht bestätigt:* In Sprint 1 ist ein Datenpunkt ein
+Knoten, der Datensatz eines Knotenschemas von FollowTheMoney (Tabelle
+entitaet), oder eine Kante, der Datensatz eines Kantenschemas (Tabelle
+beziehung); seine Eigenschaften sind Teil des Knotens oder der Kante und keine
+eigenen Datenpunkte, und je Datenpunkt gilt ein Herkunftssatz (ADR 0007,
+Entscheid 24, E-S1-15 a; R3-F-005). Herkunft je Eigenschaftswert gehört zur
+Zusammenführung mehrerer Quellen und kommt mit deren Eintrag.
 
 ## E
 
@@ -168,7 +176,14 @@ Kennzeichnung, woher die Aussage stammt.
 
 **Entität** — Ein Objekt im kanonischen Datenbestand: Person, Firma, IP-Adresse,
 Domain, Wallet, Vermögenswert und so weiter. Trägt immer einen Herkunftsnachweis
-und eine Klassifizierungsstufe.
+und eine Klassifizierungsstufe. *Vorschlag zur Ergänzung (2026-11-09, vor der
+Einheit S1.4; zur Bestätigung im Pull Request der Einheiten D25 und S1.4),
+nicht bestätigt:* In Sprint 1 werden Entitäten ohne Klassifizierungsstufe
+abgelegt, weil Zugriff und Klassifizierung nicht Gegenstand sind (ADR 0007,
+Nicht Gegenstand; R3-F-054, Etappe 3); "immer" gilt für die
+Klassifizierungsstufe erst ab diesem Eintrag (Walkthrough vor Sprint 1,
+W1-81). Welche Entitätstypen nach FollowTheMoney und welche nach STIX 2.1
+abgelegt werden, ist offen (W1-75; Vorlage E-S14-01, R3-F-004).
 
 **Ermittlung** — Die Gesamtheit der Tätigkeit in einem Fall. *Abzugrenzen von:*
 Recherche (siehe dort).
@@ -325,7 +340,17 @@ und Einschleusung im Harness: siehe dort (R3-Q-011).
 
 **Herkunftsnachweis** — Die Angabe, aus welcher Quelle ein Datenpunkt stammt,
 wann er erhoben wurde und von wem. Nach W3C PROV geführt. Kein Knoten und keine
-Kante ohne Herkunftsnachweis (5.4). *Synonym:* Provenienz.
+Kante ohne Herkunftsnachweis (5.4). *Synonym:* Provenienz. *Vorschlag zur
+Ergänzung (2026-11-09, vor der Einheit S1.4; zur Bestätigung im Pull Request
+der Einheiten D25 und S1.4), nicht bestätigt:* Im Bestand ist der
+Herkunftsnachweis ein Herkunftssatz mit fünf Angaben; vollständig ist er nur
+mit allen fünf: Werkzeug und Abfrage (die Quelle), Zeitpunkt der Erhebung,
+erhebende Person (Benutzerkennung, "von wem") und Kennzeichnung als
+Quellenaussage oder Schlussfolgerung des Modells (ADR 0007, Entscheid 25;
+R3-F-005). In Sprint 1 sind Werkzeug und Abfrage Texte fester Form, geprüft
+wird Vollständigkeit, nicht Echtheit (E-S1-21 a; ADR 0007, Grenze GS-6).
+"Nach W3C PROV geführt" meint die Form beim Export (ADR 0002, A2); im Bestand
+liegt der Herkunftssatz in eigener Form.
 
 **Hook** — Ein Skript, das bei einem festgelegten Ereignis der
 Entwicklungsumgebung ausgeführt wird. Registriert wird es in der versionierten

@@ -28,6 +28,7 @@ VERTRAG_7 = "Vertrag 7: Produktionscode importiert prototype nicht"
 VERTRAG_10 = "Vertrag 10: Treiber nur hinter der Zugriffsschicht"
 VERTRAG_4 = "Vertrag 4 (R3-F-008): ausser spur schreibt kein Modul in die Spurtabellen"
 VERTRAG_8 = "Vertrag 8 (R3-F-001): ausser fall schreibt kein Modul in die Falltabellen"
+VERTRAG_5 = "Vertrag 5 (R3-F-005): ausser kanon schreibt kein Modul in den Bestand"
 VERTRAG_9 = "Vertrag 9 (R3-F-008): Schichtung"
 
 # Verbotsliste von Vertrag 2 (ADR 0002, Abschnitt 5, Nachtrag G1, Zeile "Vertrag 2"),
@@ -98,6 +99,7 @@ def test_die_obersten_pakete_sind_die_14_des_modulschnitts() -> None:
         (VERTRAG_6, "r3cosint.api"),
         (VERTRAG_4, "r3cosint.spur"),
         (VERTRAG_8, "r3cosint.fall"),
+        (VERTRAG_5, "r3cosint.kanon"),
     ],
 )
 def test_quellen_und_ausnahme_ergeben_die_obersten_pakete(
@@ -179,6 +181,16 @@ def test_R3_F_001_vertrag_8_verbietet_tables_und_store_von_fall() -> None:
     assert vertrag["forbidden_modules"] == [
         "r3cosint.fall.tables",
         "r3cosint.fall.store",
+    ]
+    assert vertrag["allow_indirect_imports"] is True
+
+
+def test_R3_F_005_vertrag_5_verbietet_tables_und_store_von_kanon() -> None:
+    vertrag = _vertrag(VERTRAG_5)
+    assert vertrag["type"] == "forbidden"
+    assert vertrag["forbidden_modules"] == [
+        "r3cosint.kanon.tables",
+        "r3cosint.kanon.store",
     ]
     assert vertrag["allow_indirect_imports"] is True
 

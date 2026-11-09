@@ -1,0 +1,77 @@
+Occupancy:
+  label: "Occupancy"
+  plural: "Occupancies"
+  extends:
+    - Interval
+  matchable: false
+  description: >
+    The occupation of a position by a person for a specific period of time.
+  featured:
+    - holder
+    - post
+  required:
+    - holder
+    - post
+  edge:
+    source: holder
+    label: holds
+    target: post
+    directed: true
+    caption:
+      - startDate
+      - endDate
+  temporalExtent:
+    start:
+      - startDate
+      - periodStart
+      - electionDate
+      - declarationDate
+      - date
+    end:
+      - endDate
+      - periodEnd
+  properties:
+    holder:
+      label: "Holder"
+      reverse:
+        name: positionOccupancies
+        label: "Positions held"
+      type: entity
+      range: Person
+    post:
+      label: "Position occupied"
+      reverse:
+        name: occupancies
+        label: "Position holders"
+      type: entity
+      range: Position
+    declarationDate:
+      label: "Declaration date"
+      description: "If established by an asset declaration"
+      type: date
+      matchable: false
+    electionDate:
+      label: "Election date"
+      description: "Election date for the position, if applicable"
+      type: date
+    periodStart:
+      label: "Period start"
+      description: "Start date of the fixed office term (e.g. a parliamentary session). Unlike `startDate`, which tracks when an individual's mandate begins, `periodStart` refers to the term itself and is the same for everyone holding the position during that period."
+      type: date
+    periodEnd:
+      label: "Period end"
+      description: "End date of the fixed office term. Unlike `endDate`, which tracks when an individual's mandate ends, `periodEnd` refers to the term itself and is the same for everyone holding the position during that period."
+      type: date
+    constituency:
+      # https://www.popoloproject.com/specs/membership.html#classes-and-properties
+      label: "Constituency"
+      description: "The geographic area/district represented by the holder"
+    politicalGroup:
+      label: "Political group"
+      description: "Caucus, faction or parliamentary group of the holder"
+    status:
+      label: "Status"
+      examples:
+        - current
+        - ended
+      type: string

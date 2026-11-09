@@ -69,12 +69,15 @@ def _ist_docstring(knoten: ast.stmt) -> bool:
 # Module von spur und fall (ADR 0007, Festlegung S1.2 und S1.3); ihre __init__ bleiben Modulbeschreibung.
 SPUR_MODULE = ("kette", "payload", "tables", "store", "service")
 FALL_MODULE = ("tables", "eingabe", "store", "service")
+# kanon (Festlegung S1.4): Module und Datenverzeichnis ftm_schema (71 Schemadateien, quellen.toml, LIZENZ.txt).
+KANON_MODULE = ("tables", "eingabe", "ftm", "store", "service")
+KANON_SCHEMA_DATEIEN = 73
 
 DATEIEN_OHNE_CODE = (
     WURZEL / "__init__.py",
     *(_init_datei(paket) for paket in PAKETE if paket != "api"),
 )
-MIT_CODE = ("api", "core", "fall", "spur")
+MIT_CODE = ("api", "core", "fall", "kanon", "spur")
 
 
 def test_unter_src_steht_allein_das_wurzelpaket() -> None:
@@ -93,7 +96,10 @@ def test_wurzelpaket_enthaelt_genau_die_dateien_des_modulschnitts() -> None:
     erwartet |= {f"core/{modul}.py" for modul in CORE_MODULE}
     erwartet |= {f"spur/{modul}.py" for modul in SPUR_MODULE}
     erwartet |= {f"fall/{modul}.py" for modul in FALL_MODULE}
-    assert gefunden == erwartet
+    erwartet |= {f"kanon/{modul}.py" for modul in KANON_MODULE}
+    kanon_daten = {g for g in gefunden if g.startswith("kanon/ftm_schema/")}
+    assert len(kanon_daten) == KANON_SCHEMA_DATEIEN
+    assert gefunden - kanon_daten == erwartet
 
 
 def test_wurzelpaket_ist_importierbar() -> None:
@@ -143,7 +149,7 @@ def test_R3_F_008_jedes_core_modul_beginnt_mit_einer_modulbeschreibung(
     assert _ist_docstring(koerper[0])
 
 
-def test_R3_F_008_nur_api_core_spur_und_fall_tragen_code_ausser_der_modulbeschreibung() -> (
+def test_R3_F_008_nur_api_core_spur_fall_und_kanon_tragen_code_ausser_der_modulbeschreibung() -> (
     None
 ):
     mit_code = sorted(

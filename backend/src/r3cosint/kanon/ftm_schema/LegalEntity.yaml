@@ -1,0 +1,219 @@
+LegalEntity:
+  extends:
+    - Thing
+  label: Legal entity
+  plural: Legal entities
+  description: >
+    Any party to legal proceedings, such as asset ownership, corporate governance
+    or social interactions. Often used when raw data does not specify if something
+    is a person, organization or company.
+  matchable: true
+  featured:
+    - name
+    - country
+    - legalForm
+    - status
+  required:
+    - name
+  caption:
+    - name
+    - alias
+    - abbreviation
+    - weakAlias
+    - previousName
+    - email
+    - phone
+    - registrationNumber
+  temporalExtent:
+    start:
+      - incorporationDate
+    end:
+      - dissolutionDate
+  properties:
+    abbreviation:
+      label: Abbreviation
+      type: name
+      description: "Abbreviated name or acronym"
+      # TODO: is un-matchable wise? The idea is to handle it like `weakAlias` rather than `alias`.
+      matchable: false
+    email:
+      label: Email
+      type: email
+      description: "Email address"
+    phone:
+      label: Phone
+      type: phone
+      description: "Phone number"
+      maxLength: 32
+    website:
+      label: Website
+      type: url
+      description: "Website address"
+    legalForm:
+      label: Legal form
+      description: "Company or organization type"
+      examples:
+        - Joint Stock Company
+      matchable: false
+    incorporationDate:
+      label: Incorporation date
+      type: date
+      description: "The date the legal entity was incorporated"
+    dissolutionDate:
+      label: Dissolution date
+      type: date
+      description: "The date the legal entity was dissolved, if applicable"
+    taxStatus:
+      label: Tax status
+      examples:
+        - Non-Habitual Resident
+        - Compliant as at March 2022
+      matchable: false
+    status:
+      label: Status
+      description: "A short string describing how 'active' (broadly defined) an entity is"
+      examples:
+        - Current / Former / Sitting / Retired
+        - Active / Inactive
+        - Dissolved (last known activity October 2024)
+        - Liquidated on 12 November 2022
+      matchable: false
+    sector:
+      label: Sector
+      description: "Industrial or trade sector as provided by the data source"
+      examples:
+        - Registered Nurse
+        - Retail and wholesale
+        - Sea and coastal freight water transport
+      matchable: false
+    classification:
+      # OS note: We use this with PEPs to summarize their exposure.
+      label: Classification
+      description: "Classification as provided by the data source or inferred based on other provided data; prefer `sector` if relevant"
+      examples:
+        - Local government (current)
+        - Banking operations license
+        - 4. Priority Sector Apparel
+        - Entities Directly Serving the Defense and Security Sectors
+      matchable: false
+    registrationNumber:
+      label: Registration number
+      type: identifier
+      description: "Company registration number"
+    idNumber:
+      label: ID Number
+      type: identifier
+      description: "ID of any applicable personal identification document. Used mainly for people and their national ID cards."
+    taxNumber:
+      label: Tax Number
+      type: identifier
+      description: "Tax identification number"
+    licenseNumber:
+      label: License Number
+      type: identifier
+      description: "For licenses granted to an entity"
+    vatCode:
+      label: "V.A.T. Identifier"
+      description: "(EU) VAT number"
+      type: identifier
+      maxLength: 32
+    jurisdiction:
+      label: Jurisdiction
+      type: country
+      description: "Country or region in which this entity operates; prefer over broader `country` when relevant"
+    mainCountry:
+      label: Country of origin
+      type: country
+      description: "Primary country of this entity; prefer over broader `country` when relevant"
+    opencorporatesUrl:
+      label: OpenCorporates URL
+      type: url
+    bvdId:
+      label: Bureau van Dijk ID
+      type: identifier
+    sayariId:
+      label: Sayari Entity ID
+      type: identifier
+    brightQueryId:
+      label: BrightQuery ID
+      type: identifier
+    brightQueryOrgId:
+      label: BrightQuery Organization ID
+      type: identifier
+      hidden: true
+      matchable: false
+    uscCode:
+      # cf. https://en.wikipedia.org/wiki/Unified_Social_Credit_Identifier
+      label: "USCC"
+      description: "Chinese Unified Social Credit Identifier"
+      type: identifier
+      format: uscc
+    icijId:
+      label: ICIJ ID
+      description: "ID according to International Consortium for Investigative Journalists"
+    okpoCode:
+      label: "OKPO"
+      description: "Russian industry classifier"
+      type: identifier
+      matchable: false
+    innCode:
+      label: "INN"
+      description: "(RU, ИНН) Russian tax identification number. Issued to businesses and individuals in Russia."
+      type: identifier
+      format: inn
+      maxLength: 32
+    ogrnCode:
+      label: "OGRN"
+      description: "(RU, ОГРН) Registration number used in Russia's Unified State Register of Legal Entities (EGRUL)"
+      type: identifier
+      format: ogrn
+      maxLength: 32
+    okvedCode:
+      label: "OKVED"
+      description: "Russian industry classifier code for economic activities"
+      type: identifier
+      matchable: false
+    leiCode:
+      # cf. https://www.gleif.org/en/about-lei/introducing-the-legal-entity-identifier-lei
+      label: "LEI"
+      description: "Legal Entity Identifier"
+      type: identifier
+      format: lei
+      maxLength: 32
+    dunsCode:
+      label: "DUNS"
+      description: "Data Universal Numbering System - Dun & Bradstreet identifier"
+      type: identifier
+      maxLength: 16
+    uniqueEntityId:
+      label: "Unique Entity ID"
+      description: "UEI from SAM.gov"
+      # This is a scheme the US federal government (peace be upon its remains) introduced to replace
+      # DUNS numbers, which had previously been used as an ID in procurement. DUNS was basically killing
+      # them with license fees.
+      type: identifier
+      format: uei
+      maxLength: 32
+    npiCode:
+      label: "NPI"
+      description: "National Provider Identifier, issued to health care providers in the United States"
+      type: identifier
+      format: npi
+      maxLength: 16
+    swiftBic:
+      label: "SWIFT/BIC"
+      description: "SWIFT Bank identifier code from ISO9362"
+      # OS note: BIC exist as bank codes (8 characters) and branch codes (11 characters). OpenSanctions
+      # currently cuts everything down to 8, meaning that all branches will match the same bank.
+      type: identifier
+      format: bic
+      maxLength: 16
+    parent:
+      deprecated: true
+      label: "Parent company"
+      description: "Deprecated, use `Ownership` link instead"
+      reverse:
+        label: "Subsidiaries"
+        name: subsidiaries
+      type: entity
+      range: LegalEntity

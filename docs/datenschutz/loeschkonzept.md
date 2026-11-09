@@ -5,9 +5,9 @@
 | **Status** | **ENTWURF.** Kein gebauter Löschweg, kein Test, kein Nachweis. Der Löschweg und sein Nachweis folgen mit R3-F-020; bis dahin ist Punkt 4 der Bereitschaftsliste (5.16) offen (Abschnitt 10) |
 | **Arbeitsprodukt** | Löschkonzept nach Projektauftrag 4.2 (Rolle Datenschutzexperte) und 4.4, "Aufbewahrung und Löschung"; Teil von Punkt 4 der Bereitschaftsliste |
 | **Verantwortlich** | Datenschutzexperte |
-| **Stand** | 2026-11-09, zur Baueinheit S1.3 (Fall, R3-F-001) nach ADR 0007, Zerlegung, Zeile S1.3: "Löschkonzept als Entwurf mit dem Vermerk, dass der Löschweg mit R3-F-020 folgt"; nachgeführt auf den gebauten, nicht abgenommenen Stand von S1.3 (gebaut am 2026-11-09, zur Abnahme vorgelegt mit dem Pull Request der Einheiten D24 und S1.3; ADR 0007, "Gebauter Stand S1.3"): Eröffnen und Schliessen gebaut, Übergänge zusätzlich durch den Auslöser `fall_uebergang` der Revision 0004_fall_uebergang gebunden, Grenze GS-26 mit SR-030 (offen bis R3-F-020) |
+| **Stand** | 2026-11-09, zur Baueinheit S1.3 (Fall, R3-F-001) nach ADR 0007, Zerlegung, Zeile S1.3: "Löschkonzept als Entwurf mit dem Vermerk, dass der Löschweg mit R3-F-020 folgt"; nachgeführt auf den gebauten, nicht abgenommenen Stand von S1.3 (gebaut am 2026-11-09, zur Abnahme vorgelegt mit dem Pull Request der Einheiten D24 und S1.3; ADR 0007, "Gebauter Stand S1.3"): Eröffnen und Schliessen gebaut, Übergänge zusätzlich durch den Auslöser `fall_uebergang` der Revision 0004_fall_uebergang gebunden, Grenze GS-26 mit SR-030 (offen bis R3-F-020); S1.3 abgenommen mit dem Merge des Pull Requests #55 am 2026-11-09 (Angabe des Koordinators, Fremdbeleg). Ergänzt am 2026-11-09 vor dem Bau der Einheit S1.4 um den Entwurf des Löschwegs für den Bestand (`herkunft`, `entitaet`, `beziehung`; Abschnitt 5, Absatz "Bestand"; Stand: festgelegt, nicht gebaut). Nachtrag vom 2026-11-09: S1.3 ist abgenommen (Merge #55), die Angabe "gebauten, nicht abgenommenen Stand" ist überholt; S1.4 gebaut am 2026-11-09, zur Abnahme vorgelegt (Pull Request der Einheiten D25 und S1.4) |
 | **Geltung** | Test/Schulung mit synthetischen Daten (5.6, 5.16); keine echten Fall- oder Personendaten über den Harness (5.15) |
-| **Grundlage** | Projektauftrag 4.4 (Punkte 1 bis 7), 5.3, 5.10, 5.16; `.claude/rules/recht-und-datenschutz.md`, "Aufbewahrung: nichts wird automatisch gelöscht"; ADR 0007 (Entscheide 9, 14, 22, 23; E-S1-06 b, E-S1-07 a, E-S1-11 a; Grenze GS-5; "Nicht Gegenstand"); ADR 0002, Abschnitt 8, O-6; Backlog R3-F-001, R3-F-011, R3-F-020; Glossar (Prüffrist, Fallkategorie, Löschsperre, Löschweg, Grabstein-Eintrag) |
+| **Grundlage** | Projektauftrag 4.4 (Punkte 1 bis 7), 5.3, 5.10, 5.16; `.claude/rules/recht-und-datenschutz.md`, "Aufbewahrung: nichts wird automatisch gelöscht"; ADR 0007 (Entscheide 9, 14, 22, 23, 24, 25, 26; E-S1-06 b, E-S1-12 a, E-S1-07 a, E-S1-11 a; Grenze GS-5; "Nicht Gegenstand"); ADR 0002, Abschnitt 8, O-6; Backlog R3-F-001, R3-F-011, R3-F-020; Glossar (Prüffrist, Fallkategorie, Löschsperre, Löschweg, Grabstein-Eintrag) |
 | **Zugehörig** | Bearbeitungsverzeichnis: `docs/datenschutz/bearbeitungsverzeichnis.md` |
 | **Was dieser Entwurf nicht tut** | Er setzt keine Frist als Recht: die Startwerte sind betriebliche Voreinstellungen, Bestätigung oder Korrektur liegt bei der Kantonspolizei Bern (4.4, Punkte 3 und 6). Er bewertet das Zugriffsmodell auf Dezernatsebene nicht (5.8). Er legt keine Bauform fest; das ist Sache des Software Architects in der Festlegung zu R3-F-020 |
 
@@ -98,7 +98,7 @@ Ein Löschweg erreicht jeden Ort, an dem Daten des Falls liegen (4.4, Punkt 4; G
 |---|---|---|---|---|
 | LW-1 | Datenbestand: `fall` | ja (S1.2, S1.3) | Aktenzeichen, ermittelnde Person, Rechtsgrundlage | Felder geleert, Zustand `geloescht`; es bleiben Kennung (Fallnummer), Rechtsregime, Fallkategorie und Zeitpunkte (E-S1-06 b, Entscheid 22) |
 | LW-2 | Datenbestand: `fall_schluessel` | ja | Fallschlüssel | Zeile gelöscht; die Pseudonyme werden unumkehrbar (4.4, Problem B) |
-| LW-3 | Datenbestand: `entitaet`, `beziehung`, `herkunft` | ab S1.4 | Eigenschaftswerte (Namen, Adressen, Telefonnummern), Herkunftsangaben | Festlegung mit R3-F-020; DELETE nur auf die Tabellen, die der Löschweg nennt (ADR 0007, Nr. 9) |
+| LW-3 | Datenbestand: `entitaet`, `beziehung`, `herkunft` | ab S1.4 (festgelegt, nicht gebaut); Nachtrag vom 2026-11-09: gebaut am 2026-11-09, zur Abnahme vorgelegt | Eigenschaftswerte (Namen, Adressen, Telefonnummern, weitere Eigenschaften nach FollowTheMoney), Kennung nach FollowTheMoney, Abfragetext, erhebende Person | Zeilen des Falls gelöscht in der Reihenfolge `beziehung`, `entitaet`, `herkunft` (Entwurf, Absatz "Bestand" unten); Festlegung mit R3-F-020; DELETE nur auf die Tabellen, die der Löschweg nennt (ADR 0007, Nr. 9) |
 | LW-4 | Graph | nein | Knoten und Kanten des Falls | mit seinem Eintrag |
 | LW-5 | Anhänge und Asservate | nein (Ablageform offen, Backlog offener Punkt 11, R3-F-024) | Dateien, Medien | mit seinem Eintrag; R3-F-024 sichert, dass keine Datei ausserhalb des vorgesehenen Orts entsteht |
 | LW-6 | Suchindex | nein | Begriffe und Treffer des Falls | mit seinem Eintrag; gilt auch für Autovervollständigung und Trefferzahlen (5.8) |
@@ -109,6 +109,34 @@ Ein Löschweg erreicht jeden Ort, an dem Daten des Falls liegen (4.4, Punkt 4; G
 | LW-11 | Sicherungen | nein (Test/Schulung ohne Sicherung) | alles aus LW-1 bis LW-9 im Stand der Sicherung | **nicht bearbeitet**; unlesbar über die Vernichtung des Schlüssels je Fall (4.4, Problem B); setzt voraus, dass die Falldaten mit diesem Schlüssel verschlüsselt sind (O-6, Abschnitt 7) |
 | LW-12 | Schreibprotokoll der Datenbank | ja | alle geschriebenen Werte bis zur Wiederverwendung des Protokolls | wie LW-11; GS-5 nennt es ausdrücklich [OFFEN, Software Architect mit SecDevOps Engineer] |
 | LW-13 | Bereits ausgeführte Exporte | nein (5.10 nicht gebaut) | was exportiert wurde | **ausserhalb jeder Löschung** (Abschnitt 9) |
+
+**Bestand: `entitaet`, `beziehung`, `herkunft` (Entwurf zu LW-3; Stand: festgelegt in ADR 0007, Entscheide 24 und 25, nicht gebaut).** Verbindlich erst mit der Festlegung zu R3-F-020 (Software Architect); dieser Entwurf hält fest, was der Datenschutz vom Löschweg verlangt und was S1.4 dafür nicht verbauen darf. Nachtrag vom 2026-11-09: Die drei Tabellen sind mit der Revision 0005_bestand gebaut am 2026-11-09 und zur Abnahme vorgelegt; der Löschweg selbst bleibt ungebaut (R3-F-020).
+
+| Schritt | Gegenstand | Wirkung | Grund |
+|---|---|---|---|
+| 1 | `beziehung` mit `fall_kennung` des Falls | Zeilen gelöscht | Kanten verweisen über `quelle_kennung` und `ziel_kennung` auf `entitaet` und über `herkunft_kennung` auf `herkunft`; sie gehen zuerst |
+| 2 | `entitaet` mit `fall_kennung` des Falls | Zeilen gelöscht | verweisen über `herkunft_kennung` auf `herkunft` |
+| 3 | `herkunft` mit `fall_kennung` des Falls | Zeilen gelöscht, auch Herkunftssätze ohne verweisenden Datensatz | Abfragetext und erhebende Person sind Falldaten des Bestands; ohne Datensatz hat der Herkunftsnachweis keinen Gegenstand |
+| 4 | `fall_schluessel` (LW-2), danach `fall` (LW-1) | wie oben | die Pseudonyme der Spuren werden unumkehrbar |
+| — | Einträge `entitaet` und `beziehung` der Ermittlungsspur (LW-10) | **bleiben unverändert** | Problem A (Abschnitt 7): Die Einträge tragen Kennungen (danach ohne Ziel), den Schemanamen, Eigenschaftsnamen und Pseudonyme; mit dem Vernichten des Fallschlüssels sind die Pseudonyme unumkehrbar (E-S1-06 b). Die Kettenprüfung berührt das nicht, weil spur Verweise nicht prüft (ADR 0007, Vertrag 9) |
+
+Alle Schritte in einer Transaktion zusammen mit dem Grabstein-Eintrag (Abschnitt 6) und dem Zustandswechsel nach `geloescht`; bricht ein Schritt ab, bleibt der Fall unverändert. Nicht Gegenstand des Entwurfs: ob die Reihenfolge über Fremdschlüssel mit Weitergabe der Löschung (ON DELETE CASCADE) oder über ausdrückliche Befehle je Tabelle läuft. Empfehlung des Datenschutzexperten: ausdrückliche Befehle je Tabelle, Fremdschlüssel ohne Weitergabe, wie an den Spuren (ADR 0007, Festlegung S1.2, Fremdschlüssel ohne ON DELETE); dann löscht keine Anweisung mehr, als der Löschweg nennt, und ein vergessener Schritt scheitert am Fremdschlüssel statt still mitzulaufen (Vorgabe DS-S14-06 an die Festlegung S1.4). Was nach Schritt 3 in der Spur bleibt: dass im Fall Knoten und Kanten bestimmter Schemata zu bestimmten Zeitpunkten von bestimmten Benutzerkennungen erfasst wurden, nicht welche Werte. Ob auch der Schemaname (etwa "Person") nach der Löschung als Klartext in der Spur bleiben darf, ist eine Frage an die Festlegung zu R3-F-020 [OFFEN, Datenschutzexperte mit Software Architect] (LK-10).
+
+**Nachtrag vom 2026-11-09: Abgleich mit GS-43 (ADR 0007, Festlegung S1.4 in der nachgebesserten Fassung).** GS-43: Der Löschweg des Bestands (beziehung, entitaet, herkunft, ohne CASCADE) kommt mit R3-F-020; die Spureinträge bleiben, ihre Pseudonyme werden mit dem Fallschlüssel unumkehrbar; Schemaname, Eigenschaftsnamen, werkzeug und erhebende_person bleiben im Klartext in der Spur.
+
+| Gegenstand | Entwurf oben | GS-43 und Festlegung S1.4 | Ergebnis |
+|---|---|---|---|
+| Reihenfolge und Zeitpunkt | Schritte 1 bis 4, mit R3-F-020 | beziehung, entitaet, herkunft, mit R3-F-020 | übereinstimmend |
+| Weitergabe der Löschung | Empfehlung ausdrückliche Befehle, Fremdschlüssel ohne Weitergabe (DS-S14-06) | ohne CASCADE; Fremdschlüssel ohne ON DELETE und ON UPDATE (Zeile "Revision 0005_bestand") | übereinstimmend; Empfehlung umgesetzt |
+| Spureinträge | bleiben unverändert, Pseudonyme unumkehrbar über LW-2 | bleiben, Pseudonyme mit dem Fallschlüssel unumkehrbar | übereinstimmend |
+| Klartext in der Spur nach der Löschung | Kennungen, Schemaname, Eigenschaftsnamen, Benutzerkennung (`person_kennung`) | zusätzlich werkzeug, erhoben_am und erhebende_person (E-S14-02 a); die Abfrage als abfrage_pseudonym und abfrage_bindung | **abweichend, nachgeführt:** der Entwurf nannte diese Angaben nicht, weil die Herkunft vor der Nachbesserung nicht in der Spur stand. Nach der Löschung lesbar bleibt damit: im Fall wurde zu einem Zeitpunkt mit einem Werkzeug von einer Benutzerkennung ein Datenpunkt eines Schemas erhoben; nicht über wen und nicht wonach gesucht wurde |
+| abfrage_bindung | nicht vorgesehen | HMAC-SHA-256 mit dem Fallschlüssel über die exakten Bytes der Abfrage | nach LW-2 unumkehrbar wie ein Pseudonym; kein eigener Löschschritt nötig |
+| Spalte `herkunft.erstellt_am` | nicht genannt | neu (E-S14-06 a) | mit der Zeile gelöscht (Schritt 3) |
+| Rückweg der Revision | — | `backend/migrationen/sql/0005_bestand_rueckweg.sql` (Zeile "Revision 0005_bestand") entfernt die drei Tabellen | ist ein Migrationsweg, kein Löschweg: er ist nicht fallbezogen, schreibt keinen Grabstein und ist nicht Teil von `R3-F-020_loeschweg_vollstaendig` |
+
+**Bewertung der Abweichung.** werkzeug ist eine Kennung ohne Personenbezug; erhebende_person ist wie `person_kennung` die Zurechnung einer Handlung an Mitarbeitende (E-S1-07 a) und bleibt aus demselben Grund. Daten der betroffenen Personen bleiben nach der Löschung nicht lesbar in der Spur. Ob die Kombination aus Schemaname "Person", Werkzeug und Zeitpunkt nach der Löschung bleiben darf, wird zusammen mit dem Schemanamen in LK-10 entschieden; LK-10 ist um werkzeug, erhoben_am und erhebende_person erweitert (Abschnitt 11, Nachtrag).
+
+**Was der Löschweg zusätzlich erfassen muss (GS-38).** Am unmittelbaren Weg kann die Anwendungsrolle Datenpunkte ohne Spureintrag und in einen abgeschlossenen Fall schreiben. Der Löschweg wählt deshalb allein über `fall_kennung`, nie über die Spur oder den Zustand zur Zeit des Schreibens; Spureinträge `entitaet` oder `beziehung` ohne Datenpunkt bleiben wie jeder Spureintrag (LK-11, Nachtrag).
 
 ## 6. Grabstein-Eintrag
 
@@ -146,9 +174,11 @@ Bereits ausgeführte Exporte (5.10) liegen ausserhalb des Systems und werden von
 
 | Teil von Punkt 4 | Stand |
 |---|---|
-| Bearbeitungsverzeichnis dokumentiert | Erste Fassung mit B-01 "Fall" und B-02 "Protokollspuren" (`docs/datenschutz/bearbeitungsverzeichnis.md`); weitere Bearbeitungen folgen mit ihren Einheiten; Rechtsgrundlagen im Einzelnen offen (BV-1, BV-2) |
+| Bearbeitungsverzeichnis dokumentiert | Erste Fassung mit B-01 "Fall" und B-02 "Protokollspuren" (`docs/datenschutz/bearbeitungsverzeichnis.md`), dazu B-03 "Kanonischer Datenbestand" als Entwurf vor dem Bau von S1.4; weitere Bearbeitungen folgen mit ihren Einheiten; Rechtsgrundlagen im Einzelnen offen (BV-1, BV-2, BV-8) |
 | Löschweg getestet und Nachweis abgelegt | **nicht gebaut, nicht getestet, kein Nachweis.** Folgt mit R3-F-020 (`R3-F-020_frist_loescht_nicht`, `R3-F-020_loeschweg_vollstaendig`, `R3-F-020_loeschsperre`); Vorbedingung O-6. Der Nachweis wird unter `docs/datenschutz/` abgelegt, mit Commit-Prüfsumme des geprüften Stands |
 | Fristenwerte aus 4.4 bestätigt | **nicht bestätigt.** Startwerte als Vorschlag in `fallkategorie`; Bestätigung oder Korrektur durch die Kantonspolizei Bern im Bearbeitungsreglement (4.4, Punkt 6; 7.2) |
+
+**Nachtrag vom 2026-11-09.** Bearbeitungsverzeichnis und Löschkonzept sind auf die nachgebesserte Festlegung S1.4 nachgeführt (B-03, Nachträge A und B; Abschnitt 5, Nachtrag zu GS-43; Abschnitt 11, Nachtrag). B-03 ist damit kein Entwurf vor dem Bau mehr: S1.4 ist gebaut am 2026-11-09 und zur Abnahme vorgelegt. Punkt 4 bleibt offen: Löschweg und Nachweis folgen mit R3-F-020.
 
 ## 11. Offene Punkte
 
@@ -163,3 +193,12 @@ Bereits ausgeführte Exporte (5.10) liegen ausserhalb des Systems und werden von
 | LK-7 | Abnahmekriterien für Vier-Augen-Prinzip und Widerruf | Product Owner |
 | LK-8 | Bestätigung der Startwerte und der Zuordnung der Fallkategorien | Kantonspolizei Bern (Auftraggeber) |
 | LK-9 | Wiederaufnahme eines abgeschlossenen Falls (W1-12) | Product Owner mit GRC-Rolle |
+| LK-10 | Schemaname von FollowTheMoney (Klartext `ftm_schema` in den Einträgen `entitaet` und `beziehung`) nach der Fallöschung in der Spur (Abschnitt 5, Absatz "Bestand") | Datenschutzexperte mit Software Architect (Festlegung R3-F-020) |
+| LK-11 | Löschweg des Bestands: ausdrückliche Befehle je Tabelle statt Weitergabe über Fremdschlüssel; Abnahme von `R3-F-020_loeschweg_vollstaendig` mit einem Testfall, der Knoten, Kanten und Herkunftssätze ohne verweisenden Datensatz enthält | Software Architect (Festlegung S1.4 für die Fremdschlüssel, Festlegung R3-F-020 für den Löschweg), Product Owner |
+
+**Nachtrag vom 2026-11-09 (nachgebesserte Festlegung S1.4, GS-43).**
+
+| Nr. | Punkt | Zuständig |
+|---|---|---|
+| LK-10 | Erweitert: neben dem Schemanamen bleiben nach GS-43 auch werkzeug, erhoben_am und erhebende_person im Klartext in den Einträgen `entitaet` und `beziehung`; zu entscheiden ist, ob diese Angaben nach der Fallöschung so bleiben dürfen (Empfehlung des Datenschutzexperten: ja, weil sie keine Daten der betroffenen Personen tragen und die Kette sie bindet) | Datenschutzexperte mit Software Architect (Festlegung R3-F-020) |
+| LK-11 | Teil Fremdschlüssel erledigt mit der Festlegung S1.4 (ohne ON DELETE und ON UPDATE). Der Testfall von `R3-F-020_loeschweg_vollstaendig` enthält zusätzlich einen Datenpunkt ohne Spureintrag und einen nach dem Schliessen am unmittelbaren Weg geschriebenen Datenpunkt (GS-38) | Software Architect (Festlegung R3-F-020), Product Owner |

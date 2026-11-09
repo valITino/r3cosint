@@ -1,0 +1,47 @@
+Passport:
+  label: "Passport"
+  plural: "Passports"
+  description: >
+    A passport held by a person.
+  extends:
+    - Identification
+  matchable: false
+  featured:
+    - number
+    - country
+    - type
+    - holder
+    - startDate
+    - endDate
+  required:
+    - holder
+    - number
+  caption:
+    - passportNumber
+    - number
+  properties:
+    passportNumber:
+      label: "Passport number"
+      description: "Deprecated, use `Identification:number` instead"
+      deprecated: true
+      type: identifier
+      hidden: true
+    surname:
+      label: "Surname"
+      description: "Deprecated, use `Identification:holder` link's `lastName` instead"
+      deprecated: true
+    givenName:
+      label: "Given name"
+      description: "Deprecated, use `Identification:holder` link's `firstName` / `middleName` instead"
+      deprecated: true
+    birthDate:
+      label: "Birth date"
+      type: date
+    birthPlace:
+      label: "Place of birth"
+    gender:
+      label: "Gender"
+      type: gender
+    personalNumber:
+      label: "Personal number"
+      type: identifier

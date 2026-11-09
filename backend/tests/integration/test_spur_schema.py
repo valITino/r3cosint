@@ -253,6 +253,12 @@ async def test_R3_F_008_fremdschluessel_ueber_paketgrenzen_ohne_weitergabe(
         ("r3cosint.kettenkopf", "r3cosint.fall"),
         ("r3cosint.fall_schluessel", "r3cosint.fall"),
         ("r3cosint.fall", "r3cosint.fallkategorie"),
+        ("r3cosint.herkunft", "r3cosint.fall"),
+        ("r3cosint.entitaet", "r3cosint.fall"),
+        ("r3cosint.entitaet", "r3cosint.herkunft"),
+        ("r3cosint.beziehung", "r3cosint.fall"),
+        ("r3cosint.beziehung", "r3cosint.herkunft"),
+        ("r3cosint.beziehung", "r3cosint.entitaet"),
     } == paare
     assert all((z.confdeltype, z.confupdtype) == ("a", "a") for z in zeilen)
 
@@ -313,6 +319,9 @@ TABELLENRECHTE = {
     "fall": {"SELECT", "INSERT"},
     "fall_schluessel": {"SELECT", "INSERT"},
     "fallkategorie": {"SELECT"},
+    "herkunft": {"INSERT", "SELECT"},
+    "entitaet": {"INSERT", "SELECT"},
+    "beziehung": {"INSERT", "SELECT"},
 }
 
 
@@ -623,6 +632,9 @@ TABELLEN_RECHTE_ANWENDUNG = {
     "fall": {"INSERT", "SELECT"},
     "fall_schluessel": {"INSERT", "SELECT"},
     "fallkategorie": {"SELECT"},
+    "herkunft": {"INSERT", "SELECT"},
+    "entitaet": {"INSERT", "SELECT"},
+    "beziehung": {"INSERT", "SELECT"},
 }
 SPALTEN_RECHTE_ANWENDUNG = {
     ("fall", "geschlossen_am"),
@@ -819,6 +831,10 @@ async def test_R3_F_012_beide_rechenwege_gleich_unter_geaenderten_sitzungswerten
                 ftm_schema="Person",
                 herkunft_kennung=neue_kennung(),
                 eigenschaften={"name": ("Erfundene Person",)},
+                werkzeug="synth.werkzeug",
+                erhoben_am=fall.uhr.zeitpunkt,
+                erhebende_person="synth.erhebung",
+                abfrage="TEST-SYNTH Abfrage",
             ),
             pseudonymisierer=fall.pseudonymisierer,
             uhr=fall.uhr,

@@ -277,6 +277,7 @@ def test_R3_F_001_die_oeffentliche_schnittstelle_von_fall_nennt_die_vorgesehenen
         "Rechtsregime",
         "eroeffnen",
         "fall_lesen",
+        "fall_teilen",
         "ketten_aller_faelle_pruefen",
         "pseudonymisierer_laden",
         "schliessen",

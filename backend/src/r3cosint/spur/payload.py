@@ -16,14 +16,21 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StringConstrai
 
 from r3cosint.spur.kette import zeitpunkt_text
 
-_KONFIGURATION = ConfigDict(frozen=True, extra="forbid", strict=True)
+_KONFIGURATION = ConfigDict(
+    frozen=True, extra="forbid", strict=True, hide_input_in_errors=True
+)
 _PSEUDONYM_ETIKETT = b"r3cosint-pseudonym-1\n"
+_BINDUNG_ETIKETT = b"r3cosint-bindung-1\n"
 _SCHLUESSEL_LAENGE = 32
 _GANZZAHL_GRENZE = 2**53 - 1
 
 _Fallkategorie = Annotated[str, StringConstraints(pattern=r"^[a-z0-9_]{1,64}$")]
 _Schema = Annotated[str, StringConstraints(pattern=r"^[A-Z][A-Za-z]{0,63}$")]
-_Eigenschaftsname = Annotated[str, StringConstraints(pattern=r"^[a-z][A-Za-z]{0,63}$")]
+EIGENSCHAFTSNAME_MUSTER = r"^[a-z][A-Za-z]{0,63}$"
+"""Form eines Eigenschaftsnamens in der Nutzlast (der Architekturtest zu kanon liest sie hier)."""
+_Eigenschaftsname = Annotated[str, StringConstraints(pattern=EIGENSCHAFTSNAME_MUSTER)]
+_Werkzeug = Annotated[str, StringConstraints(pattern=r"^[a-z0-9._-]{1,64}$")]
+_Person = Annotated[str, StringConstraints(pattern=r"^[a-z0-9._-]{1,64}$")]
 _Eigenschaften = dict[
     _Eigenschaftsname, Annotated[tuple[str, ...], Field(min_length=1)]
 ]
@@ -69,6 +76,18 @@ class Pseudonymisierer:
         nachricht = _PSEUDONYM_ETIKETT + normalisieren(wert).encode("utf-8")
         return hmac.new(self._schluessel, nachricht, hashlib.sha256).hexdigest()
 
+    def bindung(self, wert: str) -> str:
+        """HMAC-SHA-256 über b"r3cosint-bindung-1\\n" + die exakten UTF-8-Bytes des Werts (DF-S14-01).
+
+        Ohne Normalisierung: eine Änderung allein der Schreibweise oder des Leerraums ergibt eine
+        andere Bindung, aber dasselbe Pseudonym. Hexadezimal klein, 64 Zeichen. Fehlerfall:
+        ValueError ohne den Wert im Text, wenn der Wert leer ist.
+        """
+        if not wert:
+            raise ValueError("Der Wert ist leer")
+        nachricht = _BINDUNG_ETIKETT + wert.encode("utf-8")
+        return hmac.new(self._schluessel, nachricht, hashlib.sha256).hexdigest()
+
 
 class FallEroeffnet(BaseModel):
     """Eingabe des Eintragstyps fall_eroeffnet (Spur arbeitsspur)."""
@@ -106,6 +125,10 @@ class Entitaet(BaseModel):
     ftm_schema: _Schema
     herkunft_kennung: UUID
     eigenschaften: _Eigenschaften
+    werkzeug: _Werkzeug
+    erhoben_am: AwareDatetime
+    erhebende_person: _Person
+    abfrage: str = Field(min_length=1, repr=False)
 
 
 class Beziehung(BaseModel):
@@ -121,6 +144,10 @@ class Beziehung(BaseModel):
     quelle_kennung: UUID
     ziel_kennung: UUID
     eigenschaften: _Eigenschaften
+    werkzeug: _Werkzeug
+    erhoben_am: AwareDatetime
+    erhebende_person: _Person
+    abfrage: str = Field(min_length=1, repr=False)
 
 
 Eingabe = FallEroeffnet | FallGeschlossen | Entitaet | Beziehung
@@ -175,13 +202,28 @@ def _eigenschaften(
     }
 
 
+def _herkunft_felder(
+    eingabe: "Entitaet | Beziehung", pseudonymisierer: Pseudonymisierer
+) -> dict[str, object]:
+    """Die Herkunftsfelder der Nutzlast: Klartext für Werkzeug, Zeit und Person, Abfrage gebunden."""
+    return {
+        "werkzeug": eingabe.werkzeug,
+        "erhoben_am": zeitpunkt_text(eingabe.erhoben_am),
+        "erhebende_person": eingabe.erhebende_person,
+        "abfrage_pseudonym": pseudonymisierer.pseudonym(eingabe.abfrage),
+        "abfrage_bindung": pseudonymisierer.bindung(eingabe.abfrage),
+    }
+
+
 def nutzlast_bilden(eingabe: Eingabe, pseudonymisierer: Pseudonymisierer) -> str:
     """Bildet den gespeicherten Text der Nutzlast (Nr. 17).
 
     Klartext bleibt für Kennungen, rechtsregime, fallkategorie, ftm_schema, Eigenschaftsnamen
     und Zeitpunkte; aktenzeichen, rechtsgrundlage, ermittelnde_person, ftm_kennung und jeder
     Eigenschaftswert werden zu Feldern mit der Endung _pseudonym (Eigenschaftswerte als
-    aufsteigend sortierte Liste, Doppel bleiben). Kein Wert des Klartexts gelangt in den
+    aufsteigend sortierte Liste, Doppel bleiben). Entitaet und Beziehung tragen zusätzlich werkzeug,
+    erhoben_am und erhebende_person im Klartext (Kennung, Zeitpunkt, Benutzerkennung) sowie
+    abfrage_pseudonym und abfrage_bindung (Festlegung S1.4, DF-S14-01). Kein Wert des Klartexts gelangt in den
     Rückgabetext. Fehlerfall: ValueError bei leerem Wert oder Zeit ausserhalb des Bereichs.
     """
     wert: dict[str, object]
@@ -221,6 +263,7 @@ def nutzlast_bilden(eingabe: Eingabe, pseudonymisierer: Pseudonymisierer) -> str
                 "eigenschaften": _eigenschaften(
                     eingabe.eigenschaften, pseudonymisierer
                 ),
+                **_herkunft_felder(eingabe, pseudonymisierer),
             }
         case Beziehung():
             wert = {
@@ -236,5 +279,6 @@ def nutzlast_bilden(eingabe: Eingabe, pseudonymisierer: Pseudonymisierer) -> str
                 "eigenschaften": _eigenschaften(
                     eingabe.eigenschaften, pseudonymisierer
                 ),
+                **_herkunft_felder(eingabe, pseudonymisierer),
             }
     return kanonisch_serialisieren(wert)

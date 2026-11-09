@@ -181,7 +181,8 @@ async def test_R3_F_001_kein_klartext_in_den_spuren_und_pseudonym_nachgerechnet(
             for z in await verbindung_anwendung.execute(
                 text(
                     "SELECT tablename FROM pg_tables WHERE schemaname = 'r3cosint' AND "
-                    "tablename NOT IN ('fall','fallkategorie','fall_schluessel','alembic_version')"
+                    "tablename NOT IN ('fall','fallkategorie','fall_schluessel','alembic_version',"
+                    "'herkunft','entitaet','beziehung')"
                 )
             )
         ]

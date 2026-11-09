@@ -12,7 +12,8 @@
 # Die Verträge 4 und 8 (Schreibverträge, ADR 0007, Verträge; Einheit S1.2) zählen die 13 obersten
 # Pakete ausser spur beziehungsweise fall als Quellen: nur dieses Paket darf seine Table-Objekte
 # und seinen Store importieren (fall.store seit S1.3); Vertrag 9 ordnet die Schichten
-# kanon über fall über spur über core. Der Vertrag 5 (Bestand) entsteht mit S1.4.
+# kanon über fall über spur über core. Der Vertrag 5 (Bestand, ADR 0007, Festlegung S1.4; Einheit S1.4) zählt die 13 obersten Pakete
+# ausser kanon als Quellen: nur kanon darf seine Table-Objekte und seinen Store importieren.
 
 [tool.importlinter]
 root_packages = ["r3cosint"]
@@ -223,3 +224,27 @@ layers = [
     "r3cosint.spur",
     "r3cosint.core",
 ]
+
+[[tool.importlinter.contracts]]
+name = "Vertrag 5 (R3-F-005): ausser kanon schreibt kein Modul in den Bestand"
+type = "forbidden"
+source_modules = [
+    "r3cosint.core",
+    "r3cosint.spur",
+    "r3cosint.fall",
+    "r3cosint.zugriff",
+    "r3cosint.freigabe",
+    "r3cosint.beschaffung",
+    "r3cosint.ausgang",
+    "r3cosint.fremd",
+    "r3cosint.llm",
+    "r3cosint.graph",
+    "r3cosint.export",
+    "r3cosint.api",
+    "r3cosint.mcpsrv",
+]
+forbidden_modules = [
+    "r3cosint.kanon.tables",
+    "r3cosint.kanon.store",
+]
+allow_indirect_imports = true

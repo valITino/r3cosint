@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 pytestmark = pytest.mark.anyio
 
 MIGRATIONEN = Path(__file__).resolve().parents[2] / "migrationen"
-KOPF = "0004"
+KOPF = "0005"
 AlembicBefehl = Callable[[Datenbankverbindung, str, str | None], Awaitable[None]]
 
 
@@ -204,7 +204,7 @@ async def test_R3_F_001_revision_0004_hin_und_zurueck_legt_den_ausloeser_an_und_
     alembic_befehl: AlembicBefehl,
 ) -> None:
     eigentuemer = datenbank.verbindung("r3cosint_eigentuemer")
-    assert await _version(verbindung_eigentuemer) == ["0004"]
+    assert await _version(verbindung_eigentuemer) == [KOPF]
     assert await _ausloeser_und_funktion(verbindung_eigentuemer) == (1, 1)
     await verbindung_eigentuemer.rollback()
 
@@ -214,8 +214,30 @@ async def test_R3_F_001_revision_0004_hin_und_zurueck_legt_den_ausloeser_an_und_
     await verbindung_eigentuemer.rollback()
 
     await alembic_befehl(eigentuemer, "upgrade", "head")
-    assert await _version(verbindung_eigentuemer) == ["0004"]
+    assert await _version(verbindung_eigentuemer) == [KOPF]
     assert await _ausloeser_und_funktion(verbindung_eigentuemer) == (1, 1)
+
+
+async def test_R3_F_003_revision_0005_hin_und_zurueck_legt_die_tabellen_des_bestands_an_und_entfernt_sie(
+    datenbank: "Testdatenbank",
+    verbindung_eigentuemer: AsyncConnection,
+    alembic_befehl: AlembicBefehl,
+) -> None:
+    eigentuemer = datenbank.verbindung("r3cosint_eigentuemer")
+    bestand = {"herkunft", "entitaet", "beziehung"}
+    assert await _version(verbindung_eigentuemer) == ["0005"]
+    assert bestand <= set(await _tabellen(verbindung_eigentuemer))
+    await verbindung_eigentuemer.rollback()
+
+    await alembic_befehl(eigentuemer, "downgrade", "0004")
+    assert await _version(verbindung_eigentuemer) == ["0004"]
+    assert not bestand & set(await _tabellen(verbindung_eigentuemer))
+    assert await _ausloeser_und_funktion(verbindung_eigentuemer) == (1, 1)
+    await verbindung_eigentuemer.rollback()
+
+    await alembic_befehl(eigentuemer, "upgrade", "head")
+    assert await _version(verbindung_eigentuemer) == ["0005"]
+    assert bestand <= set(await _tabellen(verbindung_eigentuemer))
 
 
 async def test_R3_F_008_ein_zweiter_lauf_bis_kopf_aendert_nichts(

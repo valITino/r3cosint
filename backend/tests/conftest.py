@@ -901,6 +901,10 @@ def eintraege_schreiben(
                             ftm_schema="Person",
                             herkunft_kennung=neue_kennung(),
                             eigenschaften={"name": (f"Erfundene Person {nr}",)},
+                            werkzeug="synth.werkzeug",
+                            erhoben_am=fall.uhr.zeitpunkt,
+                            erhebende_person="synth.erhebung",
+                            abfrage="TEST-SYNTH Abfrage",
                         )
                     eintraege.append(
                         await anfuegen(
@@ -921,10 +925,17 @@ def eintraege_schreiben(
 
 _ANWEISUNG = re.compile(
     r"^\s*(insert\s+into|update|delete\s+from)\s+r3cosint\."
-    r"(ermittlungsspur|arbeitsspur|kettenkopf)\b",
+    r"(ermittlungsspur|arbeitsspur|kettenkopf|herkunft|entitaet|beziehung)\b",
     re.IGNORECASE,
 )
-_MANIPULIERTE_TABELLEN = ("ermittlungsspur", "arbeitsspur", "kettenkopf")
+_MANIPULIERTE_TABELLEN = (
+    "ermittlungsspur",
+    "arbeitsspur",
+    "kettenkopf",
+    "herkunft",
+    "entitaet",
+    "beziehung",
+)
 
 
 @pytest.fixture
@@ -936,9 +947,10 @@ def manipulieren(
     Aufruf: await manipulieren(sql, bedingungen_entfernen=("name", ...)). Öffnet eine Transaktion,
     setzt allein SET LOCAL session_replication_role = replica (wirkt in
     dieser Transaktion, danach origin; GS-2) und führt den Text aus. Angenommen werden allein
-    INSERT, UPDATE und DELETE auf r3cosint.ermittlungsspur, r3cosint.arbeitsspur und
-    r3cosint.kettenkopf, geprüft am Anfang jeder Anweisung; anderes weist die Hilfe vor jeder
-    Ausführung mit ValueError ab. Benannte Prüf- oder UNIQUE-Bedingungen dieser drei Tabellen
+    INSERT, UPDATE und DELETE auf r3cosint.ermittlungsspur, r3cosint.arbeitsspur,
+    r3cosint.kettenkopf, r3cosint.herkunft, r3cosint.entitaet und r3cosint.beziehung, geprüft am
+    Anfang jeder Anweisung; anderes weist die Hilfe vor jeder
+    Ausführung mit ValueError ab. Benannte Prüf- oder UNIQUE-Bedingungen dieser sechs Tabellen
     werden (nach Abgleich der Namen mit dem Katalog) in der Datenbank des Tests entfernt.
     Rückgabe: der Wert von SHOW session_replication_role, den dieselbe Verbindung nach dem
     Ende der Transaktion in einer neuen Transaktion liest (erwartet: origin).
@@ -949,8 +961,8 @@ def manipulieren(
         for anweisung in anweisungen:
             if _ANWEISUNG.match(anweisung) is None:
                 raise ValueError(
-                    "manipulieren nimmt allein INSERT, UPDATE und DELETE auf die Spuren "
-                    "und den Kettenkopf an"
+                    "manipulieren nimmt allein INSERT, UPDATE und DELETE auf die Spuren, "
+                    "den Kettenkopf und den Bestand an"
                 )
         async with _superuser(datenbank) as verbindung:
             async with verbindung.begin():

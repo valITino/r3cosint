@@ -4,10 +4,10 @@
 |---|---|
 | **Arbeitsprodukt** | Bearbeitungsverzeichnis nach Projektauftrag 4.2 (Rolle Datenschutzexperte) und 4.4 ("Zweckbindung, Bearbeitungsverzeichnis, Aufbewahrung"); Teil von Punkt 4 der Bereitschaftsliste (5.16: "Bearbeitungsverzeichnis dokumentiert, Löschweg getestet und Nachweis abgelegt, Fristenwerte aus 4.4 bestätigt") |
 | **Verantwortlich** | Datenschutzexperte |
-| **Stand** | 2026-11-09, zur Baueinheit S1.3 (Fall, R3-F-001) nach ADR 0007, Zerlegung, Zeile S1.3; nachgeführt auf den gebauten, nicht abgenommenen Stand von S1.3 (ADR 0007, "Gebauter Stand S1.3") |
-| **Status** | Erste Fassung. Erfasst sind die Bearbeitungen, die der gebaute Stand trägt (Revisionen 0002_fall und 0003_spur, Modul spur) und die S1.3 in Betrieb nimmt. Weitere Bearbeitungen kommen mit ihren Einheiten hinzu (Abschnitt 4) |
-| **Geltung** | Umgebung Test/Schulung mit ausschliesslich synthetischen Daten (5.6, 5.16). Über den Harness laufen zu keinem Zeitpunkt echte Fall- oder Personendaten (5.15); dieses Dokument enthält keine, auch nicht als Beispiel. Für die Produktion gilt es erst nach Bestätigung der offenen Punkte (Abschnitt 5) |
-| **Grundlage** | Projektauftrag 4.4 (Prioritätsordnung, Aufbewahrung und Löschung), 5.3, 5.8, 5.10, 5.12, 5.15, 5.16; `.claude/rules/recht-und-datenschutz.md`; ADR 0007 (Entscheide 13, 17, 22, 23, 26, 27; E-S1-06, E-S1-07, E-S1-09, E-S1-10, E-S1-11; Grenzen GS-1, GS-5, GS-7, GS-20); Backlog R3-F-001, R3-F-011, R3-F-020; Glossar (Fall, Fallkategorie, Rechtsregime, Aktenzeichen, Prüffrist, Löschweg, Grabstein-Eintrag) |
+| **Stand** | 2026-11-09, zur Baueinheit S1.3 (Fall, R3-F-001) nach ADR 0007, Zerlegung, Zeile S1.3, abgenommen mit dem Merge des Pull Requests #55 am 2026-11-09 (Angabe des Koordinators, Fremdbeleg); ergänzt am 2026-11-09 um die Bearbeitung B-03 "Kanonischer Datenbestand" als Entwurf vor dem Bau der Einheit S1.4 (ADR 0007, Zerlegung, Zeile S1.4: "Datenschutzexperte (Personendaten im Bestand)"); nachgeführt am 2026-11-09 auf die nachgebesserte Festlegung S1.4 und um die Erhebung DS-S14-08 (B-03, Nachträge A und B) |
+| **Status** | Erste Fassung. Erfasst sind die Bearbeitungen, die der gebaute Stand trägt (Revisionen 0002_fall, 0003_spur und 0004_fall_uebergang, Module spur und fall) und, als Entwurf mit dem Stand "festgelegt, nicht gebaut", der kanonische Datenbestand aus S1.4 (Abschnitt 4; Nachtrag vom 2026-11-09: gebaut am 2026-11-09, zur Abnahme vorgelegt). Weitere Bearbeitungen kommen mit ihren Einheiten hinzu (Abschnitt 5) |
+| **Geltung** | Umgebung Test/Schulung mit ausschliesslich synthetischen Daten (5.6, 5.16). Über den Harness laufen zu keinem Zeitpunkt echte Fall- oder Personendaten (5.15); dieses Dokument enthält keine, auch nicht als Beispiel. Für die Produktion gilt es erst nach Bestätigung der offenen Punkte (Abschnitt 6) |
+| **Grundlage** | Projektauftrag 4.4 (Prioritätsordnung, Aufbewahrung und Löschung), 5.3, 5.4, 5.8, 5.10, 5.12, 5.15, 5.16; `.claude/rules/recht-und-datenschutz.md`; ADR 0007 (Entscheide 9, 13, 17, 22, 23, 24, 25, 26, 27; E-S1-06, E-S1-07, E-S1-09, E-S1-10, E-S1-11, E-S1-12, E-S1-13, E-S1-15; Grenzen GS-1, GS-5, GS-6, GS-7, GS-20); Backlog R3-F-001, R3-F-003, R3-F-005, R3-F-011, R3-F-020; Glossar (Fall, Fallkategorie, Rechtsregime, Aktenzeichen, Prüffrist, Löschweg, Grabstein-Eintrag, Entität, Datenpunkt, Herkunftsnachweis, Klardaten, Kanonischer Datenbestand) |
 | **Zugehörig** | Löschkonzept (Entwurf): `docs/datenschutz/loeschkonzept.md` |
 
 ## Leseanleitung
@@ -37,8 +37,8 @@
 | **Datensammlung** | Tabellen `fall`, `fallkategorie` und `fall_schluessel` im Schema r3cosint (Revision 0002_fall; ADR 0007, Entscheid 22). Dienstschicht `fall.service` mit den Vorgängen eröffnen und schliessen (Baueinheit S1.3; ADR 0007, Entscheid 23) |
 | **Zweck** | Jeder Ermittlungsschritt wird einem Verfahren und einer Person zugeordnet (Verfahrensgarantie Fallbindung, 5.4; R3-F-001), und für jeden Fall bleibt bestimmbar, welche Löschregel gilt: Der Fall trägt sein Rechtsregime ab der Eröffnung (4.4, "Warum die Aufteilung an der Spitze wichtig ist") und seine Fallkategorie, aus der die Prüffrist abgeleitet wird (4.4, Punkt 3b). Weitere Zwecke sind nicht vorgesehen; eine Auswertung der Falldaten über Fälle hinweg ist nicht Gegenstand (ADR 0007, E-S1-12) |
 | **Rechtsgrundlage** | Je Fall nach dem Feld `rechtsregime`: **R1** StPO (Bund) für Daten innerhalb eines hängigen Strafverfahrens, wo das kantonale Datenschutzgesetz ausdrücklich nicht anwendbar ist; **R2** PolG/BE, BSG 551.1, für polizeiliche Datenbearbeitung ausserhalb eines hängigen Verfahrens (4.4, Tabelle; ADR 0007, E-S1-09 a; Glossar, Rechtsregime). **R3** KDSG, BSG 152.04, gilt subsidiär als allgemeiner kantonaler Rahmen (Verhältnismässigkeit, Zweckbindung, gesetzliche Grundlage, Vernichtung nicht mehr benötigter Daten). R4 (Schengen-relevante Bearbeitung) ist Eigenschaft einer Bearbeitung, nicht Regime eines Falls; ob und wann sie greift, ist [OFFEN, GRC-Rolle]. R5 (Archivierung) betrifft die Phase nach dem Betriebszweck (Zustand "Archiviert", Löschkonzept Abschnitt 2). Die Bestimmungen, die das Führen einer Fallverwaltung in R1 und R2 tragen, und die Artikelnummern der geltenden KDSG-Fassung erarbeitet die GRC-Rolle [OFFEN]. revDSG: nicht herangezogen. DSGVO: Anwendbarkeit [OFFEN], nicht unterstellt |
-| **Betroffene Personen** | (a) Mitarbeitende der Kantonspolizei Bern als ermittelnde Person eines Falls. (b) Mittelbar Personen des Verfahrens, auf das das Aktenzeichen verweist; die Tabelle `fall` führt keine Angaben zu ihnen, das Aktenzeichen ist aber ein Schlüssel zum Verfahren ausserhalb von R3cOSINT. Angaben zu Personen im Fall (Namen, Adressen, Telefonnummern) entstehen erst mit dem Bestand (S1.4, Abschnitt 4) |
-| **Empfänger** | In Sprint 1 keine Schnittstelle: keine HTTP-Endpunkte, die Fachlogik ist allein über die Dienstschicht erreichbar (ADR 0007, Entscheid 27). Keine Übermittlung an Dritte, kein Rückkanal (5.4). Im Betrieb: Angehörige des Dezernats nach dem gesetzten Zugriffsmodell auf Dezernatsebene, darüber wirkend Klassifizierung und fallbezogene Freigabeliste (5.8); der Administrator erhält keinen fachlichen Zugriff, nur weil er Administrator ist (5.8). Jeder lesende Zugriff auf einen Fall wird protokolliert (5.8); gebaut ist das nicht (Abschnitt 4) |
+| **Betroffene Personen** | (a) Mitarbeitende der Kantonspolizei Bern als ermittelnde Person eines Falls. (b) Mittelbar Personen des Verfahrens, auf das das Aktenzeichen verweist; die Tabelle `fall` führt keine Angaben zu ihnen, das Aktenzeichen ist aber ein Schlüssel zum Verfahren ausserhalb von R3cOSINT. Angaben zu Personen im Fall (Namen, Adressen, Telefonnummern) entstehen erst mit dem Bestand (S1.4, Bearbeitung B-03, Abschnitt 4) |
+| **Empfänger** | In Sprint 1 keine Schnittstelle: keine HTTP-Endpunkte, die Fachlogik ist allein über die Dienstschicht erreichbar (ADR 0007, Entscheid 27). Keine Übermittlung an Dritte, kein Rückkanal (5.4). Im Betrieb: Angehörige des Dezernats nach dem gesetzten Zugriffsmodell auf Dezernatsebene, darüber wirkend Klassifizierung und fallbezogene Freigabeliste (5.8); der Administrator erhält keinen fachlichen Zugriff, nur weil er Administrator ist (5.8). Jeder lesende Zugriff auf einen Fall wird protokolliert (5.8); gebaut ist das nicht (Abschnitt 5) |
 | **Aufbewahrung** | Nichts wird automatisch gelöscht, aber kein Fall bleibt ohne Entscheid (4.4, Punkt 1). Die Prüffrist beginnt mit dem Schliessen, nie mit der Eröffnung; `prueffrist_bis` = `geschlossen_am` plus `erste_pruefung_monate` der Fallkategorie in Kalendermonaten, beim Schliessen festgeschrieben (ADR 0007, Entscheid 23, E-S1-11 a). Die Werte je Fallkategorie sind Daten der Tabelle `fallkategorie`, keine Konstante im Code; die Startwerte aus 4.4, Punkt 3, sind betriebliche Voreinstellungen zur Bestätigung durch die Kantonspolizei Bern, keine rechtliche Festlegung (Löschkonzept Abschnitt 3). Ihr Erreichen löst eine Aufgabe aus, nie eine Löschung |
 | **Löschweg** | Folgt mit R3-F-020 (Löschkonzept Abschnitte 5 bis 7). Festgelegt ist die Richtung (ADR 0007, E-S1-06 b und Entscheid 22): Der Löschweg leert `aktenzeichen`, `ermittelnde_person` und `rechtsgrundlage` in `fall` (die Prüfbedingung verlangt sie nur, solange `zustand` nicht `geloescht` ist), löscht die Zeile in `fall_schluessel` und lässt die Spuren unberührt; es bleibt ein Grabstein-Eintrag. In Sprint 1 gibt es keinen Löschweg: die Anwendungsrolle hat kein DELETE und kein Änderungsrecht auf diese Spalten (Revision 0002_fall), der Zustand `geloescht` ist nicht erreichbar. Punkt 4 der Bereitschaftsliste ist damit offen |
 
@@ -75,12 +75,12 @@
 
 ### 2.3 Stand der Umsetzung B-01
 
-Stand 2026-11-09: S1.3 gebaut, nicht abgenommen.
+Stand 2026-11-09: S1.3 gebaut und abgenommen mit dem Merge des Pull Requests #55 am 2026-11-09 (Angabe des Koordinators, Fremdbeleg).
 
 | Teil | Stand |
 |---|---|
 | Schema `fall`, `fallkategorie` mit Startwerten, `fall_schluessel` | gebaut (Revision 0002_fall, abgenommen mit S1.2) |
-| Eröffnen und Schliessen mit Einträgen in der Arbeitsspur | gebaut am 2026-11-09 (Baueinheit S1.3: `fall.eingabe`, `fall.store`, `fall.service`, Revision 0004_fall_uebergang), zur Abnahme vorgelegt mit dem Pull Request der Einheiten D24 und S1.3; nicht abgenommen |
+| Eröffnen und Schliessen mit Einträgen in der Arbeitsspur | gebaut am 2026-11-09 (Baueinheit S1.3: `fall.eingabe`, `fall.store`, `fall.service`, Revision 0004_fall_uebergang), abgenommen mit dem Merge des Pull Requests #55 am 2026-11-09 |
 | Erreichbare Zustände | allein aktiv und abgeschlossen (ADR 0007, Entscheid 22) |
 | Person | bis zur Anmeldung (Etappe 3) ein Parameter des Aufrufs, keine Authentifizierung (Grenze GS-1) |
 | Prüfung fällig, Aufgabe, Verlängerung, Löschsperre, Löschweg, Grabstein | nicht gebaut, R3-F-020 |
@@ -103,20 +103,196 @@ Nur so weit, wie der gebaute Stand sie trägt (Revision 0003_spur, Modul spur; a
 
 **Grenzen der Bearbeitung B-02**, soweit sie den Datenschutz berühren: Normalisierung vor dem Pseudonym ist allgemein, verschiedene Quellwerte gleicher Normalform ergeben dasselbe Pseudonym (GS-7); gegen den Superuser der Instanz hält kein Mittel in der Datenbank (GS-2); eine Kettenprüfung schreibt keinen Eintrag (GS-16).
 
-## 4. Noch nicht erfasste Bearbeitungen
+**Nachtrag vom 2026-11-09 (Festlegung S1.4, E-S14-02 a).** Die Einträge `entitaet` und `beziehung` tragen ab dem Bau von S1.4 zusätzlich werkzeug (Kennungsform), erhoben_am (Zeitpunkt) und erhebende_person (Benutzerkennung) im Klartext sowie die Abfrage allein als abfrage_pseudonym und abfrage_bindung (beide HMAC-SHA-256 mit dem Fallschlüssel). Damit führt B-02 neben `person_kennung` eine zweite Benutzerkennung je Eintrag (wer erhoben hat, getrennt von wer abgelegt hat, E-S14-13 a); beide sind Zurechnung an Mitarbeitende, keine Falldaten. Einzelheiten: B-03, Nachtrag A.
+
+## 4. Bearbeitung B-03 "Kanonischer Datenbestand (Entitäten und Beziehungen nach FollowTheMoney) mit Herkunftsnachweis"
+
+**Stand: festgelegt, nicht gebaut.** Entwurf vor dem Bau der Einheit S1.4 (R3-F-003, R3-F-005) nach ADR 0007, Entscheide 24 bis 26 und Zerlegung, Zeile S1.4. Bezeichner sind die der Festlegung (künftige Tabellen `herkunft`, `entitaet`, `beziehung` im Schema r3cosint, Revision 0005, Modul kanon); bis zum Bau besteht keine dieser Tabellen. Am gebauten Stand wird dieser Abschnitt nachgeführt.
+
+**Nachtrag vom 2026-11-09 (Stand):** S1.4 ist gebaut am 2026-11-09 und zur Abnahme vorgelegt mit dem Pull Request der Einheiten D25 und S1.4 (ADR 0007, "Gebauter Stand S1.4"; Angabe des Koordinators, Fremdbeleg). Die Revision 0005_bestand mit `herkunft`, `entitaet` und `beziehung` besteht; abgenommen ist sie erst mit dem Merge dieses Pull Requests. Wo der Text dieses Abschnitts "festgelegt, nicht gebaut" sagt, gilt dieser Stand; Abweichungen der Festlegung gegen den Entwurf: Nachtrag A.
+
+| Feld | Angabe |
+|---|---|
+| **Kennung** | B-03 |
+| **Datensammlung** | Tabellen `herkunft`, `entitaet` (Knotenschemata von FollowTheMoney) und `beziehung` (Kantenschemata) im Schema r3cosint (ADR 0007, Entscheide 24 und 25; Revision 0005). Einziger Schreibweg ist die Dienstschicht `kanon.service` (Vertrag 5); je geschriebenem Knoten und je Kante ein Eintrag `entitaet` beziehungsweise `beziehung` in der Ermittlungsspur (Bearbeitung B-02) |
+| **Zweck** | Quellergebnisse eines Falls in ein einheitliches Modell überführen, damit sie quellenübergreifend verknüpft und dargestellt werden können, ohne dass die Herkunft verloren geht (5.1, "Warum Ebene 2 entscheidend ist"; R3-F-003), und für jeden Knoten und jede Kante belegen, aus welcher Quelle er stammt, wann und von wem er erhoben wurde (Verfahrensgarantie "Herkunft an jedem Datenpunkt", 5.4; R3-F-005; Glossar, Herkunftsnachweis). Jeder Datensatz gehört genau einem Fall (E-S1-12 a); eine Zusammenführung oder Auswertung über Fälle hinweg ist nicht Gegenstand. Die Bewertung bleibt bei der ermittelnden Person (1.1, "Was R3cOSINT ausdrücklich nicht ist") |
+| **Rechtsgrundlage** | Über den Fall: Jeder Datensatz trägt `fall_kennung` und folgt dem Rechtsregime des Falls (B-01): **R1** StPO innerhalb eines hängigen Strafverfahrens, **R2** PolG/BE, BSG 551.1, ausserhalb; **R3** KDSG, BSG 152.04, subsidiär (4.4, Tabelle). Die Bestimmungen, die das Erheben und Verknüpfen von Personendaten aus offenen Quellen in R1 und R2 tragen, sind nicht Gegenstand der Konformitätsanalyse zu F-01 und bleiben [OFFEN, GRC-Rolle mit Gegenprüfung Legal Reviewer] (BV-8). Die Zulässigkeit einer einzelnen Erhebung entscheidet die Rechtsgrundlage im Einzelfall, nicht das Werkzeug (`.claude/rules/recht-und-datenschutz.md`). revDSG: nicht herangezogen. DSGVO: Anwendbarkeit [OFFEN], nicht unterstellt (BV-2) |
+| **Betroffene Personen** | (a) Personen, zu denen ein Fall Angaben führt: beschuldigte Personen, Geschädigte, Zeugen, Kontaktpersonen und Dritte, die in einem Quellergebnis vorkommen; auch Unbeteiligte, wenn ein Quellergebnis sie nennt. (b) Mitarbeitende als erhebende Person je Herkunftssatz |
+| **Empfänger** | In Sprint 1 keine Schnittstelle: keine HTTP-Endpunkte; zugänglich allein über die Dienstschicht unter der Datenbankrolle der Anwendung (`r3cosint_anwendung`: an `herkunft`, `entitaet`, `beziehung` allein INSERT und SELECT, kein UPDATE, kein DELETE; ADR 0007, Nr. 9 und 27). Keine Übermittlung an Dritte, kein Rückkanal (5.4). Im Betrieb: Angehörige des Dezernats nach dem gesetzten Zugriffsmodell (5.8), darüber wirkend Klassifizierung und fallbezogene Freigabeliste je Entität (5.8; Glossar, Klassifizierungsberechtigung); dokumentiert, nicht bewertet. Der Export (5.10) ist nicht gebaut; was exportiert ist, liegt ausserhalb jeder Löschung (Löschkonzept Abschnitt 9) |
+| **Aufbewahrung** | Über den Fall: Der Bestand folgt dem Zustand und der Fallkategorie seines Falls (B-01; Löschkonzept Abschnitte 2 und 3). Kein eigener Fristlauf je Entität; nichts wird automatisch gelöscht, eine Frist löst eine Aufgabe aus (4.4, Punkt 1) |
+| **Löschweg** | Folgt mit R3-F-020. Entwurf der Reihenfolge und Wirkung: Löschkonzept, Abschnitt 5, Absatz "Bestand" (LW-3): `beziehung`, dann `entitaet`, dann `herkunft` je Fall; die Einträge `entitaet` und `beziehung` der Ermittlungsspur bleiben, ihre Pseudonyme werden mit dem Vernichten des Fallschlüssels unumkehrbar (E-S1-06 b). In Sprint 1 gibt es keinen Löschweg: die Anwendungsrolle hat an diesen Tabellen kein DELETE (Nr. 9) |
+
+### 4.1 Datenkategorien je Spalte
+
+| Tabelle, Spalte | Inhalt | Personenbezug | In der Ermittlungsspur | Nach der Löschung (Entwurf, R3-F-020) |
+|---|---|---|---|---|
+| `entitaet.eigenschaften`, `beziehung.eigenschaften` | Eigenschaftswerte nach dem Schema von FollowTheMoney (jsonb): Namen, Adressen, Telefonnummern, E-Mail-Adressen, Kennungen wie Konten, Ausweis- oder Registernummern, Geburtsdaten und weitere Eigenschaften, die das Schema führt | ja, Kern der Bearbeitung; je nach Eigenschaft besonders schützenswert (Risiken R-1) | allein als Pseudonym je Wert (Liste der Pseudonyme, ADR 0007, Nr. 17 und 26; Festlegung S1.2, Zeile "spur.payload, Nutzlast"); Eigenschaftsnamen im Klartext | Zeile gelöscht |
+| `entitaet.ftm_kennung`, `beziehung.ftm_kennung` | Kennung des Datensatzes nach FollowTheMoney; kann aus Namen gebildet sein | möglich | allein als Pseudonym `ftm_kennung_pseudonym` | Zeile gelöscht |
+| `entitaet.schema`, `beziehung.schema` | Schema von FollowTheMoney (geschlossener Vorrat der Bibliothek, etwa Person, Firma) | keiner; sagt aber, ob ein Knoten eine Person ist | Klartext `ftm_schema` (Nr. 17) | Zeile gelöscht; in der Spur bleibt der Schemaname |
+| `beziehung.quelle_kennung`, `beziehung.ziel_kennung` | Verweis auf zwei Entitäten desselben Falls | mittelbar: die Kante verknüpft Personen (Risiken R-2) | Klartext (Kennungen) | Zeile gelöscht; in der Spur bleiben Kennungen ohne Ziel |
+| `entitaet.kennung`, `beziehung.kennung`, `herkunft_kennung`, `erstellt_am`, `fall_kennung` | Vom System vergebene Kennungen (uuid), Zeitpunkte, Fallbindung | keiner | Klartext | Zeile gelöscht; in der Spur bleiben die Kennungen |
+| `herkunft.werkzeug` | Werkzeug als Text in Kennungsform (Kleinbuchstaben, Ziffern, Punkt, Unterstrich, Bindestrich, 1 bis 64 Zeichen; Nr. 25; GS-6) | keiner | nein (der Eintrag trägt allein `herkunft_kennung`) | Zeile gelöscht |
+| `herkunft.abfrage` | Abfrage, aus der der Datensatz stammt, Text bis 4096 Zeichen (Nr. 25) | **ja, in der Regel**: der Suchbegriff ist oft gerade ein Name, eine Adresse oder eine Telefonnummer; zugleich ist die Abfrage der Nachweis, was wann abgefragt wurde (5.2, 5.3) | nein; darf auch künftig nur als Pseudonym in eine Spur (DS-S14-03) | Zeile gelöscht |
+| `herkunft.zeitpunkt` | Zeitpunkt der Erhebung in UTC | keiner | nein | Zeile gelöscht |
+| `herkunft.erhebende_person` | Wer erhoben hat, als Benutzerkennung ohne Namen, Form der Benutzerkennung (Nr. 25; E-S1-07 a) | ja (Mitarbeitende) | nein; die Zurechnung trägt `person_kennung` des Spureintrags | Zeile gelöscht; die Zurechnung bleibt über `person_kennung` in der Spur (E-S1-07 a) |
+| `herkunft.kennzeichnung` | Quellenaussage oder Schlussfolgerung (Nr. 25 wie Nr. 13) | keiner | Klartext als Spalte des Eintrags | Zeile gelöscht |
+
+**Klartext im Bestand, nicht im Protokoll (Nr. 26).** Die Eigenschaftswerte, die Kennung nach FollowTheMoney und der Abfragetext liegen allein im Bestand im Klartext; die Ermittlungsspur trägt Kennungen, Schemanamen, Eigenschaftsnamen und Pseudonyme (HMAC-SHA-256 mit dem Schlüssel des Falls, E-S1-06 b). Gleiche Werte ergeben innerhalb des Falls gleiche Pseudonyme, zwischen Fällen verschiedene; die Spur lässt damit innerhalb eines Falls erkennen, dass ein Wert mehrfach vorkommt, nicht welcher (GS-7).
+
+**Bewertung der Spalte `abfrage` (Frage des Koordinators zu S1.4).** Die Abfrage ist ein Falldatum gleicher Art wie die Eigenschaftswerte: Sie trägt regelmässig Personendaten und ist zugleich der Kern des Herkunftsnachweises (wer hat wann womit wonach gesucht; 5.3 verlangt für die Arbeitsspur "jede Abfrage mit Werkzeug und Parametern"). Ein Pseudonym im Bestand machte den Herkunftsnachweis für Akte, Verteidigung und Gericht unlesbar und hätte keinen Gewinn gegenüber den Eigenschaftswerten daneben, die im selben Datensatz im Klartext stehen. **Empfehlung: Klartext im Bestand ist zulässig**, als Falldatum mit vier Bedingungen: nie im Klartext in einer Spur, in Fehlertexten oder Diagnoseausgaben (DS-S14-01, DS-S14-03); vom Löschweg erfasst wie die Eigenschaftswerte (LW-3); im Abnahmetest von R3-F-011 als Klartextwert des Testfalls mitgesucht (DS-S14-04); Verschlüsselung mit dem Schlüssel je Fall zusammen mit den übrigen Falldaten unter O-6 (BV-7). Weil Nr. 25 den Klartext schon festlegt, ist das keine Vorlage an den Auftraggeber; eine Pseudonymisierung wäre eine Abweichung von Nr. 25 und dann eine Fortschreibung mit Vorlage.
+
+### 4.2 Risiken
+
+| Nr. | Risiko | Massnahme im Entwurf | Offen |
+|---|---|---|---|
+| R-1 | **Besonders schützenswerte Personendaten in Eigenschaftswerten.** Daten aus Strafverfahren und polizeilichen Ermittlungen sind als solche heikel; dazu kann das Schema von FollowTheMoney Eigenschaften führen, die Angaben etwa zu Gesundheit, Religion, politischer Haltung oder Herkunft aufnehmen. Welche Eigenschaften die eingesetzte Fassung führt, ist am gebauten Stand zu erheben, nicht hier behauptet | Validierung gegen das Schema der Bibliothek, unbekannte Eigenschaften werden abgewiesen (Nr. 24); Klassifizierung je Fall und je Entität im Betrieb (5.8) | Ob einzelne Schemata oder Eigenschaften im Betrieb gesperrt, nur mit Begründung oder nur unter höherer Klassifizierung zulässig sind (Positivliste), ist [OFFEN, GRC-Rolle; Entscheid Kantonspolizei Bern im Bearbeitungsreglement] (BV-9; als Vorlage VA-S14-01 an den Auftraggeber über den Koordinator gemeldet, blockiert S1.4 nicht) |
+| R-2 | **Verknüpfbarkeit über Kanten.** Kanten verbinden Personen mit Personen, Firmen, Adressen und Konten; der Graph ergibt ein Beziehungsprofil, das mehr aussagt als jeder Einzelwert und Unbeteiligte einschliesst | Bestand je Fall (E-S1-12 a); keine Zusammenführung über Fälle; Pseudonyme zwischen Fällen verschieden (E-S1-06 b); Kanten nur zwischen bestehenden Entitäten desselben Falls (Nr. 24) | Verknüpfung über Fälle ist nicht Gegenstand; kommt sie mit einem späteren Eintrag, braucht sie einen eigenen Eintrag in diesem Verzeichnis |
+| R-3 | **Export.** Der Bestand ist die Quelle späterer Exporte (5.10); ein ausgeführter Export liegt ausserhalb jeder Löschung | Export nicht gebaut; Exportprotokoll und Manifest mit seinem Eintrag | Löschkonzept Abschnitt 9 |
+| R-4 | **Klardaten in Fehlertexten und Diagnose.** Validierungsfehler und Fehler der Datenbank können den abgewiesenen Wert wiedergeben (Text der Ausnahme, verkettete Ursache, Meldung des Datenbankservers zu verletzten Prüfbedingungen und Eindeutigkeit) | 5.12; DS-S14-01 | Protokoll des Datenbankservers im Betrieb (BV-10) |
+| R-5 | **Abfragetext mit Personendaten.** Siehe Bewertung oben | DS-S14-03, DS-S14-04 | — |
+| R-6 | **Klartext in Datenbank, Schreibprotokoll und Sicherung.** Der Bestand ist der grösste Klartextbestand des Systems; der Fallschlüssel liegt in Sprint 1 unverschlüsselt daneben (GS-5) | Test/Schulung ohne Sicherung, nur synthetische Daten | O-6, BV-7, Löschkonzept LW-11 und LW-12 |
+| R-7 | **Keine Berichtigung.** Die Anwendungsrolle hat an den Bestandstabellen kein UPDATE (Nr. 9); ein unrichtiger Datensatz lässt sich in Sprint 1 weder berichtigen noch entfernen | Kennzeichnung als Quellenaussage, Herkunft je Datensatz: die Unrichtigkeit liegt bei der Quelle und bleibt nachvollziehbar | Weg der Berichtigung oder Bestreitung im Betrieb [OFFEN, GRC-Rolle mit Product Owner] (BV-11) |
+
+### 4.3 Stand der Umsetzung B-03
+
+| Teil | Stand |
+|---|---|
+| Revision 0005 (`herkunft`, `entitaet`, `beziehung`, Rechte), kanon nach Nr. 24 und 25, Vertrag 5 | festgelegt (ADR 0007), nicht gebaut; Bau in S1.4. Nachtrag vom 2026-11-09: gebaut am 2026-11-09, zur Abnahme vorgelegt (Pull Request der Einheiten D25 und S1.4) |
+| Eingaben `Entitaet` und `Beziehung` der Ermittlungsspur mit Pseudonymisierung | gebaut seit S1.2 (`spur.payload`); Erzeuger kanon folgt in S1.4. Nachtrag vom 2026-11-09: Erzeuger kanon und die Herkunftsfelder der Eingaben gebaut am 2026-11-09, zur Abnahme vorgelegt |
+| Nachweis "keine Klardaten im Protokoll" über alle Spalten | R3-F-011 in S1.5 |
+| Klassifizierung und Freigabeliste je Entität, Protokoll lesender Zugriffe | nicht Gegenstand von Sprint 1 (5.8); die Festlegung Nr. 24 führt keine Spalte der Klassifizierung (BV-12) |
+| Löschweg, Grabstein | nicht gebaut, R3-F-020 |
+
+### Nachtrag A vom 2026-11-09: Abgleich mit der nachgebesserten Festlegung S1.4
+
+Massstab ist ADR 0007, Festlegung S1.4, in der Fassung nach der Zeile "Nachbesserung nach den Stellungnahmen (S1.4.1)" mit den Entscheiden E-S14-02 bis E-S14-13 je (a) und den Grenzen GS-33 bis GS-50. Der Bau läuft parallel (Angabe des Koordinators, Fremdbeleg); Abschnitt 4 oben bleibt als Stand vor dem Bau stehen, wo er abweicht, gilt diese Tabelle. Den gebauten Stand trägt dieses Verzeichnis nach der Abnahme nach.
+
+| Gegenstand | Stand vor dem Bau (Abschnitt 4) | Nachgebesserte Festlegung | Wirkung auf B-03 und B-02 |
+|---|---|---|---|
+| Herkunftsangaben in der Ermittlungsspur | Tabelle 4.1: `herkunft.werkzeug`, `herkunft.zeitpunkt`, `herkunft.erhebende_person` und `herkunft.abfrage` "nein" in der Spur; der Eintrag trägt allein `herkunft_kennung` | E-S14-02 (a), Zeile "spur.payload, Fortschreibung": Einträge `entitaet` und `beziehung` tragen werkzeug (Kennungsform, Klartext nach Nr. 17), erhoben_am (Zeitpunkt der Erhebung, Klartext), erhebende_person (Benutzerkennung, Klartext nach E-S1-07) und die Abfrage allein als abfrage_pseudonym (Normalform) und abfrage_bindung (siehe unten); die Kennzeichnung steht in der Spalte des Eintrags | In Tabelle 4.1 gilt für diese vier Spalten die Spalte "In der Ermittlungsspur" nach dieser Zeile. Die Abfrage gelangt nie im Klartext in die Spur (DS-S14-03 erfüllt). Die Kette sichert damit die Herkunft jedes Datenpunkts; die Tabelle `herkunft` selbst ist nicht verkettet (GS-37) |
+| `abfrage_bindung` (neu, DF-S14-01) | nicht vorgesehen | HMAC-SHA-256 mit dem Fallschlüssel über ein festes Etikett und die exakten UTF-8-Bytes der gespeicherten Abfrage, ohne Normalisierung, 64 Hexadezimalzeichen; macht eine Änderung allein der Schreibweise oder des Leerraums in `herkunft.abfrage` mit dem Fallschlüssel erkennbar | Kein Klartext. Datenschutzrechtlich gleichwertig zu einem Pseudonym: ohne Fallschlüssel nicht umkehrbar; wer `fall_schluessel` lesen kann, kann einen vermuteten Abfragetext bestätigen, wie beim Pseudonym (GS-5). Nach dem Vernichten des Fallschlüssels unumkehrbar (LW-2). Im Abnahmetest von R3-F-011 wird die Abfrage als Klartextwert mitgesucht (DS-S14-04) |
+| Spalte `herkunft.erstellt_am` (neu, E-S14-06 a) | nicht genannt; `herkunft.zeitpunkt` als "Zeitpunkt der Erhebung" | `zeitpunkt` ist die Erhebung (Angabe des Aufrufers, nicht nach dem Schreiben), `erstellt_am` der Zeitpunkt des Schreibens; Prüfbedingung `zeitpunkt` <= `erstellt_am` | Ergänzung von Tabelle 4.1: `herkunft.erstellt_am`, Zeitpunkt in UTC, kein Personenbezug, in der Spur als Zeitpunkt des Eintrags, nach der Löschung Zeile gelöscht |
+| Enden einer Kante | `beziehung.quelle_kennung` und `beziehung.ziel_kennung` (Kennungen) | Zeile "kanon.service": die Enden stehen zusätzlich nach FollowTheMoney in `beziehung.eigenschaften` (source und target mit der FollowTheMoney-Kennung des Endes, wie eingegeben) | `beziehung.eigenschaften` trägt damit FollowTheMoney-Kennungen der Enden im Klartext; sie können Namen enthalten (GS-44). In der Spur als Pseudonym wie jeder Eigenschaftswert |
+| Umfang der Validierung | "Validierung gegen das Schema der Bibliothek" (R-1) | E-S14-07 (a), GS-33: geprüft werden Schema, Vorrat, Eigenschaftsname, Pflichteigenschaft und Typ entity; Eigenschaften vom Typ entity ausserhalb der Kantenenden werden abgewiesen; die übrigen Werttypen (country, date, gender, topic, email, phone und andere) werden nicht geprüft | Jede Eigenschaft nimmt faktisch Text bis 4096 Zeichen je Wert auf, höchstens 100 Werte je Eigenschaft, 128 Eigenschaften und 262 144 Zeichen je Datensatz; Zeichen der Kategorie Cf bleiben zulässig (GS-48). Folge für die Erhebung: Nachtrag B, Freitextfelder |
+| Fallübergreifende Funktion | DS-S14-07: Zählwerte, keine Werte | E-S14-10 (a), GS-36: `herkunft_pruefen` liefert über alle Fälle allein Zählwerte je Form, Anzahl Knoten und Kanten und die Isolationsstufe; keine Kennungen. `datenpunkte_lesen` und `herkunft_lesen` sind fallgebunden; keine weitere fallübergreifende Lese- oder Suchfunktion | Entspricht der Zweckbindung je Fall (E-S1-12 a). Die Zählwerte enthalten keine Personendaten; Empfänger der Zählwerte ist, wer die Dienstschicht aufruft (in Sprint 1 keine Schnittstelle) |
+| Fehlertexte (DS-S14-01) | Vorgabe | Zeilen "kanon.store", "kanon.service" und "core, Ergänzungen": Fehler nennen allein Feldnamen der Eingabe und Namen aus den versionierten Schemadateien, nie einen Wert, eine FollowTheMoney-Kennung oder eine vom Aufrufer gelieferte unbekannte Bezeichnung; das DETAIL von PostgreSQL gelangt in keinen Fehler; Ursachenkette leer | R-4 im Code umgesetzt nach der Festlegung, Nachweis mit den Integrationstests der Festlegung; offen bleibt das Protokoll des Datenbankservers im Betrieb (BV-10) |
+| Bindung der Werte in der Spur | nicht unterschieden | GS-48: Eigenschaftswerte und FollowTheMoney-Kennung in der Normalform gebunden (NFC, casefold, Leerraum), die Abfrage exakt über `abfrage_bindung` | Kein Einfluss auf den Personenbezug; vermerkt, weil zwei Schreibweisen desselben Werts in der Spur dasselbe Pseudonym tragen (GS-7) |
+| Vorrat der Schemata | nicht festgelegt | E-S14-01, Vorlage an den Auftraggeber mit Empfehlung (b): Knoten Person, LegalEntity, Organization, Company, Asset; Kanten Ownership, Directorship, Control, Employment, Associate, Family; Bau auf (b) | Die Erhebung in Nachtrag B gilt für diesen Vorrat. Wird (a) entschieden, ist sie für die übrigen nicht abstrakten Schemata zu wiederholen, bevor diese im Betrieb verwendet werden |
+| Klassifizierung je Entität (BV-12) | offen, dokumentiert | E-S14-08 (a), GS-40: keine Spalte in Sprint 1, kommt mit R3-F-054 | BV-12 ist eingeordnet; bis dahin allein synthetische Daten in Test/Schulung |
+| Rechte, Fremdschlüssel, Löschweg | DS-S14-06 als Vorgabe | Zeile "Revision 0005_bestand": INSERT und SELECT für die Anwendungsrolle, kein UPDATE, DELETE, TRUNCATE; Fremdschlüssel ohne ON DELETE und ON UPDATE; GS-43 | Übereinstimmung mit Abschnitt 4; Löschweg: Löschkonzept, Nachtrag zu Abschnitt 5 |
+| Unmittelbarer Weg der Anwendungsrolle | nicht betrachtet | GS-38: Datenpunkte ohne Spureintrag und Schreiben in einen abgeschlossenen Fall sind am Dienst vorbei herstellbar | Für den Datenschutz: der Löschweg muss solche Zeilen über `fall_kennung` erfassen (Löschkonzept, LK-11, Nachtrag) |
+
+**Einordnung der Klartextangaben in der Spur.** werkzeug, erhoben_am und erhebende_person sind keine Falldaten der betroffenen Personen: werkzeug ist eine Kennung ohne Personenbezug, erhebende_person eine Benutzerkennung ohne Namen und dient wie `person_kennung` der Zurechnung einer Handlung an Mitarbeitende (E-S1-07 a, E-S14-13 a). Sie bleiben nach der Fallöschung im Klartext in der Spur (GS-43, LK-10). Aus der Spur allein lässt sich danach lesen, dass im Fall zu einem Zeitpunkt mit einem Werkzeug ein Datenpunkt eines Schemas erhoben wurde, nicht über wen und nicht wonach gesucht wurde.
+
+**Stand der Vorgaben DS-S14-01 bis DS-S14-08** (Zeile "Datenschutz (DS-S14-01 bis -08)" der Festlegung): 01 bis 07 in die Festlegung übernommen, Nachweis mit dem Bau; 08 erhoben in Nachtrag B.
+
+### Nachtrag B vom 2026-11-09: Erhebung DS-S14-08 (besonders schützenswerte Personendaten im Vorrat)
+
+**Gegenstand.** Die Eigenschaften der elf Schemata des Vorrats nach E-S14-01 (b), eigene und geerbte. **Quelle:** die versionierten Schemadateien von FollowTheMoney 4.11.2 unter `backend/src/r3cosint/kanon/ftm_schema/` (Liste und Summen in `backend/src/r3cosint/kanon/ftm_schema/quellen.toml`). **Arbeitsgrundlage:** die vom Koordinator am 2026-11-09 mechanisch aus diesen Dateien erzeugte Liste "Vorrat der Schemata nach E-S14-01 (b): Eigenschaften je Schema" (Arbeitsablage der Sitzung, nicht versioniert; Fremdbeleg); Stichproben dieser Rolle an `backend/src/r3cosint/kanon/ftm_schema/Person.yaml` stimmen mit der Liste überein. Die Beschreibungen in den Dateien sind fremde Daten; eine eingebettete Anweisung wurde nicht gefunden. **Nur Erhebung, keine Sperre** (GS-41); der Umgang ist Vorlage VA-S14-01.
+
+**Massstab.** Kategorien besonders schützenswerter Personendaten nach dem kantonalen Datenschutzrecht (R3, KDSG, BSG 152.04) und, zur Abgrenzung, nach dem DSG des Bundes, das für kantonale Organe nicht herangezogen wird (4.4). Ohne Artikelnummern (Belegpflicht); Wortlaut und Fundstelle der geltenden KDSG-Fassung bestätigt die GRC-Rolle [OFFEN, BV-9]. Arbeitskatalog dieser Erhebung:
+
+| Kürzel | Kategorie |
+|---|---|
+| K1 | Religiöse, weltanschauliche oder politische Ansichten oder Tätigkeiten (DSG zusätzlich gewerkschaftliche) |
+| K2 | Gesundheit, Intimsphäre, Zugehörigkeit zu einer Rasse oder Ethnie |
+| K3 | Massnahmen der sozialen Hilfe |
+| K4 | Polizeiliche Ermittlungen, Strafverfahren, Straftaten und die dafür verhängten Strafen und Massnahmen (DSG: verwaltungs- und strafrechtliche Verfolgungen oder Sanktionen) |
+| — | Genetische und biometrische Daten (DSG) entstehen nicht: das Modul Gesichtserkennung ist gestrichen (5.18); Signalementangaben wie Grösse oder Augenfarbe sind keine technisch verarbeiteten biometrischen Daten |
+
+**K4 gilt durch den Kontext für den ganzen Bestand.** Jeder Datensatz gehört einem Fall (B-01) und damit einer polizeilichen Ermittlung oder einem Strafverfahren; jede Angabe zu einer Person im Bestand ist deshalb besonders schützenswert, unabhängig von der Eigenschaft. Die Einordnung je Eigenschaft fragt darüber hinaus, ob der Inhalt selbst eine Kategorie trägt.
+
+**Stufen.** "typisch": die Eigenschaft ist nach ihrer Bestimmung in der Schemadatei zur Aufnahme einer Kategorie da. "möglich": sie nimmt solche Angaben nach Bestimmung oder als Freitext auf, ohne dafür bestimmt zu sein. "nein": nach Bestimmung keine Kategorie (K4 aus dem Kontext bleibt). "abgewiesen": in Sprint 1 nicht schreibbar, weil vom Typ entity ausserhalb der Kantenenden (Zeile "Umfang der Validierung").
+
+**Knoten: eigene Eigenschaften von Person**
+
+| Eigenschaft (Typ) | Einordnung | Begründung |
+|---|---|---|
+| ethnicity (string) | typisch | K2 Ethnie; Bestimmung "Ethnicity" |
+| religion (string) | typisch | K1 religiöse Ansicht oder Zugehörigkeit |
+| political (string) | typisch | K1; Bestimmung "Political association" |
+| appearance (string) | möglich | K2: eine Beschreibung des Aussehens kann Gesundheit (Behinderung, Narben) oder Ethnie wiedergeben; Freitext |
+| biography (text) | möglich | Freitext, jede Kategorie |
+| gender (gender) | möglich | K2 Intimsphäre, wenn der Wert eine Geschlechtsidentität wiedergibt; Wertevorrat wird nicht geprüft (GS-33) |
+| position (string) | möglich | K1 bei einem politischen Amt oder einem Amt in einer Religionsgemeinschaft oder Gewerkschaft |
+| profession, education, title (string) | nein | Beruf, Ausbildung, Titel; mittelbar K1 möglich (etwa ein geistliches Amt als Beruf) |
+| eyeColor, hairColor (string); height, weight (number) | nein | Signalement, keine biometrischen Daten im Sinn von 5.18; weight mittelbar K2 möglich |
+| birthCountry, citizenship, nationality (country); birthPlace (string); spokenLanguage (language) | nein | Staatsangehörigkeit, Geburtsort und Sprache sind keine Ethnie; zusammen mit ethnicity oder appearance verstärken sie den Rückschluss |
+| birthDate, deathDate (date) | nein | Identifikation; ob Daten verstorbener Personen erfasst sind, klärt die GRC-Rolle mit BV-9 |
+| firstName, lastName, middleName, nameSuffix, secondName, fatherName, motherName (string) | nein | Identifikation; fatherName und motherName betreffen Dritte |
+| passportNumber, socialSecurityNumber (identifier) | nein | keine Kategorie, aber hohe Identifikationskraft; ob die Bearbeitung der Sozialversicherungsnummer eine eigene Grundlage braucht, ist [OFFEN, GRC-Rolle] (BV-13) |
+
+**Knoten: von Thing geerbt (Person, LegalEntity, Organization, Company, Asset)**
+
+| Eigenschaft (Typ) | Einordnung | Begründung |
+|---|---|---|
+| program (string), programId (identifier) | typisch | K4: Bestimmung "Regulatory program or sanctions list on which an entity is listed"; die Listung auf einer Sanktionsliste ist eine Massnahme oder Sanktion; Einordnung durch die GRC-Rolle |
+| topics (topic) | möglich | K1, K4: Bestimmung "Controlled tags ... risk category"; die Kategorien können Straftaten, Sanktionen oder politische Exponiertheit bezeichnen. Der Wertevorrat steht nicht in den Schemadateien und wird nicht geprüft (GS-33) |
+| description, notes, summary, indexText (text) | möglich | Freitext, jede Kategorie |
+| keywords (string) | möglich | Freitext ohne Wertevorrat |
+| name, alias, previousName, weakAlias (name) | nein | Identifikation; ein Übername kann Merkmale wiedergeben (dann möglich K2) |
+| address (address), country (country) | nein | Aufenthalt; die Adresse einer Einrichtung (Klinik, Gotteshaus) kann mittelbar K1 oder K2 anzeigen |
+| createdAt, modifiedAt, retrievedAt (date) | nein | Zeitangaben der Quelle |
+| alephUrl, sourceUrl, publisherUrl, wikipediaUrl (url); publisher (string); wikidataId (identifier) | nein | Quellenangaben; die Quelle selbst (Seite einer Partei, Kirche) kann mittelbar K1 anzeigen |
+| addressEntity, proof, riskSource (entity) | abgewiesen | Typ entity ausserhalb der Kantenenden |
+
+**Knoten: von LegalEntity geerbt (Person, LegalEntity, Organization, Company) und eigene von Organization, Company und Value**
+
+| Eigenschaft (Typ) | Einordnung | Begründung |
+|---|---|---|
+| classification (string) | möglich | Freitext "as provided by the data source"; bei einer Organisation kann die Einordnung (Partei, Religionsgemeinschaft, Gewerkschaft) mittelbar K1 für ihre Mitglieder und Organe anzeigen |
+| sector, legalForm, status, taxStatus (string) | nein | Angaben zur Tätigkeit und Form; mittelbar K1 wie classification |
+| email (email), phone (phone), website (url) | nein | Erreichbarkeit |
+| idNumber, taxNumber (identifier) | nein | keine Kategorie, hohe Identifikationskraft |
+| npiCode (identifier) | nein | kennzeichnet eine Gesundheitsfachperson als Leistungserbringerin, keine Gesundheitsdaten |
+| icijId (string) | nein | Kennung einer journalistischen Datensammlung; Indiz, keine Kategorie |
+| abbreviation, brightQueryId, brightQueryOrgId, bvdId, dissolutionDate, dunsCode, incorporationDate, innCode, jurisdiction, leiCode, licenseNumber, mainCountry, ogrnCode, okpoCode, okvedCode, opencorporatesUrl, registrationNumber, sayariId, swiftBic, uniqueEntityId, uscCode, vatCode | nein | Register-, Steuer- und Datenbankkennungen und Daten juristischer Personen |
+| parent (entity) | abgewiesen | Typ entity ausserhalb der Kantenenden |
+| cageCode, giiNumber, imoNumber, permId (Organization) | nein | Kennungen von Organisationen |
+| bikCode, caemCode, capital, cikCode, coatoCode, fnsCode, fssCode, ipoCode, irsCode, isinCode, jibCode, kppCode, mbsCode, okopfCode, oksmCode, pfrNumber, ricCode, ticker, voenCode (Company) | nein | Kennungen und Klassifikatoren von Unternehmen; fssCode und pfrNumber betreffen die Registrierung des Unternehmens bei Sozialversicherungsträgern, nicht Massnahmen der sozialen Hilfe (K3) |
+| amount, amountEur, amountUsd (number), currency (string) (Value, geerbt von Asset und Company) | nein | Vermögenswerte; finanzielle Verhältnisse stehen nicht im Katalog |
+
+**Kanten (Ownership, Directorship, Control, Employment, Associate, Family)**
+
+| Eigenschaft (Typ) | Schemata | Einordnung | Begründung |
+|---|---|---|---|
+| description, summary, indexText (text) | alle sechs (Interval) | möglich | Freitext, jede Kategorie |
+| relationship (string) | Associate, Family | möglich | K2 Intimsphäre: die Art der Beziehung kann eine Partnerschaft oder Lebensform wiedergeben; Family verbindet regelmässig Unbeteiligte (R-2) |
+| role, status (string) | Ownership, Directorship, Control, Employment (Interest) | möglich | K1 bei einer Rolle in einer Partei, Religionsgemeinschaft oder Gewerkschaft |
+| owner, asset, director, organization, controller, controlled, employee, employer, person, associate, relative (entity, Kantenenden) | je Kante | möglich über das Ziel | Die Kante selbst trägt keine Kategorie; ist das Ziel eine Partei, Religionsgemeinschaft, Gewerkschaft oder Gesundheitseinrichtung, zeigt sie eine Zugehörigkeit oder Tätigkeit nach K1 oder K2 an (R-2) |
+| namesMentioned (name) | alle sechs | nein | Namen, oft Dritter |
+| secretary (string) | Directorship | nein | kann den Namen einer dritten Person tragen |
+| legalBasis, ownershipType, percentage, sharesCount, sharesCurrency, sharesType, sharesValue (string) | Ownership (legalBasis auch Control) | nein | Beteiligungsangaben |
+| controlType (string) | Control | nein | Art der Kontrolle |
+| date, startDate, endDate, modifiedAt, retrievedAt (date); alephUrl, sourceUrl, publisherUrl (url); publisher, recordId (string) | alle sechs | nein | Zeit- und Quellenangaben |
+| proof (entity) | alle sechs | abgewiesen | Typ entity ausserhalb der Kantenenden |
+
+**Freitextfelder (gesondert).**
+
+| Gruppe | Eigenschaften | Bewertung |
+|---|---|---|
+| Typ text | biography; description, notes, summary, indexText (Knoten); description, summary, indexText (Kanten) | Freitext nach Bestimmung; keine Kategorie lässt sich ausschliessen |
+| string ohne Wertevorrat | appearance, keywords, classification, relationship, role, status, position, profession, education, title, secretary, legalBasis, controlType, ownershipType, birthPlace, sowie ethnicity, religion, political | Freitext nach Bestimmung; die drei typischen Eigenschaften sind selbst Freitext |
+| faktisch jede Eigenschaft | alle Eigenschaften ausser den Kantenenden | Die Werttypen werden nicht geprüft (GS-33): auch country, gender, topic, date, phone, email, url und identifier nehmen beliebigen Text bis 4096 Zeichen je Wert auf |
+| ausserhalb des Schemas | `herkunft.abfrage`; FollowTheMoney-Kennung (GS-44) | Abfrage: Bewertung in Abschnitt 4; Kennung: kann Namen tragen |
+
+**Ergebnis in Kurzform.** K4 gilt für den ganzen Bestand aus dem Kontext. Typisch: ethnicity, religion, political (Person) und program, programId (alle Knoten). Möglich: appearance, biography, gender, position, topics, keywords, classification, die Freitextfelder vom Typ text, relationship (Associate, Family), role und status (Interest) und die Kantenenden über ihr Ziel. Abgewiesen in Sprint 1: addressEntity, proof, riskSource, parent. Alle übrigen: nein. Weil jede Eigenschaft faktisch Freitext aufnimmt, beseitigt eine Sperre einzelner Eigenschaften das Risiko nicht; dieselbe Angabe kann in notes oder description stehen. Wirksam sind ergänzend die Zweckbindung je Fall, Klassifizierung und Freigabeliste je Entität (R3-F-054, GS-40) und Regeln im Bearbeitungsreglement.
+
+**Nicht erhoben.** Schemata ausserhalb des Vorrats. Nach den Dateinamen im Verzeichnis gehören dazu Schemata, deren Bestimmung Kategorien nahelegt (etwa Sanction, CourtCase, CourtCaseParty, Membership, Occupancy, Passport, Identification, Note, Message); sie sind nicht gelesen und nicht eingeordnet. Bei Entscheid E-S14-01 (a) ist die Erhebung für sie nachzuholen.
+
+## 5. Noch nicht erfasste Bearbeitungen
 
 Erfasst wird je Bearbeitung mit der Einheit, die sie baut; bis dahin besteht sie nicht.
 
 | Bearbeitung | Entsteht mit | Bemerkung |
 |---|---|---|
-| Kanonischer Bestand (Entitäten, Beziehungen, Herkunft) mit Namen, Adressen und Telefonnummern | S1.4 (R3-F-003, R3-F-005) | Stellungnahme des Datenschutzexperten zu den Personendaten im Bestand nach ADR 0007, Zerlegung, Zeile S1.4; `erhebende_person` in `herkunft` ist Zurechnung wie `person_kennung` (E-S1-07 a) |
 | Protokoll lesender Zugriffe | späterer Eintrag (5.8, Bereitschaft Punkt 2) | nicht im Sprint Backlog |
 | Benutzerkonten und Anmeldung | Etappe 3 (5.7) | bis dahin GS-1 |
 | Aufgaben an Fallverantwortliche, Grabstein-Einträge | R3-F-020 | Löschkonzept |
 | Export und Exportprotokoll | späterer Eintrag (5.10) | bereits ausgeführte Exporte liegen ausserhalb jeder Löschung (4.4, "Ehrliche Grenze") |
 | Sprachmodell, Quellenabfragen, Alias-Profile, Anhänge und Asservate, Suchindex, Graph | spätere Etappen | je mit eigenem Eintrag |
 
-## 5. Offene Punkte
+## 6. Offene Punkte
 
 | Nr. | Punkt | Zuständig |
 |---|---|---|
@@ -126,4 +302,17 @@ Erfasst wird je Bearbeitung mit der Einheit, die sie baut; bis dahin besteht sie
 | BV-4 | `fall.rechtsgrundlage` ist Freitext ohne Formprüfung, `fall.ermittelnde_person` ohne die Formprüfung der Benutzerkennung, die `person_kennung` in den Spuren trägt; beide könnten zweckwidrig Namen aufnehmen. **Erledigt** mit ADR 0007, Festlegung S1.3 (Zeile "Stellungnahmen vor dem Bau": BV-4 eingearbeitet), gebaut am 2026-11-09: `ermittelnde_person` in der Form der Benutzerkennung, geprüft in `fall.eingabe`, Eroeffnung; Höchstlänge der Rechtsgrundlage 2000 Zeichen in der Angleichung | Software Architect (Festlegung S1.3) |
 | BV-5 | Aufbewahrung der Spuren nach der Fallöschung und ihr Verhältnis zur Archivierung (R5) | GRC-Rolle mit Datenschutzexperte |
 | BV-6 | Abgrenzung Nichttreffer (Bundesgericht, August 2026) gegen Negativbefunde (5.3), schriftlich | GRC-Rolle (4.4, Punkt 7) |
-| BV-7 | Schlüsselverwaltung getrennt von den Sicherungen (O-6, GS-5) | Software Architect mit SecDevOps Engineer und Datenschutzexperte, vor R3-F-020 |
+| BV-7 | Schlüsselverwaltung getrennt von den Sicherungen (O-6, GS-5); mit B-03 auch Verschlüsselung der Bestandswerte und des Abfragetexts mit dem Schlüssel je Fall | Software Architect mit SecDevOps Engineer und Datenschutzexperte, vor R3-F-020 |
+| BV-8 | Einschlägige Bestimmungen in R1 und R2 für das Erheben, Überführen und Verknüpfen von Personendaten im kanonischen Bestand (B-03); Konformitätsanalyse für die Funktion des Bestands | GRC-Rolle, Gegenprüfung Legal Reviewer |
+| BV-9 | Umgang mit besonders schützenswerten Eigenschaften im Schema von FollowTheMoney: Erhebung der Eigenschaften der eingesetzten Fassung am gebauten Stand; Positivliste, Begründungspflicht oder Klassifizierung (B-03, R-1) | Erhebung: Backend Engineer mit Datenschutzexperte in S1.4; Einordnung: GRC-Rolle; Entscheid: Kantonspolizei Bern (Bearbeitungsreglement) |
+| BV-10 | Protokoll des Datenbankservers im Betrieb: Meldungen zu verletzten Prüfbedingungen und zur Eindeutigkeit können Werte der abgewiesenen Zeile enthalten; Einstellung und Aufbewahrung dieses Protokolls (5.12) | DevOps Engineer mit SecDevOps Engineer und Datenschutzexperte, vor der Produktion |
+| BV-11 | Berichtigung oder Bestreitung unrichtiger Bestandsdaten ohne UPDATE-Recht der Anwendung (B-03, R-7) | GRC-Rolle mit Product Owner |
+| BV-12 | Klassifizierungsstufe und Freigabeliste je Entität (Glossar, Entität: "Trägt immer einen Herkunftsnachweis und eine Klassifizierungsstufe."; 5.8) fehlen im Schema nach Nr. 24; dokumentiert, nicht bewertet | Product Owner mit Software Architect (späterer Eintrag zu 5.8) |
+
+**Nachtrag vom 2026-11-09 (nachgebesserte Festlegung S1.4).**
+
+| Nr. | Punkt | Zuständig |
+|---|---|---|
+| BV-9 | Teil Erhebung erledigt (B-03, Nachtrag B, für den Vorrat nach E-S14-01 b); offen bleiben die Bestätigung des Arbeitskatalogs K1 bis K4 an der geltenden KDSG-Fassung, die Einordnung und der Umgang im Betrieb (Vorlage VA-S14-01) | GRC-Rolle; Entscheid Kantonspolizei Bern (Bearbeitungsreglement) |
+| BV-12 | Eingeordnet: E-S14-08 (a), Grenze GS-40, Spalte mit R3-F-054 | Product Owner mit Software Architect |
+| BV-13 | Ob die Bearbeitung der Sozialversicherungsnummer (Person, socialSecurityNumber) im Bestand eine eigene gesetzliche Grundlage braucht, und ob Angaben zu verstorbenen Personen (deathDate) dem kantonalen Datenschutzrecht unterstehen | GRC-Rolle, Gegenprüfung Legal Reviewer |

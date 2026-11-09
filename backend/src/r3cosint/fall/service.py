@@ -42,6 +42,7 @@ __all__ = [
     "Rechtsregime",
     "eroeffnen",
     "fall_lesen",
+    "fall_teilen",
     "ketten_aller_faelle_pruefen",
     "pseudonymisierer_laden",
     "schliessen",
@@ -271,3 +272,18 @@ async def ketten_aller_faelle_pruefen(verbindung: AsyncConnection) -> list[Befun
     for fall_kennung in await store.fall_kennungen_lesen(verbindung):
         befunde.extend((await kette_pruefen(verbindung, fall_kennung)).values())
     return befunde
+
+
+async def fall_teilen(verbindung: AsyncConnection, fall_kennung: UUID) -> Fall:
+    """Liest einen Fall mit geteilter Sperre, damit er nicht abgeschlossen wird, während in ihn geschrieben wird.
+
+    Wird von kanon.service.schreiben gerufen (Festlegung S1.4, E-S14-05, FA-S14-01). Der
+    Zustandsvergleich (aktiv) bleibt bei kanon.service. Parameter: fall_kennung. Rückgabe: Fall.
+    Fehlerklassen: EingabeFehler, wenn der Fall fehlt oder keine Transaktion läuft.
+    Transaktionspflicht: ja, die Sperre gilt bis zum Ende der Transaktion des Aufrufers.
+    """
+    _transaktion_verlangen(verbindung)
+    fall = await store.fall_teilen(verbindung, fall_kennung)
+    if fall is None:
+        raise EingabeFehler("Der Fall besteht nicht.")
+    return fall
