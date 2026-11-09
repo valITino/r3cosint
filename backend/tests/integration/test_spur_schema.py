@@ -27,6 +27,12 @@ pytestmark = pytest.mark.anyio
 SQL_DATEI = (
     Path(__file__).resolve().parents[2] / "migrationen" / "sql" / "0003_spur.sql"
 )
+SQL_DATEI_0004 = (
+    Path(__file__).resolve().parents[2]
+    / "migrationen"
+    / "sql"
+    / "0004_fall_uebergang.sql"
+)
 VEKTOREN: dict[str, Any] = json.loads(
     (Path(__file__).resolve().parents[1] / "vektoren" / "pruefvektoren.json").read_text(
         encoding="utf-8"
@@ -43,6 +49,7 @@ FUNKTIONEN = (
     "spur_unveraenderlich",
     "spur_einfuegen_pruefen",
     "kettenkopf_pruefen",
+    "fall_uebergang_pruefen",
 )
 OEFFENTLICH = ("spur_anfangswert", "spur_pruefsumme", "spur_kette_pruefen")
 
@@ -144,13 +151,15 @@ async def test_R3_F_012_null_argument_und_unbekannte_spur_an_spur_kette_pruefen_
 
 
 def _rumpf(name: str) -> str:
-    quelle = SQL_DATEI.read_text(encoding="utf-8")
+    quelle = "\n".join(
+        datei.read_text(encoding="utf-8") for datei in (SQL_DATEI, SQL_DATEI_0004)
+    )
     treffer = re.search(rf"\${name}\$(.*?)\${name}\$", quelle, re.DOTALL)
     assert treffer is not None, name
     return treffer.group(1)
 
 
-async def test_R3_F_008_genau_die_sechs_funktionen_mit_invoker_search_path_und_rumpf_der_revision(
+async def test_R3_F_008_genau_die_sieben_funktionen_mit_invoker_search_path_und_rumpf_der_revision(
     verbindung_eigentuemer: AsyncConnection,
 ) -> None:
     zeilen = (
@@ -219,6 +228,7 @@ async def test_R3_F_008_ausloeser_je_tabelle_sind_aktiv(
         ("kettenkopf", "kettenkopf_einfuegen_aendern_pruefen"): "kettenkopf_pruefen",
         ("kettenkopf", "kettenkopf_nicht_leeren"): "spur_unveraenderlich",
         ("kettenkopf", "kettenkopf_nicht_loeschen"): "spur_unveraenderlich",
+        ("fall", "fall_uebergang"): "fall_uebergang_pruefen",
     }
     assert all(z.tgenabled == "O" for z in zeilen)
 
@@ -659,7 +669,7 @@ async def test_R3_F_008_rechtekatalog_nennt_die_vollstaendige_menge_der_berechti
         "LEFT JOIN pg_roles g ON g.oid = a.grantee WHERE n.nspname = 'r3cosint'",
     )
     assert spalten == {(t, s, ANWENDUNG, "UPDATE") for t, s in SPALTEN_RECHTE_ANWENDUNG}
-    # Funktionen: EXECUTE für den Eigentümer auf alle sechs, für die Anwendung auf die drei.
+    # Funktionen: EXECUTE für den Eigentümer auf alle sieben, für die Anwendung auf die drei.
     funktionen = await _acl(
         verbindung_eigentuemer,
         "SELECT p.proname, coalesce(g.rolname, 'PUBLIC'), a.privilege_type "

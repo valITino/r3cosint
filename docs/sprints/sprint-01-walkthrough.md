@@ -28,7 +28,7 @@ seine Ready-Prüfung nicht.
 |---|---|---|---|---|---|
 | R3-F-008 | Sprint Backlog | 0 | 6 | 2 | in Sprint 1 prüfbar; Umfang der Manipulationen und Bedeutung der Ermittlungsspur offen |
 | R3-F-012 | Sprint Backlog | 0 | 4 | 1 | in Sprint 1 prüfbar; Aufrufweg und Form der Meldung offen |
-| R3-F-001 | Sprint Backlog | 0 | 9 | 4 | in Sprint 1 ehrlich prüfbar; Annahmen zu Spur, Person und Fallkategorie offen |
+| R3-F-001 | Sprint Backlog | 0 | 10 | 4 | in Sprint 1 ehrlich prüfbar; Annahmen zu Spur, Person und Fallkategorie offen |
 | R3-F-011 | Sprint Backlog | 0 | 5 | 2 | in Sprint 1 für die Fallangaben und die Entitäten aus R3-F-003 prüfbar; Suchform und Prüfsummenverfahren offen |
 | R3-F-003 | Sprint Backlog | 0 | 7 | 2 | in Sprint 1 prüfbar; Erzeugungsweg, Zähleinheit und Gegenprobe offen |
 | R3-F-005 | Sprint Backlog | 1 | 9 | 4 | nicht ready in dieser Form: die Lesart von "vollständiger Herkunftsnachweis" für Werkzeug und Abfrage entscheidet, ob der Test in Sprint 1 grün werden kann (W1-83) |
@@ -39,7 +39,7 @@ seine Ready-Prüfung nicht.
 | R3-F-010 | Vergleich, nicht gezogen | 1 | 2 | 0 | nicht ehrlich prüfbar in Sprint 1 (W1-63) |
 | R3-F-002 | nicht gezogen | 1 | 2 | 0 | nicht ehrlich prüfbar ohne registriertes Werkzeug (W1-66) |
 | R3-F-009 | nicht gezogen | 1 | 2 | 0 | nicht ehrlich prüfbar ohne ausgeführte Abfrage (W1-69) |
-| **Summe** | | **7** | **65** | **24** | 96 Befunde; davon im Sprint Backlog (sechs Einträge und Querschnitt) 1 blockierend, 41 Nachbesserung, 16 Hinweis |
+| **Summe** | | **7** | **66** | **24** | 97 Befunde; davon im Sprint Backlog (sechs Einträge und Querschnitt) 1 blockierend, 42 Nachbesserung, 16 Hinweis |
 
 Die Kennungen W1-01 bis W1-73 sind vor der Festlegung des Sprint Backlogs
 vergeben, W1-74 bis W1-96 danach für R3-F-003 und R3-F-005; die Abschnitte stehen in
@@ -279,3 +279,39 @@ Vollständigkeit, nicht Echtheit (ADR 0007, Entscheid 25 und Grenze GS-6;
 Festlegung des Software Architects gefasst, nicht als Änderung des
 Backlog-Eintrags R3-F-005; der Wortlaut des Kriteriums ist unverändert, und
 der Befund bleibt in der Liste stehen.
+
+## Nachtrag vom 2026-11-09 (vor der Einheit S1.3)
+
+Verfasser-Rolle: Requirements Engineer. Anlass: Restpunkt aus ADR 0007,
+E-S1-10 (Prüfung der Annahme vor S1.3), und Auftrag des Koordinators vom
+2026-11-09. Die Befunde W1-01 bis W1-97 und ihre Schwere bleiben unverändert;
+die Zahlen der Befundliste (97 Befunde: 7 blockiert, 66 Nachbesserung, 24
+Hinweis; im Sprint Backlog 1, 42, 16) sind am Dokument nachgezählt, und die
+Zeile "Summe" der Übersicht ist darauf berichtigt (Nachtrag zur Berichtigung
+der Summenzeile unten).
+
+**Vermerk zu W1-97: bearbeitet.** Der Befund bleibt in der Liste stehen; die
+Nachbesserung ist als Fortschreibung des Eintrags R3-F-001 in
+`docs/05_Product_Backlog.md` vorgenommen (Zeile "Stand 2026-11-09"): zweites
+Abnahmekriterium `R3-F-001_aktenzeichen_eindeutig` und Zeile "Achtung" mit den
+Annahmen zu Teilverfahren, Übergang von R2 nach R1 und Wiederaufnahme; die
+Ready-Bestätigung durch den Product Owner und seine Zeile in der Tabelle
+Nachführungen liegen vor: Ready-Bestätigung im Eintrag R3-F-001 von
+`docs/05_Product_Backlog.md`, Zeile "Stand 2026-11-09" (ready mit Vorbehalt
+bis E-S13-01), und Nachführung Nr. 65 (dazu Nr. 66 für den Bau). Im Glossar `docs/03_Glossar.md` steht der Eintrag
+Aktenzeichen als Vorschlag zur Bestätigung durch den Auftraggeber, mit der
+Abgrenzung zur Fallnummer; "Zu ergänzen" Nr. 4 ist nachgeführt. Die
+Bestätigung der Annahmen und des Glossarvorschlags geht dem Auftraggeber (S-01)
+als Vorlage im Pull Request der Einheit S1.3 zu. Die Befunde W1-09 und W1-21
+bleiben davon unberührt: W1-21 hängt an R3-F-020, das nicht gezogen ist.
+
+**Nachtrag zur Berichtigung der Summenzeile (2026-11-09).** Die Zeile "Summe"
+der Übersicht stand im Stand der Einheit S1 (96 Befunde; 7, 65, 24; im Sprint
+Backlog 1, 41, 16) und war mit W1-97 aus dem Nachtrag vom 2026-11-05 nicht
+nachgeführt. Nachgezählt am Dokument über die Schwere-Spalte der Befundzeilen
+W1-01 bis W1-97: 97 Befunde, 7 blockiert, 66 Nachbesserung, 24 Hinweis; davon
+in den Abschnitten der sechs Einträge des Sprint Backlogs, im Querschnitt und
+mit W1-97 (R3-F-001) 1 blockierend, 42 Nachbesserung, 16 Hinweis. Die Zeile
+"Summe" ist auf diese Werte berichtigt. Die Zeile R3-F-001 der Übersicht ist
+ebenso von 9 auf 10 Nachbesserung berichtigt (W1-97 mitgezählt), sodass die
+Einzelzeilen die Summe 66 ergeben. Die Befunde selbst sind unverändert.

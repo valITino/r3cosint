@@ -66,9 +66,9 @@ def _ist_docstring(knoten: ast.stmt) -> bool:
     )
 
 
-# Module von spur und fall (ADR 0007, Festlegung S1.2); ihre __init__ bleiben Modulbeschreibung.
+# Module von spur und fall (ADR 0007, Festlegung S1.2 und S1.3); ihre __init__ bleiben Modulbeschreibung.
 SPUR_MODULE = ("kette", "payload", "tables", "store", "service")
-FALL_MODULE = ("tables",)
+FALL_MODULE = ("tables", "eingabe", "store", "service")
 
 DATEIEN_OHNE_CODE = (
     WURZEL / "__init__.py",

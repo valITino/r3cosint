@@ -47,6 +47,13 @@ from r3cosint.core.datenbank import engine_erzeugen
 from r3cosint.core.fehler import KonfigurationsFehler
 from r3cosint.core.kennung import neue_kennung
 from r3cosint.core.konfiguration import Datenbankverbindung
+from r3cosint.fall.service import (
+    Eroeffnung,
+    Fall,
+    Rechtsregime,
+    eroeffnen,
+    pseudonymisierer_laden,
+)
 from r3cosint.spur.service import (
     Eingabe,
     Eintrag,
@@ -656,6 +663,20 @@ class FesteUhr:
         return self.zeitpunkt
 
 
+@dataclass
+class VerstellbareUhr:
+    """Uhr mit einstellbarem Zeitpunkt (R3-F-001): Eröffnen und Schliessen laufen zu zwei Zeiten.
+
+    Im Unterschied zu FesteUhr ist das Feld veränderbar; jetzt() liefert den eingestellten Wert.
+    """
+
+    zeitpunkt: datetime = datetime(2026, 1, 15, 8, 30, 0, 123456, tzinfo=UTC)
+
+    def jetzt(self) -> datetime:
+        """Liefert den eingestellten Zeitpunkt, zeitbewusst, in UTC."""
+        return self.zeitpunkt
+
+
 @dataclass(frozen=True)
 class SynthetischerFall:
     """Ein synthetischer Fall mit angelegten Ketten (S1.2; 5.15: alle Werte erfunden).
@@ -741,6 +762,106 @@ async def fall_mit_ketten(
     als Anwendung spur.service.ketten_anlegen in einer Transaktion auf.
     """
     return await fall_anlegen()
+
+
+@dataclass(frozen=True)
+class EroeffneterFall:
+    """Ein über fall.service eröffneter synthetischer Fall (S1.3; 5.15: alle Werte erfunden).
+
+    fall: der Fall im Zustand aktiv, wie eroeffnen ihn lieferte.
+    eroeffnung: die Eingabe, mit der er eröffnet wurde.
+    pseudonymisierer: über pseudonymisierer_laden gebildet; es gibt kein Feld für den Schlüssel.
+    uhr: verstellbare Uhr, auf den Zeitpunkt der Eröffnung gestellt.
+    """
+
+    fall: Fall
+    eroeffnung: Eroeffnung
+    pseudonymisierer: Pseudonymisierer
+    uhr: VerstellbareUhr
+
+
+@pytest.fixture
+def faelle_eroeffnen(
+    datenbank: Testdatenbank,
+) -> Callable[[int], Awaitable[list[EroeffneterFall]]]:
+    """Hilfe: eröffnet n synthetische Fälle als Anwendung über fall.service.eroeffnen.
+
+    Aufruf: await faelle_eroeffnen(n). Je Fall eine Transaktion mit commit; Aktenzeichen
+    "TEST-SYNTH-" mit Zufallsteil, Rechtsregime R1, Fallkategorie vergehen, person_kennung
+    "test.ermittlung" (die handelnde Person), ermittelnde_person "test.fallfuehrung" (verschieden,
+    damit eine Klartextsuche in den Spuren beide trennt). Das ist der Weg der Anwendung; fall_anlegen schreibt
+    dagegen als Eigentümer unmittelbar und legt allein die Ketten an (Weg der Tests).
+    """
+
+    async def eroeffnen_n(anzahl: int) -> list[EroeffneterFall]:
+        faelle: list[EroeffneterFall] = []
+        async for anwendung in _verbindung(datenbank, ANWENDUNG):
+            for _ in range(anzahl):
+                uhr = VerstellbareUhr()
+                eroeffnung = Eroeffnung(
+                    aktenzeichen=f"TEST-SYNTH-{secrets.token_hex(6)}",
+                    rechtsgrundlage="synthetisch, ohne Rechtsgrundlage",
+                    rechtsregime=Rechtsregime.R1,
+                    fallkategorie="vergehen",
+                    ermittelnde_person="test.fallfuehrung",
+                )
+                async with anwendung.begin():
+                    fall = await eroeffnen(
+                        anwendung,
+                        eroeffnung=eroeffnung,
+                        person_kennung="test.ermittlung",
+                        uhr=uhr,
+                    )
+                async with anwendung.begin():
+                    pseudonymisierer = await pseudonymisierer_laden(
+                        anwendung, fall.kennung
+                    )
+                faelle.append(
+                    EroeffneterFall(
+                        fall=fall,
+                        eroeffnung=eroeffnung,
+                        pseudonymisierer=pseudonymisierer,
+                        uhr=uhr,
+                    )
+                )
+        return faelle
+
+    return eroeffnen_n
+
+
+@pytest.fixture
+async def eroeffneter_fall(
+    faelle_eroeffnen: Callable[[int], Awaitable[list[EroeffneterFall]]],
+) -> EroeffneterFall:
+    """Eröffnet je Test einen synthetischen Fall über fall.service.eroeffnen (Weg der Anwendung)."""
+    return (await faelle_eroeffnen(1))[0]
+
+
+@pytest.fixture
+def fallschluessel_lesen(
+    datenbank: Testdatenbank,
+) -> Callable[[UUID], Awaitable[bytes]]:
+    """Hilfe: liest den Fallschlüssel als Eigentümer (Zugang der Tests, nicht öffentlich).
+
+    Allein für Tests, die den Schlüssel selbst brauchen (zwei Fälle, zwei Schlüssel; Suche nach
+    dem Hex des Schlüssels in Fehlertexten und Spuren). Er steht in keinem Feld eines Fixtures.
+    """
+
+    async def lesen(fall_kennung: UUID) -> bytes:
+        schluessel: bytes | None = None
+        async for eigentuemer in _verbindung(datenbank, EIGENTUEMER):
+            ergebnis = await eigentuemer.execute(
+                text(
+                    "SELECT schluessel FROM r3cosint.fall_schluessel "
+                    "WHERE fall_kennung = :kennung"
+                ),
+                {"kennung": fall_kennung},
+            )
+            schluessel = bytes(ergebnis.scalar_one())
+        assert schluessel is not None
+        return schluessel
+
+    return lesen
 
 
 @pytest.fixture

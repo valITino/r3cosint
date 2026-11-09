@@ -11,7 +11,7 @@
 # aus r3cosint"). Mittelbare Importe über sqlalchemy bleiben erlaubt.
 # Die Verträge 4 und 8 (Schreibverträge, ADR 0007, Verträge; Einheit S1.2) zählen die 13 obersten
 # Pakete ausser spur beziehungsweise fall als Quellen: nur dieses Paket darf seine Table-Objekte
-# und seinen Store importieren (fall.store kommt mit S1.3); Vertrag 9 ordnet die Schichten
+# und seinen Store importieren (fall.store seit S1.3); Vertrag 9 ordnet die Schichten
 # kanon über fall über spur über core. Der Vertrag 5 (Bestand) entsteht mit S1.4.
 
 [tool.importlinter]
@@ -210,6 +210,7 @@ source_modules = [
 ]
 forbidden_modules = [
     "r3cosint.fall.tables",
+    "r3cosint.fall.store",
 ]
 allow_indirect_imports = true
 

@@ -37,3 +37,33 @@ class EingabeFehler(R3cosintFehler):
 
     def __str__(self) -> str:
         return self.sache
+
+
+class ZustandsFehler(R3cosintFehler):
+    """Ein Vorgang ist im aktuellen Zustand nicht zulässig (ADR 0007, Festlegung S1.3, E-S13-08).
+
+    Beispiel: das zweite Schliessen eines Falls.
+    sache: was nicht zulässig ist, ohne den Wert einer Eingabe.
+    """
+
+    def __init__(self, sache: str) -> None:
+        super().__init__(sache)
+        self.sache = sache
+
+    def __str__(self) -> str:
+        return self.sache
+
+
+class EindeutigkeitsFehler(R3cosintFehler):
+    """Ein Wert, der eindeutig sein muss, ist schon vergeben (ADR 0007, Festlegung S1.3, E-S13-08).
+
+    Beispiel: das Aktenzeichen eines nicht gelöschten Falls.
+    sache: was schon vergeben ist, ohne den Wert selbst (er kann Personendaten tragen).
+    """
+
+    def __init__(self, sache: str) -> None:
+        super().__init__(sache)
+        self.sache = sache
+
+    def __str__(self) -> str:
+        return self.sache

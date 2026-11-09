@@ -92,6 +92,7 @@ class FallGeschlossen(BaseModel):
     fall_kennung: UUID
     geschlossen_am: AwareDatetime
     prueffrist_bis: AwareDatetime
+    erste_pruefung_monate: Annotated[int, Field(gt=0, le=_GANZZAHL_GRENZE)]
 
 
 class Entitaet(BaseModel):
@@ -206,6 +207,7 @@ def nutzlast_bilden(eingabe: Eingabe, pseudonymisierer: Pseudonymisierer) -> str
                 "fall_kennung": str(eingabe.fall_kennung),
                 "geschlossen_am": zeitpunkt_text(eingabe.geschlossen_am),
                 "prueffrist_bis": zeitpunkt_text(eingabe.prueffrist_bis),
+                "erste_pruefung_monate": eingabe.erste_pruefung_monate,
             }
         case Entitaet():
             wert = {

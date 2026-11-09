@@ -404,6 +404,7 @@ async def test_R3_F_008_anfuegen_ohne_transaktion_des_aufrufers_wird_abgewiesen(
                     fall_kennung=UUID(int=0),
                     geschlossen_am=NEUE_ZEIT,
                     prueffrist_bis=NEUE_ZEIT,
+                    erste_pruefung_monate=84,
                 )
             },
             "Fallkennung",
@@ -615,6 +616,7 @@ async def test_R3_F_008_eine_eingabe_ausserhalb_der_zuordnung_endet_mit_eingabef
         fall_kennung=fall_mit_ketten.kennung,
         geschlossen_am=NEUE_ZEIT,
         prueffrist_bis=NEUE_ZEIT,
+        erste_pruefung_monate=84,
     )
     with pytest.raises(EingabeFehler, match="Eintragstyp"):
         async with verbindung_anwendung.begin():
