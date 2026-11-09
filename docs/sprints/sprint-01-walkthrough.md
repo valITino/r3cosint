@@ -315,3 +315,26 @@ mit W1-97 (R3-F-001) 1 blockierend, 42 Nachbesserung, 16 Hinweis. Die Zeile
 "Summe" ist auf diese Werte berichtigt. Die Zeile R3-F-001 der Übersicht ist
 ebenso von 9 auf 10 Nachbesserung berichtigt (W1-97 mitgezählt), sodass die
 Einzelzeilen die Summe 66 ergeben. Die Befunde selbst sind unverändert.
+
+## Nachtrag vom 2026-11-09 (Einheit D25)
+
+Verfasser-Rolle: Requirements Engineer. Anlass: Merge des Pull Requests #55
+am 2026-11-09 (Merge-Commit `3cb896da222feefc0df124c8447a443f2dfab7ae`; erster
+Formweg, ohne Kommentar; Angabe des Koordinators, Fremdbeleg), mit dem die
+Vorlagen E-S13-01 bis E-S13-04 je nach der Empfehlung entschieden sind. Die
+Befunde W1-01 bis W1-97, ihre Schwere, die Übersicht und die Zeile "Summe"
+bleiben unverändert; dieser Nachtrag fügt keinen Befund hinzu und schlägt
+keine Lösung vor.
+
+**Vermerk zu W1-97: abgeschlossen.** E-S13-01 ist nach (a) entschieden: Die
+Eindeutigkeit des Aktenzeichens unter den nicht gelöschten Fällen nach der
+Angleichung und die drei Annahmen der Zeile "Achtung" des Eintrags R3-F-001
+(Teilverfahren, Übergang von R2 nach R1, Wiederaufnahme) gelten für den Bau
+als entschieden (ADR 0007, Festlegung S1.3; gebaut in S1.3, abgenommen mit
+demselben Merge). E-S13-02 ist nach (b) entschieden: Der Glossareintrag
+Aktenzeichen bleibt Vorschlag zur Bestätigung durch den Auftraggeber (S-01),
+bis er den Begriff ausdrücklich bestimmt. Die Vorlage aus W1-97 ist damit
+erledigt und W1-97 abgeschlossen; der Befund bleibt in der Liste stehen. Die
+Befunde W1-09 und W1-21 bleiben unberührt. Glossar "Zu ergänzen" Nr. 4 bleibt
+offen: Die Bestimmung der Begriffe Aktenzeichen und Fallnummer liegt beim
+Auftraggeber.

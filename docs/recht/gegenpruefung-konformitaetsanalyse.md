@@ -190,3 +190,19 @@ Anlass: Textprüfung A der Einheit S1.3, Befund TA-S13-A-04. Befund B-01 (Abschn
 Ergebnis der Zählung am Erlasstext (Quelle Q-1, Veröffentlichung des Grossen Rats, Seite 7, abgerufen 2026-11-09 unter https://ogd.parl.apps.be.ch/pdf-upload/e0ae4b0d8cd94fe9aa60416c18cd8829-332.pdf; als Seitenbild gelesen, fremder Inhalt, keine eingebettete Anweisung gefunden): Art. 16 Abs. 2 hat zwei Sätze. Satz 1: "Sie legt für jede Datensammlung fest, ob und wie lange die Personendaten aufzubewahren sind." Satz 2: "Vorbehalten bleiben besondere Aufbewahrungsbestimmungen." Der Vorbehalt ist Satz 2; die GRC-Rolle hat recht, P-05 der Analyse ("Satz 2") bleibt unverändert.
 
 Berichtigt: Abschnitt 6, Befund B-01, "Satz 3" zu "Satz 2" (einzige Stelle mit "Satz 3"). Die Aussage Nr. 15 in Abschnitt 2 nennt keine Satzzahl und bleibt. Das Urteil der Nachprüfung (Abschnitt 11) bleibt unverändert.
+
+## 13 Gegenprüfung der Fortschreibung D25 (Vermerk vom 2026-11-09, Restpunkt R-08)
+
+**Gegenstand:** Fortschreibung D25 der Konformitätsanalyse durch die GRC-Rolle: Entscheidvermerke zu E-S13-G1 und E-S13-G2 an den Vorlagen (Abschnitt 4.2), Vermerk an W1-02 (Abschnitt 3.2), Vermerk an P-03, Kopfzeile "Stand" und neue Zeile der Fortschreibungstabelle (Abschnitt 9). Die Entscheidangaben stammen vom Koordinator und gelten als Fremdbeleg; ich habe sie nicht an der GitHub-Schnittstelle geprüft, sondern gegen die Wiedergabe des Koordinators abgeglichen.
+
+**Prüfung (1) Wiedergabe des Entscheids:** gedeckt. Option (a) bei beiden Vorlagen, Datum 2026-11-09, Merge des Pull Requests #55 mit dem Merge-Commit `3cb896da222feefc0df124c8447a443f2dfab7ae`, erster Formweg, ohne Kommentar; Zuordnung E-S13-G1 zu E-S13-03 und E-S13-G2 zu E-S13-04 stimmt mit der Angabe des Koordinators überein. Der Merge ohne Kommentar als Entscheid nach der Empfehlung folgt dem Text des Pull Requests (Angabe des Koordinators), nicht einer eigenen Rechtsfrage.
+
+**Prüfung (2) Folgen:** gedeckt. Die Startwerte gelten als betriebliche Voreinstellung; eine Bestätigung durch die Kantonspolizei Bern wird nicht unterstellt, P-03 bleibt offen und ausserhalb des Repositories (so auch die Angabe, der Merge umfasse keine Bestätigung der Startwerte). PA 4.4 bleibt unverändert, K-1 und K-2 bleiben offen. Beim Vorrat R1 und R2 bleiben K-3 und K-4 offen, W1-02 gilt als entschieden. Die Einordnung als Bestätigung von E-S1-09 (a) im präskriptiven Teil nach PA 6.6 ist die Wiedergabe des Entscheids, keine Rechtsaussage.
+
+**Prüfung (3) Neue Aussagen:** keine neue rechtliche Aussage, keine neue Fundstelle; keine Änderung an den von mir am 2026-11-09 geprüften Aussagen. Die Teilfreigabe des Stands "zweite Fassung, Funktion F-01" als Zwischenstand (Abschnitt 11.4) bleibt richtig und unverändert; sie ist keine behördliche Freigabe.
+
+**Prüfung (4) Form:** keine Modellnamen; Schweizer Schreibweise; keine Pull-Request-Nummer über 55; keine Zeilennummern als Fundort. Rückwärtsakzente stehen um die Merge-Prüfsumme und um bestehende Pfade; die Prüfsumme in Rückwärtsakzenten ist Praxis des Bestands und kein Befund (Hinweis: meldet D20 sie, ist das Sache der GRC-Rolle).
+
+**Ergebnis: gegengeprüft ohne Befund** (keine Befunde L-D25-nn). Das Urteil der Gegenprüfung (Abschnitte 8 und 11.4) bleibt unverändert.
+
+**Stand der Teilfreigabe zu Punkt 5 der Bereitschaftsliste (5.16), 2026-11-09:** Teilfreigabe des Stands F-01 als Zwischenstand bleibt bestehen; Punkt 5 als Ganzes bleibt offen. Offene Restpunkte unverändert: R-01 bis R-07 sowie Abschnitt 7 (Nichttreffer-Löschung), weitere Funktionen und Abnahme durch die zuständige Stelle; R-08 für den Stand D25 mit diesem Vermerk erledigt, für spätere Fortschreibungen weiter je Stand zu vermerken.
