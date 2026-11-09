@@ -1,0 +1,64 @@
+CryptoWallet:
+  label: Cryptocurrency wallet
+  plural: Cryptocurrency wallets
+  extends:
+    - Thing
+    - Value
+  description: >
+    A cryptocurrency wallet is a view on the transactions conducted by one participant
+    on a blockchain / distributed ledger system.
+  matchable: true
+  featured:
+    - currency
+    - publicKey
+  caption:
+    - publicKey
+    - name
+    - summary
+  temporalExtent:
+    start:
+      - creationDate
+  properties:
+    publicKey:
+      # FIXME: this is a very unusual name for this. what do the bros call it???
+      label: Address
+      description: Public key used to identify the wallet
+      type: identifier
+      maxLength: 512
+    cryptoAddress:
+      label: Crypto address
+      description: "The crypto address of the wallet"
+      type: identifier
+      maxLength: 512
+    privateKey:
+      label: Private key
+    accountId:
+      label: Account ID
+      description: Platform-specific user/account identifier
+      type: identifier
+    creationDate:
+      label: Creation date
+      type: date
+    currencySymbol:
+      label: Currency short code
+    blockchain:
+      label: Blockchain
+      description: "The blockchain or distributed ledger system on which the wallet operates"
+    managingExchange:
+      label: Managing exchange
+    holder:
+      label: Wallet holder
+      type: entity
+      range: LegalEntity
+      reverse:
+        name: cryptoWallets
+        label: "Cryptocurrency wallets"
+    balance:
+      label: Balance
+      type: number
+    balanceDate:
+      label: Balance date
+      type: date
+    custodyType:
+      label: Custody type
+      description: "Type of custody arrangement for the wallet (e.g., self-custody, custodial service)"

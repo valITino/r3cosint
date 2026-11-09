@@ -315,3 +315,114 @@ mit W1-97 (R3-F-001) 1 blockierend, 42 Nachbesserung, 16 Hinweis. Die Zeile
 "Summe" ist auf diese Werte berichtigt. Die Zeile R3-F-001 der Übersicht ist
 ebenso von 9 auf 10 Nachbesserung berichtigt (W1-97 mitgezählt), sodass die
 Einzelzeilen die Summe 66 ergeben. Die Befunde selbst sind unverändert.
+
+## Nachtrag vom 2026-11-09 (Einheit D25)
+
+Verfasser-Rolle: Requirements Engineer. Anlass: Merge des Pull Requests #55
+am 2026-11-09 (Merge-Commit `3cb896da222feefc0df124c8447a443f2dfab7ae`; erster
+Formweg, ohne Kommentar; Angabe des Koordinators, Fremdbeleg), mit dem die
+Vorlagen E-S13-01 bis E-S13-04 je nach der Empfehlung entschieden sind. Die
+Befunde W1-01 bis W1-97, ihre Schwere, die Übersicht und die Zeile "Summe"
+bleiben unverändert; dieser Nachtrag fügt keinen Befund hinzu und schlägt
+keine Lösung vor.
+
+**Vermerk zu W1-97: abgeschlossen.** E-S13-01 ist nach (a) entschieden: Die
+Eindeutigkeit des Aktenzeichens unter den nicht gelöschten Fällen nach der
+Angleichung und die drei Annahmen der Zeile "Achtung" des Eintrags R3-F-001
+(Teilverfahren, Übergang von R2 nach R1, Wiederaufnahme) gelten für den Bau
+als entschieden (ADR 0007, Festlegung S1.3; gebaut in S1.3, abgenommen mit
+demselben Merge). E-S13-02 ist nach (b) entschieden: Der Glossareintrag
+Aktenzeichen bleibt Vorschlag zur Bestätigung durch den Auftraggeber (S-01),
+bis er den Begriff ausdrücklich bestimmt. Die Vorlage aus W1-97 ist damit
+erledigt und W1-97 abgeschlossen; der Befund bleibt in der Liste stehen. Die
+Befunde W1-09 und W1-21 bleiben unberührt. Glossar "Zu ergänzen" Nr. 4 bleibt
+offen: Die Bestimmung der Begriffe Aktenzeichen und Fallnummer liegt beim
+Auftraggeber.
+
+## Nachtrag vom 2026-11-09 (Einheit S1.4)
+
+Verfasser-Rolle: Requirements Engineer. Anlass: Auftrag des Koordinators vom
+2026-11-09, die Befunde der Schwere Nachbesserung zu R3-F-003 und R3-F-005 vor
+der Festlegung S1.4 zu bearbeiten, wie W1-97 vor S1.3 (Stand des Repositories
+nach der Angabe des Koordinators, Fremdbeleg). Die Befunde W1-01 bis W1-97,
+ihre Schwere, die Übersicht und die Zeile "Summe" bleiben unverändert; dieser
+Nachtrag fügt keinen Befund hinzu. Die Hinweise W1-81, W1-82 und W1-93 bis
+W1-96 sind mitbearbeitet, soweit ADR 0007 die Antwort gibt.
+
+**Vermerk zu W1-74 bis W1-82 und W1-84 bis W1-96: bearbeitet.** Die Befunde
+bleiben in der Liste stehen; die Nachbesserung ist als Fortschreibung der
+Einträge R3-F-003 und R3-F-005 in `docs/05_Product_Backlog.md` vorgenommen
+(je Zeile "Stand 2026-11-09"), gestützt auf ADR 0007, Entscheide 24 und 25 und
+die mit dem Merge #52 entschiedenen E-S1-07 a, E-S1-12 a, E-S1-13 a, E-S1-15 a
+und E-S1-21 a. Was ADR 0007 nicht beantwortet, steht als Annahme in der Zeile
+"Achtung" des Eintrags und als Vorlage oder Frage unten.
+
+| Befund | Bearbeitet durch | Offen |
+|---|---|---|
+| W1-74 | R3-F-003, Präzisierung: Erzeugungsweg kanon.service.schreiben, Zähleinheit Knoten und Kante | — |
+| W1-75 | R3-F-003, Präzisierung (a) und "Achtung" (1) | Vorlage E-S14-01; Abgrenzung zu STIX 2.1 mit R3-F-004 |
+| W1-76 | R3-F-003, Präzisierung (b): unbekanntes und abstraktes Schema, unbekannte Eigenschaft, Kante ohne bestehende Enden | FA-S14-03 (Pflichteigenschaften, Werttypen) |
+| W1-77 | R3-F-003, Präzisierung: Prüfung beim Schreiben mit Abweisung | — |
+| W1-78 | R3-F-003, Präzisierung (b) und "Achtung" (4): Fehlerklasse aus core, kein Teil im Bestand, Spur unverändert, kein Protokolleintrag | — |
+| W1-79 | R3-F-003, Präzisierung (a): Gegenprobe je Schema des Vorrats | Vorrat nach E-S14-01 |
+| W1-80 | R3-F-003, "Achtung" (2): genau ein Fall (E-S1-12 a) | FA-S14-01, FA-S14-02 |
+| W1-81 | R3-F-003, "Achtung" (5); Glossar, Entität (Vorschlag) | — |
+| W1-82 | R3-F-003, "Achtung" (6): Fassung in `backend/uv.lock` | — |
+| W1-84 | R3-F-005, Präzisierung des ersten Kriteriums: fünf Angaben nach Entscheid 25; Glossar, Herkunftsnachweis (Vorschlag) | — |
+| W1-85 | R3-F-005, Präzisierung und "Achtung" (1): Benutzerkennung ohne Verweis (E-S1-07 a, GS-1) | — |
+| W1-86 | R3-F-005, Präzisierung: Datenpunkt ist Knoten oder Kante, Eigenschaften Teil davon (E-S1-15 a); Kantenschemata in beziehung (Entscheid 24); Glossar, Datenpunkt (Vorschlag) | FA-S14-10 (Kante als Ende einer Kante) |
+| W1-87 | R3-F-005, zweites Kriterium: Tabellen entitaet und beziehung aller Fälle, Zähleinheit Knoten und Kante | — |
+| W1-88 | R3-F-005, Präzisierung: Weg über kanon und unmittelbarer Weg der Anwendungsrolle | FA-S14-04 (mehrere Datenpunkte in einem Vorgang) |
+| W1-89 | R3-F-005, Präzisierung: je Angabe fehlend, leer, ausserhalb der Form, Verweis ins Leere | FA-S14-02, FA-S14-07 |
+| W1-90 | R3-F-005, Präzisierung und "Achtung" (5): Reaktion je Weg, kein halber Zustand | FA-S14-04 |
+| W1-91 | R3-F-005, Gegenprobe im ersten Kriterium; zweites Kriterium mit eingebrachtem Datenpunkt und nicht leerem Bestand | — |
+| W1-92 | R3-F-005, "Achtung" (7): in Sprint 1 nicht erreichbar | FA-S14-11, Wiedervorlage R3-F-024 und R3-F-072 |
+| W1-93 | R3-F-005, "Achtung" (2): Zeitpunkt der Erhebung | FA-S14-06 |
+| W1-94 | R3-F-005, "Achtung" (8): PROV erst beim Export | — |
+| W1-95 | R3-F-005, zweites Kriterium: Funktion des Produkts (Entscheid 25) | — |
+| W1-96 | R3-F-005, zweites Abnahmekriterium als eigener Testname | — |
+
+W1-83 bleibt im Stand des Vermerks aus dem Nachtrag vom 2026-11-05: entschieden
+mit E-S1-21 a; die Präzisierung von R3-F-005 übernimmt diese Lesart.
+
+**Vorlage an den Auftraggeber.** E-S14-01 (W1-75, W1-79): Welche Schemata von
+FollowTheMoney in Sprint 1 geschrieben werden können. (a) Alle nicht
+abstrakten Knoten- und Kantenschemata der Bibliothek; (b) ein geschlossener
+Vorrat nach der Story von R3-F-003 (Personen, Firmen, Vermögenswerte und die
+Kantenschemata zwischen ihnen), die Liste legt der Software Architect in der
+Festlegung S1.4 fest, jede Erweiterung kommt mit ihrem Eintrag. Empfehlung des
+Requirements Engineers: (b). Die Vorlage geht dem Auftraggeber im Pull Request
+der Einheiten D25 und S1.4 zu.
+
+**Fragen an den Software Architect (Festlegung S1.4).** FA-S14-01 Schreiben in
+einen abgeschlossenen Fall; FA-S14-02 Verweise über Fallgrenzen (Kante mit
+einem Ende in einem anderen Fall, Datenpunkt mit dem Herkunftssatz eines
+anderen Falls); FA-S14-03 fehlende Pflichteigenschaften und Werte ausserhalb
+des Typs einer Eigenschaft; FA-S14-04 Prüfung vor jedem Schreiben und mehrere
+Datenpunkte in einer Transaktion; FA-S14-05 ein Herkunftssatz für mehrere
+Datenpunkte; FA-S14-06 Bedeutung von zeitpunkt im Herkunftssatz und ein
+Zeitpunkt nach dem Schreiben; FA-S14-07 Formen, die herkunft_pruefen zählt, und
+ob sie die Kennungen nennt; FA-S14-08 Kennzeichnung der Spureinträge entitaet
+und beziehung im Verhältnis zur Kennzeichnung des Herkunftssatzes; FA-S14-09
+zweite Ablage derselben FollowTheMoney-Kennung im selben Fall; FA-S14-10
+Kantenschemata, deren Ende selbst eine Kante wäre; FA-S14-11 Herkunftssatz
+für Datenpunkte ohne Abfrage (Wiedervorlage, nicht S1.4).
+
+Im Glossar `docs/03_Glossar.md` stehen zu den Einträgen Datenpunkt,
+Herkunftsnachweis und Entität Vorschläge zur Ergänzung. Die Ready-Bestätigung
+und die Zeile in der Tabelle Nachführungen des Backlogs schreibt der Product
+Owner.
+
+**Ergänzung nach der Festlegung S1.4 (2026-11-09).** Die Fragen FA-S14-01 bis
+FA-S14-11 sind in der Festlegung S1.4 des Software Architects beantwortet
+(ADR 0007, Festlegung S1.4); die Antworten sind in den Zeilen "Achtung" der
+Einträge R3-F-003 und R3-F-005 vermerkt, die Annahmen bleiben stehen. Zu W1-82
+gilt nach der Lieferkettenprüfung E-S1-13 (b): massgeblich ist die Fassung
+4.11.2 der versionierten Schemadateien nach ihrer Quellendatei, nicht die
+Sperrdatei des Backends; die Zeile W1-82 der Tabelle oben ist damit überholt
+(R3-F-003, "Achtung" (6)). Zu W1-89 und W1-91 ist das zweite Kriterium von
+R3-F-005 nach FA-S14-07 fortgeschrieben (vier Formen als Zählwerte). Offen
+bleibt E-S14-01 (Vorlage an den Auftraggeber). Die Abweisungsfälle aus
+FA-S14-01, -02, -03, -09 und -10 sind auf Entscheid des Koordinators vom
+2026-11-09 in die Präzisierung (b) der Abnahmezeile von R3-F-003 aufgenommen;
+den Prüfaufwand bewertet der Product Owner.

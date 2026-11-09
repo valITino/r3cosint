@@ -20,12 +20,13 @@ from r3cosint.core.datenbank import engine_erzeugen
 from r3cosint.core.fehler import KonfigurationsFehler
 from r3cosint.core.konfiguration import aus_umgebung
 from r3cosint.fall.tables import metadata as fall_metadata
+from r3cosint.kanon.tables import metadata as kanon_metadata
 from r3cosint.spur.tables import metadata as spur_metadata
 
 SCHEMA = "r3cosint"
 
-# Die MetaData-Objekte von fall und spur (S1.2); kanon.tables folgt mit S1.4.
-target_metadata: list[MetaData] = [fall_metadata, spur_metadata]
+# Die MetaData-Objekte von fall, spur (S1.2) und kanon (S1.4).
+target_metadata: list[MetaData] = [fall_metadata, spur_metadata, kanon_metadata]
 
 
 def include_object(

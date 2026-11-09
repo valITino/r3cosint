@@ -107,3 +107,75 @@ def test_R3_F_008_der_texttest_ignoriert_docstrings_bezeichner_und_wortteile(
     quelle: str,
 ) -> None:
     assert treffer(quelle, VERTRAEGE["spur"]) == []
+
+
+# Vertrag 5 (R3-F-005, ADR 0007, Zeile "Vertrag 5 und Texttest"): herkunft, entitaet und beziehung
+# sind auch Werte des Eintragstyps in spur; das blosse Wort bleibt frei. Ein Fund ist ein SQL-Satz,
+# in dem einer der Namen hinter einem Schlüsselwort der Anweisung steht.
+VERTRAG_5_NAMEN = ("herkunft", "entitaet", "beziehung")
+VERTRAG_5_MUSTER = re.compile(
+    r"(?<![A-Za-z0-9_])(into|update|from|join|references|table|truncate)\s+"
+    r"(?:r3cosint\.)?(" + "|".join(VERTRAG_5_NAMEN) + r")(?![A-Za-z0-9_])",
+    re.IGNORECASE,
+)
+
+
+def treffer_vertrag_5(quelle: str) -> list[str]:
+    return [t for t in zeichenketten(quelle) if VERTRAG_5_MUSTER.search(t)]
+
+
+def test_R3_F_005_ausserhalb_von_kanon_steht_kein_sql_auf_den_bestand_in_einer_zeichenkette() -> (
+    None
+):
+    gefunden = {
+        p.relative_to(WURZEL).as_posix(): treffer_vertrag_5(
+            p.read_text(encoding="utf-8")
+        )
+        for p in _dateien_ausserhalb("kanon")
+    }
+    assert {k: v for k, v in gefunden.items() if v} == {}
+
+
+def test_R3_F_005_der_gegenstand_von_vertrag_5_ist_nicht_leer() -> None:
+    dateien = _dateien_ausserhalb("kanon")
+    assert dateien
+    assert all(p.relative_to(WURZEL).parts[0] != "kanon" for p in dateien)
+    assert any(p.relative_to(WURZEL).parts[0] == "fall" for p in dateien)
+
+
+@pytest.mark.parametrize(
+    "quelle",
+    [
+        'x = "insert into entitaet (a) values (1)"',
+        'x = "INSERT INTO r3cosint.beziehung (a) VALUES (1)"',
+        "x = f'update herkunft set a = {b}'",
+        'x = "select * from entitaet"',
+        'x = "select * from a join beziehung on 1"',
+        'x = "alter table herkunft add c int"',
+        'x = "truncate r3cosint.entitaet"',
+        'x = b"references herkunft (kennung)"',
+        'x = ("a", "delete from  beziehung")',
+    ],
+)
+def test_R3_F_005_der_texttest_findet_sql_auf_den_bestand_in_allen_formen(
+    quelle: str,
+) -> None:
+    assert treffer_vertrag_5(quelle)
+
+
+@pytest.mark.parametrize(
+    "quelle",
+    [
+        'x = "entitaet"',
+        'x = ("beziehung", "herkunft")',
+        'x = "entitaet_neu"',
+        'x = "from entitaetsliste"',
+        '"""Docstring: insert into entitaet."""\nx = 1',
+        "x = Eintragstyp.ENTITAET",
+        'x = "Die Herkunft der Daten"',
+    ],
+)
+def test_R3_F_005_der_texttest_laesst_das_blosse_wort_und_wortteile_frei(
+    quelle: str,
+) -> None:
+    assert treffer_vertrag_5(quelle) == []

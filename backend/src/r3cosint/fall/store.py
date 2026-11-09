@@ -249,3 +249,22 @@ async def fall_kennungen_lesen(verbindung: AsyncConnection) -> list[UUID]:
     """
     ergebnis = await verbindung.execute(select(fall.c.kennung).order_by(fall.c.kennung))
     return list(ergebnis.scalars())
+
+
+async def fall_teilen(verbindung: AsyncConnection, fall_kennung: UUID) -> Fall | None:
+    """Liest die Fallzeile mit geteilter Sperre (SELECT ... FOR SHARE OF fall; Festlegung S1.4, E-S14-05).
+
+    Die geteilte Sperre hält ein gleichzeitiges Schliessen (FOR NO KEY UPDATE) bis zum Ende der
+    Transaktion des Aufrufers an; das Spaltenrecht UPDATE der Anwendungsrolle genügt dafür
+    (gemessen am 2026-11-09, Messung 1). Parameter: fall_kennung. Rückgabe: Fall oder None, wenn
+    der Fall fehlt. Fehlerklassen: keine eigenen. Transaktionspflicht: die Transaktion des
+    Aufrufers; die Sperre gilt bis zu ihrem Ende.
+    """
+    zeile = (
+        await verbindung.execute(
+            select(*_FALL_SPALTEN)
+            .where(fall.c.kennung == fall_kennung)
+            .with_for_update(read=True, of=fall)
+        )
+    ).one_or_none()
+    return None if zeile is None else _fall(zeile)

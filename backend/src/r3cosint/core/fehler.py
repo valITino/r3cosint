@@ -67,3 +67,33 @@ class EindeutigkeitsFehler(R3cosintFehler):
 
     def __str__(self) -> str:
         return self.sache
+
+
+class SchemaFehler(R3cosintFehler):
+    """Ein Datensatz verletzt das Schema von FollowTheMoney (ADR 0007, Festlegung S1.4, E-S14-07).
+
+    sache: nennt allein Feldnamen der Eingabe und Namen aus den versionierten Schemadateien,
+    nie einen Wert, nie eine vom Aufrufer gelieferte unbekannte Bezeichnung und nie eine
+    FollowTheMoney-Kennung (DS-S14-01).
+    """
+
+    def __init__(self, sache: str) -> None:
+        super().__init__(sache)
+        self.sache = sache
+
+    def __str__(self) -> str:
+        return self.sache
+
+
+class HerkunftFehler(R3cosintFehler):
+    """Der Herkunftsnachweis eines Datenpunkts fehlt oder ist unzulässig (ADR 0007, Nr. 25, R3-F-005).
+
+    sache: nennt allein Feldnamen der Herkunftsangabe, nie einen Wert (DS-S14-01).
+    """
+
+    def __init__(self, sache: str) -> None:
+        super().__init__(sache)
+        self.sache = sache
+
+    def __str__(self) -> str:
+        return self.sache

@@ -24,6 +24,7 @@ from r3cosint.spur.payload import (
 
 SCHLUESSEL = bytes(range(32))
 ZEIT = datetime(2026, 1, 15, 8, 30, 0, 123456, tzinfo=UTC)
+ZEIT_ERHOBEN = datetime(2026, 1, 15, 8, 0, 0, tzinfo=UTC)
 K1, K2, K3, K4 = (UUID(int=n) for n in (1, 2, 3, 4))
 
 
@@ -122,6 +123,10 @@ def _alle_eingaben() -> list[Eingabe]:
             ftm_schema="Person",
             herkunft_kennung=K3,
             eigenschaften=eigenschaften,
+            werkzeug="synth.werkzeug",
+            erhoben_am=ZEIT_ERHOBEN,
+            erhebende_person="synth.erhebung",
+            abfrage="TEST-SYNTH Abfrage",
         ),
         Beziehung(
             fall_kennung=K1,
@@ -132,6 +137,10 @@ def _alle_eingaben() -> list[Eingabe]:
             quelle_kennung=K3,
             ziel_kennung=K4,
             eigenschaften=eigenschaften,
+            werkzeug="synth.werkzeug",
+            erhoben_am=ZEIT_ERHOBEN,
+            erhebende_person="synth.erhebung",
+            abfrage="TEST-SYNTH Abfrage",
         ),
     ]
 
@@ -210,6 +219,10 @@ def test_R3_F_011_werte_werden_sortiert() -> None:
         ftm_schema="Person",
         herkunft_kennung=K3,
         eigenschaften={"name": ("b", "a", "c")},
+        werkzeug="synth.werkzeug",
+        erhoben_am=ZEIT_ERHOBEN,
+        erhebende_person="synth.erhebung",
+        abfrage="TEST-SYNTH Abfrage",
     )
     liste = json.loads(nutzlast_bilden(eingabe, p))["eigenschaften"]["name"]
     assert liste == sorted(liste)
@@ -224,6 +237,10 @@ def test_R3_F_011_leerer_eigenschaftswert_wird_abgewiesen() -> None:
         ftm_schema="Person",
         herkunft_kennung=K3,
         eigenschaften={"name": ("  ",)},
+        werkzeug="synth.werkzeug",
+        erhoben_am=ZEIT_ERHOBEN,
+        erhebende_person="synth.erhebung",
+        abfrage="TEST-SYNTH Abfrage",
     )
     with pytest.raises(ValueError, match="leer"):
         nutzlast_bilden(eingabe, Pseudonymisierer(SCHLUESSEL))
@@ -338,6 +355,10 @@ def test_R3_F_008_unbekannte_felder_und_falsche_typen_werden_abgewiesen() -> Non
             ftm_schema="person",
             herkunft_kennung=K3,
             eigenschaften={},
+            werkzeug="synth.werkzeug",
+            erhoben_am=ZEIT_ERHOBEN,
+            erhebende_person="synth.erhebung",
+            abfrage="TEST-SYNTH Abfrage",
         )
     with pytest.raises(ValidationError):
         Entitaet(
@@ -347,6 +368,10 @@ def test_R3_F_008_unbekannte_felder_und_falsche_typen_werden_abgewiesen() -> Non
             ftm_schema="Person",
             herkunft_kennung=K3,
             eigenschaften={"Name": ("a",)},
+            werkzeug="synth.werkzeug",
+            erhoben_am=ZEIT_ERHOBEN,
+            erhebende_person="synth.erhebung",
+            abfrage="TEST-SYNTH Abfrage",
         )
     with pytest.raises(ValidationError):
         Entitaet(
@@ -356,6 +381,10 @@ def test_R3_F_008_unbekannte_felder_und_falsche_typen_werden_abgewiesen() -> Non
             ftm_schema="Person",
             herkunft_kennung=K3,
             eigenschaften={"name": ()},
+            werkzeug="synth.werkzeug",
+            erhoben_am=ZEIT_ERHOBEN,
+            erhebende_person="synth.erhebung",
+            abfrage="TEST-SYNTH Abfrage",
         )
 
 

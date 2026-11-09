@@ -395,8 +395,9 @@ COV_FAIL_UNDER := 80
 COV_FAIL_UNDER_KRITISCH := 100
 # Module aus ADR 0002, Abschnitt 4.1: spur (Protokoll), zugriff
 # (Klassifizierung), freigabe (Freigabesperre). Ab S1.2 (ADR 0007, E-S1-14 a)
-# auch fall (Fallbindung); kanon folgt mit S1.4 nach E-S1-14 a.
-KRITISCHE_MODULE := spur fall zugriff freigabe
+# auch fall (Fallbindung); ab S1.4 auch kanon (ADR 0007, Festlegung S1.4;
+# R3-F-005).
+KRITISCHE_MODULE := spur fall kanon zugriff freigabe
 
 # E-08 (D3, Linter-Warnungen; D8, Abhaengigkeitsschwachstellen): ADR 0002
 # nennt fuer diese beiden Schwellen ausdruecklich KEINEN Zahlenwert, nur den
