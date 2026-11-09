@@ -64,17 +64,17 @@ class Fall:
 
 
 def _angleichen(wert: str, hoechstlaenge: int) -> str:
-    """Gemeinsame Angleichung: NFC, Leerraum zusammengefasst, getrimmt; Cc und Cf abgewiesen.
+    """Gemeinsame Angleichung: NFC, Leerraum zusammengefasst, getrimmt; Cc, Cf und Cs abgewiesen.
 
     Fehlerfall: ValueError ohne den Wert, wenn das Ergebnis leer ist, ein Zeichen der
-    Kategorien Cc oder Cf enthält oder länger als hoechstlaenge ist.
+    Kategorien Cc, Cf oder Cs (Ersatzzeichen, E-S15-06) enthält oder länger als hoechstlaenge ist.
     """
     normal = unicodedata.normalize("NFC", wert)
     ergebnis = " ".join(normal.split())
     if not ergebnis:
         raise ValueError("Der Wert ist leer.")
-    if any(unicodedata.category(zeichen) in ("Cc", "Cf") for zeichen in ergebnis):
-        raise ValueError("Der Wert enthält ein Steuer- oder Formatzeichen.")
+    if any(unicodedata.category(zeichen) in ("Cc", "Cf", "Cs") for zeichen in ergebnis):
+        raise ValueError("Der Wert enthält ein Steuer-, Format- oder Ersatzzeichen.")
     if len(ergebnis) > hoechstlaenge:
         raise ValueError(f"Der Wert ist länger als {hoechstlaenge} Zeichen.")
     return ergebnis
@@ -85,7 +85,7 @@ def aktenzeichen_angleichen(wert: str) -> str:
 
     Gross- und Kleinschreibung bleiben erhalten (GS-24). Höchstens 100 Zeichen nach der
     Angleichung. Fehlerfall: ValueError, dessen Text den Wert nicht nennt (leer, Zeichen der
-    Kategorien Cc oder Cf, zu lang). Gespeichert und verglichen wird allein diese Form.
+    Kategorien Cc, Cf oder Cs, zu lang). Gespeichert und verglichen wird allein diese Form.
     """
     return _angleichen(wert, _AKTENZEICHEN_HOECHSTLAENGE)
 

@@ -405,3 +405,44 @@ def test_R3_F_008_zeit_ausserhalb_des_bereichs_in_der_nutzlast_wird_abgewiesen()
     )
     with pytest.raises(ValueError, match="ausserhalb"):
         nutzlast_bilden(eingabe, Pseudonymisierer(SCHLUESSEL))
+
+
+@pytest.mark.parametrize("eingabe", _alle_eingaben(), ids=lambda e: type(e).__name__)
+def test_R3_F_011_repr_und_str_der_eingaben_nennen_keinen_klartext(
+    eingabe: Eingabe,
+) -> None:
+    # DS-S15-08: Aktenzeichen, Rechtsgrundlage, ermittelnde Person, ftm_kennung, Eigenschaftswerte
+    # und Abfrage stehen weder in repr noch in str (nur synthetische Werte).
+    klartext = (
+        "TEST-SYNTH-GEHEIM-1",
+        "synthetische Rechtsgrundlage",
+        "test.ermittlung",
+        "erfundene-kennung-geheim",
+        "erfundene-beziehung-geheim",
+        "Erfundene Person",
+        "Nirgendwo",
+        "TEST-SYNTH Abfrage",
+    )
+    for darstellung in (repr(eingabe), str(eingabe)):
+        for wert in klartext:
+            assert wert not in darstellung
+    # Die Darstellung nennt weiter die Kennungen und Vorräte.
+    assert str(K1) in repr(eingabe)
+
+
+@pytest.mark.parametrize(
+    ("klasse", "felder"),
+    [
+        (FallEroeffnet, {"aktenzeichen", "rechtsgrundlage", "ermittelnde_person"}),
+        (Entitaet, {"ftm_kennung", "eigenschaften", "abfrage"}),
+        (Beziehung, {"ftm_kennung", "eigenschaften", "abfrage"}),
+    ],
+)
+def test_R3_F_011_klartextfelder_der_nutzlastklassen_tragen_repr_false(
+    klasse: Any, felder: set[str]
+) -> None:
+    for name in felder:
+        assert klasse.model_fields[name].repr is False
+    for name, feld in klasse.model_fields.items():
+        if name not in felder:
+            assert feld.repr is True

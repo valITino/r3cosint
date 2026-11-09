@@ -311,3 +311,32 @@ def test_R3_F_001_ein_kalendermonat_ist_nicht_30_tage() -> None:
 def test_R3_F_001_ein_ueberlauf_der_monate_ist_ein_valueerror_von_core_zeit() -> None:
     with pytest.raises(ValueError):
         monate_addieren(_utc(2026, 1, 31), 96000)
+
+
+@pytest.mark.parametrize("zeichen", ["\ud800", "\udfff", "\udc80"])
+def test_R3_F_011_angleichen_weist_ersatzzeichen_ohne_den_wert_ab(zeichen: str) -> None:
+    # E-S15-06: ein Ersatzzeichen (Kategorie Cs) liesse sich nicht als UTF-8 kodieren; der
+    # Treiber nennte den Wert in seinem Fehlertext.
+    for funktion in (aktenzeichen_angleichen, rechtsgrundlage_angleichen):
+        with pytest.raises(ValueError, match="Ersatzzeichen") as fehler:
+            funktion(f"GEHEIM{zeichen}WERT")
+        assert "GEHEIM" not in str(fehler.value)
+        assert fehler.value.__cause__ is None
+
+
+@pytest.mark.parametrize("feld", ["aktenzeichen", "rechtsgrundlage"])
+def test_R3_F_011_eroeffnung_weist_ersatzzeichen_ab_und_nennt_den_wert_nicht(
+    feld: str,
+) -> None:
+    # Der Wert steht nicht in der Zeile des Aufrufs, damit die Quellzeile im Traceback ihn
+    # nicht trägt.
+    wert = "".join(["GEHE", "IM", "\ud800", "WERT"])
+    with pytest.raises(ValidationError) as fehler:
+        Eroeffnung(**_daten(**{feld: wert}))
+    for text in (
+        str(fehler.value),
+        repr(fehler.value),
+        "".join(traceback.format_exception(fehler.value)),
+    ):
+        assert "GEHEIM" not in text
+        assert "ud800" not in text.lower()

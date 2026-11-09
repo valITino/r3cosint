@@ -426,3 +426,74 @@ bleibt E-S14-01 (Vorlage an den Auftraggeber). Die Abweisungsfälle aus
 FA-S14-01, -02, -03, -09 und -10 sind auf Entscheid des Koordinators vom
 2026-11-09 in die Präzisierung (b) der Abnahmezeile von R3-F-003 aufgenommen;
 den Prüfaufwand bewertet der Product Owner.
+
+## Nachtrag vom 2026-11-09 (Einheit S1.5)
+
+Verfasser-Rolle: Requirements Engineer. Anlass: Auftrag des Koordinators vom
+2026-11-09, die Befunde zu R3-F-011 vor der Festlegung S1.5 zu bearbeiten, wie
+W1-97 vor S1.3 und W1-74 bis W1-96 vor S1.4 (Stand des Repositories nach der
+Angabe des Koordinators, Fremdbeleg). Die Befunde W1-01 bis W1-97, ihre
+Schwere, die Übersicht und die Zeile "Summe" bleiben unverändert; dieser
+Nachtrag fügt keinen Befund hinzu. Der Hinweis W1-47 und der Querschnitt W1-72,
+soweit er R3-F-011 betrifft, sind mitbearbeitet; W1-48 ist nicht Gegenstand.
+
+**Vermerk zu W1-42 bis W1-47 und W1-72 (R3-F-011): bearbeitet.** Die Befunde
+bleiben in der Liste stehen; die Nachbesserung ist als Fortschreibung des
+Eintrags R3-F-011 in `docs/05_Product_Backlog.md` vorgenommen (Präzisierung in
+der Zeile "Abnahme", zweite Zeile "Achtung", Zeile "Stand 2026-11-09"),
+gestützt auf ADR 0007, Entscheide 17 und 26 (fortgeschrieben mit der Festlegung
+S1.4, angenommen mit dem Merge des Pull Requests #56) und die mit dem Merge #52
+entschiedenen E-S1-06 b und E-S1-07 a. Was ADR 0007 nicht beantwortet, steht
+als Annahme in der zweiten Zeile "Achtung" des Eintrags und als Frage unten.
+
+| Befund | Stand | Fundort | Offen |
+|---|---|---|---|
+| W1-42 | erledigt durch Fortschreibung, Teil "Protokolle ausserhalb von Tabellen" als Wiedervorlage benannt | R3-F-011, Präzisierung der Zeile "Abnahme" (ermittlungsspur, arbeitsspur, kettenkopf; Spalten aus dem Katalog); zweite Zeile "Achtung" (1): Ausgaben von Anwendung, Datenbank, Containern und Tests, Grabstein und Aufgaben nicht Gegenstand in Sprint 1 | Wiedervorlage bei R3-F-020 und R3-F-019; ob ein eigener Eintrag nötig ist, entscheidet der Product Owner |
+| W1-43 | erledigt durch Fortschreibung; Spaltentypen und Textform an die Festlegung S1.5 verwiesen | R3-F-011, Präzisierung: Klartextwerte (Aktenzeichen, Rechtsgrundlage, ermittelnde Person, Eigenschaftswerte, Abfragetexte, FollowTheMoney-Kennungen), zulässiger Klartext nach Entscheid 17, Form der Suche (roh, normalisiert, JSON-Maskierung; Teilzeichenkette; ohne Gross- und Kleinschreibung) | FA-S15-01 (ermittelnde Person), FA-S15-03 (Spaltentypen, Textform) |
+| W1-44 | erledigt durch Fortschreibung | R3-F-011, Präzisierung, Satz "Testfall": Knoten des Schemas Person mit Name, Adresse und Telefonnummer, zweiter Knoten, Kante, je mit Herkunftssatz, über kanon.service.schreiben | — |
+| W1-45 | erledigt durch Fortschreibung; Umkehrbarkeit für Leser der Datenbank offen (Begründung: Fallschlüssel unverschlüsselt bis O-6) | R3-F-011, Präzisierung, Sätze "Die zugehörigen Prüfsummen", "Schlüssel je Fall" und "Ohne Schlüssel"; zweite Zeile "Achtung" (2) | O-6 (vor R3-F-020), ADR 0007, GS-5; FA-S15-04 (Nachrechnung unabhängig vom Produkt) |
+| W1-46 | erledigt durch Fortschreibung; Weg der Manipulation an die Festlegung S1.5 verwiesen | R3-F-011, Präzisierung, Satz "Gegenprobe" (a) am Bestand fall, entitaet, beziehung, herkunft und (b) an eingebrachtem Klartext in beiden Spuren | FA-S15-02 |
+| W1-47 | erledigt durch Fortschreibung | R3-F-011, Präzisierung, Satz "Unkenntlich gemacht": in Sprint 1 allein Pseudonym nach E-S1-06 | — |
+| W1-72 (soweit R3-F-011) | erledigt durch Fortschreibung für R3-F-011; Glossareintrag offen (Begründung: in dieser Teileinheit keine Änderung am Glossar) | R3-F-011, Präzisierung, erster Satz: Protokoll und Protokolltabellen heissen ermittlungsspur, arbeitsspur und kettenkopf | Vorschlag für das Glossar im Bericht an den Koordinator; R3-F-001, R3-F-008, R3-F-009 und R3-F-012 unberührt |
+
+**Fragen an den Software Architect (Festlegung S1.5).** FA-S15-01 Ob die
+ermittelnde Person zu den Klartextwerten nach Entscheid 26 gehört (die Nutzlast
+führt sie als Pseudonym, die Aufzählung in Entscheid 26 nennt sie nicht);
+FA-S15-02 Weg der Manipulation der Teststufe, mit dem Gegenprobe (b) Klartext
+in eine Spalte der anfügbaren Spurtabellen einbringt, und ob danach der
+Zustand der Wegwerfinstanz zurückgesetzt wird; FA-S15-03 welche Datentypen des
+Katalogs als Text- oder JSON-Spalte gelten (darunter Zeichenketten fester
+Länge, json, jsonb, Felder und Spalten binärer Prüfsummen) und welche Textform
+einer JSON-Spalte durchsucht wird; FA-S15-04 ob der Test das Pseudonym
+unabhängig vom Code des Produkts nachrechnet (Schlüssel aus fall_schluessel
+über die Teststufe, HMAC aus der Standardbibliothek) und welches Feld der
+Spureinträge entitaet und beziehung als Prüfsumme des Abfragetexts gilt
+(abfrage_pseudonym oder abfrage_bindung).
+
+Die Ready-Bestätigung, die Bewertung des Prüfaufwands und die Zeile in der
+Tabelle Nachführungen des Backlogs schreibt der Product Owner.
+
+**Ergänzung nach der Festlegung S1.5 (2026-11-09).** Die Fragen FA-S15-01 bis
+FA-S15-04 sind in der Festlegung S1.5 des Software Architects beantwortet
+(ADR 0007, Festlegung S1.5, Zeile "Antworten auf die Fragen des Requirements
+Engineers"): FA-S15-01 ja, die ermittelnde Person gehört zu den
+Klartextwerten, Entscheid 26 ist fortgeschrieben; FA-S15-02 über die
+Manipulation der Teststufe als letzter Schritt des Tests (Zeile "Gegenprobe
+(b)"); FA-S15-03 Zeichenketten sowie json und jsonb, geschlossene Typliste,
+kettenkopf mit zwei durchsuchten Spalten; FA-S15-04 ja, zweiter Rechenweg,
+Prüfsumme des Abfragetexts ist abfrage_pseudonym. Die Fragen Q-RE-2 bis Q-RE-8
+des Software Architects zur Fortschreibung des Eintrags sind erledigt durch
+Nachziehen der noch nicht committeten Präzisierung von R3-F-011 in
+`docs/05_Product_Backlog.md` (Zeile "Abnahme", zweite Zeile "Achtung", Zeile
+"Stand 2026-11-09" mit "Nachgezogen an die Festlegung S1.5"): Q-RE-2
+abgewiesener Schreibversuch im Testfall; Q-RE-3 mehr als 0 durchsuchte Spalten
+auch für kettenkopf; Q-RE-4 geschlossene Typliste; Q-RE-5 JSON-maskierte
+Zeichen in den Testwerten erlaubt und gewollt; Q-RE-6 Trennschärfe je
+Suchbegriff statt Mindestlänge je Wert; Q-RE-7 Suchfläche jede Tabelle des
+Schemas ausser der Positivliste der Klartexttabellen, die drei
+Protokolltabellen als Mindestmass; Q-RE-8 Suchformen NFD und JSON mit und ohne
+ASCII-Maskierung, Teilwerte, positive Formprüfung, Auffangen der
+Prozessausgaben. Q-RE-1 ist in Q-RE-8 aufgegangen. Die Spalte "Offen" der
+Tabelle oben ist für FA-S15-01 bis FA-S15-04 damit erledigt; für W1-42 und
+W1-45 bleiben die Wiedervorlagen und O-6 offen. Die erneute Ready-Prüfung
+schreibt der Product Owner.
