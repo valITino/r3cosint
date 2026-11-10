@@ -20,7 +20,6 @@ R3-F-006	nicht begonnen, Etappe 1
 R3-F-007	nicht begonnen, Etappe 1
 R3-F-009	nicht begonnen, Etappe 1
 R3-F-010	nicht begonnen, Etappe 1
-R3-F-011	nicht begonnen, Etappe 1
 R3-F-013	nicht begonnen, Etappe 1
 R3-F-014	nicht begonnen, Etappe 1
 R3-F-015	nicht begonnen, Etappe 1

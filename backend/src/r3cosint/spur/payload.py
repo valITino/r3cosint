@@ -97,9 +97,9 @@ class FallEroeffnet(BaseModel):
     fall_kennung: UUID
     rechtsregime: Literal["R1", "R2"]
     fallkategorie: _Fallkategorie
-    aktenzeichen: str
-    rechtsgrundlage: str
-    ermittelnde_person: str
+    aktenzeichen: str = Field(repr=False)
+    rechtsgrundlage: str = Field(repr=False)
+    ermittelnde_person: str = Field(repr=False)
     eroeffnet_am: AwareDatetime
 
 
@@ -121,10 +121,10 @@ class Entitaet(BaseModel):
 
     fall_kennung: UUID
     entitaet_kennung: UUID
-    ftm_kennung: str
+    ftm_kennung: str = Field(repr=False)
     ftm_schema: _Schema
     herkunft_kennung: UUID
-    eigenschaften: _Eigenschaften
+    eigenschaften: _Eigenschaften = Field(repr=False)
     werkzeug: _Werkzeug
     erhoben_am: AwareDatetime
     erhebende_person: _Person
@@ -138,12 +138,12 @@ class Beziehung(BaseModel):
 
     fall_kennung: UUID
     beziehung_kennung: UUID
-    ftm_kennung: str
+    ftm_kennung: str = Field(repr=False)
     ftm_schema: _Schema
     herkunft_kennung: UUID
     quelle_kennung: UUID
     ziel_kennung: UUID
-    eigenschaften: _Eigenschaften
+    eigenschaften: _Eigenschaften = Field(repr=False)
     werkzeug: _Werkzeug
     erhoben_am: AwareDatetime
     erhebende_person: _Person

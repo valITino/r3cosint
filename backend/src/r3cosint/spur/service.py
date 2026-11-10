@@ -128,13 +128,17 @@ async def anfuegen(
     if kopf is None:
         raise EingabeFehler("Für diesen Fall besteht keine Kette dieser Spur.")
     zeitpunkt = uhr.jetzt()
+    abweisung: EingabeFehler | None = None
     try:
         zeitpunkt_text(zeitpunkt)
-    except ValueError as fehler:
-        raise EingabeFehler(
+    except ValueError:
+        abweisung = EingabeFehler(
             "Der Zeitpunkt der Uhr ist nicht zeitbewusst oder liegt ausserhalb von "
             "2000-01-01 bis vor 9999-01-01 (UTC)."
-        ) from fehler
+        )
+    if abweisung is not None:
+        # Ausserhalb des except-Blocks und mit from None: keine Ursache am Fehler.
+        raise abweisung from None
     try:
         offen = Eintrag(
             spur=spur,
@@ -150,11 +154,15 @@ async def anfuegen(
             pruefsumme="",
         )
         eintrag = replace(offen, pruefsumme=kette.pruefsumme(offen))
-    except ValueError as fehler:
-        raise EingabeFehler(
+    except ValueError:
+        abweisung = EingabeFehler(
             "Die Eingabe lässt sich nicht als Nutzlast bilden "
             "(leerer Wert oder Zeitpunkt ausser Bereich)."
-        ) from fehler
+        )
+    if abweisung is not None:
+        # Ausserhalb des except-Blocks und mit from None: weder __cause__ noch __context__
+        # trägt den ValueError, dessen Objekt den Klartext halten kann (DS-S15-07, SD-S14-B-02).
+        raise abweisung from None
     await store.eintrag_einfuegen(verbindung, eintrag)
     await store.kopf_fortschreiben(
         verbindung,

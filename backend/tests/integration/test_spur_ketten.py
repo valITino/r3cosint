@@ -4,6 +4,7 @@ R3-F-008, R3-F-012).
 """
 
 import asyncio
+import traceback
 from collections.abc import Awaitable, Callable
 from dataclasses import replace
 from datetime import UTC, datetime
@@ -25,7 +26,12 @@ from r3cosint.spur.kette import (
     anfangswert,
     pruefsumme,
 )
-from r3cosint.spur.payload import FallEroeffnet, FallGeschlossen, Pseudonymisierer
+from r3cosint.spur.payload import (
+    Entitaet,
+    FallEroeffnet,
+    FallGeschlossen,
+    Pseudonymisierer,
+)
 from r3cosint.spur.service import (
     Kennzeichnung,
     alle_ketten_pruefen,
@@ -741,3 +747,93 @@ async def test_R3_F_012_stimmig_gerechneter_eintrag_von_1999_wird_in_beiden_wege
         anzahl=2,
     )
     assert befund.letzte_pruefsumme == e[1].pruefsumme
+
+
+@pytest.mark.parametrize(
+    "aenderung",
+    [{"aktenzeichen": "GEHEIM\ud800WERT"}, {"ermittelnde_person": "GEHEIM\udfffWERT"}],
+    ids=["aktenzeichen", "ermittelnde_person"],
+)
+async def test_R3_F_011_ersatzzeichen_an_spur_service_ergibt_eingabefehler_ohne_ursache(
+    fall_mit_ketten: "SynthetischerFall",
+    verbindung_anwendung: AsyncConnection,
+    aenderung: dict[str, Any],
+) -> None:
+    # DS-S15-07, SD-S14-B-02: das Ersatzzeichen scheitert erst beim Kodieren der Nutzlast; der
+    # EingabeFehler trägt weder Text noch Ursache mit dem Wert.
+    with pytest.raises(EingabeFehler, match="Nutzlast") as fehler:
+        async with verbindung_anwendung.begin():
+            await _anfuegen(
+                verbindung_anwendung,
+                fall_mit_ketten,
+                eingabe=_eroeffnet(fall_mit_ketten, **aenderung),
+            )
+    ausnahme = fehler.value
+    assert ausnahme.__cause__ is None
+    assert ausnahme.__context__ is None
+    assert ausnahme.__suppress_context__ is True
+    texte = [
+        str(ausnahme),
+        repr(ausnahme),
+        repr(ausnahme.args),
+        "".join(traceback.format_exception(ausnahme)),
+    ]
+    for darstellung in texte:
+        assert "GEHEIM" not in darstellung
+        assert "\ud800" not in darstellung
+        assert "\udfff" not in darstellung
+    anwendung, _ = await _beide_wege(verbindung_anwendung, fall_mit_ketten.kennung)
+    assert anwendung[Spur.ARBEITSSPUR].anzahl == 0
+
+
+async def test_R3_F_011_zeitfehler_an_spur_service_traegt_keine_ursache(
+    fall_mit_ketten: "SynthetischerFall", verbindung_anwendung: AsyncConnection
+) -> None:
+    with pytest.raises(EingabeFehler, match="Zeitpunkt der Uhr") as fehler:
+        async with verbindung_anwendung.begin():
+            await _anfuegen(verbindung_anwendung, fall_mit_ketten, uhr=_UhrMax())
+    assert fehler.value.__cause__ is None
+    assert fehler.value.__context__ is None
+
+
+async def test_R3_F_011_ersatzzeichen_im_eigenschaftswert_ergibt_eingabefehler_und_laesst_den_kopf_unveraendert(
+    fall_mit_ketten: "SynthetischerFall", verbindung_anwendung: AsyncConnection
+) -> None:
+    # ST-S15-03: Entitaet statt FallEroeffnet, Kopf und Kette ausdrücklich geprüft.
+    wert = "".join(["GEHE", "IM", "\ud800", "WERT"])
+    eingabe = Entitaet(
+        fall_kennung=fall_mit_ketten.kennung,
+        entitaet_kennung=UUID(int=11),
+        ftm_kennung="synth-kennung",
+        ftm_schema="Person",
+        herkunft_kennung=UUID(int=12),
+        eigenschaften={"name": (wert,)},
+        werkzeug="synth.werkzeug",
+        erhoben_am=fall_mit_ketten.uhr.zeitpunkt,
+        erhebende_person="test.ermittlung",
+        abfrage="synthetische Abfrage",
+    )
+    with pytest.raises(EingabeFehler, match="Nutzlast") as fehler:
+        async with verbindung_anwendung.begin():
+            await _anfuegen(
+                verbindung_anwendung,
+                fall_mit_ketten,
+                spur=Spur.ERMITTLUNGSSPUR,
+                eingabe=eingabe,
+            )
+    assert fehler.value.__cause__ is None
+    assert fehler.value.__context__ is None
+    for darstellung in (
+        str(fehler.value),
+        repr(fehler.value),
+        repr(fehler.value.args),
+        "".join(traceback.format_exception(fehler.value)),
+    ):
+        assert "GEHEIM" not in darstellung
+        assert "ud800" not in darstellung.lower()
+    anwendung, datenbank = await _beide_wege(
+        verbindung_anwendung, fall_mit_ketten.kennung
+    )
+    assert anwendung == datenbank
+    befund = anwendung[Spur.ERMITTLUNGSSPUR]
+    assert befund.unversehrt and befund.anzahl == 0 and befund.kopf_position == 0
