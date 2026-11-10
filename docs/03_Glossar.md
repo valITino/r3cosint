@@ -5,7 +5,7 @@
 | **Arbeitsprodukt nach** | Projektauftrag 6.3 |
 | **Verantwortlich** | Requirements Engineer; ein benannter Verantwortlicher ist noch zu bestimmen |
 | **Lebensdauer** | langlebig |
-| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19. Nachgeführt 2026-09-21 mit dem Backlog-Eintrag R3-Q-010: Gate und Hook aufgenommen, beim Eintrag Freigabe-Gate die Homonym-Warnung um die Abgrenzung zum Gate ergänzt — beide Begriffe werden in Arbeitsprodukten und Regeln seit dem 2026-08-19 verwendet, standen aber nicht im Glossar, und "Gate" bezeichnete darin zwei verschiedene Sachen (R3 der Definition of Ready, Homonyme vermeiden). Nachgeführt 2026-09-23 mit dem Backlog-Eintrag R3-Q-011: Einschleusung, Fremder Inhalt und Harness aufgenommen — alle drei Begriffe tragen den Eintrag; "fremde Inhalte" wurde bisher für den Harness (CLAUDE.md, Abschnitt "Nicht verhandelbar") und für das Produkt (R3-F-017) ohne Abgrenzung gebraucht, und "Harness" selbst stand trotz Verwendung im Projektauftrag (5.15) und in CLAUDE.md nicht im Glossar (R3 der Definition of Ready). Nachgeführt 2026-10-28 mit der Einheit G0: Grundgerüst aufgenommen — der Begriff wird im Projektauftrag (3.1), im Architekturentscheid und in der Freigabe des Grundgerüsts verwendet, stand aber nicht im Glossar; `docs/12_Freigabe_Grundgeruest.md` führt die Aufnahme in Abschnitt 1 als Restpunkt und weist sie in Abschnitt 4 (G0, Rollen) dem Requirements Engineer zu (R3 der Definition of Ready). Nachgeführt 2026-11-05 mit der Einheit S1 (Walkthrough vor Sprint 1, `docs/sprints/sprint-01-walkthrough.md`): Aufgabe, Datenpunkt, Fallkategorie, Fallverantwortlicher, Kettenprüfung, Klardaten, Löschweg, Protokolleintrag, Prüffrist, Rechtsregime und Verkettung aufgenommen (neuer Abschnitt D), bei Aufbewahrungsklasse das Synonym Fallkategorie vermerkt (4.4, Punkt 3b: genau ein Feld), bei Grabstein-Eintrag die Kurzform; Sprint 1 braucht die Begriffe als Bezeichner (ADR 0002, A13). Rechtsregime trägt [rechtlich] und ist am 2026-11-05 durch die GRC-Rolle geprüft (Einheit S1); offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5). Unter "Zu ergänzen" Nr. 4 bis 6 neu. 64 Einträge. Nachgeführt 2026-11-05 mit der Einheit D22 (nach der Annahme von Sprint 1 und ADR 0007 durch den Merge des Pull Requests #52): Eintragstyp und Kettenkopf aufgenommen (ADR 0007, Entscheid 28, Restpunkt des Software Architects); Rechtsregime nach Hinweis H-3 der GRC-Rolle neu gefasst (R1 oder R2 als Regime des Falls, R3 bis R5 als Rahmen, Eigenschaft der Bearbeitung beziehungsweise Phase nach dem Betriebszweck; 4.4, Tabelle; ADR 0007, E-S1-09), die Neufassung geprüft durch die GRC-Rolle am 2026-11-05 (Einheit D22), offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5); bei Fallkategorie die Fundstellen der Sätze zu Kurzkennzeichnung und Archivwürdigkeit nachgetragen (H-4); beim Fall Rechtsregime und Fallkategorie statt Aufbewahrungsklasse, mit Vermerk zum Synonym (H-5); "Zu ergänzen" Nr. 5 nachgeführt (H-6). 66 Einträge. Nachgeführt 2026-11-09 vor der Einheit S1.3 (Walkthrough-Befund W1-97): Aktenzeichen als Vorschlag zur Bestätigung durch den Auftraggeber aufgenommen, mit der Abgrenzung zur Fallnummer im Eintrag (kein eigener Eintrag Fallnummer, weil 4.4 sie allein als Bestandteil des Grabstein-Eintrags nennt); "Zu ergänzen" Nr. 4 nachgeführt. 67 Einträge. Nachgeführt 2026-11-09 mit der Einheit D25 (nach dem Merge des Pull Requests #55, Merge-Commit `3cb896da222feefc0df124c8447a443f2dfab7ae`; Angabe des Koordinators, Fremdbeleg): beim Eintrag Aktenzeichen die Entscheide E-S13-02 (b) und E-S13-01 (a) vermerkt, die Kennzeichnung als unbestätigter Vorschlag bleibt; "Zu ergänzen" Nr. 4 nachgeführt, die Bestimmung beider Begriffe bleibt offen. 67 Einträge. Nachgeführt 2026-11-09 vor der Einheit S1.4 (Walkthrough-Befunde W1-75, W1-81, W1-84, W1-86): bei Datenpunkt, Herkunftsnachweis und Entität je ein Vorschlag zur Ergänzung, gekennzeichnet und nicht bestätigt; kein neuer Eintrag. 67 Einträge. Nachgeführt 2026-11-09 mit der Einheit D26 (nach dem Merge des Pull Requests #56, Merge-Commit `04e759130e63111556a853487db03b035430e522`; Angabe des Koordinators, Fremdbeleg): beim Eintrag Entität den Entscheid E-S14-01 (b) vermerkt und in der Klammer des Vorschlagssatzes darauf verwiesen (geschlossener Vorrat von elf Schemata nach FollowTheMoney in Sprint 1; STIX 2.1 bleibt offen, R3-F-004); bei Datenpunkt, Herkunftsnachweis und Entität die Kennzeichnung der Vorschläge zur Ergänzung nachgeführt: nicht bestätigt, im Pull Request #56 nicht zur Bestätigung vorgelegt, Vorlage im Pull Request der Einheiten D26 und S1.5; keine inhaltliche Änderung an Begriffen, kein neuer Eintrag. 67 Einträge. Nachgeführt 2026-11-10 mit der Einheit D27 (Merge #57, Merge-Commit `c2b187b8b2b2706b4a85ac404a1a23148cdcd884`; Fremdbeleg): E-D26-01 (a), die Ergänzungen bei Datenpunkt, Herkunftsnachweis und Entität bestätigt, Wortlaut unverändert; aus S1.5 (W1-72), gekennzeichnet und nicht bestätigt: Protokoll und Pseudonym neu, Ergänzungen bei Klardaten und Protokolleintrag; Vorlage E-D27-01 im Pull Request der Einheiten D27 und S2. 69 Einträge |
+| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19. Nachgeführt 2026-09-21 mit dem Backlog-Eintrag R3-Q-010: Gate und Hook aufgenommen, beim Eintrag Freigabe-Gate die Homonym-Warnung um die Abgrenzung zum Gate ergänzt — beide Begriffe werden in Arbeitsprodukten und Regeln seit dem 2026-08-19 verwendet, standen aber nicht im Glossar, und "Gate" bezeichnete darin zwei verschiedene Sachen (R3 der Definition of Ready, Homonyme vermeiden). Nachgeführt 2026-09-23 mit dem Backlog-Eintrag R3-Q-011: Einschleusung, Fremder Inhalt und Harness aufgenommen — alle drei Begriffe tragen den Eintrag; "fremde Inhalte" wurde bisher für den Harness (CLAUDE.md, Abschnitt "Nicht verhandelbar") und für das Produkt (R3-F-017) ohne Abgrenzung gebraucht, und "Harness" selbst stand trotz Verwendung im Projektauftrag (5.15) und in CLAUDE.md nicht im Glossar (R3 der Definition of Ready). Nachgeführt 2026-10-28 mit der Einheit G0: Grundgerüst aufgenommen — der Begriff wird im Projektauftrag (3.1), im Architekturentscheid und in der Freigabe des Grundgerüsts verwendet, stand aber nicht im Glossar; `docs/12_Freigabe_Grundgeruest.md` führt die Aufnahme in Abschnitt 1 als Restpunkt und weist sie in Abschnitt 4 (G0, Rollen) dem Requirements Engineer zu (R3 der Definition of Ready). Nachgeführt 2026-11-05 mit der Einheit S1 (Walkthrough vor Sprint 1, `docs/sprints/sprint-01-walkthrough.md`): Aufgabe, Datenpunkt, Fallkategorie, Fallverantwortlicher, Kettenprüfung, Klardaten, Löschweg, Protokolleintrag, Prüffrist, Rechtsregime und Verkettung aufgenommen (neuer Abschnitt D), bei Aufbewahrungsklasse das Synonym Fallkategorie vermerkt (4.4, Punkt 3b: genau ein Feld), bei Grabstein-Eintrag die Kurzform; Sprint 1 braucht die Begriffe als Bezeichner (ADR 0002, A13). Rechtsregime trägt [rechtlich] und ist am 2026-11-05 durch die GRC-Rolle geprüft (Einheit S1); offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5). Unter "Zu ergänzen" Nr. 4 bis 6 neu. 64 Einträge. Nachgeführt 2026-11-05 mit der Einheit D22 (nach der Annahme von Sprint 1 und ADR 0007 durch den Merge des Pull Requests #52): Eintragstyp und Kettenkopf aufgenommen (ADR 0007, Entscheid 28, Restpunkt des Software Architects); Rechtsregime nach Hinweis H-3 der GRC-Rolle neu gefasst (R1 oder R2 als Regime des Falls, R3 bis R5 als Rahmen, Eigenschaft der Bearbeitung beziehungsweise Phase nach dem Betriebszweck; 4.4, Tabelle; ADR 0007, E-S1-09), die Neufassung geprüft durch die GRC-Rolle am 2026-11-05 (Einheit D22), offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5); bei Fallkategorie die Fundstellen der Sätze zu Kurzkennzeichnung und Archivwürdigkeit nachgetragen (H-4); beim Fall Rechtsregime und Fallkategorie statt Aufbewahrungsklasse, mit Vermerk zum Synonym (H-5); "Zu ergänzen" Nr. 5 nachgeführt (H-6). 66 Einträge. Nachgeführt 2026-11-09 vor der Einheit S1.3 (Walkthrough-Befund W1-97): Aktenzeichen als Vorschlag zur Bestätigung durch den Auftraggeber aufgenommen, mit der Abgrenzung zur Fallnummer im Eintrag (kein eigener Eintrag Fallnummer, weil 4.4 sie allein als Bestandteil des Grabstein-Eintrags nennt); "Zu ergänzen" Nr. 4 nachgeführt. 67 Einträge. Nachgeführt 2026-11-09 mit der Einheit D25 (nach dem Merge des Pull Requests #55, Merge-Commit `3cb896da222feefc0df124c8447a443f2dfab7ae`; Angabe des Koordinators, Fremdbeleg): beim Eintrag Aktenzeichen die Entscheide E-S13-02 (b) und E-S13-01 (a) vermerkt, die Kennzeichnung als unbestätigter Vorschlag bleibt; "Zu ergänzen" Nr. 4 nachgeführt, die Bestimmung beider Begriffe bleibt offen. 67 Einträge. Nachgeführt 2026-11-09 vor der Einheit S1.4 (Walkthrough-Befunde W1-75, W1-81, W1-84, W1-86): bei Datenpunkt, Herkunftsnachweis und Entität je ein Vorschlag zur Ergänzung, gekennzeichnet und nicht bestätigt; kein neuer Eintrag. 67 Einträge. Nachgeführt 2026-11-09 mit der Einheit D26 (nach dem Merge des Pull Requests #56, Merge-Commit `04e759130e63111556a853487db03b035430e522`; Angabe des Koordinators, Fremdbeleg): beim Eintrag Entität den Entscheid E-S14-01 (b) vermerkt und in der Klammer des Vorschlagssatzes darauf verwiesen (geschlossener Vorrat von elf Schemata nach FollowTheMoney in Sprint 1; STIX 2.1 bleibt offen, R3-F-004); bei Datenpunkt, Herkunftsnachweis und Entität die Kennzeichnung der Vorschläge zur Ergänzung nachgeführt: nicht bestätigt, im Pull Request #56 nicht zur Bestätigung vorgelegt, Vorlage im Pull Request der Einheiten D26 und S1.5; keine inhaltliche Änderung an Begriffen, kein neuer Eintrag. 67 Einträge. Nachgeführt 2026-11-10 mit der Einheit D27 (Merge #57, Merge-Commit `c2b187b8b2b2706b4a85ac404a1a23148cdcd884`; Fremdbeleg): E-D26-01 (a), die Ergänzungen bei Datenpunkt, Herkunftsnachweis und Entität bestätigt, Wortlaut unverändert; aus S1.5 (W1-72), gekennzeichnet und nicht bestätigt: Protokoll und Pseudonym neu, Ergänzungen bei Klardaten und Protokolleintrag; Vorlage E-D27-01 im Pull Request der Einheiten D27 und S2. 69 Einträge. Nachgeführt 2026-11-10 vor der Einheit S2 (Walkthrough vor Sprint 2, W2-61 bis W2-63): Freigabe-Kennung, Freigabevorschau, Gegenstelle, Verbindungsversuch und Werkzeug als Vorschläge neu, gekennzeichnet und nicht bestätigt. 74 Einträge. Nachgeführt 2026-11-10 in der Einheit S2 nach der Festlegung des Software Architects (ADR 0008, Status vorgeschlagen): die fünf Vorschläge aus S2 an ADR 0008 angeglichen, die dort bestimmten Punkte (W2-01, W2-13, W2-27, W2-33, W2-36, W2-38, W2-39, W2-48, W2-50, W2-52, W2-56) mit Verweis auf Entscheid oder Entscheidpunkt eingesetzt; offen bleibt die Erkennung einer interaktiven Sitzung vor der Anmeldung (Grenze GK-3, W2-28) und die rechtliche Einordnung des versuchten Ziels bei der GRC-Rolle (W2-38); Kennzeichnung unverändert, Vorlage E-D27-01; die Vorschläge aus D27 unverändert. 74 Einträge |
 
 **Die Verwendung dieses Glossars ist für alle Arbeitsprodukte und für die
 Oberflächentexte verpflichtend** (6.3). Synonyme sind gekennzeichnet, Homonyme
@@ -264,6 +264,25 @@ schriftlich zustimmt, bevor der nächste Lieferschritt beginnt (Abschnitt 2, 5.6
 *Homonym-Warnung:* nicht dasselbe wie die Freigabe einer Abfrage und nicht
 dasselbe wie das Gate im Sinne eines blockierenden Hooks (siehe dort).
 
+**Freigabe-Kennung** — *Vorschlag zur Ergänzung (2026-11-10, Einheit S2; zur
+Bestätigung im Pull Request der Einheiten D27 und S2), nicht bestätigt:* Die
+einmal verwendbare Kennung, die erst die Freigabe eines Menschen zu einer
+Freigabevorlage erzeugt und ohne die das Modul freigabe.ausfuehrung nicht
+ausführt; sie entsteht nur aus einer interaktiven Sitzung und wird in
+derselben Transaktion wie die Ausführung verbraucht (ADR 0002, Abschnitte 4.1
+und 4.2; R3-F-014). Sie entsteht allein im Modul freigabe.erteilung aus
+32 Zufallsbytes, ohne abgeleiteten Inhalt, und wird mit dem Zustand
+freigegeben in die Freigabevorlage gesetzt (ADR 0008, Entscheid 11);
+verbraucht wird sie, indem die Ausführung die Freigabevorlage in derselben
+Transaktion von freigegeben nach ausgefuehrt setzt und die Bindung der
+Vorlage nachrechnet (ADR 0008, Entscheide 9 und 12; W2-27). Woran eine
+interaktive Sitzung vor der Anmeldung (Etappe 3) erkannt wird, bleibt offen:
+bis dahin ist die freigebende Person ein Parameter, und ob ein Mensch
+bestätigt hat, ist nicht prüfbar (ADR 0008, Entscheid 13, Grenze GK-3;
+Walkthrough vor Sprint 2, W2-28). *Abzugrenzen von:* Freigabe (siehe dort) — die Freigabe ist die
+Bestätigung des Menschen, die Freigabe-Kennung ihr maschinell prüfbares
+Ergebnis.
+
 **Freigabevorlage** — Der vom Modul `freigabe.vorschlag` erzeugte, noch nicht
 bestätigte Vorschlag im Zustand *offen*. Er führt als Vorschau die vorgesehenen
 Abfragen, die Ziele und den zu erwartenden Kontingentverbrauch. Bei der
@@ -276,6 +295,22 @@ Freigabe-Kennung, ohne die nicht ausgeführt wird. *Homonym-Warnung:* ebenso
 wenig dasselbe wie das Freigabe-Gate, das den Projektablauf betrifft und nicht
 eine einzelne Abfrage. Auch keine Formularvorlage: "Vorlage" meint hier den
 einzelnen, fallbezogenen Vorschlag, nicht ein Muster.
+
+**Freigabevorschau** — *Vorschlag zur Ergänzung (2026-11-10, Einheit S2; zur
+Bestätigung im Pull Request der Einheiten D27 und S2), nicht bestätigt:* Die
+Vorschau einer Freigabevorlage: die vorgesehenen Abfragen, ihre Ziele und der
+zu erwartende Kontingentverbrauch, die der Mensch vor der Freigabe sieht
+(ADR 0002, Abschnitt 4.1, Zeile freigabe.vorschlag, und Abschnitt 4.2,
+Zeile Kontingentgrenzen; R3-F-014, R3-F-016). Im Produkt ist sie der
+Rückgabewert von freigabe.vorschlag.erstellen: je Abfrage das Werkzeug, die
+Kennung des Listeneintrags der Positivliste als Ziel und der erwartete
+Verbrauch, dazu je Werkzeug der Verbrauch des Tages und die Grenze; die
+Parameter stehen im Klartext allein im Rückgabewert, nie in Fehlertext oder
+Prozessprotokoll; sie ist eine Datenstruktur, keine Darstellung (ADR 0008,
+Entscheide 10 und 17;
+Walkthrough vor Sprint 2, W2-33, W2-48). *Synonym:* Vorschau (R3-F-014).
+*Nicht verwenden als Synonym für:* Freigabevorlage — die Vorschau ist ein
+Teil der Freigabevorlage, nicht die Vorlage selbst.
 
 **Fremder Inhalt** — Im Harness, den Claude-Code-Sitzungen und Rollen dieses
 Repositories: jeder Text, der in eine Sitzung gelangt und weder vom
@@ -308,6 +343,20 @@ Methodik-Repository mitgibt. *Abzugrenzen von:* Freigabe-Gate (siehe dort) —
 jenes ist ein Prüfpunkt im Projektablauf, an dem ein Mensch schriftlich
 zustimmt, dieses eine maschinelle Sperre ohne Ermessen. *Nicht verwenden als
 Synonym für:* Freigabe.
+
+**Gegenstelle** — *Vorschlag zur Ergänzung (2026-11-10, Einheit S2; zur
+Bestätigung im Pull Request der Einheiten D27 und S2), nicht bestätigt:* Ein
+Dienst ausserhalb von R3cOSINT, zu dem das Modul ausgang als einziger Ort
+mit einem HTTP-Client nach aussen eine Verbindung aufbaut; die Positivliste
+führt die ausdrücklich freigegebenen Gegenstellen (5.4; ADR 0002,
+Abschnitt 4.1; R3-F-015, R3-F-028). Ein Ziel ist bestimmt durch Schema,
+Rechnername oder Adresse in Normalform und Anschluss; die Positivliste führt
+Einträge dieser Form, je mit einer Kennung (ADR 0008, Entscheid 14;
+Walkthrough vor Sprint 2, W2-36, W2-52). Dieselbe Gegenstelle mit anderem
+Anschluss oder http statt https ist ein anderes Ziel (ADR 0008,
+Entscheid 15). *Abzugrenzen von:* Ziel (R3-F-015) — das Ziel ist die
+Bestimmung aus Schema, Rechnername oder Adresse und Anschluss, gegen die
+geprüft wird; die Gegenstelle ist der Dienst, zu dem verbunden wird.
 
 **Grabstein-Eintrag** — Was nach einer Löschung bleibt: Fallnummer,
 Löschzeitpunkt, freigebende Person, Rechtsgrundlage, Prüfsumme. Kein Inhalt.
@@ -630,6 +679,23 @@ fertig ist, was offen ist, welche Entscheidungen getroffen wurden (3.3).
 
 ## V
 
+**Verbindungsversuch** — *Vorschlag zur Ergänzung (2026-11-10, Einheit S2;
+zur Bestätigung im Pull Request der Einheiten D27 und S2), nicht bestätigt:*
+Jeder Versuch des Moduls ausgang, eine Verbindung zu einer Gegenstelle
+aufzubauen; jeder Weiterleitungsschritt gilt als eigener, erneut gegen die
+Positivliste geprüfter Verbindungsversuch, und jeder Versuch wird
+protokolliert (ADR 0002, Abschnitt 4.1, Zeile ausgang; R3-F-015,
+R3-F-028). Geprüft wird vor jedem Versuch: ein Ziel ohne gleichen Eintrag
+der Positivliste wird ohne Namensauflösung, Verbindung oder Byte abgewiesen;
+ein Name wird je Versuch genau einmal aufgelöst; der erste Versuch ist
+Schritt 0, jede Weiterleitung zählt als weiterer Schritt (ADR 0008,
+Entscheid 15; Walkthrough vor Sprint 2, W2-39, W2-50, W2-56). Je Versuch,
+auch je abgewiesenem, steht ein Eintrag verbindungsversuch in der
+Arbeitsspur des Falls, mit dem Ergebnis aus einem geschlossenen Vorrat und
+dem Ziel allein als Pseudonym, bei Zielen der Liste dazu die Kennung des
+Listeneintrags (ADR 0008, Entscheid 16; W2-38). Die rechtliche Einordnung
+des versuchten Ziels (Bekanntgabe, 5.17) bleibt bei der GRC-Rolle (W2-38).
+
 **[rechtlich] Verdeckte Ermittlung** — Art. 285a ff. StPO. Angehörige der Polizei
 knüpfen unter einer **urkundlich abgesicherten Legende** Kontakte. Verlangt die
 Genehmigung des Zwangsmassnahmengerichts. **R3cOSINT leistet das nicht und darf
@@ -671,6 +737,26 @@ schemakonformen Modellantwort entsteht eine Freigabevorlage, keine Ausführung.
 *Abzugrenzen von:* Antwortschema (siehe dort).
 
 ## W
+
+**Werkzeug** — *Vorschlag zur Ergänzung (2026-11-10, Einheit S2; zur
+Bestätigung im Pull Request der Einheiten D27 und S2), nicht bestätigt:* Im
+Produkt eine im Werkzeugverzeichnis des Moduls beschaffung registrierte
+Funktion, über die eine Abfrage an eine Quelle gestellt wird; aufgerufen wird
+sie allein über den einen Aufrufpfad, der Fallbezug und Kontingent prüft, und
+sie enthält keine eigene Prüfung (ADR 0002, Abschnitte 4.1 und 4.2; R3-F-002,
+R3-F-026). Ein solcher Aufruf heisst Werkzeugaufruf. Im Herkunftssatz steht
+das Werkzeug als Angabe werkzeug in der Form einer Kennung (ADR 0007,
+Entscheid 25). Das synthetische Prüfwerkzeug ist ein Werkzeug in diesem
+Sinn, obwohl es keine Quelle nach 5.17 hat: es stellt über ausgang eine
+Abfrage an eine Gegenstelle und liefert eine Antwort nach seinem
+Antwortschema; es liegt im Testbaum und wird allein in der Testfixture
+registriert, das Werkzeugverzeichnis des Produkts bleibt ohne Prüfwerkzeug
+(ADR 0008, Entscheid 2 und Entscheidpunkt E-S2-02, Empfehlung (a);
+Walkthrough vor Sprint 2, W2-01, W2-13).
+*Homonym-Warnung:* nicht dasselbe wie ein Werkzeug des Harness, etwa das
+Aufgabenwerkzeug (CLAUDE.md, Abschnitt "Vor jeder Arbeitseinheit", Punkt 5).
+In Arbeitsprodukten zum Produkt meint "Werkzeug" immer das registrierte
+Werkzeug von beschaffung.
 
 **Werkzeugverzeichnis** — Das auslesbare Verzeichnis aller aufrufbaren Werkzeuge
 im Modul `beschaffung`. Jeder Werkzeugaufruf läuft über den **einen** Aufrufpfad,
