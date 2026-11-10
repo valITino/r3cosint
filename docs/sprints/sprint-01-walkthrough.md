@@ -497,3 +497,23 @@ Prozessausgaben. Q-RE-1 ist in Q-RE-8 aufgegangen. Die Spalte "Offen" der
 Tabelle oben ist für FA-S15-01 bis FA-S15-04 damit erledigt; für W1-42 und
 W1-45 bleiben die Wiedervorlagen und O-6 offen. Die erneute Ready-Prüfung
 schreibt der Product Owner.
+
+## Nachtrag vom 2026-11-10 (Einheit D27)
+
+Verfasser-Rolle: Requirements Engineer. Anlass: Merge des Pull Requests #57
+am 2026-11-10 (Merge-Commit `c2b187b8b2b2706b4a85ac404a1a23148cdcd884`; erster
+Formweg, ohne Kommentar; Angabe des Koordinators, Fremdbeleg), mit dem S1.5
+abgenommen und E-D26-01 nach (a) entschieden ist. Die Befunde W1-01 bis W1-97,
+ihre Schwere, die Übersicht und die Zeile "Summe" bleiben unverändert; dieser
+Nachtrag fügt keinen Befund hinzu und schlägt keine Lösung vor.
+
+**Vermerk zu W1-72: Glossarvorschläge eingetragen.** Der im Nachtrag vom
+2026-11-09 (Einheit S1.5) als offen geführte Glossareintrag ist in
+`docs/03_Glossar.md` als Vorschlag eingetragen, gekennzeichnet und nicht
+bestätigt: Protokoll (Sammelbegriff für ermittlungsspur, arbeitsspur und
+kettenkopf; Protokolltabellen als Synonym; "die Protokolltabelle" in der
+Einzahl nicht verwenden) und Pseudonym neu, bei Klardaten und Protokolleintrag
+je ein Vorschlag zur Ergänzung. Die Bestätigung geht dem Auftraggeber als
+Vorlage E-D27-01 im Pull Request der Einheiten D27 und S2 zu. Der Befund W1-72
+bleibt in der Liste stehen; die Einträge R3-F-001, R3-F-008, R3-F-009 und
+R3-F-012 sind unverändert.
