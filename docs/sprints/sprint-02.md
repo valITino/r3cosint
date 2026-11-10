@@ -6,7 +6,7 @@
 | **Entscheidet** | Auftraggeber (S-01), durch den Merge des Pull Requests der Einheiten D27 und S2 |
 | **Vorbereitet** | 2026-11-10, Einheit S2: Scrum Master (dieses Artefakt, Zusammenführung), Product Owner (Sprint Backlog, Ready-Prüfung), Software Architect (Festlegung ADR 0008, Ermittlungskreislauf-Kern, Zerlegung), Requirements Engineer (Walkthrough sprint-02-walkthrough, Glossarvorschläge). Textprüfung: siehe Übergabe 2026-11-10_s2-etappe-1-sprint-2 (die Prüfung läuft nach der Abfassung dieses Artefakts) |
 | **Weisung** | 2026-11-05, zweiter Formweg, Wortlaut: "Habe gemerged und mache weiter, auch mit meiner Weisung, einfach mit allem." (Angabe des Koordinators, Fremdbeleg; Lesart des Koordinators in ADR 0002, Abschnitt 10: Fortsetzung mit allen anstehenden Einheiten ohne weitere Weisung je Einheit) |
-| **Status** | **vorgeschlagen, zur Annahme.** Abschnitt 8 ist nicht ausgefüllt; er wird nach dem Merge von der Einheit nachgetragen, die ihn trägt |
+| **Status** | **angenommen** mit dem Merge des Pull Requests #58 am 2026-11-10 (Merge-Commit `6d517d1fb0c7dc2e2317d0181198edf06b8d4cd2`); Abschnitt 8 übertragen in der Einheit D28 |
 
 ## 1. Was diese Vorlage ist
 
@@ -155,11 +155,11 @@ Summe der Spalte Prüfaufwand: 12 + 10 + 10 + 8 = 40 h (gleich Abschnitt 4.1).
 
 ### 6.1 Ereignisplan
 
-Sprintbeginn (Tag 0) ist der Merge des Pull Requests der Einheiten D27 und S2; Sprintende (Tag 14) ist Tag 0 plus 14 Tage oder die Abnahme der letzten Baueinheit, je nachdem, was zuerst eintritt. Die Daten trägt die Einheit nach dem Merge nach. Einheiten, die am Sprintende nicht abgenommen sind, gehen in die Planung von Sprint 3 zurück; ein halbfertiger Zustand wird nicht als erledigt geführt (3.3). Je Ereignis steht hier nur Ergebnis und Verweis (M-6); das Fortschrittsprotokoll steht in der Übergabe.
+Sprintbeginn (Tag 0) ist der Merge des Pull Requests der Einheiten D27 und S2, der Pull Request #58, am 2026-11-10 um 08:19:04 UTC; Tag 14 ist der 2026-11-24 oder die Abnahme der letzten Baueinheit, je nachdem, was zuerst eintritt (nachgeführt mit der Einheit D28). Einheiten, die am Sprintende nicht abgenommen sind, gehen in die Planung von Sprint 3 zurück; ein halbfertiger Zustand wird nicht als erledigt geführt (3.3). Je Ereignis steht hier nur Ergebnis und Verweis (M-6); das Fortschrittsprotokoll steht in der Übergabe.
 
 | Ereignis | Form | Timebox (6.8) | Ergebnis und Verweis |
 |---|---|---|---|
-| Sprint Planning | diese Vorlage; Annahme durch den Merge | höchstens 4 h Prüfzeit | vorgelegt 2026-11-10; Annahme mit dem Merge (Tag 0, Datum folgt) |
+| Sprint Planning | diese Vorlage; Annahme durch den Merge | höchstens 4 h Prüfzeit | vorgelegt 2026-11-10; angenommen mit dem Merge des Pull Requests #58 am 2026-11-10 um 08:19:04 UTC (Tag 0); Verweis: Abschnitt 8 und Abschnitt 9; Wartezeit: Abschnitt 9 und Übergabe 2026-11-10_s2-etappe-1-sprint-2, Abschnitt D28 |
 | Daily Scrum | Abschnitt je Baueinheit in der Übergabe | 15 min Prüfzeit je Eintrag | Verweis: Übergabe 2026-11-10_s2-etappe-1-sprint-2, Abschnitte S2.1 bis S2.4; Fortschrittsprotokoll und Wartezeit je Merge nur dort |
 | Abnahme je Baueinheit | Merge des Pull Requests der Einheit | im Rahmen des Sprint Review | je Einheit; Wartezeit als eigene Position in der Übergabe (Ersatzmass) |
 | Sprint Review | Merge des Pull Requests von S2.4 | höchstens 2 h Prüfzeit | Ergebnis und Datum folgen mit dem Merge |
@@ -175,7 +175,7 @@ Entscheid zur Nummerierung: Die Nummern aus Sprint 1 werden fortgeführt (H-1 bi
 |---|---|---|---|---|---|---|
 | H-1 | Projekt-Hooks laufen in der Cloud-Sitzung nicht (R3-Q-005 ausgesetzt, SR-024 offen); Rollen-Schreibgrenzen sind Instruktion (E-R5-12 c) | alle schreibenden Rollen; SecDevOps Engineer | 2026-11-05 | offen; Messaufbau auf main | Meldung des Auftraggebers, dass die Umgebung die Projekt-Hooks ausführt; dann R5.1b einmal wiederholen | offen |
 | H-2 | Kette auf der Gegenseite rot bis R3-C-004 (gewollt; Urteil am Rückgabewert von make dod ohne Liste der terminierten Lagen) | DevOps Engineer; Auftraggeber | 2026-11-05 | gewollt, kein Fehler | Rückgabewert und Lagezeilen je Pull Request prüfen (D9 einzige Lage C) | mit R3-C-004 |
-| H-3 | Docker-Daemon ist nach jedem Neustart der Maschine neu zu starten, sechsmal belegt; Vorlagen M-G21-01 und "Daemon beim Aufwecken" ohne Entscheid | DevOps Engineer; Dynamic Software Tester | 2026-11-05 | offen; Daemon je Sitzung in der Sitzung gestartet, Images vorhanden | Entscheid des Auftraggebers zu den Vorlagen; bis dahin Daemon je Sitzung starten. Neu in Sprint 2: Testgegenstelle und Datenbankstufe brauchen ihn | offen |
+| H-3 | Docker-Daemon ist nach jedem Neustart der Maschine neu zu starten, siebenmal belegt (siebter Neustart beim Aufwecken am 2026-11-10, Daemon in der Sitzung neu gestartet); Vorlagen M-G21-01 und "Daemon beim Aufwecken" ohne Entscheid | DevOps Engineer; Dynamic Software Tester | 2026-11-05 | offen; Daemon je Sitzung in der Sitzung gestartet, Images vorhanden | Entscheid des Auftraggebers zu den Vorlagen; bis dahin Daemon je Sitzung starten. Neu in Sprint 2: Testgegenstelle und Datenbankstufe brauchen ihn | offen |
 | H-4 | Die drei Wegwerf-Zweige bestehen weiter (Löschen mit HTTP 403 abgewiesen) | Auftraggeber | 2026-11-05 | offen | Löschen durch den Auftraggeber | offen |
 | H-11 | Bestand der serverseitigen Regeln von GitHub für main nicht belegt (E-R5-12 b) | Auftraggeber | 2026-11-05 | offen | Bestätigung oder Einrichtung durch den Auftraggeber | offen |
 | H-13 | Störung der Release-Auslieferung von github.com am 2026-11-09 (gitleaks-Archiv HTTP 504, etwa 07:45 bis 08:03 UTC): zwei Versuche des Laufs der Kette auf der Gegenseite rot vor der Kette (fail-closed), der dritte Versuch in der erwarteten Form; kein Befund im Repository (aus Sprint 1 übernommen) | DevOps Engineer; Koordinator | 2026-11-09 | beobachtet | Ohne Massnahme im Repository; Kandidat für eine spätere Einheit: Zwischenspeicher des Archivs am Runner (neben der Vorlage M-G21-01) | offen |
@@ -186,6 +186,7 @@ Entscheid zur Nummerierung: Die Nummern aus Sprint 1 werden fortgeführt (H-1 bi
 | H-18 | Der erste Lauf des Arbeitsablaufs der Einheit brach wegen eines fehlenden Felds im Skript des Koordinators ab; nach der Berichtigung aus dem Zwischenspeicher fortgesetzt (Angabe des Koordinators, Fremdbeleg; Übergabe, Abschnitt Einheit S2, Entscheid (1)) | Koordinator | 2026-11-10 | beobachtet; behoben in der Einheit | Auswertung in der Retrospektive Sprint 2 | Retrospektive |
 | H-19 | Etappenfrage zu R3-F-013 (Test verlangt Oberfläche und ausführende Person; Anmeldung R3-F-051 liegt in Etappe 3): gehört der Eintrag in Etappe 1? | Requirements Engineer; Product Owner | 2026-11-10 | offen | Requirements Engineer klärt über B4 vor der Planung von Sprint 3; davon hängt ab, ob R3-F-013 Sprint 3 füllt (27 h gegen 28 h) | vor der Planung von Sprint 3 |
 | H-20 | Messungen vor dem Bau nach ADR 0008, Teil A, "Offene Punkte": Annahme 1 (httpx-Transport gegen vorgegebene Adresse) und Annahme 3 (Fallzustand bei spur.service.anfuegen) sind ungemessen; Annahme 2 (Bereiche von ipaddress) ist für die Dokumentationsbereiche 192.0.2.0/24, 198.51.100.0/24 und 203.0.113.0/24 gemessen (privat, Python 3.13.16) und entschieden, offen sind der Vorrat der Klassen als Liste und die Testkonstante mit is_global wahr | Backend Engineer (Annahmen 1 und 3); SecDevOps Engineer (Lieferkette httpx); Dynamic Software Tester (Annahme 2) | 2026-11-10 | offen | Nach ADR 0008: Annahme 1 vor S2.1 (Backend Engineer, mit der Lieferkettenprüfung des SecDevOps Engineers), Annahme 2 vor S2.1 (Dynamic Software Tester beim Schreiben der Abnahmetests), Annahme 3 vor S2.2 (Backend Engineer am Code) | vor S2.1 (Annahmen 1 und 2), vor S2.2 (Annahme 3) |
+| H-21 | Die Textprüfung B der Einheit S2 scheiterte dreimal am gleichen Kriterium (falsche Zahlen und Zuordnungen in Texten des Koordinators, jeweils an Stellen, die nach der vorherigen Runde neu entstanden oder überholt waren) und wurde nach 3.4 ohne vierte Runde mit Vermerk vorgelegt (Angabe des Koordinators, Fremdbeleg; Übergabe `docs/uebergaben/2026-11-10_s2-etappe-1-sprint-2.md`, Abschnitt "Einheit S2", Absatz Textprüfung) | Koordinator | 2026-11-10 | abgebrochen nach 3.4, mit Vermerk vorgelegt | Ergänzung zu M-3: Messwerte der Übergabe erst am letzten Dokumentstand setzen und die Textprüfung B erst danach starten, ab D28; Auswertung in der Retrospektive Sprint 2 | Retrospektive |
 
 Retrospektive Sprint 1 (Massnahmen M-1 bis M-7) gilt für Sprint 2: M-1 siehe H-15 und H-16; M-2 Wiederherstellung über gesicherte Bytes; M-3 Zahlen vor der Textprüfung abgleichen (Ziel Sprint 2: höchstens 3 Einheiten mit Textprüfung B in der ersten Runde nicht bestanden); M-4 Zellenlängen im Backlog misst der Koordinator; M-5 Namen von Testdateien aus der Festlegung; M-6 Tabelle 6.1 mit Ergebnis und Verweis; M-7 Kalibrierung (Abschnitt 2).
 
@@ -228,11 +229,11 @@ Ein Merge ohne Kommentar gilt als Entscheid nach der Empfehlung je Punkt (Abschn
 
 ## 8. Annahmeerklärung
 
-*Nicht ausgefüllt. Claude Code füllt diesen Abschnitt nicht aus. Er wird nach dem Merge des Pull Requests der Einheiten D27 und S2 von der Einheit nachgetragen, die ihn trägt (Protocol Master). Ein Merge ohne Kommentar gilt als Annahme nach dieser Vorlage und als Entscheid je Punkt nach der Empfehlung in Abschnitt 7; abweichende Entscheide stehen als Kommentar des Pull Requests oder ergehen als Weisung im Wortlaut.*
+*Ausgefüllt am 2026-11-10 durch den Protocol Master im Auftrag des Koordinators nach dem Merge des Pull Requests #58 (erster Formweg; Protokollvermerk unten). Der Stand davor ("Nicht ausgefüllt") liegt in git im Stand des Pull Requests #58 (Kopf `92cf4b707e1d59578f57aef8b3d01dc2828c6ab3`).*
 
 ### Entscheid (E-S2-08)
 
-- [ ] **Angenommen.** Sprint 2 beginnt mit dem Merge; die erste Baueinheit ist S2.1.
+- [x] **Angenommen.** Sprint 2 beginnt mit dem Merge; die erste Baueinheit ist S2.1.
 - [ ] **Angenommen mit Auflagen.** Die Auflagen unten werden vor oder mit der genannten Einheit umgesetzt.
 - [ ] **Nicht angenommen.** Nachbesserung gemäss Auflagen, danach erneute Vorlage.
 
@@ -240,14 +241,14 @@ Ein Merge ohne Kommentar gilt als Entscheid nach der Empfehlung je Punkt (Abschn
 
 | Nr. | Auflage | Frist oder Bedingung |
 |---|---|---|
-| | | |
+| — | Keine Auflagen. | — |
 
 ### Entscheide je Punkt
 
 | Punkt | Entscheid |
 |---|---|
-| E-S2-01 bis E-S2-07 (ADR 0008) | |
-| E-S2-09 bis E-S2-16 | |
+| E-S2-01 bis E-S2-07 (ADR 0008) | Je nach Empfehlung, mit dem Merge ohne Kommentar: E-S2-01 (a), E-S2-02 (a), E-S2-03 (a), E-S2-04 (a), E-S2-05 (a), E-S2-06 (a), E-S2-07 (a) |
+| E-S2-09 bis E-S2-16 | Je nach Empfehlung, mit dem Merge ohne Kommentar: E-S2-09 (a), E-S2-10 (a), E-S2-11 (a), E-S2-12 (a), E-S2-13 (a), E-S2-14 (a), E-S2-15 (a), E-S2-16 (a); E-S2-08 (a) ist der Entscheid oben |
 
 ### Erklärung
 
@@ -256,7 +257,9 @@ Ein Merge ohne Kommentar gilt als Entscheid nach der Empfehlung je Punkt (Abschn
 
 | | |
 |---|---|
-| **Auftraggeber (S-01)** | |
+| **Auftraggeber (S-01)** | Erteilt durch den Merge des Pull Requests #58 am 2026-11-10, 08:19:04 UTC (Merge-Commit `6d517d1fb0c7dc2e2317d0181198edf06b8d4cd2`), durch das Konto des Repository-Eigentümers; eingetragen durch den Protocol Master, Einheit D28. Ohne Kommentar, ohne Review; der Wortlaut der Erklärung oben ist der in der Vorlage vorformulierte und nicht vom Auftraggeber geschrieben; Name nach offenem Entscheid E-11 nicht im Repository geführt |
+
+**Protokollvermerk zur Form:** Die Annahme wurde durch den Merge des Pull Requests #58 erteilt (erster Formweg); sein Text sagt, dass der Merge die Annahme von Sprint-Ziel, Sprint Backlog und Zerlegung nach dieser Vorlage bedeutet, mit den Empfehlungen je Entscheidpunkt, sofern kein Kommentar und keine Weisung anderes sagt; ein abweichender Kommentar lag nicht vor. Die Angaben zum Merge sind den Tatsachen des Koordinators vom 2026-11-10 entnommen (GitHub-Schnittstelle und git) — Fremdbeleg, von dieser Rolle nicht nachgemessen. Einzelheiten: ADR 0002, Abschnitt 10, Unterabschnitt "Annahme von Sprint 2 der Etappe 1 ... Merge des Pull Requests #58 — erteilt am 2026-11-10, eingetragen am 2026-11-10".
 
 ### Formweg
 
@@ -271,3 +274,5 @@ Erster Formweg: Merge des Pull Requests der Einheiten D27 und S2; sein Text sagt
 3. **Rückkopplung:** Jede Baueinheit trägt in der Übergabe den tatsächlichen Prüfaufwand des Auftraggebers ein, soweit er ihn nennt; sonst gilt die Wartezeit bis zum Merge als Ersatzmass. Die Retrospektive vergleicht (Kalibrierung nach 6.8).
 4. Was am Sprintende nicht abgenommen ist, geht in die Planung von Sprint 3 zurück.
 5. Vor jedem Frontend-Inkrement steht das Gate aus 5.6; Sprint 2 berührt es nicht.
+
+**Stand am 2026-11-10 (Tag 0), fortgeschrieben mit der Einheit D28 (Angaben des Koordinators, Fremdbeleg):** Sprint 2 ist mit dem Merge des Pull Requests #58 am 2026-11-10 um 08:19:04 UTC angenommen (erster Formweg, ohne Kommentar des Auftraggebers, ohne Review; Merge-Commit `6d517d1fb0c7dc2e2317d0181198edf06b8d4cd2`): alle Entscheidpunkte E-S2-01 bis E-S2-16 je (a), ADR 0008 angenommen, Vorbehalt nach R1 entfallen, E-D27-01 (a). Tag 0 = 2026-11-10, Tag 14 = 2026-11-24. Die Wartezeit vom Anlegen bis zum Merge beträgt 17 min 34 s als Ersatzmass (der Auftraggeber nannte keinen Prüfaufwand). Weisung vom 2026-11-10 zur Fortsetzung: Wortlaut und Lesart in ADR 0002, Abschnitt 10. Die Annahme ist mit der Einheit D28 eingetragen (Punkt 1 der Liste erledigt). Nächster Schritt: Baueinheit S2.1 (Modul ausgang; R3-F-015, R3-F-028) nach der Fortschreibung der beiden Einträge (E-S2-12 a) und den Messungen vor dem Bau (H-20). Abgenommen sind 0 h von 40 h.

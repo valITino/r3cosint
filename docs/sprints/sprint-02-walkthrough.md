@@ -221,3 +221,16 @@ Baueinheit. Die Reserve (W2-70 bis W2-80) ist nach ADR 0008 nicht Gegenstand.
 **(c) Glossar.** Die fünf Vorschläge aus S2 (Freigabe-Kennung,
 Freigabevorschau, Gegenstelle, Verbindungsversuch, Werkzeug) sind an ADR 0008
 angeglichen; sie bleiben gekennzeichnet und nicht bestätigt, Vorlage E-D27-01.
+
+## Nachtrag vom 2026-11-10 (Einheit D28)
+
+Verfasser-Rolle: Requirements Engineer; Angabe des Koordinators, Fremdbeleg.
+ADR 0008 ist mit dem Merge des Pull Requests #58 am 2026-11-10 (Merge-Commit
+`6d517d1fb0c7dc2e2317d0181198edf06b8d4cd2`) angenommen; die Auflösungen der
+sieben blockierenden Befunde nach dem Nachtrag S2, Teil (a), gelten damit
+(W2-28 als Grenze GK-3). E-S2-12 (a): die Fortschreibung der Einträge erfolgt
+je vor der Baueinheit, die den Eintrag baut, als Nächstes R3-F-015 und
+R3-F-028 vor S2.1. E-D27-01 (a): die Glossarvorschläge sind bestätigt, die
+Kennzeichnung entfällt. Offen bleiben W2-19, W2-61 bis W2-65 und die sechs
+GRC-Befunde (W2-21, W2-28, W2-34, W2-38, W2-69, W2-77) in der jeweiligen
+Baueinheit. Kein Befund ist geändert oder gelöscht.
