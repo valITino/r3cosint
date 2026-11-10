@@ -30,6 +30,9 @@ VERTRAG_4 = "Vertrag 4 (R3-F-008): ausser spur schreibt kein Modul in die Spurta
 VERTRAG_8 = "Vertrag 8 (R3-F-001): ausser fall schreibt kein Modul in die Falltabellen"
 VERTRAG_5 = "Vertrag 5 (R3-F-005): ausser kanon schreibt kein Modul in den Bestand"
 VERTRAG_9 = "Vertrag 9 (R3-F-008): Schichtung"
+VERTRAG_13 = (
+    "Vertrag 13 (R3-F-026, R3-F-015): den Client importiert allein der Aufrufpfad"
+)
 
 # Verbotsliste von Vertrag 2 (ADR 0002, Abschnitt 5, Nachtrag G1, Zeile "Vertrag 2"),
 # einschliesslich httpx2 und httpcore2 (Vermerk "nach dem Bau").
@@ -100,6 +103,7 @@ def test_die_obersten_pakete_sind_die_14_des_modulschnitts() -> None:
         (VERTRAG_4, "r3cosint.spur"),
         (VERTRAG_8, "r3cosint.fall"),
         (VERTRAG_5, "r3cosint.kanon"),
+        (VERTRAG_13, "r3cosint.ausgang"),
     ],
 )
 def test_quellen_und_ausnahme_ergeben_die_obersten_pakete(
@@ -195,12 +199,21 @@ def test_R3_F_005_vertrag_5_verbietet_tables_und_store_von_kanon() -> None:
     assert vertrag["allow_indirect_imports"] is True
 
 
-def test_R3_F_008_vertrag_9_ordnet_die_schichten_kanon_fall_spur_core() -> None:
+def test_R3_F_008_vertrag_9_ordnet_die_schichten_ausgang_kanon_fall_spur_core() -> None:
     vertrag = _vertrag(VERTRAG_9)
     assert vertrag["type"] == "layers"
     assert vertrag["layers"] == [
+        "r3cosint.ausgang",
         "r3cosint.kanon",
         "r3cosint.fall",
         "r3cosint.spur",
         "r3cosint.core",
     ]
+
+
+def test_R3_F_015_vertrag_13_verbietet_den_client_allen_ausser_ausgang() -> None:
+    vertrag = _vertrag(VERTRAG_13)
+    assert vertrag["type"] == "forbidden"
+    assert vertrag["forbidden_modules"] == ["r3cosint.ausgang.client"]
+    assert vertrag["allow_indirect_imports"] is True
+    assert len(_einstellungen()["contracts"]) == 12

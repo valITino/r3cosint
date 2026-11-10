@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 pytestmark = pytest.mark.anyio
 
 MIGRATIONEN = Path(__file__).resolve().parents[2] / "migrationen"
-KOPF = "0005"
+KOPF = "0006"
 AlembicBefehl = Callable[[Datenbankverbindung, str, str | None], Awaitable[None]]
 
 
@@ -225,7 +225,7 @@ async def test_R3_F_003_revision_0005_hin_und_zurueck_legt_die_tabellen_des_best
 ) -> None:
     eigentuemer = datenbank.verbindung("r3cosint_eigentuemer")
     bestand = {"herkunft", "entitaet", "beziehung"}
-    assert await _version(verbindung_eigentuemer) == ["0005"]
+    assert await _version(verbindung_eigentuemer) == [KOPF]
     assert bestand <= set(await _tabellen(verbindung_eigentuemer))
     await verbindung_eigentuemer.rollback()
 
@@ -236,7 +236,7 @@ async def test_R3_F_003_revision_0005_hin_und_zurueck_legt_die_tabellen_des_best
     await verbindung_eigentuemer.rollback()
 
     await alembic_befehl(eigentuemer, "upgrade", "head")
-    assert await _version(verbindung_eigentuemer) == ["0005"]
+    assert await _version(verbindung_eigentuemer) == [KOPF]
     assert bestand <= set(await _tabellen(verbindung_eigentuemer))
 
 

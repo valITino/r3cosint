@@ -234,3 +234,68 @@ R3-F-028 vor S2.1. E-D27-01 (a): die Glossarvorschläge sind bestätigt, die
 Kennzeichnung entfällt. Offen bleiben W2-19, W2-61 bis W2-65 und die sechs
 GRC-Befunde (W2-21, W2-28, W2-34, W2-38, W2-69, W2-77) in der jeweiligen
 Baueinheit. Kein Befund ist geändert oder gelöscht.
+
+## Nachtrag vom 2026-11-10 (Einheit S2.1)
+
+Verfasser-Rolle: Requirements Engineer. Anlass: Auftrag des Koordinators vom
+2026-11-10, die Befunde zu R3-F-015 und R3-F-028 vor der Baueinheit S2.1 als
+Fortschreibung der Einträge zu bearbeiten (B4, E-S2-12 a; Stand des
+Repositories nach der Angabe des Koordinators, Fremdbeleg). Die Befunde W2-01
+bis W2-80, ihre Schwere, die Übersicht und die Zeile "Summe" bleiben
+unverändert; dieser Nachtrag fügt keinen Befund hinzu.
+
+**Vermerk zu W2-36 bis W2-41, W2-50 bis W2-60 und W2-62: bearbeitet.** Die
+Befunde bleiben in der Liste stehen; die Nachbesserung ist als Fortschreibung
+der Einträge R3-F-015 und R3-F-028 in `docs/05_Product_Backlog.md` vorgenommen
+(je Zusatz "Präzisiert am 2026-11-10" an den Abnahmezeilen, eine Zeile
+"Achtung" und eine Zeile "Stand 2026-11-10 (S2.1)"), gestützt auf ADR 0008,
+Entscheide 14, 15, 16 und 25, die mit dem Merge #58 entschiedenen E-S2-03 a,
+E-S2-04 a und E-S2-06 a sowie die Grenzen GK-2, GK-5, GK-6, GK-8, GK-12 und
+GK-14. Was ADR 0008 nicht beantwortet, steht als Annahme in der Zeile
+"Achtung" des Eintrags und als Frage FA-S21-01 bis FA-S21-08 an den Software
+Architect (Festlegung S2.1).
+
+| Befund | Bearbeitet durch | Offen |
+|---|---|---|
+| W2-36 | R3-F-015, Präzisierung: Ziel aus Schema, Rechnername oder Literal in Normalform und Anschluss (Entscheid 14) | — |
+| W2-37 | R3-F-015, Präzisierung (b): Gegenprobe mit Literal-Eintrag der Rückschleife (Entscheid 25, E-S2-03 a) | — |
+| W2-38 | R3-F-015, Präzisierung (a): Spur des Falls, Ziel als Pseudonym, Klartextfelder nach Entscheid 16 | FA-S21-03 (Eingabe des Pseudonyms); rechtliche Einordnung bei der GRC-Rolle (F-04) |
+| W2-39 | R3-F-015, Präzisierung (a): keine Auflösung, keine Verbindung (Entscheid 15, Schritt 2) | FA-S21-02 (Form der Abweisung, Transaktion) |
+| W2-40 | R3-F-015, "Achtung" (4): Form, Ort und Geltung nach Entscheid 14 | Pflege und Änderungsprotokoll, GK-12 (Restpunkt DS-S2-16) |
+| W2-41 | R3-F-015, "Achtung" (5): Wege ausserhalb von ausgang, GK-2, R3-C-004 | — |
+| W2-50 | R3-F-028, Präzisierung des ersten Kriteriums: Schritt 0, Weiterleitungen 1 bis N, Schritt N+1 kette_zu_lang (Entscheid 15) | FA-S21-06 |
+| W2-51 | R3-F-028, Gegenprobe des ersten Kriteriums: Weiterleitung auf ein Listenziel, Kette genau bis N | — |
+| W2-52 | R3-F-028, erstes Kriterium: anderer Anschluss und anderes Schema sind andere Ziele (Entscheide 14, 15) | — |
+| W2-53 | R3-F-028, erstes Kriterium und "Achtung" (8): E-S2-04 a, httpx nach E-S2-06 a | Bestätigung durch S-05 (nicht Sache dieser Rolle) |
+| W2-54 | R3-F-028, zweites Kriterium: geschlossener Vorrat der Bereiche, Literal ohne Bereichsregel (Entscheid 15, E-S2-03 a, GK-6) | — |
+| W2-55 | R3-F-028, Gegenprobe des zweiten Kriteriums: Testkonstante über den Transport-Ersatz (GK-5) | Testkonstante (Annahme 2, Messung vor dem Bau) |
+| W2-56 | R3-F-028, zweites Kriterium: jede Adresse geprüft, erste zulässige verwendet | FA-S21-05 |
+| W2-57 | R3-F-028, zweites Kriterium: steuerbarer Auflöser, Normalformfälle als Prüffälle (GK-8) | FA-S21-04 (Lesart), FA-S21-08 (Regelwerk der Punycode-Form) |
+| W2-58 | R3-F-028, drittes Kriterium: IPv6 verkürzt, ausgeschrieben, Gross- und Kleinschreibung, Zonenangabe abgewiesen | FA-S21-07 (Ergebnis der Zonenangabe) |
+| W2-59 | R3-F-028, Gegenprobe des dritten Kriteriums: Literal-Eintrag in jeder Schreibweise zugelassen | IPv6-Rückschleife der Teststufe nicht gemessen |
+| W2-60 | R3-F-028, drittes Kriterium: Literal eines Listennamens ohne eigenen Eintrag abgewiesen (ADR 0008, Absatz "Walkthrough-Befunde, die diese Festlegung auflöst") | — |
+| W2-62 | Glossar: Gegenstelle und Verbindungsversuch bestätigt (E-D27-01 a); Ziel und Weiterleitung als Vorschläge, gekennzeichnet und nicht bestätigt | Bestätigung der zwei Vorschläge |
+
+**Angleichung an die Festlegung S2.1 (2026-11-10).** Die Fragen FA-S21-01 bis
+FA-S21-08 aus der Spalte "Offen" sind in der Festlegung S2.1 beantwortet (ADR
+0008, Teil A, Abschnitt "Festlegung S2.1 (2026-11-10)", Zeile "Antworten auf
+FA-S21-01 bis FA-S21-08"; dazu die Zeilen "ausgang.aufloesung",
+"ausgang.client.anfragen", "Protokoll: spur.payload" und "Tests Abnahme"). Die
+Lesart zu W2-57 (FA-S21-04) ist bestätigt. Zu W2-56 gilt E-S21-02: eine nicht
+öffentliche Adresse unter mehreren weist den ganzen Versuch ab. Mit der Zeile
+"Nachbesserung nach den Stellungnahmen (S2.1.1)" kommen vier Punkte hinzu:
+(1) bei einem Zielwechsel gehen keine Kopfzeilen des Aufrufers und kein Körper
+an das neue Ziel, und 307 und 308 mit Körper und Zielwechsel werden nicht
+verfolgt (SD-S21-02); (2) es gilt eine Gesamtfrist je Aufruf (SD-S21-03);
+(3) die Klasse protokollzuweisung und die eingebetteten Formen gelten als
+nicht öffentlich (SD-S21-04); (4) es gibt die Ergebnisse beantwortet und
+url_nicht_auswertbar sowie die Felder versuch_kennung und methode, und eine
+Antwort mit content-encoding ausser identity ist ein Fehlschlag; die
+Testkonstante ist 2001:20::1, und kein Test bindet oder verbindet einen
+IPv6-Socket (GK-21). Damit entfällt auch der offene Punkt "IPv6-Rückschleife
+der Teststufe nicht gemessen" zu W2-59. Die Einträge R3-F-015 und R3-F-028
+sind daran angeglichen. Offen bleiben bei W2-38 die rechtliche Einordnung
+(GRC-Rolle), bei W2-40 Pflege und Änderungsprotokoll (GK-12), bei W2-53 die
+Bestätigung durch S-05, bei W2-55 die Prüfstärke des Namenspfads (GK-5) und
+bei W2-62 die Bestätigung der zwei Glossarvorschläge. Kein Befund ist geändert
+oder gelöscht.

@@ -3,7 +3,7 @@
 Alle Funktionen laufen in der Transaktion des Aufrufers (async with verbindung.begin()); keine
 macht commit. Ohne laufende Transaktion endet Anfügen und Prüfen mit EingabeFehler.
 Öffentlich sind ausserdem Spur, Eintragstyp, Kennzeichnung, Bruchgrund, Eintrag, Kettenkopf,
-Befund, Pseudonymisierer und die vier Eingaben.
+Befund, Pseudonymisierer und die fünf Eingaben.
 """
 
 from dataclasses import replace
@@ -33,6 +33,7 @@ from r3cosint.spur.payload import (
     FallEroeffnet,
     FallGeschlossen,
     Pseudonymisierer,
+    Verbindungsversuch,
     nutzlast_bilden,
 )
 
@@ -41,6 +42,7 @@ _EINTRAGSTYP_JE_EINGABE: dict[type, Eintragstyp] = {
     FallGeschlossen: Eintragstyp.FALL_GESCHLOSSEN,
     Entitaet: Eintragstyp.ENTITAET,
     Beziehung: Eintragstyp.BEZIEHUNG,
+    Verbindungsversuch: Eintragstyp.VERBINDUNGSVERSUCH,
 }
 
 __all__ = [
@@ -57,6 +59,7 @@ __all__ = [
     "Kettenkopf",
     "Pseudonymisierer",
     "Spur",
+    "Verbindungsversuch",
     "alle_ketten_pruefen",
     "anfuegen",
     "kette_pruefen",

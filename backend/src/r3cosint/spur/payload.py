@@ -9,10 +9,18 @@ import hashlib
 import hmac
 import json
 import unicodedata
+import warnings
 from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import (
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    StringConstraints,
+    model_validator,
+)
 
 from r3cosint.spur.kette import zeitpunkt_text
 
@@ -31,6 +39,44 @@ EIGENSCHAFTSNAME_MUSTER = r"^[a-z][A-Za-z]{0,63}$"
 _Eigenschaftsname = Annotated[str, StringConstraints(pattern=EIGENSCHAFTSNAME_MUSTER)]
 _Werkzeug = Annotated[str, StringConstraints(pattern=r"^[a-z0-9._-]{1,64}$")]
 _Person = Annotated[str, StringConstraints(pattern=r"^[a-z0-9._-]{1,64}$")]
+Ergebnis = Literal[
+    "zugelassen",
+    "beantwortet",
+    "nicht_in_positivliste",
+    "bereich_nicht_oeffentlich",
+    "aufloesung_fehlgeschlagen",
+    "kette_zu_lang",
+    "verbindung_fehlgeschlagen",
+    "url_nicht_auswertbar",
+]
+"""Vorrat des Ergebnisses eines Verbindungsversuchs (Festlegung S2.1, E-S21-10)."""
+Adressbereich = Literal[
+    "unspezifiziert",
+    "rueckschleife",
+    "verbindungslokal",
+    "standortlokal",
+    "multicast",
+    "privat",
+    "reserviert",
+    "abgekuendigt",
+    "protokollzuweisung",
+    "nicht_global",
+    "oeffentlich",
+]
+"""Klassen der Adresse in der Reihenfolge der Bereichsregel (ausgang.aufloesung)."""
+Zielart = Literal["name", "ipv4", "ipv6"]
+Fehlerart = Literal[
+    "verbindung", "tls", "zeitueberschreitung", "antwort_zu_gross", "antwort_ungueltig"
+]
+Methode = Literal["GET", "POST"]
+Anschlussschema = Literal["http", "https"]
+_Kennung = Annotated[str, StringConstraints(pattern=r"^[a-z0-9._-]{1,64}$")]
+_Pruefsumme = Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")]
+_Zielform = Annotated[
+    str,
+    StringConstraints(pattern=r"^https?://[^\s/?#@]{1,253}:[0-9]{1,5}$"),
+]
+_Adresse = Annotated[str, StringConstraints(pattern=r"^[0-9a-f.:]{2,45}$")]
 _Eigenschaften = dict[
     _Eigenschaftsname, Annotated[tuple[str, ...], Field(min_length=1)]
 ]
@@ -150,8 +196,156 @@ class Beziehung(BaseModel):
     abfrage: str = Field(min_length=1, repr=False)
 
 
-Eingabe = FallEroeffnet | FallGeschlossen | Entitaet | Beziehung
-"""Die vier Eingaben; die Zuordnung zum Eintragstyp ist fest (Festlegung S1.2)."""
+_PFLICHT_JE_ERGEBNIS: dict[str, frozenset[str]] = {
+    "zugelassen": frozenset(
+        {
+            "schema",
+            "anschluss",
+            "zielart",
+            "ziel",
+            "adresse",
+            "adressbereich",
+            "listeneintrag",
+        }
+    ),
+    "beantwortet": frozenset(
+        {
+            "schema",
+            "anschluss",
+            "zielart",
+            "ziel",
+            "adresse",
+            "adressbereich",
+            "listeneintrag",
+            "status",
+            "antwort_bytes",
+        }
+    ),
+    "verbindung_fehlgeschlagen": frozenset(
+        {
+            "schema",
+            "anschluss",
+            "zielart",
+            "ziel",
+            "adresse",
+            "adressbereich",
+            "listeneintrag",
+            "fehlerart",
+        }
+    ),
+    "nicht_in_positivliste": frozenset({"schema", "anschluss", "zielart", "ziel"}),
+    "bereich_nicht_oeffentlich": frozenset(
+        {
+            "schema",
+            "anschluss",
+            "zielart",
+            "ziel",
+            "adresse",
+            "adressbereich",
+            "listeneintrag",
+        }
+    ),
+    "aufloesung_fehlgeschlagen": frozenset(
+        {"schema", "anschluss", "zielart", "ziel", "listeneintrag"}
+    ),
+    "kette_zu_lang": frozenset({"schema", "anschluss", "zielart", "ziel"}),
+    "url_nicht_auswertbar": frozenset(),
+}
+_BELEGTE_FELDER = (
+    "schema",
+    "anschluss",
+    "zielart",
+    "ziel",
+    "adresse",
+    "adressbereich",
+    "listeneintrag",
+    "fehlerart",
+    "status",
+    "antwort_bytes",
+)
+
+
+# Das Feld heisst schema, wie in der Festlegung; es verdeckt die veraltete Klassenmethode
+# BaseModel.schema, die niemand aufruft. Pydantic warnt davor bei der Klassenbildung; die
+# Meldung wird nur hier und nur für diesen Feldnamen unterdrückt.
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", message='Field name "schema"')
+
+    class Verbindungsversuch(BaseModel):
+        """Eingabe des Eintragstyps verbindungsversuch (Spur arbeitsspur; Festlegung S2.1, Nr. 16).
+
+        Je Ergebnis ist jedes der zehn bedingten Felder Pflicht oder verboten (Belegungstabelle);
+        ausgangsziel ist Pflicht genau dann, wenn schritt grösser 0 ist. ziel und ausgangsziel tragen
+        die Zielform (schema://wert:anschluss, IPv6 in eckigen Klammern), adresse die Adresse in
+        Normalform; alle drei sind Klartext der Eingabe und erscheinen nur als Pseudonym in der
+        Nutzlast. Nie Teil der Eingabe: Pfad, Abfrageteil, Fragment, Benutzerangaben, Kopfzeilen,
+        Körper, Rohform der URL.
+        """
+
+        model_config = _KONFIGURATION
+
+        fall_kennung: UUID
+        werkzeug: _Werkzeug
+        versuch_kennung: UUID
+        schritt: Annotated[int, Field(ge=0, le=_GANZZAHL_GRENZE)]
+        methode: Methode
+        ergebnis: Ergebnis
+        listenstand: _Pruefsumme
+        schema: Anschlussschema | None = None  # type: ignore[assignment]
+        anschluss: Annotated[int, Field(ge=1, le=65535)] | None = None
+        zielart: Zielart | None = None
+        ziel: _Zielform | None = Field(default=None, repr=False)
+        adresse: _Adresse | None = Field(default=None, repr=False)
+        ausgangsziel: _Zielform | None = Field(default=None, repr=False)
+        adressbereich: Adressbereich | None = None
+        listeneintrag: _Kennung | None = None
+        fehlerart: Fehlerart | None = None
+        status: Annotated[int, Field(ge=100, le=599)] | None = None
+        antwort_bytes: Annotated[int, Field(ge=0, le=_GANZZAHL_GRENZE)] | None = None
+
+        @model_validator(mode="after")
+        def _belegung_pruefen(self) -> "Verbindungsversuch":
+            """Pflicht und Verbot je Ergebnis; die Meldungen nennen nur Feldnamen."""
+            pflicht = _PFLICHT_JE_ERGEBNIS[self.ergebnis]
+            for name in _BELEGTE_FELDER:
+                gesetzt = getattr(self, name) is not None
+                if name in pflicht and not gesetzt:
+                    raise ValueError(f"Pflichtfeld fehlt: {name}")
+                if name not in pflicht and gesetzt:
+                    raise ValueError(f"Feld nicht zulässig bei diesem Ergebnis: {name}")
+            if (self.ausgangsziel is not None) != (self.schritt > 0):
+                raise ValueError("ausgangsziel genau dann, wenn schritt grösser 0 ist")
+            if (
+                self.ergebnis
+                in ("bereich_nicht_oeffentlich", "aufloesung_fehlgeschlagen")
+                and self.zielart != "name"
+            ):
+                raise ValueError("zielart muss name sein")
+            if self.ergebnis == "bereich_nicht_oeffentlich":
+                if self.adressbereich == "oeffentlich":
+                    raise ValueError("adressbereich darf nicht oeffentlich sein")
+            elif (
+                self.ergebnis
+                in ("zugelassen", "beantwortet", "verbindung_fehlgeschlagen")
+                and self.zielart == "name"
+                and self.adressbereich != "oeffentlich"
+            ):
+                raise ValueError("adressbereich muss oeffentlich sein")
+            if (
+                self.ziel is not None
+                and self.schema is not None
+                and self.anschluss is not None
+                and (
+                    not self.ziel.startswith(f"{self.schema}://")
+                    or not self.ziel.endswith(f":{self.anschluss}")
+                )
+            ):
+                raise ValueError("ziel trägt nicht schema und anschluss")
+            return self
+
+
+Eingabe = FallEroeffnet | FallGeschlossen | Entitaet | Beziehung | Verbindungsversuch
+"""Die fünf Eingaben; die Zuordnung zum Eintragstyp ist fest (Festlegung S1.2, S2.1)."""
 
 
 def _pruefen(wert: object) -> None:
@@ -215,6 +409,48 @@ def _herkunft_felder(
     }
 
 
+def _verbindungsversuch_felder(
+    eingabe: "Verbindungsversuch", pseudonymisierer: Pseudonymisierer
+) -> dict[str, object]:
+    """Nutzlast des Verbindungsversuchs: Klartext allein aus Vorräten, Kennungen und Zahlen.
+
+    ziel, adresse und ausgangsziel erscheinen nur als Pseudonym; ein Feld ohne Wert fehlt.
+    """
+    wert: dict[str, object] = {
+        "fall_kennung": str(eingabe.fall_kennung),
+        "werkzeug": eingabe.werkzeug,
+        "versuch_kennung": str(eingabe.versuch_kennung),
+        "schritt": eingabe.schritt,
+        "methode": eingabe.methode,
+        "ergebnis": eingabe.ergebnis,
+        "listenstand": eingabe.listenstand,
+    }
+    klartext: dict[str, object] = {
+        "schema": eingabe.schema,
+        "anschluss": eingabe.anschluss,
+        "zielart": eingabe.zielart,
+        "adressbereich": eingabe.adressbereich,
+        "listeneintrag": eingabe.listeneintrag,
+        "fehlerart": eingabe.fehlerart,
+        "status": eingabe.status,
+        "antwort_bytes": eingabe.antwort_bytes,
+    }
+    pseudonyme = {
+        "ziel_pseudonym": eingabe.ziel,
+        "adresse_pseudonym": eingabe.adresse,
+        "ausgangsziel_pseudonym": eingabe.ausgangsziel,
+    }
+    wert.update({name: v for name, v in klartext.items() if v is not None})
+    wert.update(
+        {
+            name: pseudonymisierer.pseudonym(v)
+            for name, v in pseudonyme.items()
+            if v is not None
+        }
+    )
+    return wert
+
+
 def nutzlast_bilden(eingabe: Eingabe, pseudonymisierer: Pseudonymisierer) -> str:
     """Bildet den gespeicherten Text der Nutzlast (Nr. 17).
 
@@ -223,7 +459,9 @@ def nutzlast_bilden(eingabe: Eingabe, pseudonymisierer: Pseudonymisierer) -> str
     Eigenschaftswert werden zu Feldern mit der Endung _pseudonym (Eigenschaftswerte als
     aufsteigend sortierte Liste, Doppel bleiben). Entitaet und Beziehung tragen zusätzlich werkzeug,
     erhoben_am und erhebende_person im Klartext (Kennung, Zeitpunkt, Benutzerkennung) sowie
-    abfrage_pseudonym und abfrage_bindung (Festlegung S1.4, DF-S14-01). Kein Wert des Klartexts gelangt in den
+    abfrage_pseudonym und abfrage_bindung (Festlegung S1.4, DF-S14-01). Verbindungsversuch trägt
+    ziel, adresse und ausgangsziel allein als Pseudonym der Zielform beziehungsweise der Adresse
+    (Festlegung S2.1). Kein Wert des Klartexts gelangt in den
     Rückgabetext. Fehlerfall: ValueError bei leerem Wert oder Zeit ausserhalb des Bereichs.
     """
     wert: dict[str, object]
@@ -251,6 +489,8 @@ def nutzlast_bilden(eingabe: Eingabe, pseudonymisierer: Pseudonymisierer) -> str
                 "prueffrist_bis": zeitpunkt_text(eingabe.prueffrist_bis),
                 "erste_pruefung_monate": eingabe.erste_pruefung_monate,
             }
+        case Verbindungsversuch():
+            wert = _verbindungsversuch_felder(eingabe, pseudonymisierer)
         case Entitaet():
             wert = {
                 "fall_kennung": str(eingabe.fall_kennung),

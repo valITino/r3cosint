@@ -72,12 +72,14 @@ FALL_MODULE = ("tables", "eingabe", "store", "service")
 # kanon (Festlegung S1.4): Module und Datenverzeichnis ftm_schema (71 Schemadateien, quellen.toml, LIZENZ.txt).
 KANON_MODULE = ("tables", "eingabe", "ftm", "store", "service")
 KANON_SCHEMA_DATEIEN = 73
+# ausgang (Festlegung S2.1): Module des Ausgangs.
+AUSGANG_MODULE = ("positivliste", "ziel", "aufloesung", "client")
 
 DATEIEN_OHNE_CODE = (
     WURZEL / "__init__.py",
     *(_init_datei(paket) for paket in PAKETE if paket != "api"),
 )
-MIT_CODE = ("api", "core", "fall", "kanon", "spur")
+MIT_CODE = ("api", "ausgang", "core", "fall", "kanon", "spur")
 
 
 def test_unter_src_steht_allein_das_wurzelpaket() -> None:
@@ -97,6 +99,7 @@ def test_wurzelpaket_enthaelt_genau_die_dateien_des_modulschnitts() -> None:
     erwartet |= {f"spur/{modul}.py" for modul in SPUR_MODULE}
     erwartet |= {f"fall/{modul}.py" for modul in FALL_MODULE}
     erwartet |= {f"kanon/{modul}.py" for modul in KANON_MODULE}
+    erwartet |= {f"ausgang/{modul}.py" for modul in AUSGANG_MODULE}
     kanon_daten = {g for g in gefunden if g.startswith("kanon/ftm_schema/")}
     assert len(kanon_daten) == KANON_SCHEMA_DATEIEN
     assert gefunden - kanon_daten == erwartet
@@ -149,7 +152,7 @@ def test_R3_F_008_jedes_core_modul_beginnt_mit_einer_modulbeschreibung(
     assert _ist_docstring(koerper[0])
 
 
-def test_R3_F_008_nur_api_core_spur_fall_und_kanon_tragen_code_ausser_der_modulbeschreibung() -> (
+def test_R3_F_008_nur_api_ausgang_core_spur_fall_und_kanon_tragen_code_ausser_der_modulbeschreibung() -> (
     None
 ):
     mit_code = sorted(
@@ -165,7 +168,8 @@ def test_R3_F_008_nur_api_core_spur_fall_und_kanon_tragen_code_ausser_der_modulb
 
 
 @pytest.mark.parametrize(
-    ("paket", "module"), [("spur", SPUR_MODULE), ("fall", FALL_MODULE)]
+    ("paket", "module"),
+    [("spur", SPUR_MODULE), ("fall", FALL_MODULE), ("ausgang", AUSGANG_MODULE)],
 )
 def test_R3_F_008_spur_und_fall_enthalten_genau_die_module_der_festlegung_s1_2(
     paket: str, module: tuple[str, ...]

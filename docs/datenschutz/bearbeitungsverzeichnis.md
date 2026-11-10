@@ -196,6 +196,68 @@ Nur so weit, wie der gebaute Stand sie trägt (Revision 0003_spur, Modul spur; a
 
 **Restpunkt aus der Verifikation.** DT-S15-01: eine Mutante ausserhalb der Liste (äusseres NFC in `normalisieren` entfernt) überlebt alle 1087 Tests, weil der Testfall keine Zeichen enthält, die casefold zerlegt. Klartext gelangt dadurch nicht in die Spur; eine solche Änderung der Normalform liesse aber gleiche Werte verschiedene Pseudonyme tragen (Klasse GS-7). Vorschlag des Dynamic Software Testers: Einheitsfall in den Tests von spur.payload.
 
+### Nachtrag E vom 2026-11-10 (Einheit S2.1, Eintragstyp verbindungsversuch; gebauter Stand)
+
+**Stand: gebaut am 2026-11-10, zur Abnahme vorgelegt mit dem Pull Request der Einheiten D28 und S2.1; abgenommen erst mit dessen Merge.** Grundlage: ADR 0008, Teil A, Festlegung S2.1 (Zeilen "Protokoll: spur.payload" und "Datenschutz (DS-S21-01 bis DS-S21-13)", Grenzen GK-18 bis GK-35; GK-35, location mit Bytes ausserhalb von ASCII, ist eine Funktionsgrenze in sicherer Richtung ohne Belang für den Datenschutz); Stellungnahme des Datenschutzexperten vor der Festlegung (Vorgaben DS-S21-01 bis DS-S21-13), Prüfbericht D16, Stellungnahme des SecDevOps Engineers am gebauten Stand und Abnahmetests des Dynamic Software Testers (je Fremdbeleg; Verlauf in `docs/uebergaben/2026-11-10_s2-etappe-1-sprint-2.md`, Abschnitt "Einheit S2.1"). Restpunkt DT-S15-01 (oben) ist mit S2.1 durch einen Einheitsfall in den Tests von spur.payload aufgenommen (Festlegung S2.1, Zeile "Protokoll: spur.payload").
+
+**E.1 Was B-02 neu führt.** Revision 0006 erweitert den Vorrat der Arbeitsspur um verbindungsversuch, abweisung, abfrage und negativbefund; einen Erzeuger und eine Eingabeklasse hat in S2.1 allein **verbindungsversuch** (Erzeuger ist allein `ausgang.client`). abweisung und abfrage folgen mit S2.2, negativbefund mit S2.4, je mit eigener Nachführung. Je Aufruf von anfragen und je Schritt (erster Versuch, jede Weiterleitung) entstehen ein oder zwei Einträge (zugelassen vor dem Netzakt, danach beantwortet oder verbindung_fehlgeschlagen; eine Abweisung als ein Eintrag).
+
+| Angabe im Eintrag verbindungsversuch | Form | Personenbezug |
+|---|---|---|
+| fall_kennung, werkzeug, versuch_kennung (UUID je Aufruf) | Kennungen, Klartext | keiner |
+| schritt, anschluss, status (100 bis 599), antwort_bytes | ganze Zahlen, Klartext | keiner allein |
+| methode, ergebnis (8 Werte), schema, zielart, adressbereich (11 Werte, Klassenname nach der Bereichsregel, nie Netz oder Teiladresse), fehlerart | geschlossene Vorräte, Klartext | keiner |
+| listeneintrag | Kennung des Eintrags der Positivliste, Klartext, ohne Rechnernamen | keiner; bezeichnet den Dienst eines Anbieters, kein Falldatum (ADR 0008, Nr. 14; H-1) |
+| listenstand | SHA-256 der Datei der Positivliste, 64 Hexadezimalzeichen, Klartext | keiner; Prüfsumme der Konfiguration nach ADR 0007, Nr. 17 |
+| ziel_pseudonym, ausgangsziel_pseudonym | HMAC-SHA-256 mit dem Fallschlüssel über die Zielform (schema://wert:anschluss, IPv6 in eckigen Klammern) des Schritts beziehungsweise des vorigen Schritts | ja, solange der Fallschlüssel besteht: ein Ziel ausserhalb der Liste kann die Infrastruktur einer Zielperson bezeichnen (5.17); vorsichtige Annahme dieser Rolle, Einordnung BV-14 |
+| adresse_pseudonym | HMAC-SHA-256 mit dem Fallschlüssel über die Adresse in Normalform, allein für die entschiedene Adresse | wie oben |
+| person_kennung | Spalte des Eintrags, aus dem Kontext; keine zweite Benutzerkennung in der Nutzlast | Zurechnung an Mitarbeitende (E-S1-07 a, GS-55, BV-16) |
+| zeitpunkt | Spalte, aus der Uhr des Kontexts über spur.service.anfuegen, UTC | zusammen mit person_kennung Verhaltensdaten (BV-15) |
+
+Nie in Eingabe, Nutzlast oder Spalte: Pfad, Abfrageteil, Fragment, Benutzerangaben der URL, Kopfzeilen, Körper der Anfrage oder Antwort, Rohform der URL oder des Rechners. Ein Feld ohne Wert fehlt in der Nutzlast; welche Felder je Ergebnis Pflicht oder verboten sind, legt die Belegungstabelle der Festlegung fest. Kennzeichnung quellenaussage.
+
+**E.2 Vorgaben DS-S21-01 bis DS-S21-13 am gebauten Stand** (Aufnahme nach ADR 0008, Festlegung S2.1, Zeile "Datenschutz (DS-S21-01 bis DS-S21-13)"; Belege Fremdbeleg).
+
+| Vorgabe | Aufnahme in der Festlegung | Gebaut und belegt |
+|---|---|---|
+| DS-S21-01 geschlossene Nutzlast | Zeile Protokoll; begründete Ergänzung: listenstand als Prüfsumme der Konfiguration | Eingabeklasse Verbindungsversuch in spur.payload mit Belegungsprüfung je Ergebnis und Einheitstest je Zelle; Prüfbericht D16, Prüfpunkt 4: 19 von 19 Nutzlasten genau mit der Pflichtmenge, keine unbekannten Felder |
+| DS-S21-02 Eingabebytes der Pseudonyme | Zeile Protokoll (Zielform mit Anschluss; adresse_pseudonym allein für die entschiedene Adresse) | Prüfbericht D16, Prüfpunkt 2: 42 von 42 Pseudonymen mit openssl nachgerechnet; gleiches Ziel in zwei Fällen ergibt verschiedene Pseudonyme; neun Schreibweisen derselben Adresse ergeben dasselbe ziel_pseudonym |
+| DS-S21-03 Grenze zur Umkehrbarkeit | Grenze GK-18 | Text; Einordnung unten (E.4) |
+| DS-S21-04 nie Pfad, Abfrageteil, Fragment, Benutzerangaben, Kopfzeilen, Körper | Zeilen ausgang.ziel und Protokoll; MERKMAL in der Abnahme | `backend/tests/abnahme/test_r3_f_015_und_028_positivliste.py` mit MERKMAL in Pfad, Abfrageteil und Fragment; Prüfbericht D16, Prüfpunkt 8: 22 Suchbegriffe (Zielformen, Adressen, Rechnerteile und Rohformen der URLs, MERKMAL) in allen Spalten der Arbeitsspur, in den Zeilentexten aller Tabellen des Schemas und in den Prozessausgaben ab DEBUG ohne Treffer |
+| DS-S21-05 neue Typen in der Formprüfung von R3-F-011 | Zeile Tests Abnahme | `backend/tests/abnahme/test_r3_f_011_protokoll.py` nachgeführt: Zeile verbindungsversuch in der Formprüfung, Katalogsuche über Zielform, Rechner, Adresse und Ausgangsziel, Nachrechnung der drei Pseudonyme; grün am gebauten Stand (Z01 bis Z14). Die übrigen drei Typen erhalten ihre Zeile mit ihrer Einheit |
+| DS-S21-06 kein Versuch ohne schreibbaren Eintrag | Zeile anfragen, Schritt (5) in der Zählweise der Festlegung S2.1, E-S21-03; Grenze GK-22; Fortschreibung nach dem Bau: GK-32 | Prüfbericht D16, Prüfpunkt 7: Fall unbekannt ergibt 0 Zeilen, 0 Auflösungen, 0 Verbindungen; Schreibfehler am ersten Eintrag ergibt 0 Zeilen und 0 Verbindungen, beim Namensziel aber 1 Auflösung (DF-S21-D16-01). Einordnung und fortgeschriebener Wortlaut unten (E.3) |
+| DS-S21-07 Zeitpunkt aus der Uhr | Zeile Kontext | Zeit allein über spur.service.anfuegen aus der Uhr; Prüfbericht D16, Prüfpunkt 10 (feste Testuhr) |
+| DS-S21-08 person_kennung allein in der Spalte | Zeile Kontext | Schlüsselmenge der Nutzlast ohne Benutzerkennung (Formprüfung R3-F-011) |
+| DS-S21-09 Prozessprotokoll ohne Ziel | Zeile Protokolle der Bibliothek, alle Stufen (E-S21-08); Grenze GK-25 | Stellungnahme des SecDevOps Engineers: Wurzel auf DEBUG, httpx und httpcore mit Kindern vorher und nachträglich auf DEBUG, MERKMAL in Pfad, Abfrageteil und Fragment: null Datensätze aller Logger; Gegenprobe mit dem Logger httpx auf INFO im Abnahmetest |
+| DS-S21-10 Ausnahmen ohne Ziel | Zeilen anfragen und Ausnahmen | Stellungnahme des SecDevOps Engineers: Eingabe-, Ziel-, Antwort- und Konfigurationsfehler mit args ohne MERKMAL, Ursache und Kontext leer; repr von Fehlschlag, Abweisung und Einträgen ohne MERKMAL |
+| DS-S21-11 kein Zwischenspeicher, keine Cookie-Ablage, trust_env aus | Zeile Abhängigkeit | Stellungnahme des SecDevOps Engineers: trust_env falsch, keine Cookies, keine Standardkopfzeilen, ein Client je Schritt; mit gesetzten Proxy-Variablen 0 Verbindungen zum Schein-Proxy |
+| DS-S21-12 Bedingungen der Testkonstante | Zeile Testkonstante; Grenze GK-28 | Vermerk unten (E.5) |
+| DS-S21-13 Zwischenstand S2.1 zu DS-S2-14 | (a) Zeile Verträge (Vertrag 13), (b) und (c) Zeile Kontext und Integrationstest, (d) Grenze GK-19 | Vertrag 13: kein Modul unter backend/src importiert ausgang.client; Fall unbekannt ohne Auflösung, Verbindung und Zeile (Prüfpunkt 7). DS-S2-14 ist erst ab S2.2 gegenstandslos |
+
+**E.3 Stellungnahme zu DS-S21-06 und GK-32.** Befund (DF-S21-D16-01, Fremdbeleg): bei einem Namensziel läuft die eine Auflösung je Schritt vor dem ersten Eintrag dieses Schritts, weil der Eintrag Adresse und Bereich trägt; scheitert das Schreiben des Eintrags, gab es eine Anfrage an den Namensdienst ohne Eintrag (gemessen: Auflöser 1 Aufruf, 0 Verbindungen, 0 Zeilen; beim Literalziel 0 Auflösungen). Entscheid des Koordinators: Grenze GK-32, Prüfpunkt 7 fortgeschrieben, baulicher Weg als Wiedervorlage mit R3-F-019.
+
+Einordnung dieser Rolle:
+
+1. **Was das System verlassen kann:** allein der Rechnername eines Eintrags der Positivliste, und nur an den Namensdienst. Ein Name ausserhalb der Liste wird nie aufgelöst (Abweisung nicht_in_positivliste ohne Auflösung; Zählweise der Festlegung S2.1, Zeile "ausgang.client.anfragen": Listenprüfung Schritt (3) vor Auflösung Schritt (4)); Pfad, Abfrageteil und jeder andere Wert eines Falls gehen nicht an den Namensdienst. Ein Listenname bezeichnet den Dienst eines Anbieters, kein Falldatum (H-1). Der Verlust betrifft die Nachvollziehbarkeit (ein Netzakt ohne Eintrag, 5.3), nicht die Vertraulichkeit von Falldaten.
+2. **Sprint 2:** trägt. Beide Positivlisten sind leer, es gibt keine echte Gegenstelle, und in den Tests löst allein der steuerbare Auflöser auf; eine Anfrage an einen echten Namensdienst entsteht nicht (Netzwächter, kein Weg nach aussen).
+3. **Bedingung für den Betrieb:** bevor der Standardauflöser gegen einen Namensdienst läuft und ein Eintrag in `deploy/konfiguration/produktion/positivliste.toml` steht (R3-F-019), ist entweder der bauliche Weg umgesetzt (ein Eintrag vor der Auflösung oder eine Prüfung der Schreibbarkeit vor der Auflösung) oder die verbleibende Lücke ist im Text der Festlegung zu R3-F-019 erneut ausdrücklich begründet. Zusätzlich soll die Festlegung zu R3-F-019 festhalten, welcher Namensdienst im Betrieb fragt (ein Namensdienst im Betrieb der Kantonspolizei Bern, kein öffentlicher Dienst eines Dritten), weil dessen Protokoll ausserhalb jedes Löschwegs liegt (BV-18).
+4. **DS-S21-06 bleibt als Ziel und wird für den Zwischenstand fortgeschrieben.** Wortlaut ab 2026-11-10: "Kein Byte an eine Gegenstelle und kein Verbindungsaufbau ohne einen erfolgreich in die Transaktion des Aufrufers geschriebenen Eintrag. Keine Auflösung, wenn der Eintrag nicht geschrieben werden kann; bis R3-F-019 ausgenommen ist allein die eine Auflösung eines Namens der Positivliste vor dem ersten Eintrag eines Schritts (GK-32). Mit R3-F-019 gilt die Vorgabe ohne Ausnahme oder die Ausnahme wird dort neu begründet." Der Bau ist damit bis R3-F-019 nachzuziehen; eine Vorlage an den Auftraggeber ist nicht nötig, weil in Sprint 2 keine Auflösung gegen einen Namensdienst stattfindet.
+
+**E.4 Grenzen der Festlegung S2.1, eingeordnet.**
+
+| Grenze | Einordnung aus Sicht des Datenschutzes |
+|---|---|
+| GK-18 (Pseudonyme mit Fallschlüssel umkehrbar) | gleich DS-S21-03 und D.1: Adressen und Listenziele sind kleine Wertebereiche; Schutz gegen Leser der Spur ohne Fallschlüssel, nicht gegen Leser der Datenbank (GS-5, GS-31); nach der Vernichtung des Fallschlüssels unumkehrbar. Die Gleichheit von adresse_pseudonym mit dem Pseudonym desselben Werts im Bestand desselben Falls ist gewollt und bleibt innerhalb des Falls (GS-7, GS-36) |
+| GK-19 (Fallzustand in S2.1 nicht geprüft) | gleich DS-S21-13 (d); trägt, solange allein Testcode einen Kontext baut (Vertrag 13). Wiedervorlage mit S2.2 (ADR 0008, Nr. 6) |
+| GK-22 (Einträge vor dem Netzakt nicht festgeschrieben) | trägt in S2.1 ohne echte Gegenstelle. Für den Betrieb gewichtiger als GK-32: ein Zurücksetzen nach dem Netzakt verliert den Eintrag eines Versuchs, der mit S2.2 die Parameter einer Abfrage an eine Quelle tragen kann. Vorgabe an die Festlegung S2.2 (Vormerkung dort): wann festgeschrieben wird, so wählen, dass eine Abfrage an eine Quelle nicht ohne festgeschriebenen Eintrag stattfindet, oder die Lücke ausdrücklich begründen |
+| GK-25 (Loggerstufe durch Dritte änderbar) | Betriebsregel wie GS-54: keine Protokollkonfiguration, die httpx oder httpcore nach einem Aufruf auf eine Stufe unter WARNING setzt; Prüfung mit R3-F-019 |
+| GK-28 (Testkonstante) | Vermerk E.5 |
+| GK-32 (Auflösung vor dem ersten Eintrag) | E.3 |
+
+**E.5 Vermerk zur Testkonstante (DS-S21-12).** Die Tests verwenden als zulässige Adresse des Namenspfads die Konstante 2001:20::1, eine Abweichung von DS-S2-03 und H-6 (Dokumentationsadressen werden als privat abgewiesen). Fundstelle: IANA IPv6 Special-Purpose Address Registry, Eintrag 2001:20::/28, ORCHIDv2 nach RFC 7343, abgerufen am 2026-11-10 durch die GRC-Rolle (Fremdbeleg; Werte aus der Zusammenfassung des Abrufwerkzeugs, "ohne einzelnen Inhaber" ist Auslegung, GK-28). Die Konstante ist kein Personendatum und kein Falldatum. Sie steht allein im Testbaum; `backend/tests/architektur/test_ausgang_text.py` sichert zu, dass sie unter backend/src und deploy nicht vorkommt. Zu ihr entsteht nie eine Verbindung oder Auflösung des Systems: jeder Test, der auflöst, läuft mit dem Netzwächter; der Verbindungsweg-Ersatz bildet sie auf die Testgegenstelle auf der Rückschleife ab. In der Spur steht sie wie jedes Ziel allein als Pseudonym.
+
+**E.6 Keine neue Bearbeitung.** S2.1 bearbeitet keine Daten einer Quelle: das Produktionsverzeichnis der Werkzeuge ist leer und beide Positivlisten haben keinen Eintrag. Die Positivliste selbst trägt keine Personendaten; ihre Änderung ist Konfiguration ohne Protokoll (DS-S2-16, GK-12). Abfragen an Quellen bleiben unter "Noch nicht erfasste Bearbeitungen"; die Tabelle betriebsprotokoll (B-05) folgt mit S2.2.
+
 ## 4. Bearbeitung B-03 "Kanonischer Datenbestand (Entitäten und Beziehungen nach FollowTheMoney) mit Herkunftsnachweis"
 
 **Stand: festgelegt, nicht gebaut.** Entwurf vor dem Bau der Einheit S1.4 (R3-F-003, R3-F-005) nach ADR 0007, Entscheide 24 bis 26 und Zerlegung, Zeile S1.4. Bezeichner sind die der Festlegung (künftige Tabellen `herkunft`, `entitaet`, `beziehung` im Schema r3cosint, Revision 0005, Modul kanon); bis zum Bau besteht keine dieser Tabellen. Am gebauten Stand wird dieser Abschnitt nachgeführt.
@@ -454,3 +516,13 @@ Erfasst wird je Bearbeitung mit der Einheit, die sie baut; bis dahin besteht sie
 | BV-14 | Unverändert offen (mit GS-54); zur Planung von Sprint 2 | GRC-Rolle, Gegenprüfung Legal Reviewer |
 | BV-15 | Unverändert offen; zur Planung von Sprint 2 | GRC-Rolle; Entscheid Kantonspolizei Bern |
 | BV-16 | Unverändert offen (GS-55, DF-S15-D16-01); zur Planung von Sprint 2 | Product Owner mit Software Architect (Etappe 3); Entscheid Kantonspolizei Bern |
+
+**Nachtrag E vom 2026-11-10 (Einheit S2.1, gebauter Stand; B-02, Nachtrag E; Angabe des Koordinators, Fremdbeleg).** Kein bisheriger Punkt ist mit S2.1 erledigt.
+
+| Nr. | Punkt | Zuständig |
+|---|---|---|
+| BV-14 | Erweitert um ziel_pseudonym, adresse_pseudonym und ausgangsziel_pseudonym der Einträge verbindungsversuch (GK-18); die Konformitätsanalyse, Nummer 10.3, führt "Pseudonyme bleiben Personendaten" bis zur Vernichtung des Fallschlüssels als Auslegung (Hinweis L-F04-06 der Gegenprüfung, bereinigt) | GRC-Rolle, Gegenprüfung Legal Reviewer |
+| BV-15 | Unverändert offen; verbindungsversuch fügt Zeitpunkte je Schritt zur person_kennung hinzu | GRC-Rolle; Entscheid Kantonspolizei Bern |
+| BV-17 | Aufbewahrung jeder Fassung der Positivliste je Umgebung, damit ein listenstand der Spur einer Fassung zugeordnet und die Kennung eines Listeneintrags nachgeprüft werden kann (GK-26; Prüfpunkt P-14 der Konformitätsanalyse); die Fassungen tragen keine Falldaten | DevOps Engineer mit GRC-Rolle; Prüfpunkt der zuständigen Stelle |
+| BV-18 | Namenszwischenspeicher des Systems und Protokolle des Namensdienstes im Betrieb: sie halten Rechnernamen von Listenzielen ausserhalb jedes Löschwegs der Anwendung; Wahl des Namensdienstes (im Betrieb der Kantonspolizei Bern, kein öffentlicher Dienst eines Dritten), Haltedauer und Protokoll (Löschkonzept, Nachtrag zu S2.1) | DevOps Engineer mit SecDevOps Engineer und Datenschutzexperte, mit R3-F-019 |
+| BV-19 | Nachzug von DS-S21-06 (B-02, Nachtrag E, E.3): Auflösung eines Listennamens vor dem ersten Eintrag (GK-32) und Festschreiben der Einträge vor einer Abfrage an eine Quelle (GK-22) | Software Architect (Festlegungen S2.2 und R3-F-019) |

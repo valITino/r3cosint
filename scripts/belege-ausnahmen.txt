@@ -120,3 +120,7 @@ docs/uebergaben/2026-08-30_makefile-dod-abbruch-nach-3-4.md|deploy/images/Docker
 
 # --- Abschnitte anderer Dokumente ---------------------------------------------
 docs/konformitaet/konformitaetsanalyse.md|11.3	Abschnitt 11.3 der Gegenpruefung docs/recht/gegenpruefung-konformitaetsanalyse.md (Nachpruefung des Legal Reviewers), nicht des Projektauftrags; Pruefung 5 kennt nur den Projektauftrag und eigene Ueberschriften. Einheit S1.3, Fund des Laufs auf der Gegenseite.
+docs/recht/gegenpruefung-konformitaetsanalyse.md|10.1	Abschnitt 10.1 der Konformitaetsanalyse docs/konformitaet/konformitaetsanalyse.md (Funktion F-04), nicht des Projektauftrags; Pruefung 5 kennt nur den Projektauftrag und eigene Ueberschriften. Einheit S2.1.
+docs/recht/gegenpruefung-konformitaetsanalyse.md|10.2	Abschnitt 10.2 der Konformitaetsanalyse docs/konformitaet/konformitaetsanalyse.md (Funktion F-04), nicht des Projektauftrags; Pruefung 5 kennt nur den Projektauftrag und eigene Ueberschriften. Einheit S2.1.
+docs/recht/gegenpruefung-konformitaetsanalyse.md|10.3	Abschnitt 10.3 der Konformitaetsanalyse docs/konformitaet/konformitaetsanalyse.md (Funktion F-04), nicht des Projektauftrags; Pruefung 5 kennt nur den Projektauftrag und eigene Ueberschriften. Einheit S2.1.
+docs/recht/gegenpruefung-konformitaetsanalyse.md|10.6	Abschnitt 10.6 der Konformitaetsanalyse docs/konformitaet/konformitaetsanalyse.md (Funktion F-04), nicht des Projektauftrags; Pruefung 5 kennt nur den Projektauftrag und eigene Ueberschriften. Einheit S2.1.
