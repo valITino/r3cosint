@@ -5,7 +5,7 @@
 | **Arbeitsprodukt nach** | Projektauftrag 6.3 |
 | **Verantwortlich** | Requirements Engineer; ein benannter Verantwortlicher ist noch zu bestimmen |
 | **Lebensdauer** | langlebig |
-| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19. Nachgeführt 2026-09-21 mit dem Backlog-Eintrag R3-Q-010: Gate und Hook aufgenommen, beim Eintrag Freigabe-Gate die Homonym-Warnung um die Abgrenzung zum Gate ergänzt — beide Begriffe werden in Arbeitsprodukten und Regeln seit dem 2026-08-19 verwendet, standen aber nicht im Glossar, und "Gate" bezeichnete darin zwei verschiedene Sachen (R3 der Definition of Ready, Homonyme vermeiden). Nachgeführt 2026-09-23 mit dem Backlog-Eintrag R3-Q-011: Einschleusung, Fremder Inhalt und Harness aufgenommen — alle drei Begriffe tragen den Eintrag; "fremde Inhalte" wurde bisher für den Harness (CLAUDE.md, Abschnitt "Nicht verhandelbar") und für das Produkt (R3-F-017) ohne Abgrenzung gebraucht, und "Harness" selbst stand trotz Verwendung im Projektauftrag (5.15) und in CLAUDE.md nicht im Glossar (R3 der Definition of Ready). Nachgeführt 2026-10-28 mit der Einheit G0: Grundgerüst aufgenommen — der Begriff wird im Projektauftrag (3.1), im Architekturentscheid und in der Freigabe des Grundgerüsts verwendet, stand aber nicht im Glossar; `docs/12_Freigabe_Grundgeruest.md` führt die Aufnahme in Abschnitt 1 als Restpunkt und weist sie in Abschnitt 4 (G0, Rollen) dem Requirements Engineer zu (R3 der Definition of Ready). Nachgeführt 2026-11-05 mit der Einheit S1 (Walkthrough vor Sprint 1, `docs/sprints/sprint-01-walkthrough.md`): Aufgabe, Datenpunkt, Fallkategorie, Fallverantwortlicher, Kettenprüfung, Klardaten, Löschweg, Protokolleintrag, Prüffrist, Rechtsregime und Verkettung aufgenommen (neuer Abschnitt D), bei Aufbewahrungsklasse das Synonym Fallkategorie vermerkt (4.4, Punkt 3b: genau ein Feld), bei Grabstein-Eintrag die Kurzform; Sprint 1 braucht die Begriffe als Bezeichner (ADR 0002, A13). Rechtsregime trägt [rechtlich] und ist am 2026-11-05 durch die GRC-Rolle geprüft (Einheit S1); offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5). Unter "Zu ergänzen" Nr. 4 bis 6 neu. 64 Einträge. Nachgeführt 2026-11-05 mit der Einheit D22 (nach der Annahme von Sprint 1 und ADR 0007 durch den Merge des Pull Requests #52): Eintragstyp und Kettenkopf aufgenommen (ADR 0007, Entscheid 28, Restpunkt des Software Architects); Rechtsregime nach Hinweis H-3 der GRC-Rolle neu gefasst (R1 oder R2 als Regime des Falls, R3 bis R5 als Rahmen, Eigenschaft der Bearbeitung beziehungsweise Phase nach dem Betriebszweck; 4.4, Tabelle; ADR 0007, E-S1-09), die Neufassung geprüft durch die GRC-Rolle am 2026-11-05 (Einheit D22), offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5); bei Fallkategorie die Fundstellen der Sätze zu Kurzkennzeichnung und Archivwürdigkeit nachgetragen (H-4); beim Fall Rechtsregime und Fallkategorie statt Aufbewahrungsklasse, mit Vermerk zum Synonym (H-5); "Zu ergänzen" Nr. 5 nachgeführt (H-6). 66 Einträge. Nachgeführt 2026-11-09 vor der Einheit S1.3 (Walkthrough-Befund W1-97): Aktenzeichen als Vorschlag zur Bestätigung durch den Auftraggeber aufgenommen, mit der Abgrenzung zur Fallnummer im Eintrag (kein eigener Eintrag Fallnummer, weil 4.4 sie allein als Bestandteil des Grabstein-Eintrags nennt); "Zu ergänzen" Nr. 4 nachgeführt. 67 Einträge. Nachgeführt 2026-11-09 mit der Einheit D25 (nach dem Merge des Pull Requests #55, Merge-Commit `3cb896da222feefc0df124c8447a443f2dfab7ae`; Angabe des Koordinators, Fremdbeleg): beim Eintrag Aktenzeichen die Entscheide E-S13-02 (b) und E-S13-01 (a) vermerkt, die Kennzeichnung als unbestätigter Vorschlag bleibt; "Zu ergänzen" Nr. 4 nachgeführt, die Bestimmung beider Begriffe bleibt offen. 67 Einträge. Nachgeführt 2026-11-09 vor der Einheit S1.4 (Walkthrough-Befunde W1-75, W1-81, W1-84, W1-86): bei Datenpunkt, Herkunftsnachweis und Entität je ein Vorschlag zur Ergänzung, gekennzeichnet und nicht bestätigt; kein neuer Eintrag. 67 Einträge. Nachgeführt 2026-11-09 mit der Einheit D26 (nach dem Merge des Pull Requests #56, Merge-Commit `04e759130e63111556a853487db03b035430e522`; Angabe des Koordinators, Fremdbeleg): beim Eintrag Entität den Entscheid E-S14-01 (b) vermerkt und in der Klammer des Vorschlagssatzes darauf verwiesen (geschlossener Vorrat von elf Schemata nach FollowTheMoney in Sprint 1; STIX 2.1 bleibt offen, R3-F-004); bei Datenpunkt, Herkunftsnachweis und Entität die Kennzeichnung der Vorschläge zur Ergänzung nachgeführt: nicht bestätigt, im Pull Request #56 nicht zur Bestätigung vorgelegt, Vorlage im Pull Request der Einheiten D26 und S1.5; keine inhaltliche Änderung an Begriffen, kein neuer Eintrag. 67 Einträge |
+| **Stand** | 2026-08-26, sechs Begriffe aus den Backlog-Einträgen zu Befund F nachgetragen: Antwortschema, Ausgabeweg, Freigabevorlage, Rohantwort, Vorschlagsschema, Werkzeugverzeichnis (R3 der Definition of Ready). Erstfassung 2026-08-19. Nachgeführt 2026-09-21 mit dem Backlog-Eintrag R3-Q-010: Gate und Hook aufgenommen, beim Eintrag Freigabe-Gate die Homonym-Warnung um die Abgrenzung zum Gate ergänzt — beide Begriffe werden in Arbeitsprodukten und Regeln seit dem 2026-08-19 verwendet, standen aber nicht im Glossar, und "Gate" bezeichnete darin zwei verschiedene Sachen (R3 der Definition of Ready, Homonyme vermeiden). Nachgeführt 2026-09-23 mit dem Backlog-Eintrag R3-Q-011: Einschleusung, Fremder Inhalt und Harness aufgenommen — alle drei Begriffe tragen den Eintrag; "fremde Inhalte" wurde bisher für den Harness (CLAUDE.md, Abschnitt "Nicht verhandelbar") und für das Produkt (R3-F-017) ohne Abgrenzung gebraucht, und "Harness" selbst stand trotz Verwendung im Projektauftrag (5.15) und in CLAUDE.md nicht im Glossar (R3 der Definition of Ready). Nachgeführt 2026-10-28 mit der Einheit G0: Grundgerüst aufgenommen — der Begriff wird im Projektauftrag (3.1), im Architekturentscheid und in der Freigabe des Grundgerüsts verwendet, stand aber nicht im Glossar; `docs/12_Freigabe_Grundgeruest.md` führt die Aufnahme in Abschnitt 1 als Restpunkt und weist sie in Abschnitt 4 (G0, Rollen) dem Requirements Engineer zu (R3 der Definition of Ready). Nachgeführt 2026-11-05 mit der Einheit S1 (Walkthrough vor Sprint 1, `docs/sprints/sprint-01-walkthrough.md`): Aufgabe, Datenpunkt, Fallkategorie, Fallverantwortlicher, Kettenprüfung, Klardaten, Löschweg, Protokolleintrag, Prüffrist, Rechtsregime und Verkettung aufgenommen (neuer Abschnitt D), bei Aufbewahrungsklasse das Synonym Fallkategorie vermerkt (4.4, Punkt 3b: genau ein Feld), bei Grabstein-Eintrag die Kurzform; Sprint 1 braucht die Begriffe als Bezeichner (ADR 0002, A13). Rechtsregime trägt [rechtlich] und ist am 2026-11-05 durch die GRC-Rolle geprüft (Einheit S1); offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5). Unter "Zu ergänzen" Nr. 4 bis 6 neu. 64 Einträge. Nachgeführt 2026-11-05 mit der Einheit D22 (nach der Annahme von Sprint 1 und ADR 0007 durch den Merge des Pull Requests #52): Eintragstyp und Kettenkopf aufgenommen (ADR 0007, Entscheid 28, Restpunkt des Software Architects); Rechtsregime nach Hinweis H-3 der GRC-Rolle neu gefasst (R1 oder R2 als Regime des Falls, R3 bis R5 als Rahmen, Eigenschaft der Bearbeitung beziehungsweise Phase nach dem Betriebszweck; 4.4, Tabelle; ADR 0007, E-S1-09), die Neufassung geprüft durch die GRC-Rolle am 2026-11-05 (Einheit D22), offen bleibt allein die Abgrenzung Rechtsgrundlage gegen Rechtsregime (W1-09, "Zu ergänzen" Nr. 5); bei Fallkategorie die Fundstellen der Sätze zu Kurzkennzeichnung und Archivwürdigkeit nachgetragen (H-4); beim Fall Rechtsregime und Fallkategorie statt Aufbewahrungsklasse, mit Vermerk zum Synonym (H-5); "Zu ergänzen" Nr. 5 nachgeführt (H-6). 66 Einträge. Nachgeführt 2026-11-09 vor der Einheit S1.3 (Walkthrough-Befund W1-97): Aktenzeichen als Vorschlag zur Bestätigung durch den Auftraggeber aufgenommen, mit der Abgrenzung zur Fallnummer im Eintrag (kein eigener Eintrag Fallnummer, weil 4.4 sie allein als Bestandteil des Grabstein-Eintrags nennt); "Zu ergänzen" Nr. 4 nachgeführt. 67 Einträge. Nachgeführt 2026-11-09 mit der Einheit D25 (nach dem Merge des Pull Requests #55, Merge-Commit `3cb896da222feefc0df124c8447a443f2dfab7ae`; Angabe des Koordinators, Fremdbeleg): beim Eintrag Aktenzeichen die Entscheide E-S13-02 (b) und E-S13-01 (a) vermerkt, die Kennzeichnung als unbestätigter Vorschlag bleibt; "Zu ergänzen" Nr. 4 nachgeführt, die Bestimmung beider Begriffe bleibt offen. 67 Einträge. Nachgeführt 2026-11-09 vor der Einheit S1.4 (Walkthrough-Befunde W1-75, W1-81, W1-84, W1-86): bei Datenpunkt, Herkunftsnachweis und Entität je ein Vorschlag zur Ergänzung, gekennzeichnet und nicht bestätigt; kein neuer Eintrag. 67 Einträge. Nachgeführt 2026-11-09 mit der Einheit D26 (nach dem Merge des Pull Requests #56, Merge-Commit `04e759130e63111556a853487db03b035430e522`; Angabe des Koordinators, Fremdbeleg): beim Eintrag Entität den Entscheid E-S14-01 (b) vermerkt und in der Klammer des Vorschlagssatzes darauf verwiesen (geschlossener Vorrat von elf Schemata nach FollowTheMoney in Sprint 1; STIX 2.1 bleibt offen, R3-F-004); bei Datenpunkt, Herkunftsnachweis und Entität die Kennzeichnung der Vorschläge zur Ergänzung nachgeführt: nicht bestätigt, im Pull Request #56 nicht zur Bestätigung vorgelegt, Vorlage im Pull Request der Einheiten D26 und S1.5; keine inhaltliche Änderung an Begriffen, kein neuer Eintrag. 67 Einträge. Nachgeführt 2026-11-10 mit der Einheit D27 (Merge #57, Merge-Commit `c2b187b8b2b2706b4a85ac404a1a23148cdcd884`; Fremdbeleg): E-D26-01 (a), die Ergänzungen bei Datenpunkt, Herkunftsnachweis und Entität bestätigt, Wortlaut unverändert; aus S1.5 (W1-72), gekennzeichnet und nicht bestätigt: Protokoll und Pseudonym neu, Ergänzungen bei Klardaten und Protokolleintrag; Vorlage E-D27-01 im Pull Request der Einheiten D27 und S2. 69 Einträge |
 
 **Die Verwendung dieses Glossars ist für alle Arbeitsprodukte und für die
 Oberflächentexte verpflichtend** (6.3). Synonyme sind gekennzeichnet, Homonyme
@@ -130,10 +130,11 @@ entsprechend gekennzeichnet (5.10).
 Datenbestand. 5.4 fasst die Verfahrensgarantie "Herkunft an jedem Datenpunkt"
 als "Kein Knoten und keine Verbindung ohne Herkunftsnachweis" (R3-F-005). Ob
 einzelne Eigenschaften einer Entität eigene Datenpunkte sind, ist nicht
-festgelegt (Walkthrough vor Sprint 1, W1-86). *Vorschlag zur Ergänzung
-(2026-11-09, vor der Einheit S1.4), nicht bestätigt; im Pull Request #56 nicht
-zur Bestätigung vorgelegt; Vorlage im Pull Request der Einheiten D26 und
-S1.5:* In Sprint 1 ist ein Datenpunkt ein
+festgelegt (Walkthrough vor Sprint 1, W1-86). *Ergänzung vom 2026-11-09
+(vor der Einheit S1.4), bestätigt mit dem Merge des Pull Requests #57 am
+2026-11-10 (Merge-Commit `c2b187b8b2b2706b4a85ac404a1a23148cdcd884`),
+E-D26-01 (a); Angabe des Koordinators, Fremdbeleg; der Satz gilt als
+Definition:* In Sprint 1 ist ein Datenpunkt ein
 Knoten, der Datensatz eines Knotenschemas von FollowTheMoney (Tabelle
 entitaet), oder eine Kante, der Datensatz eines Kantenschemas (Tabelle
 beziehung); seine Eigenschaften sind Teil des Knotens oder der Kante und keine
@@ -177,9 +178,10 @@ Kennzeichnung, woher die Aussage stammt.
 
 **Entität** — Ein Objekt im kanonischen Datenbestand: Person, Firma, IP-Adresse,
 Domain, Wallet, Vermögenswert und so weiter. Trägt immer einen Herkunftsnachweis
-und eine Klassifizierungsstufe. *Vorschlag zur Ergänzung (2026-11-09, vor der
-Einheit S1.4), nicht bestätigt; im Pull Request #56 nicht zur Bestätigung
-vorgelegt; Vorlage im Pull Request der Einheiten D26 und S1.5:* In Sprint 1
+und eine Klassifizierungsstufe. *Ergänzung vom 2026-11-09 (vor der Einheit
+S1.4), bestätigt mit dem Merge des Pull Requests #57 am 2026-11-10
+(Merge-Commit `c2b187b8b2b2706b4a85ac404a1a23148cdcd884`), E-D26-01 (a);
+Angabe des Koordinators, Fremdbeleg; der Satz gilt als Definition:* In Sprint 1
 werden Entitäten ohne Klassifizierungsstufe abgelegt, weil Zugriff und
 Klassifizierung nicht Gegenstand sind (ADR 0007, Nicht Gegenstand; R3-F-054,
 Etappe 3); "immer" gilt für die Klassifizierungsstufe erst ab diesem Eintrag
@@ -197,7 +199,10 @@ eine Erweiterung kommt je mit einem Backlog-Eintrag und einer Fortschreibung
 der Konstanten. Offen bleibt, welche Entitätstypen nach STIX 2.1 abgelegt
 werden (R3-F-004). Der Vorschlag zur Ergänzung oben ist mit demselben Merge
 nicht bestätigt, weil der Text des Pull Requests ihn nicht zur Bestätigung
-nannte; die Kennzeichnung bleibt deshalb stehen.
+nannte; die Kennzeichnung bleibt deshalb stehen. Stand 2026-11-10 (Einheit
+D27): Mit dem Merge des Pull Requests #57 ist E-D26-01 nach (a) entschieden
+und die Ergänzung bestätigt; die Kennzeichnung oben ist entsprechend
+nachgeführt.
 
 **Ermittlung** — Die Gesamtheit der Tätigkeit in einem Fall. *Abzugrenzen von:*
 Recherche (siehe dort).
@@ -354,10 +359,11 @@ und Einschleusung im Harness: siehe dort (R3-Q-011).
 
 **Herkunftsnachweis** — Die Angabe, aus welcher Quelle ein Datenpunkt stammt,
 wann er erhoben wurde und von wem. Nach W3C PROV geführt. Kein Knoten und keine
-Kante ohne Herkunftsnachweis (5.4). *Synonym:* Provenienz. *Vorschlag zur
-Ergänzung (2026-11-09, vor der Einheit S1.4), nicht bestätigt; im Pull Request
-#56 nicht zur Bestätigung vorgelegt; Vorlage im Pull Request der Einheiten D26
-und S1.5:* Im Bestand ist der
+Kante ohne Herkunftsnachweis (5.4). *Synonym:* Provenienz. *Ergänzung vom
+2026-11-09 (vor der Einheit S1.4), bestätigt mit dem Merge des Pull Requests
+#57 am 2026-11-10 (Merge-Commit `c2b187b8b2b2706b4a85ac404a1a23148cdcd884`),
+E-D26-01 (a); Angabe des Koordinators, Fremdbeleg; der Satz gilt als
+Definition:* Im Bestand ist der
 Herkunftsnachweis ein Herkunftssatz mit fünf Angaben; vollständig ist er nur
 mit allen fünf: Werkzeug und Abfrage (die Quelle), Zeitpunkt der Erhebung,
 erhebende Person (Benutzerkennung, "von wem") und Kennzeichnung als
@@ -411,6 +417,15 @@ unkenntlich gemacht oder als Prüfsumme abgelegt, das Protokoll führt
 Prüfsummen und Verweise (5.3; ADR 0002, A2; R3-F-011). Welche Angaben eines
 Falls im Einzelnen dazugehören, ist nicht abschliessend festgelegt
 (Walkthrough vor Sprint 1, W1-43). *Synonym:* Klartextwerte (R3-F-011).
+*Vorschlag zur Ergänzung (2026-11-10, Einheit D27; zur Bestätigung im Pull
+Request der Einheiten D27 und S2), nicht bestätigt:* Der Satz zu W1-43 entfällt;
+an seine Stelle tritt: Welche Werte eines Falls Klardaten sind, zählen die
+Präzisierung des Abnahmekriteriums von R3-F-011 vom 2026-11-09 (Aktenzeichen,
+Rechtsgrundlage und ermittelnde Person des Falls, jeder Eigenschaftswert eines
+Knotens oder einer Kante, der Abfragetext eines Herkunftssatzes und die
+FollowTheMoney-Kennung eines Knotens oder einer Kante) und ADR 0007,
+Entscheid 26, auf; "unkenntlich gemacht" heisst in Sprint 1 allein: als
+Pseudonym abgelegt (siehe dort; W1-47).
 
 **Klassifizierung** — Das Schutzstufenschema der Kantonspolizei Bern: nicht
 klassifiziert, 1a (Eingeschränkt), 1b (Ermittlungen), 2 (Geheim), sowie
@@ -473,6 +488,19 @@ sind erreichbar; jeder Versuch darüber hinaus wird abgewiesen und protokolliert
 ausschliesslich lokal. Claude Code hat technisch keinen Zugang; die Trennung
 läuft über getrennte Zugangsdaten, nicht über eine Regel (5.16).
 
+**Protokoll** — *Vorschlag zur Ergänzung (2026-11-10, Einheit D27; zur
+Bestätigung im Pull Request der Einheiten D27 und S2), nicht bestätigt:*
+Sammelbegriff für die beiden Protokollspuren eines Falls, Ermittlungsspur und
+Arbeitsspur, mit ihrem Kettenkopf; in der Datenbank die drei Tabellen
+ermittlungsspur, arbeitsspur und kettenkopf (ADR 0007, Entscheide 13 und 26;
+R3-F-011, Präzisierung vom 2026-11-09; Walkthrough vor Sprint 1, W1-72).
+*Synonym:* Protokolltabellen (Mehrzahl, dieselben drei Tabellen); "beide
+Spuren" meint dasselbe ohne den Kettenkopf; "die Protokolltabelle" in der
+Einzahl nicht verwenden. *Nicht:* eine Ausgabe der Anwendung, der Datenbank
+oder der Container (Systemlog), und nicht die Suchfläche des Abnahmetests von
+R3-F-011, die weiter gefasst ist. *Homonym-Warnung:* nicht das Schreibprotokoll
+der Datenbank.
+
 **Protokolleintrag** — Ein Eintrag in einer der beiden Protokollspuren,
 Ermittlungsspur oder Arbeitsspur (5.3). Ausschliesslich anfügbar; trägt die
 SHA-256-Prüfsumme seines Vorgängers. Namen, Adressen und Telefonnummern stehen
@@ -480,6 +508,11 @@ darin nur unkenntlich gemacht oder als Prüfsumme: Er hält fest, **dass** etwas
 geschah, nicht **was** (5.3; 4.4, Punkt 5, Problem A). Protokollpflichtig sind
 unter anderem jede Löschung, Verlängerung, Sperre und Freigabe (4.4, Punkt 4).
 *Nicht:* eine Zeile eines System- oder Anwendungslogs (vgl. Arbeitsspur).
+*Vorschlag zur Ergänzung (2026-11-10, Einheit D27; zur Bestätigung im Pull
+Request der Einheiten D27 und S2), nicht bestätigt:* Der dritte Satz lautet:
+Namen, Adressen und Telefonnummern stehen darin nur unkenntlich gemacht oder
+als Prüfsumme (in Sprint 1 als Pseudonym, siehe dort): Er hält fest, **dass**
+etwas geschah, nicht **was** (5.3; 4.4, Punkt 5, Problem A).
 
 **Prototyp** — Der klickbare Wegwerf-Prototyp mit synthetischen Daten. Sein Code
 wird nach der Freigabe nicht weiterverwendet (5.6). *Nicht verwenden als Synonym
@@ -499,6 +532,20 @@ Prüffrist, die Begründung wird protokolliert (4.4, Punkt 2). Die Werte sind
 betriebliche Voreinstellungen, frei konfigurierbar und nirgends fest verdrahtet;
 Startwerte nach 4.4, Punkt 3, als Vorschlag zur Bestätigung. *Synonym in 4.4,
 Punkt 4:* Aufbewahrungsfrist.
+
+**Pseudonym** — *Vorschlag zur Ergänzung (2026-11-10, Einheit D27; zur
+Bestätigung im Pull Request der Einheiten D27 und S2), nicht bestätigt:* Der
+HMAC-SHA-256 eines Klartextwerts mit dem Schlüssel seines Falls über die
+normalisierte Form (Unicode NFC, casefold, Leerraum zusammengefasst und
+getrimmt), abgelegt als 64 Hexadezimalzeichen. Derselbe Wert ergibt innerhalb
+eines Falls dasselbe Pseudonym, in verschiedenen Fällen verschiedene; ohne den
+Fallschlüssel ist es nicht nachprüfbar, mit der Vernichtung des Fallschlüssels
+unumkehrbar (ADR 0007, E-S1-06 b, Grenze GS-5; 4.4, Punkt 5, Problem B). Wer
+den Fallschlüssel lesen kann, kann kleine Wertebereiche durchprobieren
+(ADR 0007, GS-5). In R3-F-011 und 5.3 heisst es "Prüfsumme"; "unkenntlich
+gemacht" heisst in Sprint 1 allein: als Pseudonym abgelegt (R3-F-011).
+*Abzugrenzen von:* der Prüfsumme der Verkettung (SHA-256 ohne Schlüssel, siehe
+Verkettung).
 
 ## Q
 
