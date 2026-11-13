@@ -396,8 +396,9 @@ COV_FAIL_UNDER_KRITISCH := 100
 # Module aus ADR 0002, Abschnitt 4.1: spur (Protokoll), zugriff
 # (Klassifizierung), freigabe (Freigabesperre). Ab S1.2 (ADR 0007, E-S1-14 a)
 # auch fall (Fallbindung); ab S1.4 auch kanon (ADR 0007, Festlegung S1.4;
-# R3-F-005).
-KRITISCHE_MODULE := spur fall kanon zugriff freigabe
+# R3-F-005); ab S2.1 auch ausgang (ADR 0008, Festlegung S2.1, Zeile D6 und Kette;
+# R3-F-015, R3-F-028).
+KRITISCHE_MODULE := spur fall kanon zugriff freigabe ausgang
 
 # E-08 (D3, Linter-Warnungen; D8, Abhaengigkeitsschwachstellen): ADR 0002
 # nennt fuer diese beiden Schwellen ausdruecklich KEINEN Zahlenwert, nur den
@@ -705,6 +706,30 @@ define DB_WACHE_FUNKTION
 			echo "$$1 LAGE C: backend/tests/integration existiert, aber das Image docker.io/library/postgres@sha256:$$wache_digest liegt lokal nicht vor." >&2
 			echo "Beschaffen: docker pull docker.io/library/postgres@sha256:$$wache_digest (nur ueber den Digest, kein Tag; Docker Hub begrenzt anonyme Abrufe, M-G21-01; in der Arbeitsumgebung der Sitzung nur mit Erlaubnis des Auftraggebers)." >&2
 			[ -n "$$fehlt" ] || fehlt="image-datenbank"
+			return 1
+		fi
+		return 0
+	}
+endef
+
+# -----------------------------------------------------------------------------
+# S2.1 -- Wache openssl vor D5 und D6 (ADR 0008, Festlegung S2.1, Zeile D6 und Kette;
+# Entscheid E-S21-11 a)
+# -----------------------------------------------------------------------------
+# Besteht backend/tests/einheit/test_ausgang_tls.py, erzeugt die Fixture tls_zertifikat
+# in backend/tests/conftest.py ein Wegwerf-Zertifikat mit dem Programm openssl. Fehlt es,
+# ist das ein fehlendes Pruefmittel und damit Lage C (Kettengrundsatz), kein A_FAIL aus
+# der Fixture und kein Ueberspringen im Test. Die Funktion openssl_wache gibt 0 zurueck,
+# wenn der Test nicht besteht oder openssl da ist; sonst 1, eine Meldung und, falls noch
+# leer, FEHLT=openssl. Die Pruefung laeuft unter $(UV_UMFELD) (env -i): derselbe PATH wie
+# bei pytest und der Fixture.
+define OPENSSL_WACHE_FUNKTION
+	openssl_wache() {
+		[ -f backend/tests/einheit/test_ausgang_tls.py ] || return 0
+		if ! $(UV_UMFELD) sh -c 'command -v openssl' >/dev/null 2>&1; then
+			echo "$$1 LAGE C: backend/tests/einheit/test_ausgang_tls.py existiert, aber 'openssl' ist nicht im PATH (die Fixture tls_zertifikat erzeugt damit das Wegwerf-Zertifikat)." >&2
+			echo "Beschaffen: Paket openssl der Distribution (z. B. apt-get install openssl)." >&2
+			[ -n "$$fehlt" ] || fehlt="openssl"
 			return 1
 		fi
 		return 0
@@ -1326,6 +1351,7 @@ test:
 	cd "$(PROJ)" || { echo "[D5 test] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
 	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	$(DB_WACHE_FUNKTION)
+	$(OPENSSL_WACHE_FUNKTION)
 	if [ -f backend/pyproject.toml ]; then
 		hat_objekt=1
 		if ! command -v uv >/dev/null 2>&1; then
@@ -1339,6 +1365,9 @@ test:
 			hat_lage_c=1
 		elif ! db_wache "[D5 test]"; then
 			# S1.1: Wache der Datenbankstufe, Begruendung bei DB_WACHE_FUNKTION; FEHLT= setzt die Funktion.
+			hat_lage_c=1
+		elif ! openssl_wache "[D5 test]"; then
+			# S2.1: Wache openssl, Begruendung bei OPENSSL_WACHE_FUNKTION; FEHLT= setzt die Funktion.
 			hat_lage_c=1
 		else
 			# G1 (ADR 0002, Abschnitt 6, Zeile D5): -c nennt die Konfiguration, der Pfad den
@@ -1395,6 +1424,7 @@ abdeckung:
 	cd "$(PROJ)" || { echo "[D6 abdeckung] Kann nicht nach $(PROJ) wechseln." >&2; exit 1; }
 	hat_objekt=0; hat_lage_c=0; fehlgeschlagen=0; fehlt=""
 	$(DB_WACHE_FUNKTION)
+	$(OPENSSL_WACHE_FUNKTION)
 	if [ -f backend/pyproject.toml ]; then
 		hat_objekt=1
 		if ! command -v uv >/dev/null 2>&1; then
@@ -1412,6 +1442,9 @@ abdeckung:
 			hat_lage_c=1
 		elif ! db_wache "[D6 abdeckung]"; then
 			# S1.1: Wache der Datenbankstufe, Begruendung bei DB_WACHE_FUNKTION; FEHLT= setzt die Funktion.
+			hat_lage_c=1
+		elif ! openssl_wache "[D6 abdeckung]"; then
+			# S2.1: Wache openssl, Begruendung bei OPENSSL_WACHE_FUNKTION; FEHLT= setzt die Funktion.
 			hat_lage_c=1
 		else
 			# E2 (zusaetzlich): COVERAGE_FILE zeigt auf eine Wegwerfdatei, damit

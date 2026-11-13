@@ -31,6 +31,10 @@ class Eintragstyp(enum.StrEnum):
     FALL_GESCHLOSSEN = "fall_geschlossen"
     ENTITAET = "entitaet"
     BEZIEHUNG = "beziehung"
+    VERBINDUNGSVERSUCH = "verbindungsversuch"
+    ABWEISUNG = "abweisung"
+    ABFRAGE = "abfrage"
+    NEGATIVBEFUND = "negativbefund"
 
 
 class Kennzeichnung(enum.StrEnum):
@@ -54,6 +58,10 @@ SPUR_JE_EINTRAGSTYP: dict[Eintragstyp, Spur] = {
     Eintragstyp.FALL_GESCHLOSSEN: Spur.ARBEITSSPUR,
     Eintragstyp.ENTITAET: Spur.ERMITTLUNGSSPUR,
     Eintragstyp.BEZIEHUNG: Spur.ERMITTLUNGSSPUR,
+    Eintragstyp.VERBINDUNGSVERSUCH: Spur.ARBEITSSPUR,
+    Eintragstyp.ABWEISUNG: Spur.ARBEITSSPUR,
+    Eintragstyp.ABFRAGE: Spur.ARBEITSSPUR,
+    Eintragstyp.NEGATIVBEFUND: Spur.ARBEITSSPUR,
 }
 """Zuordnung des Eintragstyps zur Spur (Nr. 14)."""
 

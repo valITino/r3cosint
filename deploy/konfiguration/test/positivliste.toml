@@ -1,0 +1,13 @@
+# Positivliste der Verbindungen nach aussen, Umgebung Test/Schulung (ADR 0008, Festlegung S2.1,
+# Nr. 14; R3-F-015, R3-F-028). Jede Aenderung dieser Datei ist eine Aenderung der
+# Positivliste nach aussen. Sprint 2: keine Gegenstelle freigegeben, daher ohne Tabelle
+# eintrag. Die Anwendung laedt die Datei in S2.1 nicht (der Pfad kommt mit R3-F-019).
+# Die beiden Umgebungen teilen keine Werte ausser der Form (5.16); die Datei der anderen
+# Umgebung laesst sich hier nicht laden (umgebung muss dem Ladeparameter entsprechen).
+format = 1
+umgebung = "test"
+# Hoechstzahl der verfolgten Weiterleitungsschritte, ganze Zahl 0 bis 10 (0: keine
+# Weiterleitung wird verfolgt).
+ausgang_weiterleitungen_hoechstzahl = 3
+# Kennungen, die nie wieder vergeben werden.
+stillgelegt = []

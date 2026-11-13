@@ -1,5 +1,7 @@
 """Einheitstest: spur.payload (ADR 0007, Nr. 17 und 26, Festlegung S1.2; R3-F-011, R3-F-008)."""
 
+import hashlib
+import hmac
 import json
 import pickle
 import unicodedata
@@ -446,3 +448,22 @@ def test_R3_F_011_klartextfelder_der_nutzlastklassen_tragen_repr_false(
     for name, feld in klasse.model_fields.items():
         if name not in felder:
             assert feld.repr is True
+
+
+@pytest.mark.parametrize("wert", ["\u01f0", "\u1e96", "A\u01f0 \u1e96b"])
+def test_R3_F_011_normalisieren_haelt_das_aeussere_nfc_ein_dt_s15_01(wert: str) -> None:
+    # U+01F0 und U+1E96 zerlegt casefold in zwei Zeichen (Grundzeichen und Akzent); ohne das
+    # äussere NFC bliebe die zerlegte Form stehen. Ausgeschriebener Weg gegen normalisieren
+    # und das Pseudonym gegen die Nachrechnung mit hmac und hashlib.
+    erwartet = " ".join(
+        unicodedata.normalize(
+            "NFC", unicodedata.normalize("NFC", wert).casefold()
+        ).split()
+    )
+    assert normalisieren(wert) == erwartet
+    assert unicodedata.is_normalized("NFC", normalisieren(wert))
+    # Ohne das äussere NFC bliebe die zerlegte Form von casefold stehen.
+    assert normalisieren(wert) != wert.casefold().strip() or wert.isascii()
+    nachricht = b"r3cosint-pseudonym-1\n" + erwartet.encode("utf-8")
+    nachgerechnet = hmac.new(SCHLUESSEL, nachricht, hashlib.sha256).hexdigest()
+    assert Pseudonymisierer(SCHLUESSEL).pseudonym(wert) == nachgerechnet

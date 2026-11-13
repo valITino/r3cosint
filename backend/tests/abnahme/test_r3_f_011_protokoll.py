@@ -44,6 +44,7 @@ der Test wird nicht an die Umsetzung angepasst, Abweichungen gehen an den Koordi
 
 import hashlib
 import hmac
+import importlib
 import json
 import logging
 import re
@@ -68,6 +69,7 @@ from r3cosint.fall.service import (
     Rechtsregime,
     eroeffnen,
     ketten_aller_faelle_pruefen,
+    pseudonymisierer_laden,
     schliessen,
 )
 from r3cosint.kanon.eingabe import Datenpunkt, Datensatz, Herkunft
@@ -80,6 +82,7 @@ from r3cosint.spur.service import (
     FallEroeffnet,
     Kennzeichnung,
     Spur,
+    anfuegen,
     kette_pruefen_datenbank,
 )
 
@@ -195,6 +198,17 @@ VERSUCH_DATENSATZ: dict[str, Any] = {
 }
 VERSUCH_ABFRAGE = "Tiefseekabel Zyprianwald Mondsteinvetter"
 
+# Eintrag verbindungsversuch (ADR 0008, Festlegung S2.1, Zeile Tests Abnahme, DS-S21-05): ein
+# synthetisches Listenziel nach einer Weiterleitung, damit alle drei Pseudonymfelder belegt sind.
+# Zielform nach der Zeile Protokoll (schema://Wert:Anschluss); Annahme DT-S21-A-09: die
+# Eingabefelder ziel und ausgangsziel tragen die Zielform, adresse die Adresse in Normalform.
+VERSUCH_RECHNER = "glimmerdienst.nebelwolke-quarzberg.test"
+VERSUCH_ZIEL = f"http://{VERSUCH_RECHNER}:8080"
+VERSUCH_AUSGANGSZIEL = "http://vorlaufpforte.nebelwolke-quarzberg.test:8080"
+VERSUCH_ADRESSE = "2001:20::1"
+VERSUCH_LISTENSTAND = "5" * 64
+VERSUCH_KENNUNG = UUID("5a5a5a5a-0000-4000-8000-00000000c0de")
+
 POSITIVLISTE = frozenset(
     {
         "fall",
@@ -282,6 +296,68 @@ _SCHLUESSEL_JE_TYP: dict[str, frozenset[str]] = {
             "erhebende_person",
             "abfrage_pseudonym",
             "abfrage_bindung",
+        }
+    ),
+}
+_SCHLUESSEL_JE_TYP["verbindungsversuch"] = frozenset(
+    {
+        "fall_kennung",
+        "werkzeug",
+        "versuch_kennung",
+        "schritt",
+        "methode",
+        "ergebnis",
+        "schema",
+        "anschluss",
+        "zielart",
+        "adressbereich",
+        "listeneintrag",
+        "listenstand",
+        "status",
+        "antwort_bytes",
+        "ziel_pseudonym",
+        "adresse_pseudonym",
+        "ausgangsziel_pseudonym",
+    }
+)
+_VORRAT_VERSUCH: dict[str, frozenset[str]] = {
+    "methode": frozenset({"GET", "POST"}),
+    "ergebnis": frozenset(
+        {
+            "zugelassen",
+            "beantwortet",
+            "nicht_in_positivliste",
+            "bereich_nicht_oeffentlich",
+            "aufloesung_fehlgeschlagen",
+            "kette_zu_lang",
+            "verbindung_fehlgeschlagen",
+            "url_nicht_auswertbar",
+        }
+    ),
+    "schema": frozenset({"http", "https"}),
+    "zielart": frozenset({"name", "ipv4", "ipv6"}),
+    "adressbereich": frozenset(
+        {
+            "unspezifiziert",
+            "rueckschleife",
+            "verbindungslokal",
+            "standortlokal",
+            "multicast",
+            "privat",
+            "reserviert",
+            "abgekuendigt",
+            "protokollzuweisung",
+            "nicht_global",
+            "oeffentlich",
+        }
+    ),
+    "fehlerart": frozenset(
+        {
+            "verbindung",
+            "tls",
+            "zeitueberschreitung",
+            "antwort_zu_gross",
+            "antwort_ungueltig",
         }
     ),
 }
@@ -662,6 +738,14 @@ def _blatt_form(
     """
     if schluessel == "fall_kennung":
         return isinstance(wert, str) and wert in faelle
+    if schluessel in ("schritt", "anschluss", "status", "antwort_bytes"):
+        return isinstance(wert, int) and not isinstance(wert, bool)
+    if schluessel in _VORRAT_VERSUCH:
+        return isinstance(wert, str) and wert in _VORRAT_VERSUCH[schluessel]
+    if schluessel == "listeneintrag":
+        return isinstance(wert, str) and _KENNUNGSFORM.match(wert) is not None
+    if schluessel == "listenstand":
+        return isinstance(wert, str) and _HEX64.match(wert) is not None
     if schluessel.endswith(("_pseudonym", "_bindung")):
         return isinstance(wert, str) and _HEX64.match(wert) is not None
     if schluessel in ("werkzeug", "erhebende_person"):
@@ -756,6 +840,38 @@ def _eroeffnung(fall: str) -> Eroeffnung:
     )
 
 
+def _verbindungsversuch(fall: UUID) -> Any:
+    """Eingabe verbindungsversuch (Ergebnis beantwortet, Schritt 1) mit synthetischem Listenziel.
+
+    Der Import läuft zur Laufzeit in der Funktion, damit die übrigen Zusicherungen vor dem Bau von S2.1 sammelbar
+    bleiben; vor dem Bau scheitert er (AttributeError), nach dem Bau ist er Teil des Testfalls.
+    """
+    verbindungsversuch = importlib.import_module(
+        "r3cosint.spur.payload"
+    ).Verbindungsversuch
+
+    eingabe: Any = verbindungsversuch(
+        fall_kennung=fall,
+        werkzeug=WERKZEUG,
+        versuch_kennung=VERSUCH_KENNUNG,
+        schritt=1,
+        methode="GET",
+        ergebnis="beantwortet",
+        schema="http",
+        anschluss=8080,
+        zielart="name",
+        ziel=VERSUCH_ZIEL,
+        adresse=VERSUCH_ADRESSE,
+        ausgangsziel=VERSUCH_AUSGANGSZIEL,
+        adressbereich="oeffentlich",
+        listeneintrag="test.ziel-glimmer",
+        listenstand=VERSUCH_LISTENSTAND,
+        status=200,
+        antwort_bytes=17,
+    )
+    return eingabe
+
+
 def _protokollstufe_debug(caplog: pytest.LogCaptureFixture) -> None:
     """DEBUG am Wurzel-Logger und an jedem Logger mit eigener höherer Stufe (etwa sqlalchemy)."""
     caplog.set_level(logging.DEBUG)
@@ -790,7 +906,20 @@ async def test_R3_F_011_keine_klardaten_im_protokoll(
     werte, versuch = _klartextwerte()
     begriffe = {w.bezeichnung: _suchbegriffe(w) for w in werte}
     begriffe_versuch = {w.bezeichnung: _suchbegriffe(w) for w in versuch}
-    alle_begriffe = {**begriffe, **begriffe_versuch}
+    # Zielform, Rechner, Adresse und Ausgangsziel des Eintrags verbindungsversuch (DS-S21-05):
+    # gesucht wie jeder Klartext, aber nicht im Bestand erwartet (Z13 prüft allein werte).
+    werte_ziel = [
+        _Klartext("verbindungsversuch ziel", VERSUCH_ZIEL, VERSUCH_ZIEL),
+        _Klartext("verbindungsversuch rechner", VERSUCH_RECHNER, VERSUCH_RECHNER),
+        _Klartext("verbindungsversuch adresse", VERSUCH_ADRESSE, VERSUCH_ADRESSE),
+        _Klartext(
+            "verbindungsversuch ausgangsziel",
+            VERSUCH_AUSGANGSZIEL,
+            VERSUCH_AUSGANGSZIEL,
+        ),
+    ]
+    begriffe_ziel = {w.bezeichnung: _suchbegriffe(w) for w in werte_ziel}
+    alle_begriffe = {**begriffe, **begriffe_versuch, **begriffe_ziel}
 
     # ---- Testfall (E-S15-01 a), Protokollstufe DEBUG vor dem Öffnen der Verbindungen ----------
     _protokollstufe_debug(caplog)
@@ -823,6 +952,21 @@ async def test_R3_F_011_keine_klardaten_im_protokoll(
                     )
                 punkte[f][name] = punkt
                 eingaben_repr.append(punkt)
+            if f == "A":
+                versuch_eingabe = _verbindungsversuch(fall.kennung)
+                eingaben_repr.append(versuch_eingabe)
+                async with v.begin():
+                    pseudonymisierer = await pseudonymisierer_laden(v, fall.kennung)
+                    await anfuegen(
+                        v,
+                        spur=Spur.ARBEITSSPUR,
+                        fall_kennung=fall.kennung,
+                        person_kennung=PERSON,
+                        kennzeichnung=Kennzeichnung.QUELLENAUSSAGE,
+                        eingabe=versuch_eingabe,
+                        pseudonymisierer=pseudonymisierer,
+                        uhr=uhr,
+                    )
         # Abgewiesener Versuch in A (E-S15-07): ein Ende der Kante besteht im Fall nicht.
         anfrage_herkunft = {**_herkunft("kante"), "abfrage": VERSUCH_ABFRAGE}
         async with v.begin():
@@ -1175,6 +1319,32 @@ async def test_R3_F_011_keine_klardaten_im_protokoll(
                 == [_pseudonym(fallschl, variante)],
                 f"Fall {f}: Schreibvariante p2 name mit anderem Pseudonym",
             )
+    # verbindungsversuch (DS-S21-05): genau einer in A, keiner in B, drei Pseudonyme nachgerechnet.
+    versuche_a = nutzlasten("A", "verbindungsversuch")
+    z.pruefen(
+        "Z05",
+        len(versuche_a) == 1 and not nutzlasten("B", "verbindungsversuch"),
+        "verbindungsversuch: nicht genau einer in A und keiner in B",
+    )
+    if versuche_a:
+        n = versuche_a[0]
+        for feld, roh in (
+            ("ziel_pseudonym", VERSUCH_ZIEL),
+            ("adresse_pseudonym", VERSUCH_ADRESSE),
+            ("ausgangsziel_pseudonym", VERSUCH_AUSGANGSZIEL),
+        ):
+            z.pruefen(
+                "Z05",
+                n.get(feld) == _pseudonym(schluessel["A"], roh),
+                f"verbindungsversuch: {feld} nicht nachgerechnet",
+            )
+        z.pruefen(
+            "Z05",
+            (n.get("schema"), n.get("anschluss"), n.get("zielart"), n.get("ergebnis"))
+            == ("http", 8080, "name", "beantwortet")
+            and n.get("versuch_kennung") == str(VERSUCH_KENNUNG),
+            "verbindungsversuch: Klartextfelder abweichend",
+        )
     # Schlüssel je Fall (Z06).
     for w in werte:
         if w.bezeichnung.startswith("aktenzeichen"):
@@ -1222,7 +1392,7 @@ async def test_R3_F_011_keine_klardaten_im_protokoll(
 
     # ---- Z09 Ketten unversehrt, Anzahl wie geschrieben -----------------------------------------
     erwartet = {
-        ("A", Spur.ARBEITSSPUR): 2,
+        ("A", Spur.ARBEITSSPUR): 3,
         ("A", Spur.ERMITTLUNGSSPUR): len(REIHENFOLGE),
         ("B", Spur.ARBEITSSPUR): 1,
         ("B", Spur.ERMITTLUNGSSPUR): len(REIHENFOLGE),

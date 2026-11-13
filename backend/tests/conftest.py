@@ -23,18 +23,31 @@ einem Digest, der gegen das Muster sha256 plus 64 Hexzeichen geprüft ist.
 """
 
 import asyncio
+import importlib.util
+import ipaddress
 import os
 import re
 import secrets
 import shutil
+import socket
+import ssl
 import subprocess
+import sys
 import tempfile
 import time
-from collections.abc import AsyncIterator, Awaitable, Callable, Iterator, Sequence
+from collections.abc import (
+    AsyncIterator,
+    Awaitable,
+    Callable,
+    Iterator,
+    Mapping,
+    Sequence,
+)
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
+from types import ModuleType
 from uuid import UUID
 
 import pytest
@@ -43,6 +56,9 @@ from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine
 
+from r3cosint.ausgang.aufloesung import Adresse, AufloesungsFehler
+from r3cosint.ausgang.client import GebundenerVerbindungsweg, SpurkontextDatenbank
+from r3cosint.ausgang.positivliste import Positivliste, laden
 from r3cosint.core.datenbank import engine_erzeugen
 from r3cosint.core.fehler import KonfigurationsFehler
 from r3cosint.core.kennung import neue_kennung
@@ -54,6 +70,7 @@ from r3cosint.fall.service import (
     eroeffnen,
     pseudonymisierer_laden,
 )
+from r3cosint.spur.payload import Verbindungsversuch
 from r3cosint.spur.service import (
     Eingabe,
     Eintrag,
@@ -1003,3 +1020,402 @@ def manipulieren(
 def replikationsparameter() -> str:
     """Name des Parameters, den allein manipulieren setzt; für die Tests, die seine Sperre prüfen."""
     return "session_replication_role"
+
+
+# ---- Hilfen für ausgang (S2.1; Zeilen Testgegenstelle und Fixtures der Festlegung) ---------------
+
+GEGENSTELLE_MODUL = "r3cosint_gegenstelle"
+GEGENSTELLE_DATEI = Path(__file__).resolve().parent / "gegenstelle.py"
+
+
+def gegenstelle_laden() -> ModuleType:
+    """Lädt tests/gegenstelle.py über den Dateipfad unter dem festen Modulnamen.
+
+    Eine schon geladene Instanz wird wiederverwendet, damit conftest und Tests ein Modul teilen.
+    """
+    vorhanden = sys.modules.get(GEGENSTELLE_MODUL)
+    if vorhanden is not None:
+        return vorhanden
+    spec = importlib.util.spec_from_file_location(GEGENSTELLE_MODUL, GEGENSTELLE_DATEI)
+    assert spec is not None and spec.loader is not None
+    modul = importlib.util.module_from_spec(spec)
+    sys.modules[GEGENSTELLE_MODUL] = modul
+    spec.loader.exec_module(modul)
+    return modul
+
+
+@pytest.fixture
+async def gegenstelle() -> AsyncIterator[object]:
+    """Eine laufende Gegenstelle je Test (Antwort treffer(1)); nach dem Test beendet."""
+    modul = gegenstelle_laden()
+    instanz = await modul.Gegenstelle.starten(modul.Antwortskript.treffer(1))
+    try:
+        yield instanz
+    finally:
+        await instanz.beenden()
+
+
+@pytest.fixture
+async def gegenstelle_ausserhalb() -> AsyncIterator[object]:
+    """Zweite Gegenstelle, deren Ziel in keiner Testliste steht (W2-37)."""
+    modul = gegenstelle_laden()
+    instanz = await modul.Gegenstelle.starten(modul.Antwortskript.treffer(1))
+    try:
+        yield instanz
+    finally:
+        await instanz.beenden()
+
+
+@pytest.fixture
+def testpositivliste(
+    tmp_path: Path,
+) -> Callable[..., Positivliste]:
+    """Fabrik: schreibt positivliste.toml unter tmp_path und lädt sie über laden (Umgebung test)."""
+    zaehler = [0]
+
+    def bauen(
+        eintraege: Sequence[Mapping[str, object]],
+        *,
+        hoechstzahl: int = 3,
+        stillgelegt: Sequence[str] = (),
+    ) -> Positivliste:
+        zaehler[0] += 1
+        stillgelegt_text = ", ".join(f'"{name}"' for name in stillgelegt)
+        zeilen = [
+            "format = 1",
+            'umgebung = "test"',
+            f"ausgang_weiterleitungen_hoechstzahl = {hoechstzahl}",
+            f"stillgelegt = [{stillgelegt_text}]",
+        ]
+        for eintrag in eintraege:
+            zeilen += ["", "[[eintrag]]"]
+            for schluessel, wert in eintrag.items():
+                text_wert = f'"{wert}"' if isinstance(wert, str) else str(wert)
+                zeilen.append(f"{schluessel} = {text_wert}")
+        pfad = tmp_path / f"positivliste-{zaehler[0]}.toml"
+        pfad.write_bytes(("\n".join(zeilen) + "\n").encode("utf-8"))
+        return laden(pfad, umgebung="test")
+
+    return bauen
+
+
+class SteuerbarerAufloeser:
+    """Auflöser der Tests: Antwort je Name und Aufruf, Zähler je Name, wählbare Verzögerung."""
+
+    def __init__(self) -> None:
+        self.zaehler: dict[str, int] = {}
+        self._antworten: dict[str, tuple[object, ...]] = {}
+        self._position: dict[str, int] = {}
+        self.verzoegerung: float = 0.0
+
+    def setzen(self, name: str, *antworten: object) -> None:
+        """Je Antwort ein Tupel von Adressen oder eine Ausnahmeklasse.
+
+        Die n-te Antwort gilt für den n-ten Aufruf nach setzen, die letzte wiederholt sich; der
+        Zähler je Name läuft über setzen hinweg weiter."""
+        self._antworten[name] = antworten
+        self._position[name] = 0
+
+    async def aufloesen(self, name: str) -> tuple[Adresse, ...]:
+        """Zählt den Aufruf und liefert die n-te Antwort des Namens."""
+        aufrufe = self.zaehler.get(name, 0) + 1
+        self.zaehler[name] = aufrufe
+        if self.verzoegerung > 0:
+            await asyncio.sleep(self.verzoegerung)
+        antworten = self._antworten.get(name)
+        if not antworten:
+            raise AufloesungsFehler
+        position = self._position[name] + 1
+        self._position[name] = position
+        antwort = antworten[min(position, len(antworten)) - 1]
+        if isinstance(antwort, type) and issubclass(antwort, BaseException):
+            raise antwort()
+        assert isinstance(antwort, tuple)
+        return antwort
+
+
+@pytest.fixture
+def aufloeser_steuerbar() -> SteuerbarerAufloeser:
+    """Steuerbarer Auflöser (setzen, zaehler)."""
+    return SteuerbarerAufloeser()
+
+
+@dataclass(frozen=True)
+class Aufruf:
+    """Eine Aufzeichnung des Verbindungswegs-Ersatzes."""
+
+    name_oder_adresse: str
+    adresse: Adresse
+    anschluss: int
+
+
+class VerbindungswegErsatz:
+    """Verbindungsweg der Tests: zeichnet auf und bildet jede Adresse auf 127.0.0.1 ab."""
+
+    def __init__(self) -> None:
+        self.aufrufe: list[Aufruf] = []
+
+    def transport(
+        self,
+        *,
+        name_oder_adresse: str,
+        adresse: Adresse,
+        anschluss: int,
+        ssl_kontext: ssl.SSLContext,
+    ) -> object:
+        """Zeichnet auf; der Transport verbindet über den gebundenen Weg mit 127.0.0.1."""
+        self.aufrufe.append(Aufruf(name_oder_adresse, adresse, anschluss))
+        return GebundenerVerbindungsweg().transport(
+            name_oder_adresse=name_oder_adresse,
+            adresse=ipaddress.IPv4Address("127.0.0.1"),
+            anschluss=anschluss,
+            ssl_kontext=ssl_kontext,
+        )
+
+
+@pytest.fixture
+def verbindungsweg_ersatz() -> VerbindungswegErsatz:
+    """Verbindungsweg-Ersatz (aufrufe)."""
+    return VerbindungswegErsatz()
+
+
+@dataclass
+class Netzwaechter:
+    """Zähler der Netzzugriffe mit einem Namen oder einer anderen Adresse als 127.0.0.1."""
+
+    zaehler: int = 0
+    aufrufe: list[str] = field(default_factory=list)
+
+    def beachten(self, ort: object) -> None:
+        """Zählt den Zugriff und beendet ihn mit einer Ausnahme."""
+        self.zaehler += 1
+        self.aufrufe.append(type(ort).__name__)
+        raise OSError("Der Netzwächter lässt nur 127.0.0.1 durch.")
+
+
+def _ort_zulaessig(ort: object) -> bool:
+    if ort is None:
+        return True
+    if isinstance(ort, bytes):
+        ort = ort.decode("latin-1")
+    return isinstance(ort, str) and ort == "127.0.0.1"
+
+
+@pytest.fixture
+async def netzwaechter(monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[Netzwaechter]:
+    """Ersetzt die Wege der Namensauflösung und des Verbindens durch zählende Hüllen.
+
+    Durchgereicht werden allein die numerische Adresse 127.0.0.1 und Unix-Socket-Pfade; jeder andere
+    Aufruf wird gezählt und scheitert. Am Testende ist der Zähler 0 (Zusicherung der Fixture).
+    """
+    wache = Netzwaechter()
+    schleife = asyncio.get_running_loop()
+    gai = socket.getaddrinfo
+    ghbn = socket.gethostbyname
+    cc = socket.create_connection
+    verbinden = socket.socket.connect
+    verbinden_ex = socket.socket.connect_ex
+    lgai = schleife.getaddrinfo
+    lcc = schleife.create_connection
+
+    def huelle_gai(host: object, *args: object, **kwargs: object) -> object:
+        if not _ort_zulaessig(host):
+            wache.beachten(host)
+        return gai(host, *args, **kwargs)  # type: ignore[arg-type]
+
+    def huelle_ghbn(host: str) -> str:
+        if not _ort_zulaessig(host):
+            wache.beachten(host)
+        return ghbn(host)
+
+    def huelle_cc(adresse: tuple[str, int], *args: object, **kwargs: object) -> object:
+        if not _ort_zulaessig(adresse[0]):
+            wache.beachten(adresse[0])
+        return cc(adresse, *args, **kwargs)  # type: ignore[arg-type]
+
+    def huelle_verbinden(self: socket.socket, adresse: object) -> None:
+        if isinstance(adresse, tuple) and not _ort_zulaessig(adresse[0]):
+            wache.beachten(adresse[0])
+        verbinden(self, adresse)  # type: ignore[arg-type]
+
+    def huelle_verbinden_ex(self: socket.socket, adresse: object) -> int:
+        if isinstance(adresse, tuple) and not _ort_zulaessig(adresse[0]):
+            wache.beachten(adresse[0])
+        return verbinden_ex(self, adresse)  # type: ignore[arg-type]
+
+    async def huelle_lgai(host: object, *args: object, **kwargs: object) -> object:
+        if not _ort_zulaessig(host):
+            wache.beachten(host)
+        return await lgai(host, *args, **kwargs)  # type: ignore[arg-type]
+
+    async def huelle_lcc(*args: object, **kwargs: object) -> object:
+        host = args[1] if len(args) > 1 else kwargs.get("host")
+        if not _ort_zulaessig(host):
+            wache.beachten(host)
+        return await lcc(*args, **kwargs)  # type: ignore[call-overload]
+
+    monkeypatch.setattr(socket, "getaddrinfo", huelle_gai)
+    monkeypatch.setattr(socket, "gethostbyname", huelle_ghbn)
+    monkeypatch.setattr(socket, "create_connection", huelle_cc)
+    monkeypatch.setattr(socket.socket, "connect", huelle_verbinden)
+    monkeypatch.setattr(socket.socket, "connect_ex", huelle_verbinden_ex)
+    monkeypatch.setattr(schleife, "getaddrinfo", huelle_lgai)
+    monkeypatch.setattr(schleife, "create_connection", huelle_lcc)
+    yield wache
+    monkeypatch.undo()
+    assert wache.zaehler == 0, (
+        f"Netzwächter: {wache.zaehler} Zugriffe ausserhalb 127.0.0.1"
+    )
+
+
+class SpurkontextAttrappe:
+    """Spurkontext der Einheitsstufe: sammelt die Eingaben, kann beim n-ten Eintrag scheitern."""
+
+    def __init__(self) -> None:
+        self.fall_kennung: UUID = neue_kennung()
+        self.werkzeug = "pruef.werkzeug"
+        self.person_kennung = "test.ermittlung"
+        self.uhr = FesteUhr()
+        self.fall_besteht = True
+        self.eingaben: list[Verbindungsversuch] = []
+        self.fehler_bei: int | None = None
+        self.fall_pruefungen = 0
+
+    async def fall_pruefen(self) -> None:
+        """Zählt die Prüfung; ohne Fall EingabeFehler."""
+        self.fall_pruefungen += 1
+        if not self.fall_besteht:
+            from r3cosint.core.fehler import EingabeFehler
+
+            raise EingabeFehler("Der Fall besteht nicht.")
+
+    async def eintragen(self, eingabe: Verbindungsversuch) -> None:
+        """Sammelt die Eingabe; beim n-ten Aufruf (fehler_bei, ab 1) eine Ausnahme."""
+        if self.fehler_bei is not None and len(self.eingaben) + 1 == self.fehler_bei:
+            raise RuntimeError("Eintrag nicht geschrieben (Attrappe)")
+        self.eingaben.append(eingabe)
+
+
+@pytest.fixture
+def spurkontext_attrappe() -> SpurkontextAttrappe:
+    """Spurkontext ohne Datenbank (Einheitsstufe)."""
+    return SpurkontextAttrappe()
+
+
+@pytest.fixture
+async def spurkontext(
+    eroeffneter_fall: EroeffneterFall, verbindung_anwendung: AsyncConnection
+) -> AsyncIterator[SpurkontextDatenbank]:
+    """SpurkontextDatenbank aus dem eröffneten Fall, mit einer Verbindung in offener Transaktion."""
+    await verbindung_anwendung.begin()
+    yield SpurkontextDatenbank(
+        verbindung=verbindung_anwendung,
+        fall_kennung=eroeffneter_fall.fall.kennung,
+        werkzeug="pruef.werkzeug",
+        person_kennung="test.ermittlung",
+        pseudonymisierer=eroeffneter_fall.pseudonymisierer,
+        uhr=FesteUhr(),
+    )
+    if verbindung_anwendung.in_transaction():
+        await verbindung_anwendung.rollback()
+
+
+@pytest.fixture
+async def schein_proxy(monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[object]:
+    """Gegenstelle als Proxy: setzt HTTP_PROXY, HTTPS_PROXY und ALL_PROXY; null Verbindungen."""
+    modul = gegenstelle_laden()
+    instanz = await modul.Gegenstelle.starten(modul.Antwortskript.treffer(1))
+    adresse = f"http://127.0.0.1:{instanz.anschluss}"
+    for name in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY"):
+        monkeypatch.setenv(name, adresse)
+        monkeypatch.setenv(name.lower(), adresse)
+    try:
+        yield instanz
+        assert instanz.verbindungen == 0, "der Schein-Proxy sah eine Verbindung"
+    finally:
+        await instanz.beenden()
+
+
+@dataclass(frozen=True)
+class TlsZertifikat:
+    """Zur Laufzeit erzeugte Zertifikate für zwei Testnamen (nie versioniert).
+
+    name, anderer_name: die Testnamen unter .test.
+    server_kontext, server_kontext_anderer: Serverkontexte mit je einem Zertifikat.
+    client_kontext: einziger Anker ist das erste Zertifikat.
+    client_kontext_beide: beide Zertifikate als Anker (trennt allein die Namensprüfung).
+    """
+
+    name: str
+    anderer_name: str
+    server_kontext: ssl.SSLContext
+    server_kontext_anderer: ssl.SSLContext
+    client_kontext: ssl.SSLContext
+    client_kontext_beide: ssl.SSLContext
+
+
+def _zertifikat_erzeugen(verzeichnis: Path, name: str) -> tuple[Path, Path]:
+    """Selbst signiertes EC-Zertifikat P-256 für name (CN und subjectAltName), Rechte 0600."""
+    schluessel = verzeichnis / f"{name}.key"
+    zertifikat = verzeichnis / f"{name}.pem"
+    subprocess.run(
+        [
+            "openssl",
+            "req",
+            "-x509",
+            "-newkey",
+            "ec",
+            "-pkeyopt",
+            "ec_paramgen_curve:prime256v1",
+            "-nodes",
+            "-days",
+            "1",
+            "-subj",
+            f"/CN={name}",
+            "-addext",
+            f"subjectAltName=DNS:{name}",
+            "-keyout",
+            str(schluessel),
+            "-out",
+            str(zertifikat),
+        ],
+        check=True,
+        capture_output=True,
+        timeout=60,
+    )
+    schluessel.chmod(0o600)
+    zertifikat.chmod(0o600)
+    return zertifikat, schluessel
+
+
+def _client_kontext(*anker: Path) -> ssl.SSLContext:
+    kontext = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    kontext.minimum_version = ssl.TLSVersion.TLSv1_2
+    kontext.verify_mode = ssl.CERT_REQUIRED
+    kontext.check_hostname = True
+    for pfad in anker:
+        kontext.load_verify_locations(cafile=str(pfad))
+    return kontext
+
+
+def _server_kontext(zertifikat: Path, schluessel: Path) -> ssl.SSLContext:
+    kontext = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    kontext.load_cert_chain(str(zertifikat), str(schluessel))
+    return kontext
+
+
+@pytest.fixture
+def tls_zertifikat(tmp_path: Path) -> TlsZertifikat:
+    """Zwei Zertifikate zur Laufzeit mit openssl (fehlt openssl, scheitert der Test)."""
+    name = "tls-eins.beispiel.test"
+    anderer = "tls-zwei.beispiel.test"
+    z1, k1 = _zertifikat_erzeugen(tmp_path, name)
+    z2, k2 = _zertifikat_erzeugen(tmp_path, anderer)
+    return TlsZertifikat(
+        name=name,
+        anderer_name=anderer,
+        server_kontext=_server_kontext(z1, k1),
+        server_kontext_anderer=_server_kontext(z2, k2),
+        client_kontext=_client_kontext(z1),
+        client_kontext_beide=_client_kontext(z1, z2),
+    )

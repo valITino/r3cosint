@@ -27,6 +27,9 @@ dependencies = [
     "alembic>=1.20.1,<2",
     "asyncpg>=0.32.0,<0.33",
     "pyyaml>=6.0.3,<7",
+    "httpx>=0.28.1,<0.29",
+    "idna>=3.20,<4",
+    "certifi>=2026.10.19,<2027",
 ]
 
 [dependency-groups]
@@ -38,7 +41,6 @@ dev = [
     "anyio>=4.15.1,<5",
     "import-linter>=2.15,<3",
     "pip-audit>=2.10.1,<3",
-    "httpx>=0.28.1,<0.29",
     "types-pyyaml>=6.0.12.20260906,<7",
 ]
 
@@ -66,6 +68,9 @@ select = ["F", "E4", "E7", "E9", "B", "S", "ASYNC", "DTZ", "T20", "BLE", "TID", 
 # Benannte Ausnahme je Datei (ADR 0007, Abschnitt "Teststufen"): die Sitzungsfixture ruft docker
 # als Liste ohne Shell auf (S603), mit dem Programmnamen aus dem PATH (S607); der Digest des
 # Images ist gegen das Muster sha256 plus 64 Hexzeichen geprüft, kein Aufruf trägt fremden Text.
+# Ab S2.1 (ADR 0008, Festlegung S2.1, Zeile D6 und Kette) erzeugt die Fixture tls_zertifikat das
+# Wegwerf-Zertifikat mit openssl: als Liste ohne Shell, Programmname aus dem PATH, feste Argumente
+# ohne fremden Text; ein fehlendes openssl meldet die Wache im Makefile als Lage C.
 "tests/conftest.py" = ["S603", "S607"]
 # Benannte Ausnahme (ADR 0007, Festlegung S1.2): die Tests der Spuren bauen ihre SQL-Texte aus festen
 # Tabellennamen (Werte der Enum Spur) und aus Kennungen, Prüfsummen und Zahlen, die der Test selbst
