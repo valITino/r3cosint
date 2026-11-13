@@ -439,3 +439,82 @@ Gegenstand: `docs/konformitaet/konformitaetsanalyse.md` nach der Bereinigung (P-
 **Zwischenstand:** Der Stand "gebaut, zur Abnahme vorgelegt" für F-04 (Nummer 10.7 der Analyse) gilt als Zwischenstand der Gegenprüfung ohne Vorbehalt aus meinen Befunden. Das ist keine behördliche Freigabe und keine Aussage, dass die Lücken GK-22 und GK-32 mit PA 5.4 und PA 5.3 vereinbar seien; P-17 bleibt Prüfpunkt der zuständigen Stelle. Punkt 5 der Bereitschaftsliste (5.16) bleibt als Ganzes offen.
 
 **Offen mit Empfänger:** (1) Kopfzeile "Gegenprüfung" und letzte Zeile von Abschnitt 9 der Analyse: erledigt am 2026-11-10, in der Analyse steht "ausstehend" nicht mehr (R-08, nachgeprüft durch Suche). (2) L-F04-11: gemessen und erledigt, kein Empfänger mehr. (3) L-F04-L1 (Verzeichnis der Drittlizenzen vor der ersten Weitergabe eines Images): DevOps Engineer, unverändert. (4) K-6 mit Vorlage V-F04-1, P-13 bis P-17 und R-01 bis R-06: zuständige Stellen nach der Analyse.
+
+## 16 Gegenprüfung der Fortschreibung D29 (Vermerk vom 2026-11-13, Restpunkt R-08)
+
+Die Abschnitte 1 bis 15 bleiben unverändert (Fehlerfindung getrennt von Fehlerkorrektur, 6.7). Die Konformitätsanalyse wurde nicht verändert; Befunde setzt die GRC-Rolle um. Dieser Abschnitt ist eine Grundlage für eine Prüfung, nicht deren Ergebnis, und erteilt keine behördliche Freigabe.
+
+**Gegenstand und Grundlage:** `docs/konformitaet/konformitaetsanalyse.md`, Fortschreibung D29: Kopfzeile "Stand", K-6, P-13 bis P-15, Abschnitt 9 der Analyse (Berichtigung der Artikelliste, neue Zeile D29), Nachtrag in Nummer 10.2 der Analyse (Zeile b), Entscheidvermerk V-F04-1 in Nummer 10.5 der Analyse, Nummer 10.7 der Analyse (Stand, Zeile Positivlisten). Tatsachen zu Pull Request #59 (Merge am 2026-11-13, Merge-Commit `2b3926f36d584d42f1c9bdbba6ee860d273d34f7`, erster Formweg, ohne Kommentar, Entscheid V-F04-1 nach Empfehlung (a)): Angabe des Koordinators, Fremdbeleg; nicht selbst nachgemessen. Bericht der GRC-Rolle: Fremdbeleg. Gelesen: der Diff, Abschnitte 8 und 9 und Nummern 10.2 und 10.7 der Analyse, Nummer 15 dieser Gegenprüfung als Muster, `docs/adr/0008-ermittlungskreislauf-kern.md` (E-S21-03, GK-22, GK-32 im Wortlaut der Zeilen), `docs/datenschutz/loeschkonzept.md` (nur Suche nach verbindungsversuch). Keine Recherche im Netz: Die Fortschreibung führt keine neue, geänderte oder verschobene rechtliche Aussage ein. Skill einschleusung-pruefen: Kanäle Auftrag des Koordinators, Bericht der GRC-Rolle, Analyse, ADR; keine eingebettete Anweisung gefunden (Negativbefund, kein Befund über Unbedenklichkeit).
+
+### 16.1 Prüfeinträge je Aussage
+
+| Nr. | Aussage | Angegebene Fundstelle | Prüfergebnis | Vermerk |
+|---|---|---|---|---|
+| D29-01 | Kopfzeile "Stand": S2.1 abgenommen mit dem Merge des Pull Requests #59 am 2026-11-13, Merge-Commit, erster Formweg, ohne Kommentar | Angabe des Koordinators (gemeinsamer Teil D29) | gedeckt | Als Fremdbeleg gekennzeichnet; stimmt mit den Tatsachen überein |
+| D29-02 | Kopfzeile "Stand" und Nummer 10.7, Absatz Stand: "abgenommen" betrifft den Bau; P-17 und die übrigen Prüfpunkte bleiben offen | Angabe des Koordinators; Nummer 10.7 der Analyse | gedeckt | "Abgenommen" bezieht sich auf die Einheit S2.1, nicht auf Zulässigkeit; Wortlaut "Die Abnahme betrifft den Bau" trägt |
+| D29-03 | K-6, Spalte Zuständigkeit: V-F04-1 entschieden (a); entschieden ist der Weg, nicht der Inhalt; K-6 bleibt offen | Angabe des Koordinators | gedeckt | Entspricht dem Kernsatz des Pull Requests; K-6 im Gehalt unverändert |
+| D29-04 | P-13, Spalte Stand: "die Prüfung je Gegenstelle ist Kriterium im Bearbeitungsreglement"; produktive Liste bleibt bis dahin leer; Prüfpunkt offen | Angabe des Koordinators | nicht gedeckt (Teilaussage) | Entschieden ist, dass Zuständigkeit und Kriterien im Bearbeitungsreglement festgelegt werden, nicht welche Kriterien. Dass die Prüfung je Gegenstelle (Rechtsgrundlage der Bekanntgabe, Ausland, Nutzungsbedingungen) ein Kriterium sei, nimmt den Inhalt des Reglements vorweg; die Empfehlung nennt sie als Prüfung im Einzelfall. Befund L-D29-02. Der Rest (Liste leer, P-13 offen) ist gedeckt |
+| D29-05 | P-14 und P-15: Zusatz "abgenommen mit dem Merge des Pull Requests #59 am 2026-11-13"; Gehalt unverändert | Angabe des Koordinators | gedeckt | Nur Standangabe; die Offenheit von P-14 (GK-26) und P-15 (Serverprotokoll, Schreibprotokoll) bleibt |
+| D29-06 | Abschnitt 9, Zeile "dritte Fassung, Funktion F-04 (vor dem Bau)": Liste "Neu gelesen" um Art. 4 Abs. 2 und Art. 13 Abs. 1 ergänzt | Abschnitt 8 der Analyse, Zeile Q-1 (F-04), und P-13 | gedeckt | Liste in Abschnitt 9 (Art. 2 Abs. 1 Bst. a, c, f, g, Art. 4 Abs. 2, 7, 9, 10, 13 Abs. 1, 14, 15 Abs. 1, 16 Abs. 1) gleich Abschnitt 8 |
+| D29-07 | Abschnitt 9, neue Zeile 2026-11-13: Anlass, Änderungen, Gegenprüfung nach R-08, "keine Aussage zum Recht geändert" | Diff; Bericht der GRC-Rolle | gedeckt | Beschreibt die Änderungen vollständig und wahrheitsgemäss; Vermerk der Gegenprüfung steht hier, wie die Zeile sagt |
+| D29-08 | Nummer 10.2, Zeile b, Spalte 3, Nachtrag D29: Aussage "nennt ADR 0008 nicht" überholt; E-S21-03 a: Eintrag zugelassen vor dem Netzakt, danach beantwortet oder verbindung_fehlgeschlagen; Grenzen GK-22 und GK-32 | `docs/adr/0008-ermittlungskreislauf-kern.md`, E-S21-03, GK-22, GK-32 | gedeckt | E-S21-03 (a) und GK-22 im Wortlaut vorhanden; "Stand vor dem Bau" korrekt gekennzeichnet. Hinweis L-D29-05 |
+| D29-09 | Nummer 10.2, Zeile b, Spalte 4, Nachtrag: V-F04-3 aufgenommen, verbleibende Grenze steht als P-17 | ADR 0008 (Zeile Festlegung S2.1 mit V-F04-3); Nummer 10.7 der Analyse | gedeckt | P-17 unverändert vorhanden |
+| D29-10 | Nummer 10.5, Entscheidvermerk V-F04-1: entschieden (a); Zuständigkeit und Kriterien im Bearbeitungsreglement der Kantonspolizei Bern, bevor die Positivliste der Produktion ihren ersten Eintrag erhält; Inhalt offen; keine Bestätigung der zuständigen Stelle, keine behördliche Freigabe; PA 5.4 und PA 5.17 unverändert; K-6 und P-13 offen | Angabe des Koordinators (Punkt 4 der Bedeutung des Merges) | gedeckt | Sagt nicht mehr, als der Merge entschieden hat; die Abgrenzung (Weg, nicht Inhalt) ist ausdrücklich gesetzt |
+| D29-11 | Nummer 10.7, Zeile Positivlisten: V-F04-1 entschieden (a), produktive Liste bleibt leer, bis das Bearbeitungsreglement Zuständigkeit und Kriterien festlegt | Angabe des Koordinators; Nummer 10.5 der Analyse | gedeckt | Beide Dateien leer gebaut (Stand 10.7); "produktive" ist richtig begrenzt |
+| D29-12 | P-17 unverändert offen und unverändert im Gehalt, einschliesslich der Frage, wer über eine Restlücke entscheidet | Diff | gedeckt | Im Diff keine Änderung an P-17; der Merge hat GK-22 und GK-32 angenommen, nicht als Restlücke entschieden |
+| D29-13 | Die Fortschreibung enthält keine neue Rechtsrecherche und ändert keine Aussage zum Recht | Diff; Abschnitt 9 der Analyse | gedeckt | Alle zehn Stellen sind Standangaben, Entscheidvermerke, Berichtigungen von Verweislisten oder Nachträge zum technischen Stand; mit Ausnahme von D29-04 keine rechtliche Aussage verschoben |
+| D29-14 | Die Vermerke sind keine behördliche Freigabe und stellen keine Zulässigkeit einer Gegenstelle fest | Nummer 10.5 der Analyse; Grundsatz der Kopftabelle | gedeckt | Ausdrücklich im Entscheidvermerk; Kopftabelle "Keine behördliche Freigabe" unverändert |
+
+**Zahl der geprüften Aussagen: 14** (Zeilen D29-01 bis D29-14 der Tabelle). Gedeckt 13, nicht gedeckt 1 (D29-04), Fundstelle nicht verifizierbar 0.
+
+### 16.2 Offener Hinweis der Textprüfung zu Nummer 10.2 der Analyse (Zeilen a bis d gegen Nummer 10.7)
+
+- **Zeile b:** überholt und mit D29 nachgetragen (D29-08, D29-09).
+- **Zeile d:** überholt. Spalte 3 sagt "Der neue Eintragstyp ist dort noch nicht genannt" (im Löschkonzept). `docs/datenschutz/loeschkonzept.md` nennt verbindungsversuch inzwischen an mehreren Stellen (Suche am Dokument); nach Angabe des Koordinators liegen LK-12 und BV-17 bis BV-19 vor (Fremdbeleg, nicht von dieser Rolle nachgelesen). Die Aussage ist durch den Stand nach dem Bau überholt und braucht einen Nachtrag, ebenso die Aufgabe in Spalte 4 ("Aufnahme ... in LW-10 und LK-10"), soweit erledigt. Befund L-D29-01.
+- **Zeile a:** Spalte 3 "Festgelegt, nicht gebaut" und Spalte 4 "Vorlage V-F04-1" sind durch Bau und Entscheid ebenfalls überholt; Nummer 10.7 der Analyse hält fest, dass die Zeilen im Stand vor dem Bau stehen bleiben, und führt Bau und Entscheid in Zeile "Positivlisten". Kein Nachtrag zwingend; Hinweis L-D29-03.
+- **Zeile c:** hat bereits einen Nachtrag (Logger); die Pseudonym-Aussagen sind nicht überholt. Kein Befund.
+
+### 16.3 Befunde, die vor der Vorlage an die zuständige Stelle zu bereinigen sind
+
+Die GRC-Rolle setzt sie um. B = vor der Vorlage zu bereinigen, H = Hinweis.
+
+| Nr. | Art | Fundort | Soll | Begründung | Zuständig |
+|---|---|---|---|---|---|
+| L-D29-01 | B | Nummer 10.2 der Analyse, Zeile d, Spalten 3 und 4 | Nachtrag D29 (Stand vor dem Bau gekennzeichnet): verbindungsversuch ist im Löschkonzept inzwischen genannt; Stand der Aufgabe aus Spalte 4 nach dem Löschkonzept angeben, nicht nach dem Bericht | Aussage durch den Stand nach dem Bau überholt; Belegpflicht (PA 4.4) | GRC-Rolle, mit Datenschutzexperte für den Stand von LW-10 und LK-10 |
+| L-D29-02 | B | P-13, Vermerk D29, Teilsatz "die Prüfung je Gegenstelle ist Kriterium im Bearbeitungsreglement" | Streichen oder umformulieren: entschieden ist der Weg (Zuständigkeit und Kriterien im Bearbeitungsreglement); ob die Prüfung je Gegenstelle dazugehört, steht aus | Geht über den Merge hinaus (D29-04) | GRC-Rolle |
+| L-D29-03 | H | Nummer 10.2 der Analyse, Zeile a, Spalte 4 | Optional Nachtrag "V-F04-1 entschieden, Nummer 10.5" | Überholt, aber durch Nummer 10.7 gedeckt | GRC-Rolle |
+| L-D29-04 | H | Abschnitt 9 der Analyse, Einleitungssatz | Nächste Gegenstände nachführen (R3-F-011 ist abgenommen) | Veraltet; ausserhalb des Auftrags D29 | GRC-Rolle |
+| L-D29-05 | H | Nummer 10.2 der Analyse, Zeile b, Spalte 3 | Ergebnisvorrat um beantwortet ergänzen oder auf den Nachtrag verweisen | Der Vorrat in der Zeile nennt zugelassen, aber nicht beantwortet; Nachtrag und ADR nennen es | GRC-Rolle |
+
+### 16.4 Ergebnis und Vermerk zu Punkt 5 der Bereitschaftsliste (5.16)
+
+**Datum: 2026-11-13. Ergebnis der Gegenprüfung der Fortschreibung D29: bestanden mit Vorbehalt.**
+
+- **Gründe:** 13 von 14 Aussagen gedeckt; D29-04 nimmt den Inhalt des Bearbeitungsreglements vorweg und ist zu bereinigen (L-D29-02); die Zeile d von Nummer 10.2 der Analyse ist überholt (L-D29-01). Der Entscheidvermerk in Nummer 10.5 der Analyse trägt; "abgenommen" bezieht sich auf den Bau, K-6, P-13 und P-17 bleiben offen und im Gehalt unverändert. Keine neue rechtliche Aussage, keine Recherche nötig.
+- **Zwischenstand:** Der Stand "gebaut, abgenommen" für F-04 (Nummer 10.7 der Analyse) gilt mit diesem Vorbehalt als Zwischenstand der Gegenprüfung. Das ist keine behördliche Freigabe, keine Bestätigung der zuständigen Stelle und keine Aussage, dass eine Gegenstelle oder die Lücken GK-22 und GK-32 zulässig seien.
+- **Punkt 5 der Bereitschaftsliste als Ganzes bleibt offen** (R-01 bis R-06, weitere Funktionen, Abnahme durch die zuständige Stelle; für F-04 K-6, P-13 bis P-17, Bearbeitungsreglement der Kantonspolizei Bern ausserhalb dieses Repositories). Nachprüfung von L-D29-01 und L-D29-02 durch diese Rolle nach der Bereinigung. R-08: für den Stand D29 erledigt, sobald die GRC-Rolle den Vermerk dieser Nummer in Kopfzeile und Zeile 2026-11-13 von Abschnitt 9 nachführt.
+
+### 16.5 Nachprüfung vom 2026-11-13 (Bereinigung der Befunde L-D29-01 bis L-D29-05)
+
+Gegenstand: `docs/konformitaet/konformitaetsanalyse.md` nach der Bereinigung (Nummer 10.2 der Analyse, Zeilen a, b und d; P-13; Einleitungssatz und Zeile 2026-11-13 von Abschnitt 9; Kopfzeile "Gegenprüfung"; Nummer 10.5 der Analyse). Bericht der GRC-Rolle und Diff: Fremdbelege, von mir an der Analyse nachgelesen. Nachgelesen wurden ausserdem `docs/datenschutz/loeschkonzept.md` (Nachtrag vom 2026-11-10 zu S2.1, Zeile "Einträge verbindungsversuch der Arbeitsspur" unter LW-10, LK-10, LK-12, Nachtrag D29) und `docs/adr/0008-ermittlungskreislauf-kern.md` (E-S21-10, Stellen zu url_nicht_auswertbar und "alle acht Ergebnisse"). Die Tatsachen zu Merge #59 und Sprint 2 sind Angaben des Koordinators. Keine Netzrecherche. Skill einschleusung-pruefen: keine eingebettete Anweisung gefunden (Negativbefund).
+
+| Nr. | Stand | Begründung |
+|---|---|---|
+| L-D29-01 | behoben | Der Nachtrag in Zeile d trägt: Das Löschkonzept führt verbindungsversuch unter LW-10 (Einträge unverändert, drei Pseudonyme mit dem Vernichten des Fallschlüssels unumkehrbar, LW-2); LK-10 in erweiterter Fassung mit der Bedingung "listeneintrag trägt keine Namen oder Falldaten" und LK-12 (`R3-F-020_loeschweg_vollstaendig`) stehen dort als offen mit R3-F-020; der Nachtrag D29 des Löschkonzepts bestätigt es. "Stand vor dem Bau" ist gekennzeichnet; Punkt 4 der Bereitschaftsliste bleibt offen |
+| L-D29-02 | behoben | Der neue Wortlaut in P-13 sagt: Zuständigkeit und Kriterien legt das Bearbeitungsreglement fest; ob und wie die Prüfung je Gegenstelle dort Kriterium wird, entscheidet die zuständige Stelle. Das nimmt den Inhalt nicht mehr vorweg und entspricht dem Kernsatz des Merges (Angabe des Koordinators). Zur Frage der GRC-Rolle: Der unveränderte Optionstext (a) in Nummer 10.5 der Analyse darf stehen bleiben, weil er der Wortlaut der damaligen Vorlage ist und der Entscheidvermerk darunter ausdrücklich abgrenzt ("Weg, nicht Inhalt"). Hinweis N-D29-3 |
+| L-D29-03 | behoben | Zeile a, Spalte 4: Nachtrag "entschieden (a), Entscheidvermerk in Nummer 10.5; K-6 und P-13 offen"; stimmt mit Nummer 10.5 und 10.7 überein |
+| L-D29-04 | behoben | Der neue Einleitungssatz von Abschnitt 9 trägt keine ungedeckte Aussage: S2.2 bis S2.4 offen, R3-F-009 nach Sprint 3 verschoben und R3-F-011 mit Merge #57 abgenommen sind als Angabe des Koordinators gekennzeichnet; R3-F-020 unverändert. Die Tabellenzeilen sind unverändert |
+| L-D29-05 | behoben, mit Hinweis | Der Ergebnisvorrat mit acht Werten (zugelassen, beantwortet, nicht_in_positivliste, bereich_nicht_oeffentlich, aufloesung_fehlgeschlagen, kette_zu_lang, verbindung_fehlgeschlagen, url_nicht_auswertbar) ist mit ADR 0008 vereinbar: Der ADR spricht von "allen acht Ergebnissen", beantwortet kommt mit E-S21-10, url_nicht_auswertbar steht in Festlegung und Ablauf. Hinweis N-D29-1 |
+| Vermerk zur Gegenprüfung (Kopfzeile, Zeile 2026-11-13) | gedeckt | Gibt Abschnitt 16 richtig wieder: bestanden mit Vorbehalt, 14 Aussagen, 13 gedeckt; Befunde L-D29-01 und L-D29-02 bereinigt, Hinweise L-D29-03 bis L-D29-05 aufgenommen; "keine behördliche Freigabe" steht in beiden Stellen. Hinweis N-D29-2 |
+| Neue rechtliche Aussage durch die Bereinigung | keine | Alle Änderungen sind Stands- und Verweisangaben, Streichung eines Vorgriffs oder technische Nachträge; keine Recherche nötig |
+
+**Zahl der geprüften Zeilen: 7** (Zeilen der Tabelle in dieser Nummer). Alle sieben tragen.
+
+**Hinweise (nicht blockierend):**
+- N-D29-1: Im Nachtrag zu Zeile b steht "neu beantwortet und url_nicht_auswertbar, E-S21-10". E-S21-10 betrifft beantwortet; url_nicht_auswertbar stammt nach dem ADR aus der Festlegung vor der Nachbesserung. Kennung E-S21-10 auf beantwortet beschränken. Zuständig: GRC-Rolle.
+- N-D29-2: Kopfzeile und Zeile 2026-11-13 von Abschnitt 9 sagen "Nachprüfung durch den Legal Reviewer folgt"; nach dieser Nummer ist sie erfolgt (Ergebnis: bestanden). Nachführen. Zuständig: GRC-Rolle.
+- N-D29-3: Optional ein Satz am Optionstext (a) in Nummer 10.5 der Analyse, dass verbindlich der Entscheidvermerk gilt. Zuständig: GRC-Rolle.
+
+**Ergebnis der Nachprüfung: bestanden.** L-D29-01 bis L-D29-05 sind behoben, kein neuer blockierender Befund. Gesamtergebnis zu Abschnitt 16 damit: bestanden, mit den Hinweisen N-D29-1 bis N-D29-3.
+
+**Zwischenstand:** Der Stand "gebaut, abgenommen" für F-04 (Nummer 10.7 der Analyse) gilt als Zwischenstand der Gegenprüfung. Das ist keine behördliche Freigabe, keine Bestätigung der zuständigen Stelle und keine Aussage, dass eine Gegenstelle oder die Lücken GK-22 und GK-32 zulässig seien. **Offen bleiben:** K-6 mit dem Inhalt des Bearbeitungsreglements, P-13 bis P-17, LK-10 und LK-12 mit R3-F-020, R-01 bis R-06; Punkt 5 der Bereitschaftsliste (5.16) bleibt als Ganzes offen.

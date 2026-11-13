@@ -299,3 +299,46 @@ sind daran angeglichen. Offen bleiben bei W2-38 die rechtliche Einordnung
 Bestätigung durch S-05, bei W2-55 die Prüfstärke des Namenspfads (GK-5) und
 bei W2-62 die Bestätigung der zwei Glossarvorschläge. Kein Befund ist geändert
 oder gelöscht.
+
+## Nachtrag vom 2026-11-13 (Einheit D29)
+
+Verfasser-Rolle: Requirements Engineer; Angabe des Koordinators, Fremdbeleg.
+Mit dem Merge des Pull Requests #59 am 2026-11-13 (Merge-Commit
+`2b3926f36d584d42f1c9bdbba6ee860d273d34f7`) ist die Baueinheit S2.1
+abgenommen. Die Befunde W2-01 bis W2-80, ihre Schwere, die Übersicht und die
+Zeile "Summe" bleiben unverändert; dieser Nachtrag fügt keinen Befund hinzu
+und schlägt keine Lösung vor.
+
+- **E-D28-01 (a) entschieden:** die Glossarvorschläge Weiterleitung und Ziel
+  sind bestätigt, die Kennzeichnung entfällt. Damit ist bei W2-62 der offene
+  Punkt "Bestätigung der zwei Vorschläge" erledigt; alle vier dort genannten
+  Begriffe (Gegenstelle, Verbindungsversuch, Weiterleitung, Ziel) sind
+  bestätigte Einträge des Glossars.
+- **Fortschreibung R3-F-015 und R3-F-028 abgenommen:** die im Nachtrag vom
+  2026-11-10 (Einheit S2.1) als bearbeitet vermerkten Befunde W2-36 bis W2-41
+  und W2-50 bis W2-60 sind mit der Abnahme von S2.1 am gebauten Stand
+  abgenommen. Offen bleiben wie dort genannt: bei W2-38 die rechtliche
+  Einordnung bei der GRC-Rolle, bei W2-40 Pflege und Änderungsprotokoll
+  (GK-12), bei W2-53 die Bestätigung durch S-05, bei W2-55 die Prüfstärke des
+  Namenspfads (GK-5). Mit demselben Merge ist V-F04-1 (a) entschieden
+  (Zuständigkeit und Kriterien der produktiven Positivliste im
+  Bearbeitungsreglement der Kantonspolizei Bern, bis dahin bleibt sie leer);
+  entschieden ist der Weg, nicht der Inhalt des Reglements.
+- **R3-F-009 nach Sprint 3 verschoben (angenommen):** die Befunde W2-20 bis
+  W2-26 bleiben offen; ihre Fortschreibung erfolgt vor der Baueinheit, die
+  R3-F-009 baut (E-S2-12 a), nicht in Sprint 2. W2-20 ist nach dem Nachtrag S2,
+  Teil (a), durch ADR 0008, Entscheid 19, aufgelöst; W2-21 bleibt an die
+  GRC-Rolle gekennzeichnet.
+- **Als Nächstes vor S2.2 (R3-F-026, R3-F-002):** die Fortschreibung der
+  beiden Einträge nach B4 und E-S2-12 (a) mit den Befunden W2-01 bis W2-12
+  (R3-F-026) und W2-13 bis W2-19 (R3-F-002); davon sind die blockierenden
+  W2-01, W2-13 und W2-14 nach dem Nachtrag S2, Teil (a), durch ADR 0008
+  (Entscheide 2 und 7, E-S2-01) aufgelöst. Aus dem Querschnitt betreffen diese
+  zwei Einträge W2-61 (Werkzeug ist mit D28 bestätigt; Aufrufpfad und
+  Registrierung haben keinen eigenen Eintrag), W2-64 (Abfrage, Fallbezug),
+  W2-66 (Ort des Protokolls einer Abweisung) und W2-68 (Prüfwerkzeug und
+  Testgegenstelle). Beim Requirements Engineer bleibt W2-19 (Stakeholder
+  "Aufsicht"). Keiner der sechs an die GRC-Rolle gekennzeichneten Befunde
+  betrifft R3-F-026 oder R3-F-002.
+
+Kein Befund ist geändert oder gelöscht.
